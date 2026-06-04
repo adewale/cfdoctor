@@ -4,6 +4,8 @@
 
 Start by refreshing official documentation for the detected products. Use [`cloudflare-best-practices-docs.md`](cloudflare-best-practices-docs.md) and [`official-source-map.md`](official-source-map.md) as navigation aids, then fetch Cloudflare's live docs (`https://developers.cloudflare.com/llms.txt`, product `llms.txt`, and relevant Markdown pages). Do not rely on model memory for product behavior, best practices, limits, or pricing when live docs are available.
 
+When dashboard/account state matters, use [`sharing-cloudflare-state.md`](sharing-cloudflare-state.md) to ask the user for the smallest useful evidence package. Prefer IaC/API exports/redacted screenshots over prose, and mark missing dashboard state as not inspected.
+
 Inspect local files next:
 
 ```bash
