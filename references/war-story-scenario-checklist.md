@@ -177,6 +177,108 @@ For each relevant scenario:
   - Billing dashboards can attribute spend by env/project.
 - Evidence to request: Pages/Workers previews, env bindings, routes/domains, crons, queue consumers, D1/R2/KV namespaces, cleanup policy.
 
+## Cloudflare-native operator notes from coey.dev
+
+These are not pricing authorities. Use them as scenario/check sources, then cite official Cloudflare docs for current product behavior, pricing, limits, and APIs.
+
+### 14. Durable Object duration, storage, alarm, and sharding gotchas
+
+- Source: Jordan Coeyman, “Durable Objects Gotchas: The Quiz You Wish You Had,” 2025-12-22 metadata, https://coey.dev/durable-objects-gotchas; related design note “The Perfect Durable Object?,” 2025-12-23, https://coey.dev/perfect-do
+- Source type: operator checklist/design note; scenario source only, not a standalone pricing/limits authority. Coey's embedded example prices must be re-verified with Cloudflare pricing docs before use.
+- Mechanisms to check:
+  - `DO-WEBSOCKET-DURATION`: long-lived idle WebSockets can make wall-clock duration dominate unless hibernation/cleanup fits.
+  - `DO-SOCKET-CLOSE-HYGIENE`: missing close/error/timeout cleanup leaves zombie sessions or stale connection state.
+  - `DO-STORAGE-LIST-HOTPATH`: `storage.list()` on every request/wake-up turns known-key reads into list/pagination work.
+  - `DO-ALARM-RECURSION`: alarm handlers that always call `setAlarm()` can create recurring wake-ups when idle.
+  - `DO-SHARDING-HOTSPOT`: singleton/low-cardinality objects hot-spot; over-sharding ephemeral keys multiplies objects.
+  - `DO-EPHEMERAL-IDEMPOTENCY-OBJECTS`: one DO per idempotency/request key is often wasteful; prefer bounded shard/time buckets or another primitive.
+  - `DO-STORAGE-BATCHING`: many tiny storage writes per logical record/event should be batched/coalesced when correctness allows.
+  - `DO-FANOUT-TAX`: one request/job calling hundreds/thousands of DO stubs needs backpressure and urgency distinction.
+  - `DO-WAITUNTIL-LIFECYCLE`: DO background work should use the correct lifecycle API and be bounded; long work may belong in alarms/Queues/Workflows/Agents durable execution.
+  - `KV-VS-DO-STORAGE-FIT`: read-heavy, write-rare data that tolerates eventual consistency may not need DO storage/duration.
+- Cloudflare docs to pair: Durable Objects pricing, limits, WebSocket hibernation, alarms, storage access, rules of Durable Objects, metrics/analytics; KV consistency/pricing where comparing KV.
+- Evidence to request: DO class code, stub routing/id naming, WebSocket handlers, alarms, storage access patterns, metrics for requests/duration/storage ops, object cardinality estimate, queue/workflow alternatives.
+
+### 15. Cloudflare loop patterns can become self-triggering work
+
+- Source: Jordan Coeyman, “Self: Two Tiny Cloudflare Loop Patterns,” 2026-03-05, https://coey.dev/self; “Loop: I'm Not in Control, I'm Just Another Iteration,” 2026-01-20, https://coey.dev/loop; “loop-demo: Dogfooding Until It Worked,” 2026-01-30, https://coey.dev/loop-demo
+- Source type: operator design notes/prototypes.
+- Mechanism: a Durable Object alarm or Workflow wakes, claims work from KV/state, writes progress, sleeps, and repeats. Without atomic claim, idempotency, max iterations, pause/kill switch, and run summaries, the pattern can become a runaway async loop or silent retry spend.
+- Cloudflare checks:
+  - DO alarms/Workflows/Cron/Agents scheduled tasks reschedule only when work remains.
+  - Claim/lease logic is idempotent and at-least-once safe.
+  - There is a pause/kill switch that can stop the loop without deployment.
+  - Each iteration logs cost proxies and progress/error summaries without unbounded log volume.
+- Evidence to request: alarm/workflow code, KV/D1/R2 work-list schema, claim/lease tests, max iteration config, pause flag, run summary logs, usage metrics.
+
+### 16. Dynamic Workers and code-as-tool sandboxes need capability bounds
+
+- Source: Jordan Coeyman, “Worker Loaders as a Place,” 2026-03-27, https://coey.dev/worker-loaders; “Promptlog: Dynamic Worker Loader with Sandboxed Code Execution,” 2025-10-14, https://coey.dev/promptlog; “desk and living-artifact,” 2026-05-15, https://coey.dev/built-in-reverse
+- Source type: operator design notes/prototypes.
+- Mechanism: Workers or Agents create isolated Dynamic Workers/Worker Loader rooms to execute user/LLM/app code; security and cost depend on egress, bindings, secrets, custom limits, code identity, and lifecycle. Artifacts-backed app/firmware loaders add repo-token, signing, and rollback risks.
+- Cloudflare checks:
+  - Dynamic Workers are deny-by-default for egress/bindings/secrets unless a capability is explicitly required.
+  - Custom limits, timeouts, max unique Dynamic Workers, and max nested spawns are configured or enforced in code.
+  - Code hash/version, input, output, logs, and capabilities are auditable and bounded.
+  - Artifact repo tokens are scoped/rotatable; app/firmware artifacts are signed; rollback/A-B deploy exists for device updates.
+- Evidence to request: dynamic Worker loader code/config, egress policy, bindings, custom limits, code hashing/dedupe, logs, Artifacts namespace/repo/token model, signing/rollback docs.
+
+### 17. Cloudflare Agents and browser/session tools hide long-running cost
+
+- Source: Jordan Coeyman, “Cloudflare Agents Patterns: Using the Agents SDK,” 2025-11-29, https://coey.dev/agents-patterns; “AgentCast: Live browser sessions for AI agents,” 2025-12-08, https://coey.dev/agentcast; “Parley: Two AIs Debate Until They Agree,” 2026-02-02, https://coey.dev/parley
+- Source type: operator design notes/prototypes.
+- Mechanism: Agents are long-lived Durable Objects with state, scheduling, tools, browser/sandbox sessions, and streaming. Planning/debate/browser loops can keep sessions alive or repeat model/tool work without proving improved outcome.
+- Cloudflare checks:
+  - Agents have max steps, cancellation, retry/backoff, idempotency, and per-run model/tool/browser cost proxies.
+  - Browser sessions close in `finally`, have timeouts, and are only used when fetch/API/static parsing is insufficient.
+  - Streaming/SSE/WebSocket connections have disconnect cleanup and hibernation/lifecycle posture.
+  - Scheduled/autonomous responses cannot loop indefinitely or spam external/webhook targets.
+- Evidence to request: Agent classes, scheduled tasks, queue tasks, sub-agents, browser/sandbox tool calls, session close paths, usage dashboards, run summaries.
+
+### 18. Real-time logging sidecars can solve UX while adding meters
+
+- Source: Jordan Coeyman, “Real-Time Logging on Cloudflare,” 2025-09-15, https://coey.dev/real-time-logging; related “Checkout Reality: Playwright + Gateproof,” 2026-01-28, https://coey.dev/checkout-reality
+- Source type: operator pattern notes.
+- Mechanism: a Durable Object/WebSocket/LRU layer can provide instant logs while Analytics Engine/Logpush stores queryable history. This helps verification but can add DO duration/fanout/log-volume cost and privacy risk if retention/sampling is absent.
+- Cloudflare checks:
+  - Separate realtime window from long-term history; define TTL/retention and high-cardinality limits.
+  - Do not log secrets, payment tokens, request bodies, or tenant-private data unnecessarily.
+  - Logging is sampled/bounded under error storms and can answer backend-reality questions, not just DOM success.
+- Evidence to request: Workers Logs/Analytics Engine/Logpush config, DO logging room code, WebSocket fanout, event schema, retention/lifecycle, log-volume metrics.
+
+### 19. Worker security controls for OAuth/webhooks deserve source-backed review
+
+- Source: Jordan Coeyman, “How we passed Google CASA Tier 2 on a Cloudflare Worker,” 2025-06-24, https://coey.dev/casa-tier-2; “Bio: Single-button WebAuthn auth on Cloudflare,” 2025-11-21, https://coey.dev/bio
+- Source type: first-hand security implementation note.
+- Mechanism: Cloudflare Workers can host sensitive OAuth/WebAuthn/webhook surfaces, but controls must be explicit: security headers, sanitized errors, timing-safe comparisons, encryption of tokens, redirect URI allowlists, rate limiting, webhook verification, and idempotency.
+- Cloudflare checks:
+  - Auth/webhook endpoints verify signatures/timestamps before expensive work or state mutation.
+  - OAuth callback redirect URIs are allowlisted; tokens/secrets are encrypted or stored in appropriate secrets/storage; errors do not leak stack traces/secrets.
+  - Rate limits/Turnstile/WAF/Access protect sensitive and expensive paths before storage/AI/Queues.
+- Evidence to request: auth/callback/webhook code, token storage schema, secrets inventory, WAF/rate-limit rules, tests for replay/idempotency/error sanitization.
+
+### 20. Workers-to-database/TCP paths need pooling, TLS, and regional thinking
+
+- Source: Jordan Coeyman, “Edgewire: Node.js TCP libraries in Cloudflare Workers,” 2025-12-09, https://coey.dev/edgewire
+- Source type: operator implementation note.
+- Mechanism: Workers can connect to external TCP databases/libraries, but direct sockets can expose connection churn, TLS, unsupported database, latency, and retry/fanout risks. Hyperdrive may fit supported databases; unsupported protocols need explicit controls.
+- Cloudflare checks:
+  - Verify whether Hyperdrive or Cloudflare-native storage fits before hand-rolled TCP adapters.
+  - External DB connections use TLS, timeouts, bounded concurrency, backoff, and close/reuse semantics suitable for Workers.
+  - Query counts/latency from global edge locations are measured and not hidden behind one request.
+- Evidence to request: TCP socket code, database driver config, TLS options, pooling strategy, query logs, timeouts, retry/backoff, Hyperdrive fit analysis.
+
+### 21. Correctness, preflight, and adversarial gates improve audit quality
+
+- Source: Jordan Coeyman, “Prompts Are Wishes,” 2026-03-04, https://coey.dev/prompts-are-wishes; “gate-review: Red-Team Your Tests,” 2026-01-30, https://coey.dev/gate-review; “preflight: The Agent That Learned to Slow Down,” 2026-01-30, https://coey.dev/preflight; “Compaction,” 2026-02-23, https://coey.dev/compaction; “Cursing Agents,” 2026-05-23, https://coey.dev/cursing-agents
+- Source type: agent/audit process notes.
+- Mechanism: natural-language prompts and self-written tests can produce fake-green results. For Cloudflare Doctor, this motivates executable checks, adversarial review, explicit source provenance, and externalized run summaries after context compaction.
+- Cloudflare checks:
+  - Recommendations are backed by official docs or accepted war stories, not prompt confidence.
+  - Tests/gates include hidden/adversarial cases for cache/auth/billing paths, not only happy-path UI assertions.
+  - Audit output records docs refreshed, cost proxies, cache maps, and evidence gaps so future turns do not infer missing dashboard state.
+- Evidence to request: tests/gates, CI checks, audit artifacts, run summaries, docs URLs fetched.
+
 ## Scenario-to-check matrix
 
 | Scenario | Cloudflare products/configs to inspect |
@@ -193,6 +295,12 @@ For each relevant scenario:
 | Cache layer conflict/leak | Browser cache, CDN/Cache Rules, Worker Cache API, KV/D1/R2 caches, AI Gateway cache, cache keys/TTLs/purge |
 | Logging as a meter | Workers Logs, Logpush, Analytics Engine, destination retention/lifecycle, log sampling/redaction, error-storm alerts |
 | Public previews/review apps | Pages previews, Workers preview URLs, preview routes/domains, paid env bindings, crons, queues, cleanup/noindex policies |
+| Durable Object billing/lifecycle gotchas | DO WebSockets, hibernation, alarms, storage list/get/put patterns, shard keys, object cardinality, stub fanout, idempotency design, metrics |
+| Dynamic Worker/code-as-tool sandbox | Dynamic Worker Loader, egress control, bindings/secrets, custom limits, code hashes, nested spawns, logs, Dynamic Workers pricing/usage |
+| Agents SDK autonomous loops/tools | Agent classes, scheduled tasks, queue tasks, sub-agents, retries, browser/sandbox tools, WebSockets/SSE, cancellation, observability |
+| Artifacts-backed app/firmware loaders | Artifacts namespaces/repos/tokens, signed releases, A-B/rollback flow, device/app update channels, token rotation |
+| Workers TCP/external database | TCP sockets, Node `net`, Hyperdrive fit, TLS, pooling/reuse, timeouts, bounded concurrency, DB region/query metrics |
+| OAuth/WebAuthn/webhook security | Workers handlers, headers, CORS, token encryption, redirect allowlists, timing-safe compares, webhook signatures/idempotency, WAF/rate limits |
 
 ## Checks to add or strengthen
 
@@ -207,3 +315,17 @@ For each relevant scenario:
 - `CFDOC-COST-THIRD-PARTY-ORIGIN`: Cloudflare-fronted Vercel/Netlify/Railway/Render/Fly/Heroku/AWS/GCP/Azure/Supabase/Firebase origin can still be billed through cache misses or direct default hostname access.
 - `CFDOC-COST-LOG-VOLUME`: Workers Logs/Logpush/Analytics Engine or external log ingestion can spike under error/bot traffic without sampling/retention controls.
 - `CFDOC-COST-PREVIEW-PUBLIC-PAID`: Preview/review/demo environment is public, indexed, or connected to paid/prod services without TTL cleanup.
+- `DO-WEBSOCKET-DURATION`: Long-lived DO WebSocket lacks hibernation/close strategy and duration observability.
+- `DO-STORAGE-LIST-HOTPATH`: DO storage list/prefix scan appears on request, alarm, or wake-up path.
+- `DO-ALARM-RECURSION`: DO alarm reschedules itself unconditionally or without max/backoff/idle checks.
+- `DO-SOCKET-CLOSE-HYGIENE`: WebSocket path lacks obvious close/error/timeout cleanup.
+- `DO-SHARDING-HOTSPOT`: DO IDs use singleton/low-cardinality keys or unbounded high-cardinality ephemeral keys.
+- `DO-EPHEMERAL-IDEMPOTENCY-OBJECTS`: One DO per idempotency/request key instead of bounded shard/time bucket/TTL store.
+- `DO-STORAGE-BATCHING`: Multiple tiny DO storage writes per logical event without batching/coalescing.
+- `DO-FANOUT-TAX`: One request/job fans out to many DO stubs without backpressure or urgency/cost budget.
+- `DO-WAITUNTIL-LIFECYCLE`: DO uses background lifecycle work without clear bounded duration, retries, or better Queue/Workflow/Agent fit.
+- `KV-VS-DO-STORAGE-FIT`: DO storage used for read-heavy/write-rare data that may fit KV/D1/R2 once consistency/query needs are known.
+- `DYNAMIC-WORKER-SANDBOX-CAPABILITIES`: Dynamic Workers execute user/LLM code without explicit egress, binding, secret, limit, and audit posture.
+- `AGENT-AUTONOMOUS-LOOP-COST`: Agents SDK loops/tools/schedules lack max steps, cancellation, retry/backoff, idempotency, and cost proxies.
+- `ARTIFACTS-UPDATE-SUPPLY-CHAIN`: Artifacts-backed app/firmware update path lacks token scope, signing, rollback, or namespace separation.
+- `WORKER-TCP-DB-FIT`: Worker TCP/external DB path lacks Hyperdrive/product-fit review, TLS, pooling, timeouts, or fanout limits.

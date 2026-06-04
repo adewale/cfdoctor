@@ -62,10 +62,13 @@ For each layer, record: cache owner, key, TTL, invalidation trigger, stale-while
 ## Durable Objects reliability
 
 - Validate cheap request properties before constructing/calling Durable Object stubs: method, route, auth/session, tenant membership, request size, content type, and abuse/rate-limit signals. Invalid traffic should be rejected in the front Worker before it becomes DO traffic.
-- Shard object IDs by tenant/user/room/key; avoid one global object unless the workload is truly tiny.
-- Use alarms, persisted state, and idempotency for state machines rather than relying on in-memory state only.
-- For WebSockets, consider Durable Object WebSocket hibernation to avoid duration billing and improve survivability for long-lived idle connections. Avoid timers/polling that keep objects active when alarms, Queues, or Workflows would do.
-- Keep object methods short; offload expensive work to Queues/Workflows where possible.
+- Shard object IDs by tenant/user/room/key; avoid one global object unless the workload is truly tiny. For idempotency, notifications, short-lived events, or per-request work, prefer bounded hash/time buckets or a different primitive over one object per ephemeral key.
+- Use alarms, persisted state, and idempotency for state machines rather than relying on in-memory state only. Alarm handlers should only reschedule when work remains and should have max-iteration/kill-switch behavior.
+- Avoid `storage.list()` in request or wake-up hot paths. Fetch known keys, compact related state, maintain a manifest, or cache loaded state intentionally.
+- Batch/coalesce small DO storage writes by logical record or flush interval; avoid per-field/per-event write storms.
+- For WebSockets, consider Durable Object WebSocket hibernation to avoid duration billing and improve survivability for long-lived idle connections. Add close/error/timeout cleanup paths and persist only the state needed to resume after hibernation/eviction.
+- Treat `ctx.waitUntil()` in a DO as a lifecycle decision, not a free background thread. If work can outlive the request or needs retries/visibility, consider alarms, Queues, Workflows, or Agents durable execution.
+- Keep object methods short; offload expensive work to Queues/Workflows where possible. Fan-out to many DOs needs concurrency caps, backpressure, and per-run metrics.
 - Ensure Wrangler migrations track class lifecycle.
 
 ## D1 reliability/performance
@@ -92,13 +95,23 @@ For each layer, record: cache owner, key, TTL, invalidation trigger, stale-while
 - Retry settings match downstream failure modes; avoid retry storms against a degraded API.
 - User-facing endpoints enqueue quickly and return a status handle when work is asynchronous.
 
+## Dynamic Workers, Agents, and sandboxed code reliability
+
+- For Dynamic Workers, inventory every path that loads user/LLM-provided code. Confirm outbound egress, bindings, secrets, CPU/request/custom limits, and durable facets are explicitly granted rather than inherited accidentally.
+- Record code hash/version, input, capabilities, timing, CPU-ish duration, logs, and output for every dynamic execution so failures and cost regressions can be traced.
+- Cap nested Dynamic Worker creation and agent code-as-tool loops; do not let rooms spawn rooms without max depth, max unique Workers, and cancellation.
+- For Agents SDK, check scheduled tasks, queue tasks, sub-agents, retries, durable execution, WebSockets, browser/sandbox tools, and autonomous responses for max steps, retry/backoff, cancellation, idempotency, and observability.
+- For Artifacts-backed deployments or device/firmware update flows, require repo/token namespace separation, signed artifacts, rollback/A-B update path, and lifecycle cleanup of temporary repos/tokens.
+- For Workers TCP/external database calls, verify TLS, connection lifetime, pooling/Hyperdrive support, regional latency, query timeouts, and retry/backoff. Avoid opening many outbound sockets in unbounded fanout.
+
 ## Observability
 
 Check that the project can answer:
-- Which route/resource is consuming CPU, subrequests, D1 rows, KV/R2 operations, or queue retries?
+- Which route/resource is consuming CPU, subrequests, D1 rows, KV/R2 operations, DO duration/requests/storage ops, Dynamic Worker unique creations, Agent tool/browser/sandbox time, Artifacts operations, or queue retries?
 - Which deployment introduced a regression?
 - Are there alerts for failed queue consumers, DO errors, D1 migration failures, elevated 5xx, origin errors, cache hit ratio drops, and billing anomalies?
 - Are logs sampled/redacted enough to control privacy and cost?
+- If using a real-time logging sidecar (Durable Object/WebSocket/LRU cache) plus Analytics Engine/Logpush for history, what is the retention window, high-cardinality cap, fanout limit, replay/backfill story, and delay tolerance?
 
 Repo clues:
 - `observability` config in Wrangler.

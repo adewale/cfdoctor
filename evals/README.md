@@ -42,4 +42,4 @@ Add cases when the trigger policy changes or a false trigger is observed:
 }
 ```
 
-Use `expected: "no_trigger"` for unrelated Cloudflare mentions, false friends like `R2-D2`, generic browser/vector/stream tasks, or tasks better handled by another skill.
+Use `expected: "no_trigger"` for unrelated Cloudflare mentions, false friends like `R2-D2`, generic dynamic-worker/analytics-engine phrases, generic browser/vector/stream tasks, or tasks better handled by another skill.

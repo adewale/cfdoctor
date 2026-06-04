@@ -6,8 +6,8 @@ Cost findings should name the billing meter or amplification mechanism. Avoid ex
 
 Ask for or infer cautiously:
 - Monthly requests, peak RPS, average response size, and cache hit ratio.
-- Per-request storage operations: KV reads/writes/lists, D1 queries/rows, R2 Class A/B operations, Queue messages, DO requests/duration.
-- Background job volume, retry rates, cron frequency, log volume/retention, and add-on products enabled.
+- Per-request storage operations: KV reads/writes/lists, D1 queries/rows, R2 Class A/B operations, Queue messages, DO requests/duration, Dynamic Worker requests/CPU/unique workers, and Artifacts operations/storage.
+- Background job volume, retry rates, cron frequency, agent/tool/browser/sandbox runs, log volume/retention, and add-on products enabled.
 - Plan type and limits. Cloudflare pricing/limits change; verify current docs before quoting numbers.
 - Whether the project recently moved from Free to Paid. Treat plan upgrades as cost-risk changes: hard stops/included usage may become paid overages or different throttling behavior depending on product and plan.
 - Circuit breakers, kill switches, retry limits, fanout caps, DLQ depth, and run-summary metrics. Missing controls turn transient failures into spend amplification.
@@ -20,6 +20,7 @@ Footguns:
 - Awaiting analytics/logging/email/webhook/cache writes instead of using `ctx.waitUntil` or Queues.
 - Multiple public Worker-to-Worker fetches where service bindings would reduce latency and simplify security/accounting.
 - Retry loops without backoff around third-party or Cloudflare APIs.
+- Direct TCP/database calls from Workers without checking connection pooling, TLS, regional latency, timeout, and retry behavior; Hyperdrive or another data-local strategy may be a better fit for supported databases.
 - Duplicate expensive operations without idempotency keys, especially generation/inference, media transforms, browser sessions, uploads, and write-side effects.
 - Cron triggers running too frequently or in every environment.
 - Preview, workshop, demo, or one-off Workers left routed to paid bindings/services after the event or test window.
@@ -72,12 +73,19 @@ Footguns:
 - Routing invalid/bot/unauthenticated traffic into Durable Objects before validating method, auth, tenant, request size, and cheap abuse signals. This turns junk traffic into DO requests/duration and can hot-spot objects.
 - One global Durable Object or low-cardinality shard receives most traffic, creating latency, throughput, and cost concentration.
 - Long-lived WebSockets handled without hibernation when idle duration dominates, or ordinary DO requests keeping objects active with timers/polling instead of alarms/queues.
+- WebSocket code with no close/error/timeout cleanup; zombie sessions can keep state and duration alive longer than intended.
+- Alarm handlers that unconditionally call `setAlarm()` again, creating a persistent wake-up loop even when no work remains.
+- `storage.list()` on hot paths or on wake-up as a generic read mechanism; list/pagination amplifies reads and latency versus fetching known keys or compact state.
+- Many `storage.put()` calls per logical event/record instead of batching/coalescing; operation count can dominate small writes.
+- One DO per ephemeral idempotency key/request ID/notification/short-lived event, causing object-count and storage cleanup problems without much coordination benefit.
+- Fan-out from one Worker/request/job to hundreds or thousands of DO stubs with no backpressure, batching, or urgency distinction.
 - DO used as a generic database with many trivial object invocations.
-- In-memory-only state causes recovery/retry loops after object eviction/restart.
+- DO storage chosen for read-heavy/write-rare data that could use KV/D1/R2 once consistency/query requirements are clear; remember DO duration/requests are part of the total cost, not just storage ops.
+- In-memory-only state causes recovery/retry loops after object eviction/restart or hibernation.
 
 Better patterns:
 - Validate and rate-limit before obtaining/calling DO stubs; reject malformed/unauthorized requests in the Worker where possible.
-- Shard by natural key, use hibernation for WebSockets, persist state intentionally, offload heavy/background work to Queues/Workflows, and use D1/KV/R2 for data that does not need per-key coordination.
+- Shard by natural key or bounded hash/time buckets, use hibernation for WebSockets, close/cleanup sockets, persist state intentionally, batch small storage writes, only reschedule alarms when work remains, offload heavy/background work to Queues/Workflows, and use D1/KV/R2 for data that does not need per-key coordination.
 
 ## Queues and Workflows
 
@@ -95,7 +103,7 @@ Better patterns:
 Footguns:
 - Hot retries into a degraded dependency or paid primitive with no circuit breaker, cooldown, or max-attempt cap.
 - Unbounded fanout from one request/job: recursive crawlers, `Promise.all(items.map(...))`, queue batch explosions, workflow recursion, tenant broadcasts, or AI/tool loops.
-- Missing kill switches for expensive features, cron jobs, queue consumers, demo/workshop routes, Workers AI, Browser Run, Images/Stream transforms, or Vectorize search.
+- Missing kill switches for expensive features, cron jobs, queue consumers, demo/workshop routes, Dynamic Workers, Agents scheduled tasks/tools, Workers AI, Browser Run, Images/Stream transforms, or Vectorize search.
 - No anti-rework cache: the same logical operation repeats after refresh, retry, queue replay, webhook duplicate, browser reconnect, or user double-click.
 - Run summaries log success/failure but not cost proxies, making it impossible to notice spend amplification until billing arrives.
 
@@ -106,9 +114,13 @@ Better patterns:
 - Kill switches in config/secrets/flags that can disable expensive routes/jobs without deploys.
 - Per-run summaries that emit inputs, outputs, retries, DLQ count, fanout count, CPU-ish duration, subrequests, D1 rows, R2/KV ops, DO calls/duration, AI/browser/media/vector units, and cache hit/miss counts.
 
-## Workers AI, Vectorize, Images, Stream, and Browser Run
+## Dynamic Workers, Agents SDK, Workers AI, Vectorize, Images, Stream, and Browser Run
 
 Footguns:
+- Dynamic Workers executing user/LLM-generated code with inherited network access, broad bindings, no custom resource limits, and no per-run accounting for requests/CPU/unique Dynamic Workers.
+- Dynamic Worker code-as-tool loops that repeatedly spawn sandboxes for the same logical operation instead of reusing/deduping by code hash and input.
+- Artifacts-backed app/firmware loaders that create per-tenant/per-app repos or tokens without lifecycle cleanup, namespace separation, signing, rollback, or token-usage monitoring.
+- Agents SDK loops, scheduled tasks, sub-agents, browser tools, sandbox tools, and autonomous responses without max steps, cancellation, idempotency, run summaries, or retry/backoff bounds.
 - Workers AI loops, retries, duplicate generation, or Queue replay without idempotency/dedupe. For generation and embeddings, the same user action can trigger multiple paid inferences.
 - Workers AI requests not using caching/session affinity where applicable, or no cap on model/tool-call loops.
 - Vectorize search hiding queried/stored dimensions. Cost can be tied to queried dimensions and stored vector dimensions; audit index dimensions, topK, namespace fan-out, and repeated embedding/query flows.
@@ -117,6 +129,9 @@ Footguns:
 - Browser Run sessions left open, retried blindly, or launched per request when a lighter fetch/HTML parser/API would work. Browser hours/concurrency can dominate cost.
 
 Better patterns:
+- For Dynamic Workers, use deny-by-default egress/bindings, custom limits/timeouts, code-hash/version IDs, bounded logs, and per-run accounting for requests/CPU/unique workers.
+- For Agents SDK, cap max steps/tool calls/sub-agents, require cancellation, add idempotency and retry backoff, and emit run summaries with model/tool/browser/sandbox cost proxies.
+- For Artifacts, scope repo tokens, separate namespaces by env/tenant where needed, sign artifacts used for app/firmware updates, and keep rollback/lifecycle cleanup evidence.
 - Add idempotency keys and persistent result caches for AI/image/browser jobs; dedupe Queue messages before expensive calls.
 - Bound AI/tool/browser retry loops with exponential backoff, max attempts, and circuit breakers.
 - For Images, use predefined variants or strict allowlists, normalize transformation URLs/cache keys, and cache transformed outputs.

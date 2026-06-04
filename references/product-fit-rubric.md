@@ -44,7 +44,10 @@ Good fit:
 Wrong-primitive smells:
 - One global object handles all traffic (`idFromName('global')`, `singleton`, one room for everything). This creates a hot spot; shard by tenant/user/key where possible.
 - Durable Objects used as a general database or object-per-record store without a coordination need. Prefer D1/KV/R2 by data shape.
+- One DO per ephemeral idempotency key, request ID, notification, or short-lived event. Prefer a bounded shard/time-bucket/keyspace with TTL cleanup, or KV/D1 if the access pattern does not need per-key serialization.
+- Hierarchical DO chains/fleets where one request walks many parent/child objects, or fan-outs to many objects, without backpressure and a cost/latency budget.
 - WebSockets handled without Durable Object WebSocket hibernation when connections can be long-lived. Hibernation can reduce duration billing and survivability issues.
+- DO storage used for read-heavy, write-rare session/preference/config data that tolerates eventual consistency. KV or D1 may fit better once consistency and query needs are explicit.
 - Class renamed or new class added without Wrangler migrations.
 
 ## R2
@@ -76,6 +79,21 @@ Good fit:
 Smells:
 - Cron every minute for polling that could be event-driven, queue-driven, webhook-driven, or batched less often.
 - Long process encoded as recursive self-fetches or ad hoc KV state. Prefer Workflows/Queues/DO state machines.
+- Workflow/DO-alarm loops drain a KV/D1/R2 work list without atomic claim/idempotency/max-iteration/kill-switch controls.
+
+## Dynamic Workers, Artifacts, and Agents SDK
+
+Good fit:
+- Dynamic Workers for short-lived isolated code execution, tenant/user-provided code, code-as-tool execution, and per-run sandboxes with explicit capabilities.
+- Artifacts for Git-compatible versioned filesystem artifacts, repos, and repo-scoped tokens.
+- Cloudflare Agents SDK for stateful AI agents that need Durable Object-backed state, real-time communication, scheduling, queue tasks, retries, and long-running coordination.
+
+Wrong-primitive/security smells:
+- Dynamic Workers executing untrusted/user/LLM-written code with inherited outbound network access, secrets, broad bindings, no custom limits, or no audit log of code hash/input/output.
+- Dynamic Worker creation keyed by every request or prompt without reuse, TTL, or cost accounting for unique Dynamic Workers.
+- Artifact repo tokens shared across tenants/environments or embedded in firmware/build artifacts; app/firmware update flows lack signing, rollback, and namespace separation.
+- Agents with autonomous loops, tool calls, browser/sandbox tools, scheduled tasks, or sub-agents without max steps, retries/backoff, cancellation, idempotency, and per-run cost proxies.
+- Browser-capable agents used for simple fetch/parse/API tasks where Workers fetch, Queues, or a lighter tool would be sufficient.
 
 ## Cache API, CDN cache, Cache Rules
 

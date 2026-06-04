@@ -34,8 +34,8 @@ Do not run mutating commands without explicit approval.
 ## Product inventory checklist
 
 - **Workers/Pages**: `wrangler.toml/json`, `pages_build_output_dir`, `main`, `assets`, routes, custom domains, env sections, build scripts.
-- **Bindings**: KV, D1, R2, Durable Objects, Queues, Hyperdrive, Vectorize, AI, Analytics Engine, service bindings, secrets, vars.
-- **Runtime code**: fetch handlers, Pages Functions, Queue consumers, Durable Object classes, cron handlers, cache use, auth/rate limiting, external fetches.
+- **Bindings**: KV, D1, R2, Durable Objects, Queues, Hyperdrive, Vectorize, AI, Analytics Engine, Dynamic Worker Loaders, Artifacts, service bindings, secrets, vars.
+- **Runtime code**: fetch handlers, Pages Functions, Queue consumers, Durable Object classes, Agents SDK classes, Dynamic Worker loader paths, cron/scheduled handlers, cache use, auth/rate limiting, external fetches/TCP sockets.
 - **Data model**: consistency requirements, write rate, read pattern, object size, query shape, transaction/coordination needs, TTL needs.
 - **Account/zone**: DNS proxy status, SSL/TLS mode, WAF/rate limiting/bot rules, cache rules, Page Rules, Transform Rules, Access policies, Logpush/analytics.
 - **Third-party origins behind Cloudflare**: Vercel, Netlify, Railway, Render, Fly.io, Heroku, AWS/GCP/Azure, Firebase/Supabase/Fastly origins; default hostnames; origin lock-down; origin billing model.
@@ -66,18 +66,21 @@ For every audit, explicitly consider and either report or mark not applicable / 
 18. Fanout should be bounded: `Promise.all(items.map(...))`, queue fanout, batch sends, recursive workflows, crawler depth, and per-tenant broadcasts need caps/backpressure.
 19. Run summaries should include cost proxies: CPU time, subrequests, storage ops, rows read/written, DO requests/duration, queue retry/DLQ counts, AI neurons/tokens/requests, Browser Run session minutes, image transformations, Stream delivered minutes, Vectorize dimensions queried/stored, and cache hit/miss assumptions.
 20. Layered cache behavior should be explicit: where a request is cached, cache key dimensions, TTL, invalidation owner, and whether browser/CDN/Worker Cache/KV/R2/D1/AI Gateway caches can conflict or leak personalized data.
-21. War-story scenario checks should be considered for matching products: recursive async work, webhook abuse, static/media DDoS bandwidth, image variant explosions, uncached object hotlinks, idle paid resources, direct origin/bucket bypass, and spend-alerts-only controls.
-22. Cloudflare-fronted third-party origins should be checked for denial-of-wallet risk: cache misses, unproxied/default origin hostnames, wildcard routes/middleware, image optimization endpoints, autoscaling/serverless origins, log ingestion, and provider spend caps.
-23. Self-fetch, rewrite, redirect, event-trigger, and origin loop risks should be checked across Workers, Pages Functions, Queues, Workflows, Cron Triggers, webhooks, and storage/database triggers.
-24. Logging/analytics can be a surprise meter; high-cardinality or error-storm logs need sampling, retention, destination lifecycle rules, and volume alerts.
-25. For high-risk public surfaces, recommend a denial-of-wallet game day: synthetic traffic against static asset, function/API route, image transform, storage object, and webhook path to prove cache/rate-limit/auth/alerts fire.
+21. Durable Object gotchas should be checked when DOs are present: duration/WebSockets/hibernation, close hygiene, `storage.list()` hot paths, alarm recursion, sharding/hotspots, ephemeral object-per-idempotency-key patterns, storage batching, fan-out to many DOs, `ctx.waitUntil()` lifecycle, and KV-vs-DO-storage fit.
+22. Dynamic Workers/Agents SDK/Artifacts should be checked when present: sandbox egress/bindings/secrets/custom limits, unique Dynamic Worker creation, code hash/audit logs, autonomous agent max steps/cancellation/retries, browser/sandbox tool costs, Artifacts token scope, signing, rollback, and namespace separation.
+23. War-story scenario checks should be considered for matching products: recursive async work, webhook abuse, static/media DDoS bandwidth, image variant explosions, uncached object hotlinks, idle paid resources, direct origin/bucket bypass, and spend-alerts-only controls.
+24. Cloudflare-fronted third-party origins should be checked for denial-of-wallet risk: cache misses, unproxied/default origin hostnames, wildcard routes/middleware, image optimization endpoints, autoscaling/serverless origins, log ingestion, and provider spend caps.
+25. Self-fetch, rewrite, redirect, event-trigger, and origin loop risks should be checked across Workers, Pages Functions, Queues, Workflows, Cron Triggers, Durable Object alarms, Agents scheduled tasks, webhooks, and storage/database triggers.
+26. Logging/analytics can be a surprise meter; high-cardinality or error-storm logs need sampling, retention, destination lifecycle rules, volume alerts, and a real-time-vs-history architecture when using DO/WebSocket sidecars plus Analytics Engine/Logpush.
+27. Workers TCP/external database calls should be checked for Hyperdrive/product fit, TLS, connection pooling/lifetime, regional latency, timeouts, retries, and fanout.
+28. For high-risk public surfaces, recommend a denial-of-wallet game day: synthetic traffic against static asset, function/API route, image transform, storage object, Dynamic Worker sandbox, browser/AI route, and webhook path to prove cache/rate-limit/auth/alerts fire.
 
 ## Diagnosis loop
 
 1. **Identify the primitive contract**. What does the app need: strong consistency, global low-latency reads, ordered coordination, relational queries, blob storage, background jobs, streaming, CDN caching, or access control?
 2. **Compare to chosen product**. Use `product-fit-rubric.md` to spot mismatches.
 3. **Check config shape**. Validate Wrangler/account configuration, env parity, migrations, routes, and security boundaries.
-4. **Trace hot paths**. Count subrequests, storage operations, D1 rows read/written, R2 list calls, KV operations, CPU-heavy transforms, external origins, fanout, retries, and cacheability.
+4. **Trace hot paths**. Count subrequests, storage operations, D1 rows read/written, R2 list calls, KV operations, DO calls/duration/storage ops, Dynamic Worker creations/CPU, Agent tool/browser/sandbox/model runs, CPU-heavy transforms, external origins/TCP calls, fanout, retries, and cacheability.
 5. **Map cache layers**. For each hot request/job, list browser cache, CDN cache/Cache Rules, Worker Cache API, KV/D1/R2 metadata/content caches, AI Gateway/prompt caches, and app-level memoization. Record keys, TTLs, invalidation, personalization boundaries, and stale/read-after-write implications.
 6. **Model failure mode**. Ask: what breaks at 10x traffic, multi-region concurrency, one failed dependency, hot retries, unbounded fanout, a retry storm, a leaked preview URL, or a billing threshold?
 7. **Prescribe narrowly**. Recommend the smallest primitive/config/code change that removes the root risk. Avoid vague “use best practices” feedback.

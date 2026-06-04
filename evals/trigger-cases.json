@@ -205,6 +205,52 @@
     ]
   },
   {
+    "id": "dynamic-worker-loader-sandbox",
+    "prompt": "Audit our Cloudflare Dynamic Worker Loader setup for untrusted code egress, secrets, custom limits, unique worker cost, and audit logs.",
+    "expected": "trigger",
+    "category": "dynamic workers sandbox/cost",
+    "description_terms": [
+      "Dynamic Workers"
+    ]
+  },
+  {
+    "id": "agents-sdk-long-running",
+    "prompt": "Review our Cloudflare Agents SDK app for long-running Durable Object lifecycle, scheduled tasks, retries, browser tool cost, and cancellation.",
+    "expected": "trigger",
+    "category": "agents sdk reliability/cost",
+    "description_terms": [
+      "Agents SDK"
+    ]
+  },
+  {
+    "id": "artifacts-app-loader-supply-chain",
+    "prompt": "Cloudflare Artifacts powers our app and firmware loader. Check repo tokens, signing, rollback, namespace separation, and cost cleanup.",
+    "expected": "trigger",
+    "category": "artifacts supply-chain/reliability",
+    "description_terms": [
+      "Artifacts"
+    ]
+  },
+  {
+    "id": "analytics-engine-workers-logs",
+    "prompt": "Audit Workers Logs and Analytics Engine for high-cardinality log volume, sampling, retention, and realtime logging cost footguns.",
+    "expected": "trigger",
+    "category": "observability/logging cost",
+    "description_terms": [
+      "Analytics Engine",
+      "Workers Logs"
+    ]
+  },
+  {
+    "id": "durable-object-gotchas-full",
+    "prompt": "Check our Durable Objects for storage.list hot paths, alarm recursion, WebSocket close hygiene, sharding hotspots, and idempotency-key object explosions.",
+    "expected": "trigger",
+    "category": "durable object gotchas",
+    "description_terms": [
+      "Durable Objects"
+    ]
+  },
+  {
     "id": "aws-lambda-cost",
     "prompt": "Audit our AWS Lambda and DynamoDB bill for cost footguns.",
     "expected": "no_trigger",
@@ -263,5 +309,17 @@
     "prompt": "What's a good queue data structure implementation in Python?",
     "expected": "no_trigger",
     "category": "generic queue"
+  },
+  {
+    "id": "dynamic-workers-generic-labor",
+    "prompt": "Audit our staffing plan for dynamic workers in the warehouse.",
+    "expected": "no_trigger",
+    "category": "generic phrase false friend"
+  },
+  {
+    "id": "analytics-engine-generic",
+    "prompt": "Review our analytics engine design in PostgreSQL for high-cardinality event queries.",
+    "expected": "no_trigger",
+    "category": "generic analytics false friend"
   }
 ]

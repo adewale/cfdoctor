@@ -23,6 +23,15 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Workers versions and deployments: https://developers.cloudflare.com/workers/configuration/versions-and-deployments/
 - Workers rollbacks: https://developers.cloudflare.com/workers/configuration/versions-and-deployments/rollbacks/
 - Workers gradual deployments: https://developers.cloudflare.com/workers/configuration/versions-and-deployments/gradual-deployments/
+- Dynamic Workers docs: https://developers.cloudflare.com/dynamic-workers/
+- Dynamic Workers API reference: https://developers.cloudflare.com/dynamic-workers/api-reference/
+- Dynamic Workers egress control: https://developers.cloudflare.com/dynamic-workers/usage/egress-control/
+- Dynamic Workers custom limits: https://developers.cloudflare.com/dynamic-workers/usage/limits/
+- Dynamic Workers pricing: https://developers.cloudflare.com/dynamic-workers/pricing/
+- Artifacts docs: https://developers.cloudflare.com/artifacts/
+- Artifacts best practices: https://developers.cloudflare.com/artifacts/concepts/best-practices/
+- Artifacts authentication: https://developers.cloudflare.com/artifacts/guides/authentication/
+- Artifacts pricing/limits: https://developers.cloudflare.com/artifacts/platform/pricing/ and https://developers.cloudflare.com/artifacts/platform/limits/
 
 ## Storage/data primitives
 
@@ -67,6 +76,13 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Workflows rules: https://developers.cloudflare.com/workflows/build/rules-of-workflows/
 - Workflows sleeping and retrying: https://developers.cloudflare.com/workflows/build/sleeping-and-retrying/
 - Workflows limits: https://developers.cloudflare.com/workflows/reference/limits/
+- Agents SDK docs: https://developers.cloudflare.com/agents/
+- Agents long-running agents: https://developers.cloudflare.com/agents/concepts/agentic-patterns/long-running-agents/
+- Agents tools/browser/sandbox: https://developers.cloudflare.com/agents/tools/browser/ and https://developers.cloudflare.com/agents/tools/sandbox/
+- Agents retries/queue/scheduling/durable execution: https://developers.cloudflare.com/agents/runtime/execution/retries/, https://developers.cloudflare.com/agents/runtime/execution/queue-tasks/, https://developers.cloudflare.com/agents/runtime/execution/schedule-tasks/, https://developers.cloudflare.com/agents/runtime/execution/durable-execution/
+- Agents limits/observability: https://developers.cloudflare.com/agents/platform/limits/ and https://developers.cloudflare.com/agents/runtime/operations/observability/
+- Workers TCP sockets: https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/
+- Node.js `net` in Workers: https://developers.cloudflare.com/workers/runtime-apis/nodejs/net/
 - Hyperdrive docs: https://developers.cloudflare.com/hyperdrive/
 - Workers AI docs: https://developers.cloudflare.com/workers-ai/
 - Workers AI limits: https://developers.cloudflare.com/workers-ai/platform/limits/
@@ -138,8 +154,11 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 
 - Workers observability: https://developers.cloudflare.com/workers/observability/
 - Workers Logs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
+- Workers real-time logs: https://developers.cloudflare.com/workers/observability/logs/real-time-logs/
+- Tail Workers: https://developers.cloudflare.com/workers/observability/logs/tail-workers/
 - Logpush: https://developers.cloudflare.com/logs/
 - Analytics Engine: https://developers.cloudflare.com/analytics/analytics-engine/
 - Analytics Engine pricing: https://developers.cloudflare.com/analytics/analytics-engine/pricing/
+- Analytics Engine sampling: https://developers.cloudflare.com/analytics/analytics-engine/sampling/
 - R2 metrics: https://developers.cloudflare.com/r2/observability/
 - Cloudflare public plans: https://www.cloudflare.com/plans/

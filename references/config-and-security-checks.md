@@ -21,7 +21,7 @@ Check every `wrangler.toml`, `wrangler.json`, `wrangler.jsonc`, and environment 
 ## Secrets and repository hygiene
 
 Flag immediately:
-- Cloudflare API tokens, Global API keys, account IDs paired with tokens, R2 access keys, database URLs with credentials, JWT/private keys, OAuth client secrets, or webhook signing secrets in source, `wrangler.toml`, committed `.env`, tests, docs, or CI logs.
+- Cloudflare API tokens, Global API keys, account IDs paired with tokens, R2 access keys, Artifacts repo tokens, database URLs with credentials, JWT/private keys, OAuth client secrets, or webhook signing secrets in source, `wrangler.toml`, committed `.env`, tests, docs, or CI logs.
 - `vars` used for credentials. Wrangler vars are configuration, not secret storage.
 - Production secrets reused in preview/dev environments.
 - Publicly documented admin URLs, bypass tokens, or preview URLs with weak auth.
@@ -37,9 +37,11 @@ Check request handlers and routes:
 - CORS is not `Access-Control-Allow-Origin: *` with credentials or sensitive endpoints. Avoid reflecting arbitrary `Origin`; use an allowlist.
 - Public mutation endpoints have CSRF/replay/idempotency considerations where browser credentials or webhooks are involved.
 - Webhook handlers verify signatures and timestamps before enqueueing/processing.
+- OAuth/OIDC flows use redirect URI allowlists, timing-safe secret/token comparisons where applicable, encrypted token storage, refresh-token rotation/expiry handling, and idempotency for callback/webhook side effects.
 - Rate limiting, Turnstile, WAF, or bot protections cover abuse-prone endpoints before expensive Worker/storage work.
 - Do not trust arbitrary `X-Forwarded-For`/`CF-Connecting-IP` unless the traffic path guarantees Cloudflare is the only ingress.
 - Error responses/logs do not leak secrets, tokens, stack traces, SQL, object keys, or tenant data.
+- Browser/geolocation/device-fingerprint/IP-derived analytics are disclosed, minimized, consented where required, and not cached/logged into long-lived high-cardinality stores without retention limits.
 
 ## Cache/security interaction
 
@@ -47,6 +49,15 @@ Check request handlers and routes:
 - Public cached responses vary on the right dimensions (`Accept-Encoding`, locale, device, auth absence) and do not include cookies accidentally.
 - Workers Cache API entries are not shared across incompatible request variants.
 - HTML/API responses with auth-sensitive data are not cached by broad Cache Rules.
+
+## Dynamic Workers, Artifacts, and sandboxed execution
+
+- Dynamic Workers that run user-submitted or LLM-written code have explicit egress policy, bindings, secrets, custom limits, and per-run audit logs. Prefer deny-by-default egress/bindings and grant only the capability the code needs.
+- Code execution inputs are size-limited and validated; outputs/logs are bounded and redacted.
+- Dynamic Worker code identity is tracked by code hash/version so repeated identical executions can be deduped and investigated.
+- Agents/MCP/code-mode/browser/sandbox tools require explicit tool allowlists, approval boundaries for side effects, tenant auth, cancellation, and traceability.
+- Artifacts repos and repo-scoped tokens are separated by environment/tenant/app where appropriate; tokens are not embedded in client firmware or app bundles unless scoped/rotatable and expected.
+- App/firmware update flows backed by Cloudflare Artifacts or Workers should verify signatures, support rollback/A-B deploy, and avoid one shared mutable "latest" object with no provenance.
 
 ## R2/public assets
 

@@ -38,7 +38,7 @@ Ask only for relevant sections; do not request everything by default.
 ### Account / billing
 
 - Plan type, recent Free→Paid changes, spending caps/usage alerts if available.
-- Product usage/overage line items: Workers, D1, R2, KV, Durable Objects, Queues, Workers AI, Vectorize, Images, Stream, Browser Run, Logpush/analytics, WAF/rate limiting, Zero Trust seats.
+- Product usage/overage line items: Workers, D1, R2, KV, Durable Objects, Queues, Dynamic Workers, Agents SDK-related Workers/DO/browser/sandbox usage, Artifacts, Workers AI, Vectorize, Images, Stream, Browser Run, Logpush/analytics, WAF/rate limiting, Zero Trust seats.
 - Top products by spend and usage time window.
 
 ### DNS / zone / origin
@@ -76,13 +76,16 @@ Ask only for relevant sections; do not request everything by default.
 - Observability/log settings, tail/logpush/traces, top routes by CPU/subrequests/errors.
 - Pages preview deployment settings and project environment variables/bindings.
 
-### Storage and data products
+### Storage, data, sandbox, and orchestration products
 
 - KV namespaces per environment, TTL/key lifecycle strategy, operation counts.
 - D1 databases, migrations, backups/time travel, rows read/written, slow/hot queries.
 - R2 buckets, public access/custom domains, CORS, lifecycle rules, multipart cleanup, operation counts.
 - Durable Objects namespaces/classes, metrics, hot objects, WebSocket hibernation evidence.
 - Queues producers/consumers, retry settings, DLQs, backlog, poison-message evidence.
+- Dynamic Worker loader bindings, egress policy, custom limits, unique Dynamic Worker counts, code-hash/audit logs.
+- Agents SDK usage: Agent classes, scheduled tasks, sub-agents, retries, queue tasks, durable execution, browser/sandbox tools, cancellation/observability evidence.
+- Artifacts namespaces/repos/tokens, repo-scoped token inventory, event subscriptions, metrics, signing/rollback evidence for app/firmware loaders.
 
 ### AI, media, browser, vector
 
@@ -107,6 +110,8 @@ wrangler d1 migrations list <database>
 wrangler kv namespace list
 wrangler r2 bucket list
 wrangler queues list
+wrangler artifacts namespaces list  # if Artifacts is used and command is available in your Wrangler version
+wrangler artifacts repos list       # if Artifacts is used and command is available in your Wrangler version
 ```
 
 For Cloudflare API checks, prefer scoped read-only API tokens. Ask for JSON exports for the specific resource family rather than broad account dumps.

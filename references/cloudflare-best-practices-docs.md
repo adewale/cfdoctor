@@ -25,7 +25,7 @@ Before making or finalizing a Cloudflare best-practice, limit, pricing, product-
 
 ## Verification note
 
-The list below was discovered from official Cloudflare `llms.txt` product indexes and spot-verified with HTTP 200 on 2026-06-03. Treat it as a starting set to fetch at audit time, not a frozen copy of Cloudflare guidance.
+The list below was discovered from official Cloudflare `llms.txt` product indexes, spot-verified with HTTP 200 on 2026-06-03, and extended/spot-verified for Dynamic Workers, Agents, and Artifacts on 2026-06-04. Treat it as a starting set to fetch at audit time, not a frozen copy of Cloudflare guidance.
 
 ## Application/security/account docs
 
@@ -44,6 +44,11 @@ The list below was discovered from official Cloudflare `llms.txt` product indexe
 - [Workers Best Practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/index.md) — Code patterns and configuration guidance for fast, reliable, observable, and secure Workers.
 - [Pages C3 CLI](https://developers.cloudflare.com/pages/get-started/c3/index.md) — New-project setup guide that follows Cloudflare and framework best practices.
 - [Rules of Workflows](https://developers.cloudflare.com/workflows/build/rules-of-workflows/index.md) — Best practices for resilient Workflows, idempotency, state management, and error handling.
+- [Agents: long-running agents](https://developers.cloudflare.com/agents/concepts/agentic-patterns/long-running-agents/index.md) — Wake-on-demand, restart survival, and long-running work patterns for Cloudflare Agents.
+- [Agents: retries](https://developers.cloudflare.com/agents/runtime/execution/retries/index.md) — Built-in retry behavior with backoff/jitter for Agents SDK operations.
+- [Agents: observability](https://developers.cloudflare.com/agents/runtime/operations/observability/index.md) — Diagnostics and structured events for Agent state, RPC, schedules, workflows, and MCP connections.
+- [Dynamic Workers: egress control](https://developers.cloudflare.com/dynamic-workers/usage/egress-control/index.md) — Restrict, intercept, and audit outbound network access for dynamically loaded Workers.
+- [Dynamic Workers: custom limits](https://developers.cloudflare.com/dynamic-workers/usage/limits/index.md) — Limit resource usage of Dynamic Workers.
 - [D1: Import and export data](https://developers.cloudflare.com/d1/best-practices/import-export-data/index.md) — Import/export practices for D1.
 - [D1: Local development](https://developers.cloudflare.com/d1/best-practices/local-development/index.md) — Run D1 locally before deploying to production.
 - [D1: Query a database](https://developers.cloudflare.com/d1/best-practices/query-d1/index.md) — Query D1 through bindings, REST API, or Wrangler.

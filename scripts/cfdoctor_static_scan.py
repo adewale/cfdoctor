@@ -80,6 +80,8 @@ BINDING_KEYS = {
     "stream": "Stream",
     "browser": "Browser Run",
     "browser_rendering": "Browser Run",
+    "worker_loaders": "Dynamic Workers",
+    "artifacts": "Artifacts",
 }
 SECRET_NAME_RE = re.compile(r"(secret|token|password|passwd|private|credential|client_secret|api[_-]?key|auth[_-]?key)", re.I)
 SECRET_VALUE_RE = re.compile(
@@ -465,7 +467,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
         if not is_env and isinstance(envs, dict) and binding_keys_present:
             paid_or_stateful_keys = {
                 "d1_databases", "r2_buckets", "durable_objects", "queues", "vectorize", "ai",
-                "analytics_engine_datasets", "workflows", "images", "stream", "browser", "browser_rendering",
+                "analytics_engine_datasets", "workflows", "images", "stream", "browser", "browser_rendering", "worker_loaders", "artifacts",
             }
             for env_name, env_data in envs.items():
                 if isinstance(env_data, dict):
@@ -532,6 +534,8 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
     r2_names = bindings.get("R2", set())
     ai_names = bindings.get("Workers AI", set()) or {"AI"}
     vectorize_names = bindings.get("Vectorize", set())
+    dynamic_worker_names = bindings.get("Dynamic Workers", set()) or {"LOADER"}
+    artifacts_names = bindings.get("Artifacts", set())
 
     for path, text in files:
         rpath = rel(path, root)
@@ -658,6 +662,74 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                     "Close sessions/pages in `finally`, set timeouts/max retries, and prefer Quick Actions or non-browser primitives when sufficient.",
                     "medium",
                 ))
+
+        dynamic_loader_pattern = r"env\.(?:" + "|".join(re.escape(n) for n in sorted(dynamic_worker_names)) + r")\.(?:load|get)\s*\("
+        hit = line_for(text, dynamic_loader_pattern)
+        if hit:
+            user_code_shaped = re.search(r"request\.|req\.|formData|json\s*\(\s*\)|prompt|code|source|script|llm|model", text, re.I)
+            has_egress_policy = re.search(r"globalOutbound\s*:|egress|null|deny|allowlist|bindings\s*:", text, re.I)
+            has_limits = re.search(r"limits\s*:|timeout|AbortController|max(?:Cpu|CPU|Requests|Duration|Unique|Depth|Steps)|budget|quota", text, re.I)
+            if user_code_shaped and (not has_egress_policy or not has_limits):
+                findings.append(Finding(
+                    "high",
+                    "Dynamic Worker/code execution lacks obvious capability or resource bounds",
+                    "security / cost footgun / reliability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Dynamic Workers can execute user- or LLM-provided code. If egress, bindings, secrets, custom limits, and audit logs are not explicit, sandboxed code can become a data-exfiltration or spend-amplification path.",
+                    "Use deny-by-default egress/bindings, custom limits/timeouts, code hash auditing, bounded logs, and dedupe/reuse by stable IDs where safe.",
+                    "medium",
+                ))
+            if ".load" in hit[1] and not re.search(r"\.get\s*\(|hash|digest|fingerprint|cache|dedupe|version", text, re.I):
+                findings.append(Finding(
+                    "medium",
+                    "Dynamic Worker load path lacks obvious stable ID/dedupe",
+                    "cost footgun / missed optimization",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Dynamic Worker cost and warm-isolate behavior can depend on requests, CPU time, and unique Dynamic Workers. Creating new workers for repeated identical work can hide cost behind a sandbox abstraction.",
+                    "Use `loader.get()` or an equivalent stable code-hash/version key where reuse is safe, and emit per-run unique-worker/request/CPU proxies.",
+                    "low",
+                ))
+
+        if re.search(r"\b(Agent|AIChatAgent|McpAgent|routeAgentRequest|getAgentByName|subAgent|startFiber|runFiber|scheduleTask|queueTask)\b", text):
+            has_loop_or_tool = re.search(r"while\s*\(|for\s*\(|tool|browser|sandbox|subAgent|schedule|queueTask|retry|autonomous|continueLastTurn", text, re.I)
+            has_agent_bounds = re.search(r"max(?:Steps|Iterations|Retries|Duration|Attempts)|AbortController|timeout|cancel|abort|idempot|backoff|jitter|budget|quota", text, re.I)
+            if has_loop_or_tool and not has_agent_bounds:
+                hit = line_for(text, re.compile(r"\b(Agent|AIChatAgent|McpAgent|subAgent|startFiber|runFiber|scheduleTask|queueTask)\b")) or (1, "")
+                findings.append(Finding(
+                    "medium",
+                    "Cloudflare Agent loop/tool path lacks obvious bounds or cancellation",
+                    "cost footgun / reliability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Agents SDK workloads can combine Durable Object state, schedules, retries, tools, sub-agents, browser/sandbox sessions, and model calls. Autonomous loops without max steps and cancellation can repeat paid work.",
+                    "Add max steps/attempts, cancellation, retry backoff, idempotency keys, and run summaries with model/tool/browser/sandbox cost proxies.",
+                    "low",
+                ))
+
+        if artifacts_names:
+            artifacts_pattern = r"env\.(?:" + "|".join(re.escape(n) for n in sorted(artifacts_names)) + r")\."
+            hit = line_for(text, artifacts_pattern)
+            if hit and not re.search(r"sign|signature|verify|rollback|token|namespace|tenant|environment|repo", text, re.I):
+                findings.append(Finding(
+                    "low",
+                    "Artifacts-backed loader/update path needs token, signing, and rollback review",
+                    "security / reliability / cost footgun",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Artifacts can back app, repo, or firmware-like update flows. Without explicit token scope, namespace separation, signing, and rollback, a mutable artifact path can become a supply-chain or cleanup risk.",
+                    "Verify repo/token scoping, signed artifact provenance, environment separation, lifecycle cleanup, and rollback/A-B update behavior.",
+                    "low",
+                ))
+
+        hit = line_for(text, re.compile(r"\bconnect\s*\(.*(?:hostname|host|port)|from ['\"]cloudflare:sockets['\"]|node:net|\bnet\.Socket\b|createConnection\s*\(", re.I))
+        if hit and not re.search(r"hyperdrive|pool|tls|secureTransport|timeout|AbortController|close\s*\(|end\s*\(|destroy\s*\(", text, re.I):
+            findings.append(Finding(
+                "medium",
+                "Worker TCP/external database path lacks obvious pooling/TLS/timeout controls",
+                "reliability / cost footgun / security",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Direct TCP/database connections from Workers can amplify connection churn, latency, and retry cost across edge locations if pooling, TLS, timeouts, and close/reuse semantics are unclear.",
+                "Verify Hyperdrive/product fit for supported databases; otherwise add TLS, bounded concurrency, timeouts, retries with backoff, and explicit close/reuse behavior.",
+                "low",
+            ))
 
         hit = line_for(text, re.compile(r"Promise\.all\s*\([^\n;]*\.map\s*\(", re.I))
         if hit and not re.search(r"pLimit|limit|concurrency|batch|chunk|slice\s*\(|semaphore|queue", text, re.I):
@@ -799,7 +871,8 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                     "low",
                 ))
 
-        # Durable Object hot spots, validation, and hibernation smells.
+        # Durable Object hot spots, validation, lifecycle, storage, and hibernation smells.
+        do_shaped = bool(re.search(r"DurableObject|durable_objects|idFrom(Name|String)\s*\(|acceptWebSocket|\.storage\.", text))
         if re.search(r"idFrom(Name|String)\s*\(|\.get\s*\([^\)]*\)\.fetch\s*\(", text):
             has_front_door_validation = re.search(r"auth|jwt|session|permission|tenant|validate|schema|zod|method|content-type|rate|turnstile|captcha", text, re.I)
             if not has_front_door_validation:
@@ -813,26 +886,119 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                     "Validate method/auth/tenant/request size and apply rate limiting before constructing or calling DO stubs.",
                     "low",
                 ))
-        hit = line_for(text, re.compile(r"idFromName\s*\(\s*['\"](?:global|singleton|default|main|root|all)['\"]", re.I))
+        hit = line_for(text, re.compile(r"idFromName\s*\(\s*['\"](?:global|singleton|default|main|root|all|system|scheduler|broadcast|counter|idempotency)['\"]", re.I))
         if hit:
             findings.append(Finding(
                 "high",
-                "Durable Object idFromName uses a global/singleton key",
+                "DO-SHARDING-HOTSPOT: Durable Object idFromName uses a global/singleton key",
                 "wrong primitive / cost footgun / reliability",
                 f"{rpath}:{hit[0]}: {hit[1][:160]}",
                 "A low-cardinality Durable Object key can concentrate traffic into one object, causing hot-spot latency and duration/request amplification.",
                 "Shard Durable Objects by tenant/user/room/resource key, or use D1/KV/R2 if coordination is not required.",
                 "high",
             ))
+        hit = line_for(text, re.compile(r"idFromName\s*\([^\)]*(idempot|requestId|request_id|eventId|event_id|messageId|message_id|nonce|randomUUID|Date\.now|crypto\.randomUUID)", re.I))
+        if hit:
+            findings.append(Finding(
+                "medium",
+                "DO-EPHEMERAL-IDEMPOTENCY-OBJECTS: Durable Object key appears tied to an ephemeral id/request",
+                "wrong primitive / cost footgun",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "One Durable Object per idempotency key, request ID, event ID, or nonce can create many mostly idle objects and storage cleanup work without much coordination benefit.",
+                "Use bounded hash shards, time buckets with TTL cleanup, or KV/D1 for short-lived idempotency depending on consistency requirements.",
+                "low",
+            ))
+        hit = line_for(text, re.compile(r"(?:this\.)?(?:ctx|state)\.storage\.list\s*\(|this\.storage\.list\s*\(", re.I))
+        if hit:
+            findings.append(Finding(
+                "medium",
+                "DO-STORAGE-LIST-HOTPATH: Durable Object storage.list appears in code",
+                "cost footgun / missed optimization",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Durable Object storage list/prefix scans can be much more expensive and slower than fetching known keys when used on request or wake-up hot paths.",
+                "Fetch known keys, compact related state into one object where safe, maintain a manifest, or cache loaded state intentionally.",
+                "medium",
+            ))
+        if do_shaped:
+            alarm_idx = re.search(r"\balarm\s*\([^)]*\)\s*[{=>]", text)
+            if alarm_idx and re.search(r"\bsetAlarm\s*\(", text[alarm_idx.start():], re.I) and not re.search(r"if\s*\(|hasWork|pending|remaining|next|should|enabled|disabled|backoff|max|attempt|empty|queue", text[alarm_idx.start():alarm_idx.start() + 1200], re.I):
+                hit = line_for(text, re.compile(r"\bsetAlarm\s*\(", re.I)) or (1, "")
+                findings.append(Finding(
+                    "medium",
+                    "DO-ALARM-RECURSION: alarm handler reschedules without obvious idle guard",
+                    "cost footgun / reliability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "A Durable Object alarm that always schedules another alarm can create recurring requests/duration even when no work remains.",
+                    "Only set the next alarm when work remains; add max attempts/backoff, an idle stop condition, and a kill switch.",
+                    "low",
+                ))
+            storage_puts = re.findall(r"(?:this\.)?(?:ctx|state)\.storage\.put\s*\(|this\.storage\.put\s*\(", text, re.I)
+            put_in_loop = re.search(r"(?:for|while)\s*\([^)]*\)\s*{[^{}]{0,1000}(?:this\.)?(?:ctx|state|storage)\.?storage?\.put\s*\(", text, re.I | re.S)
+            if len(storage_puts) >= 4 or put_in_loop:
+                hit = line_for(text, re.compile(r"storage\.put\s*\(", re.I)) or (1, "")
+                findings.append(Finding(
+                    "medium",
+                    "DO-STORAGE-BATCHING: multiple Durable Object storage.put calls should be reviewed",
+                    "cost footgun / missed optimization",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Many small DO storage writes per logical event/record can multiply operation counts and latency compared with batching or coalescing where correctness allows.",
+                    "Batch/coalesce writes by logical record or flush interval, and emit per-action storage operation counts.",
+                    "low",
+                ))
         if "WebSocketPair" in text and re.search(r"\.accept\s*\(\s*\)", text) and "acceptWebSocket" not in text:
             hit = line_for(text, r"\.accept\s*\(\s*\)") or (1, "")
             findings.append(Finding(
                 "medium",
-                "WebSocket handling may not use Durable Object hibernation",
+                "DO-WEBSOCKET-DURATION: WebSocket handling may not use Durable Object hibernation",
                 "cost footgun / missed optimization",
                 f"{rpath}:{hit[0]}: {hit[1][:160]}",
                 "Long-lived idle WebSockets can increase duration cost and reduce survivability if hibernation is not used where available.",
                 "For Durable Object WebSockets, evaluate `ctx.acceptWebSocket` hibernation APIs and persistence model.",
+                "low",
+            ))
+        if do_shaped and re.search(r"WebSocketPair|acceptWebSocket|\.accept\s*\(\s*\)", text) and not re.search(r"webSocketClose|webSocketError|addEventListener\s*\(\s*['\"]close|\.close\s*\(|clearTimeout|timeout|disconnect", text, re.I):
+            hit = line_for(text, re.compile(r"WebSocketPair|acceptWebSocket|\.accept\s*\(\s*\)", re.I)) or (1, "")
+            findings.append(Finding(
+                "medium",
+                "DO-SOCKET-CLOSE-HYGIENE: WebSocket path lacks obvious close/error cleanup",
+                "cost footgun / reliability",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Durable Object WebSocket code without close/error/timeout cleanup can leave stale connection state and keep sessions alive longer than intended.",
+                "Handle close/error callbacks, clear timers, remove connection state, and add idle timeouts/heartbeats where appropriate.",
+                "low",
+            ))
+        if do_shaped and re.search(r"(?:event|ctx)\.waitUntil\s*\(", text, re.I):
+            hit = line_for(text, re.compile(r"(?:event|ctx)\.waitUntil\s*\(", re.I)) or (1, "")
+            severity = "medium" if "event.waitUntil" in hit[1] else "low"
+            findings.append(Finding(
+                severity,
+                "DO-WAITUNTIL-LIFECYCLE: Durable Object background work should be bounded and API-correct",
+                "reliability / cost footgun",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Background work in Durable Objects is a lifecycle and billing decision. The Worker entrypoint `event.waitUntil()` API is not the same as DO context APIs, and long work may need alarms, Queues, Workflows, or Agents durable execution.",
+                "Verify the code uses the correct DO context API, has timeouts/retry visibility, and moves long or retryable work to a durable async primitive.",
+                "low",
+            ))
+        if do_shaped and re.search(r"session|preference|prefs|config|cache|read[-_ ]?heavy|profile", text, re.I) and not re.search(r"WebSocketPair|acceptWebSocket|alarm\s*\(|lock|counter|rate|limit|coordination|serialize|transaction", text, re.I):
+            hit = line_for(text, re.compile(r"\.storage\.(get|put)\s*\(", re.I)) or (1, "")
+            findings.append(Finding(
+                "low",
+                "KV-VS-DO-STORAGE-FIT: Durable Object storage used for possibly read-heavy data",
+                "wrong primitive / cost footgun",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Read-heavy, write-rare session/preference/config data may not need Durable Object coordination or duration costs if eventual consistency or SQL queries are acceptable.",
+                "Recheck consistency and access pattern; compare KV, D1, R2, and DO storage with current docs before deciding.",
+                "low",
+            ))
+        if do_shaped and re.search(r"Promise\.all\s*\([^\)]*(idFromName|idFromString|stub|\.fetch\s*\()", text, re.I | re.S) and not re.search(r"pLimit|limit|concurrency|batch|chunk|semaphore|backpressure|queue", text, re.I):
+            hit = line_for(text, re.compile(r"Promise\.all", re.I)) or (1, "")
+            findings.append(Finding(
+                "medium",
+                "DO-FANOUT-TAX: fan-out to Durable Objects lacks obvious backpressure",
+                "cost footgun / reliability",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "One request or job that wakes many Durable Objects can concentrate latency, requests, and duration unless fan-out is capped and paced.",
+                "Add concurrency limits, batch sizes, queues/backpressure, per-tenant quotas, and run summaries for DO calls/duration.",
                 "low",
             ))
 

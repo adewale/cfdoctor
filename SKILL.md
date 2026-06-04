@@ -1,6 +1,6 @@
 ---
 name: cloudflare-doctor
-description: Audits Cloudflare projects for best-practice drift, wrong primitive/product choices, missed optimizations, product misconfiguration, security gaps, reliability risks, and cost footguns. Use when reviewing Workers, Pages, Wrangler, KV, D1, R2, Durable Objects, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, CDN/cache, DNS, WAF, Access/Zero Trust, Cloudflare account settings, pricing/overages, or IaC decisions.
+description: Audits Cloudflare projects for best-practice drift, wrong primitive/product choices, missed optimizations, product misconfiguration, security gaps, reliability risks, and cost footguns. Use when reviewing Workers, Pages, Wrangler, KV, D1, R2, Durable Objects, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Agents SDK, Artifacts, Analytics Engine, Workers Logs, CDN/cache, DNS, WAF, Access/Zero Trust, Cloudflare account settings, pricing/overages, or IaC decisions.
 ---
 
 # Cloudflare Doctor

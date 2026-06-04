@@ -74,7 +74,7 @@ Pattern:
 - `verify`: re-check a fixed finding.
 
 Cloudflare fact graph should include:
-- accounts, zones, DNS, TLS, WAF/rulesets/rate limiting/bot, cache rules, Workers/routes/deployments/crons/previews, Pages projects, KV/D1/R2/DO/Queues/Workflows, Access/Zero Trust, AI Gateway/Workers AI/Vectorize/Images/Stream/Browser Run, billing/usage, GraphQL analytics, IaC resources.
+- accounts, zones, DNS, TLS, WAF/rulesets/rate limiting/bot, cache rules, Workers/routes/deployments/crons/previews, Pages projects, KV/D1/R2/DO/Queues/Workflows, Dynamic Workers, Agents SDK resources, Artifacts, Access/Zero Trust, AI Gateway/Workers AI/Vectorize/Images/Stream/Browser Run, billing/usage, GraphQL analytics, IaC resources.
 
 ### Cost allocation, deltas, and unit economics
 
@@ -95,6 +95,8 @@ Cloudflare cost proxies:
 - Workers AI neurons/requests, AI Gateway tokens/cache hits/costs.
 - Vectorize queried/stored dimensions.
 - Images transformations/variants, Stream delivered minutes, Browser Run session time/concurrency.
+- Dynamic Worker requests/CPU/unique workers and Agent tool/browser/sandbox/model loops.
+- Artifacts storage/operations/token/repo lifecycle metrics.
 - Logpush/analytics volume and retention.
 
 ### IaC + live-cloud convergence

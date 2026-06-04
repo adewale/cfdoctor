@@ -11,6 +11,8 @@ For every confirmed finding and recommended action, include a `Source basis` fie
 
 If neither exists, do not present the item as a recommendation. Put it under **Questions / evidence needed** or label it as an **unsourced hypothesis**.
 
+Operator design notes/checklists (for example coey.dev Durable Object and Dynamic Worker notes) can motivate scenarios to inspect, but they are not enough by themselves for pricing, limits, or a confirmed Cloudflare recommendation. Pair them with official current Cloudflare docs unless they meet the first-hand war-story criteria below.
+
 ## Source hierarchy
 
 - **Pricing, limits, plan behavior, billing meters**: official current Cloudflare docs/pricing only. War stories can motivate severity but cannot establish current price/limit facts.
