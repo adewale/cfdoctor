@@ -1,0 +1,969 @@
+#!/usr/bin/env python3
+"""Heuristic local scanner for the Cloudflare Doctor skill.
+
+This script is intentionally read-only. It emits leads for a human/agent audit;
+its findings are not proof without checking project context and current
+Cloudflare documentation/pricing.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as _dt
+import json
+import os
+import re
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Iterable
+
+try:
+    import tomllib  # Python 3.11+
+except Exception:  # pragma: no cover
+    try:
+        import tomli as tomllib  # type: ignore[no-redef]
+    except Exception:
+        tomllib = None  # type: ignore[assignment]
+
+EXCLUDE_DIRS = {
+    ".git",
+    "node_modules",
+    ".wrangler",
+    ".next",
+    ".nuxt",
+    ".svelte-kit",
+    "dist",
+    "build",
+    "coverage",
+    ".cache",
+    ".turbo",
+    ".vercel",
+}
+
+TEXT_EXTS = {
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".mjs",
+    ".cjs",
+    ".mts",
+    ".cts",
+    ".json",
+    ".jsonc",
+    ".toml",
+    ".tf",
+    ".yaml",
+    ".yml",
+    ".env",
+    ".md",
+    ".sql",
+}
+CODE_EXTS = {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts", ".tf", ".sql"}
+SPECIAL_SOURCE_NAMES = {"_headers", "_redirects", "_routes.json"}
+
+CONFIG_NAMES = {"wrangler.toml", "wrangler.json", "wrangler.jsonc"}
+BINDING_KEYS = {
+    "kv_namespaces": "KV",
+    "d1_databases": "D1",
+    "r2_buckets": "R2",
+    "durable_objects": "Durable Objects",
+    "queues": "Queues",
+    "hyperdrive": "Hyperdrive",
+    "vectorize": "Vectorize",
+    "ai": "Workers AI",
+    "analytics_engine_datasets": "Analytics Engine",
+    "services": "Service Bindings",
+    "workflows": "Workflows",
+    "images": "Images",
+    "stream": "Stream",
+    "browser": "Browser Run",
+    "browser_rendering": "Browser Run",
+}
+SECRET_NAME_RE = re.compile(r"(secret|token|password|passwd|private|credential|client_secret|api[_-]?key|auth[_-]?key)", re.I)
+SECRET_VALUE_RE = re.compile(
+    r"(sk-[A-Za-z0-9_-]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}|cfpat_[A-Za-z0-9_-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|postgres(?:ql)?://[^\s'\"]+:[^\s'\"]+@|mysql://[^\s'\"]+:[^\s'\"]+@)",
+    re.I,
+)
+SECRET_ASSIGN_RE = re.compile(
+    r"^\s*(?:(?:export\s+)?(?:const|let|var)\s+|export\s+)?([A-Za-z_][A-Za-z0-9_-]*)\s*[:=]\s*['\"]?([^'\"\s#]{8,})",
+    re.I,
+)
+PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
+NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
+
+
+@dataclass
+class Finding:
+    severity: str
+    title: str
+    category: str
+    evidence: str
+    why: str
+    fix: str
+    confidence: str = "medium"
+
+
+def rel(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def iter_files(root: Path) -> Iterable[Path]:
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
+        for name in filenames:
+            path = Path(dirpath) / name
+            if name in CONFIG_NAMES or path.suffix in TEXT_EXTS or name.startswith(".env"):
+                if path.stat().st_size <= 1_500_000:
+                    yield path
+
+
+def read_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return path.read_text(encoding="utf-8", errors="replace")
+
+
+def strip_json_comments(src: str) -> str:
+    out: list[str] = []
+    i = 0
+    in_str = False
+    quote = ""
+    while i < len(src):
+        c = src[i]
+        nxt = src[i + 1] if i + 1 < len(src) else ""
+        if in_str:
+            out.append(c)
+            if c == "\\" and i + 1 < len(src):
+                out.append(src[i + 1])
+                i += 2
+                continue
+            if c == quote:
+                in_str = False
+            i += 1
+            continue
+        if c in {'"', "'"}:
+            in_str = True
+            quote = c
+            out.append(c)
+            i += 1
+            continue
+        if c == "/" and nxt == "/":
+            while i < len(src) and src[i] not in "\r\n":
+                i += 1
+            continue
+        if c == "/" and nxt == "*":
+            i += 2
+            while i + 1 < len(src) and not (src[i] == "*" and src[i + 1] == "/"):
+                i += 1
+            i += 2
+            continue
+        out.append(c)
+        i += 1
+    return "".join(out)
+
+
+def parse_config(path: Path, text: str) -> dict[str, Any]:
+    try:
+        if path.name == "wrangler.toml" and tomllib:
+            return tomllib.loads(text)
+        if path.name in {"wrangler.json", "wrangler.jsonc"}:
+            return json.loads(strip_json_comments(text))
+    except Exception:
+        return {}
+    return {}
+
+
+def line_for(text: str, pattern: str | re.Pattern[str]) -> tuple[int, str] | None:
+    rx = re.compile(pattern) if isinstance(pattern, str) else pattern
+    for i, line in enumerate(text.splitlines(), 1):
+        if rx.search(line):
+            return i, line.strip()
+    return None
+
+
+def excerpt(line: str, limit: int = 160) -> str:
+    return line.strip().replace("\t", " ")[:limit]
+
+
+def is_sensitive_assignment(match: re.Match[str]) -> bool:
+    name = match.group(1)
+    value = match.group(2)
+    if not SECRET_NAME_RE.search(name):
+        return False
+    if NON_SECRET_ASSIGNMENT_NAMES_RE.search(name):
+        return False
+    if PLACEHOLDER_SECRET_RE.search(value):
+        return False
+    if re.match(r"(?:re\.compile|RegExp)\(", value):
+        return False
+    return True
+
+
+def redacted_secret_line(line: str, limit: int = 160) -> str:
+    redacted = SECRET_VALUE_RE.sub("<redacted-secret>", line.strip())
+    match = SECRET_ASSIGN_RE.search(redacted)
+    if match and is_sensitive_assignment(match):
+        start, end = match.span(2)
+        redacted = f"{redacted[:start]}<redacted-secret>{redacted[end:]}"
+    return redacted.replace("\t", " ")[:limit]
+
+
+def values_from_binding_entries(entries: Any) -> list[str]:
+    names: list[str] = []
+    if isinstance(entries, list):
+        for item in entries:
+            if isinstance(item, dict):
+                for key in ("binding", "name", "class_name", "queue", "bucket_name", "database_name"):
+                    val = item.get(key)
+                    if isinstance(val, str) and val not in names:
+                        names.append(val)
+            elif isinstance(item, str) and item not in names:
+                names.append(item)
+    elif isinstance(entries, dict):
+        for key, val in entries.items():
+            if isinstance(val, dict):
+                binding = val.get("binding") or val.get("name") or key
+                if isinstance(binding, str) and binding not in names:
+                    names.append(binding)
+            elif isinstance(val, str) and val not in names:
+                names.append(val)
+    return names
+
+
+def collect_bindings(configs: list[tuple[Path, str, dict[str, Any]]]) -> dict[str, set[str]]:
+    bindings: dict[str, set[str]] = {product: set() for product in BINDING_KEYS.values()}
+    bindings["Workers"] = set()
+    bindings["Pages"] = set()
+
+    def visit_cfg(data: dict[str, Any]) -> None:
+        project_name = str(data.get("name") or "configured")
+        if any(key in data for key in ("main", "routes", "workers_dev", "triggers", "assets", "site")):
+            bindings["Workers"].add(project_name)
+        if data.get("pages_build_output_dir"):
+            bindings["Pages"].add(project_name)
+        if data.get("ai") is True:
+            bindings["Workers AI"].add("AI")
+        for key, product in BINDING_KEYS.items():
+            if key in data:
+                for name in values_from_binding_entries(data.get(key)):
+                    bindings[product].add(name)
+        durable = data.get("durable_objects")
+        if isinstance(durable, dict):
+            for name in values_from_binding_entries(durable.get("bindings")):
+                bindings["Durable Objects"].add(name)
+        queues = data.get("queues")
+        if isinstance(queues, dict):
+            for sub in ("producers", "consumers"):
+                for name in values_from_binding_entries(queues.get(sub)):
+                    bindings["Queues"].add(name)
+        envs = data.get("env")
+        if isinstance(envs, dict):
+            for env_data in envs.values():
+                if isinstance(env_data, dict):
+                    visit_cfg(env_data)
+
+    for _, _, data in configs:
+        visit_cfg(data)
+    return bindings
+
+
+def d1_migration_dirs(config_path: Path, data: dict[str, Any]) -> list[Path]:
+    dirs: list[Path] = []
+    entries = data.get("d1_databases")
+    if isinstance(entries, list):
+        for entry in entries:
+            if isinstance(entry, dict) and isinstance(entry.get("migrations_dir"), str):
+                dirs.append(config_path.parent / entry["migrations_dir"])
+    elif isinstance(entries, dict):
+        for entry in entries.values():
+            if isinstance(entry, dict) and isinstance(entry.get("migrations_dir"), str):
+                dirs.append(config_path.parent / entry["migrations_dir"])
+    dirs.extend([config_path.parent / "migrations", config_path.parent / "d1" / "migrations"])
+    return dirs
+
+
+def has_local_d1_migrations(config_path: Path, data: dict[str, Any]) -> bool:
+    for directory in d1_migration_dirs(config_path, data):
+        if directory.exists() and any(directory.rglob("*.sql")):
+            return True
+    return False
+
+
+def queue_consumers(data: dict[str, Any]) -> list[dict[str, Any]]:
+    queues = data.get("queues")
+    if not isinstance(queues, dict):
+        return []
+    consumers = queues.get("consumers")
+    return [entry for entry in consumers if isinstance(entry, dict)] if isinstance(consumers, list) else []
+
+
+def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], findings: list[Finding]) -> None:
+    today = _dt.date.today()
+    d1_migrations_reported: set[Path] = set()
+
+    def inspect_one(path: Path, text: str, data: dict[str, Any], prefix: str = "", is_env: bool = False, parent_data: dict[str, Any] | None = None) -> None:
+        label = f"{rel(path, root)}{prefix}"
+        parent_data = parent_data or {}
+        compatibility_date = data.get("compatibility_date")
+        if not compatibility_date and not is_env:
+            findings.append(Finding(
+                "medium",
+                "Missing compatibility_date in Wrangler config",
+                "misconfiguration / best-practice drift",
+                label,
+                "Workers behavior is gated by compatibility dates. Without an explicit maintained date, deploy behavior and platform upgrades are harder to reason about.",
+                "Set an intentional `compatibility_date`, update it on a controlled cadence, and test after updates.",
+                "high",
+            ))
+        elif isinstance(compatibility_date, str):
+            try:
+                dt = _dt.date.fromisoformat(compatibility_date)
+                if dt > today + _dt.timedelta(days=1):
+                    findings.append(Finding(
+                        "high",
+                        "compatibility_date is in the future",
+                        "misconfiguration",
+                        f"{label}: compatibility_date={compatibility_date}",
+                        "A future compatibility date may fail deployment or hide that config was copied without verification.",
+                        "Use today's date or the latest date already validated in this project.",
+                        "high",
+                    ))
+                elif today - dt > _dt.timedelta(days=540):
+                    findings.append(Finding(
+                        "low",
+                        "compatibility_date is old",
+                        "best-practice drift / missed optimization",
+                        f"{label}: compatibility_date={compatibility_date}",
+                        "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier.",
+                        "Review Cloudflare compatibility changes, bump the date in staging, and run integration tests.",
+                        "medium",
+                    ))
+            except ValueError:
+                findings.append(Finding(
+                    "medium",
+                    "compatibility_date is not ISO formatted",
+                    "misconfiguration",
+                    f"{label}: compatibility_date={compatibility_date}",
+                    "Wrangler expects date-shaped compatibility settings; malformed values can break deploys.",
+                    "Use `YYYY-MM-DD` format and validate with Wrangler.",
+                    "high",
+                ))
+
+        flags = data.get("compatibility_flags")
+        if isinstance(flags, list) and any(str(f).lower() == "nodejs_compat" for f in flags):
+            findings.append(Finding(
+                "low",
+                "nodejs_compat enabled; confirm it is required",
+                "best-practice drift / missed optimization",
+                f"{label}: compatibility_flags includes nodejs_compat",
+                "Node compatibility can be necessary, but unnecessary polyfills can increase bundle surface and hide runtime assumptions.",
+                "Keep it if the code uses supported Node APIs; otherwise remove and prefer Web/Workers-native APIs.",
+                "medium",
+            ))
+
+        vars_obj = data.get("vars")
+        if isinstance(vars_obj, dict):
+            for name, value in vars_obj.items():
+                value_s = str(value)
+                if SECRET_NAME_RE.search(name) or SECRET_VALUE_RE.search(value_s):
+                    findings.append(Finding(
+                        "high",
+                        "Possible secret stored in Wrangler vars",
+                        "security / misconfiguration",
+                        f"{label}: vars.{name}",
+                        "Wrangler `vars` are configuration values and can be visible in config/source. Credentials should be stored as secrets.",
+                        "Rotate if exposed, move the value to Cloudflare secrets/CI secret storage, and keep only non-secret config in `vars`.",
+                        "medium",
+                    ))
+
+        durable = data.get("durable_objects")
+        has_do = bool(durable)
+        inherited_migrations = bool(parent_data.get("migrations"))
+        if has_do and not data.get("migrations") and not inherited_migrations:
+            findings.append(Finding(
+                "high",
+                "Durable Object bindings without migrations in same config scope",
+                "misconfiguration / reliability",
+                label,
+                "Durable Object class lifecycle is tracked through Wrangler migrations. Missing migrations can break deploys or class renames.",
+                "Add/verify `migrations` entries for every new, renamed, or deleted Durable Object class in each relevant environment.",
+                "medium",
+            ))
+
+        if data.get("d1_databases") and path not in d1_migrations_reported and not has_local_d1_migrations(path, data):
+            d1_migrations_reported.add(path)
+            findings.append(Finding(
+                "medium",
+                "D1 binding without local migration files detected",
+                "misconfiguration / reliability",
+                label,
+                "D1 schema changes should be managed with checked-in migrations. A binding without nearby migration files can indicate dashboard-only schema drift or missing deploy steps.",
+                "Verify the intended migration process; add checked-in D1 migrations or document the controlled schema-management path.",
+                "low",
+            ))
+
+        consumers_missing_dlq = []
+        for consumer in queue_consumers(data):
+            has_retry_or_dlq = any(key in consumer for key in ("dead_letter_queue", "dead_letter_queue_name", "max_retries"))
+            if not has_retry_or_dlq:
+                consumers_missing_dlq.append(str(consumer.get("queue") or consumer.get("name") or "consumer"))
+        if consumers_missing_dlq:
+            findings.append(Finding(
+                "medium",
+                "Queue consumer lacks explicit retry or dead-letter configuration",
+                "misconfiguration / reliability / cost footgun",
+                f"{label}: {', '.join(consumers_missing_dlq)}",
+                "Cloudflare Queues deliver messages asynchronously and consumers must handle retries/duplicates. Poison messages or unbounded retry behavior can repeatedly invoke consumers and downstream services.",
+                "Set intentional retry/batch settings, add a DLQ where poison messages matter, and make consumers idempotent.",
+                "medium",
+            ))
+
+        routes = data.get("routes")
+        route_values: list[str] = []
+        if isinstance(routes, list):
+            for r in routes:
+                if isinstance(r, str):
+                    route_values.append(r)
+                elif isinstance(r, dict) and isinstance(r.get("pattern"), str):
+                    route_values.append(r["pattern"])
+        elif isinstance(routes, str):
+            route_values.append(routes)
+        for route in route_values:
+            if route in {"*", "*/*"} or route.startswith("*") or route.count("*") >= 2:
+                findings.append(Finding(
+                    "medium",
+                    "Broad Worker route should be verified",
+                    "misconfiguration / cost footgun",
+                    f"{label}: route {route!r}",
+                    "Broad routes can intercept unintended traffic, bypass cache/origin assumptions, and increase Worker invocations.",
+                    "Narrow the route to intended host/path or document why the catchall is required.",
+                    "medium",
+                ))
+
+        triggers = data.get("triggers")
+        if isinstance(triggers, dict) and isinstance(triggers.get("crons"), list):
+            for cron in triggers["crons"]:
+                if isinstance(cron, str) and re.match(r"^(\*|\*/1)\s", cron):
+                    findings.append(Finding(
+                        "medium",
+                        "Cron trigger runs every minute",
+                        "cost footgun / reliability",
+                        f"{label}: cron {cron!r}",
+                        "Every-minute cron schedules create constant Worker invocations and can amplify downstream storage/API costs, especially across environments.",
+                        "Confirm the cadence is necessary; prefer event-driven Queues/Workflows or less frequent batching where possible.",
+                        "high",
+                    ))
+
+        envs = data.get("env")
+        binding_keys_present = [k for k in BINDING_KEYS if k in data]
+        if not is_env and isinstance(envs, dict) and binding_keys_present:
+            paid_or_stateful_keys = {
+                "d1_databases", "r2_buckets", "durable_objects", "queues", "vectorize", "ai",
+                "analytics_engine_datasets", "workflows", "images", "stream", "browser", "browser_rendering",
+            }
+            for env_name, env_data in envs.items():
+                if isinstance(env_data, dict):
+                    missing = [k for k in binding_keys_present if k not in env_data]
+                    if missing:
+                        findings.append(Finding(
+                            "low",
+                            "Environment binding parity needs verification",
+                            "misconfiguration / reliability",
+                            f"{label}: env.{env_name} missing explicit {', '.join(missing)}",
+                            "Some Wrangler environment keys/bindings are non-inheritable or commonly drift between envs. Production-only binding drift is a common failure mode.",
+                            "Verify inheritance for this Wrangler version and make production/staging bindings explicit where safety matters.",
+                            "low",
+                        ))
+                    if re.search(r"preview|demo|workshop|branch|test", env_name, re.I):
+                        env_paid = [k for k in paid_or_stateful_keys if k in env_data]
+                        inherited_paid = [k for k in paid_or_stateful_keys if k in data and k not in env_data]
+                        if env_paid or inherited_paid:
+                            findings.append(Finding(
+                                "medium",
+                                "Temporary/preview environment is connected to paid or stateful Cloudflare services",
+                                "cost footgun / misconfiguration",
+                                f"{label}: env.{env_name} uses {', '.join(sorted(set(env_paid + inherited_paid)))}",
+                                "Preview, demo, workshop, and branch deployments can keep generating paid storage/compute/AI/browser/queue usage after their intended lifetime, especially when inherited bindings point at production resources.",
+                                "Give temporary envs separate capped resources, disable routes/crons when idle, and remove demo/workshop deployments after use.",
+                                "medium",
+                            ))
+
+        if not is_env and not data.get("observability"):
+            findings.append(Finding(
+                "low",
+                "Wrangler observability not configured in this scope",
+                "best-practice drift / reliability",
+                label,
+                "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose.",
+                "Configure observability or document the external monitoring/logging path used for this Worker.",
+                "low",
+            ))
+
+        if isinstance(envs, dict):
+            for env_name, env_data in envs.items():
+                if isinstance(env_data, dict):
+                    inspect_one(path, text, env_data, f" [env.{env_name}]", is_env=True, parent_data=data)
+
+    for path, text, data in configs:
+        if data:
+            inspect_one(path, text, data)
+        else:
+            if "compatibility_date" not in text:
+                findings.append(Finding(
+                    "medium",
+                    "Could not parse Wrangler config and no compatibility_date text found",
+                    "misconfiguration",
+                    rel(path, root),
+                    "The scanner could not parse this config, and no compatibility date was visible.",
+                    "Validate the config with Wrangler and add/verify `compatibility_date`.",
+                    "medium",
+                ))
+
+
+def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[str, set[str]], findings: list[Finding]) -> None:
+    kv_names = bindings.get("KV", set())
+    d1_names = bindings.get("D1", set())
+    r2_names = bindings.get("R2", set())
+    ai_names = bindings.get("Workers AI", set()) or {"AI"}
+    vectorize_names = bindings.get("Vectorize", set())
+
+    for path, text in files:
+        rpath = rel(path, root)
+        if path.name in CONFIG_NAMES:
+            continue
+
+        # Obvious secret material. Evidence is redacted because scanner output often enters chat/CI logs.
+        hit = line_for(text, SECRET_VALUE_RE)
+        if hit:
+            line_no, line = hit
+            findings.append(Finding(
+                "critical",
+                "Credential-shaped value appears in repository text",
+                "security",
+                f"{rpath}:{line_no}: {redacted_secret_line(line)}",
+                "Committed credentials can lead to account compromise or data exposure. Cloudflare/API/R2/database credentials should never live in source.",
+                "Rotate the credential, remove it from history if needed, move it to secrets storage, and add secret scanning.",
+                "medium",
+            ))
+        for line_no, line in enumerate(text.splitlines(), 1):
+            match = SECRET_ASSIGN_RE.search(line)
+            if match and is_sensitive_assignment(match):
+                findings.append(Finding(
+                    "high",
+                    "Credential-like assignment appears in repository text",
+                    "security",
+                    f"{rpath}:{line_no}: {redacted_secret_line(line)}",
+                    "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments.",
+                    "Rotate if real, move to Cloudflare secrets or CI secret storage, and keep only non-secret config in source.",
+                    "medium",
+                ))
+                break
+
+        is_source_like = path.suffix in CODE_EXTS or path.name in SPECIAL_SOURCE_NAMES
+        if not is_source_like:
+            continue
+
+        if path.name == "_routes.json":
+            try:
+                routes_data = json.loads(strip_json_comments(text))
+            except Exception:
+                routes_data = {}
+            includes = routes_data.get("include") if isinstance(routes_data, dict) else None
+            excludes = routes_data.get("exclude") if isinstance(routes_data, dict) else None
+            include_values = includes if isinstance(includes, list) else []
+            exclude_values = excludes if isinstance(excludes, list) else []
+            broad_include = any(str(v) in {"/*", "*", "/**"} for v in include_values)
+            static_excluded = any(re.search(r"\.(?:css|js|mjs|png|jpe?g|gif|svg|webp|ico|woff2?)(?:\*|$)", str(v), re.I) for v in exclude_values)
+            if broad_include and not static_excluded:
+                findings.append(Finding(
+                    "medium",
+                    "Pages _routes.json broadly invokes Functions without obvious static exclusions",
+                    "cost footgun / missed optimization",
+                    rpath,
+                    "Broad Pages Function routing can send static asset traffic through Functions, increasing latency and billable invocations.",
+                    "Exclude immutable/static asset paths in `_routes.json` or route only dynamic/API paths through Functions.",
+                    "medium",
+                ))
+
+        # Expensive Cloudflare product patterns.
+        ai_run_pattern = r"env\.(?:" + "|".join(re.escape(n) for n in sorted(ai_names)) + r")\.run\s*\("
+        if re.search(ai_run_pattern, text):
+            hit = line_for(text, ai_run_pattern) or (1, "")
+            has_loop_or_retry = re.search(r"\b(for|while)\s*\(|retry|attempt|backoff|setTimeout|queue", text, re.I)
+            has_idempotency = re.search(r"idempot|dedupe|cache|fingerprint|requestId|jobId", text, re.I)
+            if has_loop_or_retry or not has_idempotency:
+                findings.append(Finding(
+                    "high" if has_loop_or_retry else "medium",
+                    "Workers AI call lacks obvious idempotency/cache or is inside retry/loop-shaped code",
+                    "cost footgun / reliability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Workers AI usage is metered separately from the Worker request. Loops, retries, Queue replays, or duplicate user actions can repeat paid inference/generation work.",
+                    "Add an idempotency key and persistent result cache for each logical generation/embedding; bound retries and use AI Gateway/prompt caching where applicable.",
+                    "medium",
+                ))
+
+        if vectorize_names:
+            vector_pattern = r"env\.(?:" + "|".join(re.escape(n) for n in sorted(vectorize_names)) + r")\.query\s*\("
+            hit = line_for(text, vector_pattern)
+            if hit:
+                findings.append(Finding(
+                    "medium",
+                    "Vectorize query path should account for queried dimensions and fan-out",
+                    "cost footgun / missed optimization",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Vectorize pricing can depend on queried and stored vector dimensions. High-dimensional indexes, large topK, namespace fan-out, or repeated embedding/query loops can hide cost behind one search call.",
+                    "Verify index dimensions, topK, namespaces, embedding generation, and cache/dedupe strategy against current Vectorize pricing docs.",
+                    "low",
+                ))
+
+        hit = line_for(text, re.compile(r"(/cdn-cgi/image/|cf\s*:\s*\{\s*image|\bimage\s*:\s*\{)", re.I | re.S))
+        if hit:
+            findings.append(Finding(
+                "medium",
+                "Image transformation path should bound variants and cache keys",
+                "cost footgun / missed optimization",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Cloudflare Images/Image Resizing transformations can multiply by width/height/format/DPR/quality variants. User-controlled variants can create unbounded transformed outputs and cache misses.",
+                "Use predefined variants or strict allowlists, normalize transformation URLs/cache keys, and cache transformed outputs.",
+                "medium",
+            ))
+
+        if re.search(r"(cloudflarestream\.com|videodelivery\.net|<stream|stream-player)", text, re.I) and re.search(r"preload\s*=\s*['\"]auto['\"]", text, re.I):
+            hit = line_for(text, r"preload\s*=\s*['\"]auto['\"]") or (1, "")
+            findings.append(Finding(
+                "medium",
+                "Stream player preloads video automatically",
+                "cost footgun",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Cloudflare Stream bills for delivered video minutes. Aggressive preload/autoplay can deliver video before a user intentionally watches, especially in feeds/background tabs.",
+                "Use conservative preload settings for pay-sensitive embeds and measure delivered minutes by route/player.",
+                "medium",
+            ))
+
+        if re.search(r"(puppeteer|playwright|Browser Run|env\.[A-Z0-9_]*BROWSER)", text, re.I) and re.search(r"(launch|connect|newPage|browser\()", text):
+            if not re.search(r"\.close\s*\(", text):
+                hit = line_for(text, re.compile(r"(puppeteer|playwright|Browser Run|env\.[A-Z0-9_]*BROWSER)", re.I)) or (1, "")
+                findings.append(Finding(
+                    "high",
+                    "Browser Run session is opened without an obvious close path",
+                    "cost footgun / reliability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Browser Run can be billed by browser/session time and concurrency. Sessions left open or retried blindly can dominate costs.",
+                    "Close sessions/pages in `finally`, set timeouts/max retries, and prefer Quick Actions or non-browser primitives when sufficient.",
+                    "medium",
+                ))
+
+        hit = line_for(text, re.compile(r"Promise\.all\s*\([^\n;]*\.map\s*\(", re.I))
+        if hit and not re.search(r"pLimit|limit|concurrency|batch|chunk|slice\s*\(|semaphore|queue", text, re.I):
+            findings.append(Finding(
+                "medium",
+                "Promise.all map fanout lacks an obvious concurrency cap",
+                "cost footgun / reliability",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Unbounded fanout can multiply Workers subrequests and downstream Cloudflare product usage in one user action or Queue job.",
+                "Add max item counts, bounded concurrency, batching/backpressure, and per-tenant quotas; include fanout counts in run summaries.",
+                "medium",
+            ))
+
+        retry_shaped = re.search(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", text, re.I)
+        expensive_call = re.search(r"env\.[A-Za-z0-9_]+\.(run|query|send|sendBatch|put|list|prepare)\s*\(|fetch\s*\(|browser\.(launch|connect)|newPage\s*\(", text, re.I)
+        has_resilience_controls = re.search(r"circuit|breaker|backoff|jitter|maxAttempts|max_retries|maxRetries|AbortController|timeout|killSwitch|disable|enabled", text, re.I)
+        if retry_shaped and expensive_call and not has_resilience_controls:
+            hit = line_for(text, re.compile(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", re.I)) or (1, "")
+            findings.append(Finding(
+                "medium",
+                "Retry/loop-shaped expensive path lacks obvious backoff or circuit breaker",
+                "cost footgun / reliability",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Hot retries into paid Cloudflare primitives or degraded dependencies can amplify spend and outages.",
+                "Add bounded retries with exponential backoff/jitter, circuit breaker state, kill switch, and idempotency/result caching.",
+                "low",
+            ))
+
+        # CORS wildcard + credentials in same file.
+        if re.search(r"Access-Control-Allow-Origin['\"\s:,{]+\*", text) and re.search(r"Access-Control-Allow-Credentials['\"\s:,{]+true", text, re.I):
+            hit = line_for(text, r"Access-Control-Allow-Origin") or (1, "")
+            findings.append(Finding(
+                "high",
+                "Wildcard CORS appears near credentialed responses",
+                "security / misconfiguration",
+                f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                "Credentialed browser requests cannot safely use arbitrary origins; sloppy CORS can expose APIs or break auth assumptions.",
+                "Use an explicit origin allowlist and only enable credentials for trusted origins/routes.",
+                "medium",
+            ))
+
+        # Trusting spoofable IP headers.
+        hit = line_for(text, r"headers\.get\(['\"](x-forwarded-for|x-real-ip)['\"]\)")
+        if hit:
+            findings.append(Finding(
+                "medium",
+                "Code reads spoofable client-IP header",
+                "security / best-practice drift",
+                f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                "Client IP headers can be spoofed unless ingress is guaranteed through Cloudflare. Workers should prefer Cloudflare-provided request metadata/headers and account for trusted ingress.",
+                "Use Cloudflare request metadata/`CF-Connecting-IP` only when direct origin bypass is impossible; enforce rate limiting before expensive work.",
+                "medium",
+            ))
+
+        # KV list or counter/lock patterns.
+        for name in kv_names:
+            safe = re.escape(name)
+            hit = line_for(text, rf"env\.{safe}\.list\s*\(")
+            if hit:
+                findings.append(Finding(
+                    "medium",
+                    "KV list operation appears in application code",
+                    "cost footgun / missed optimization",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "KV list/prefix scans in request paths can add latency and operation costs; KV is not a query engine.",
+                    "If this is a hot path, keep a D1/KV manifest or cached index instead of listing per request.",
+                    "medium",
+                ))
+            if re.search(rf"env\.{safe}\.get\s*\(", text) and re.search(rf"env\.{safe}\.put\s*\(", text) and re.search(r"counter|count|rate|limit|lock|nonce|inventory|balance", text, re.I):
+                hit = line_for(text, rf"env\.{safe}\.(get|put)\s*\(") or (1, "")
+                findings.append(Finding(
+                    "high",
+                    "KV read-modify-write smell for coordination/counters",
+                    "wrong primitive / reliability",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "KV is eventually consistent and not a safe primitive for locks, counters, uniqueness, inventory, or rate-limit state that needs immediate correctness.",
+                    "Use Durable Objects for per-key coordination/rate limits/counters, or D1 with constraints/transactions for relational state.",
+                    "medium",
+                ))
+
+        # R2 list/buffering patterns.
+        for name in r2_names:
+            safe = re.escape(name)
+            hit = line_for(text, rf"env\.{safe}\.list\s*\(")
+            if hit:
+                findings.append(Finding(
+                    "medium",
+                    "R2 bucket list appears in application code",
+                    "cost footgun / wrong primitive",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "R2 listing is a storage operation and a poor metadata query path at high request volume.",
+                    "Maintain queryable metadata in D1/KV/search and cache list responses; use R2 for object bytes.",
+                    "medium",
+                ))
+            if re.search(rf"env\.{safe}\.get\s*\(", text) and re.search(r"\.(arrayBuffer|text|json)\s*\(\s*\)", text):
+                hit = line_for(text, rf"env\.{safe}\.get\s*\(") or (1, "")
+                findings.append(Finding(
+                    "medium",
+                    "R2 object may be buffered instead of streamed",
+                    "missed optimization / reliability",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "Buffering large R2 objects in a Worker increases memory/CPU pressure and delays first byte.",
+                    "Return the R2 object's stream/body directly when possible and support range requests for large media/downloads.",
+                    "low",
+                ))
+
+        # D1 query smells.
+        if d1_names or ".prepare(" in text or ".batch(" in text:
+            hit = line_for(text, re.compile(r"SELECT\s+\*", re.I))
+            if hit:
+                findings.append(Finding(
+                    "medium",
+                    "D1 query uses SELECT *",
+                    "missed optimization / cost footgun",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "Unbounded/wide reads can increase rows/bytes processed and hide schema coupling on hot routes.",
+                    "Select only needed columns, add `LIMIT`/pagination, and verify indexes for filters/sorts.",
+                    "medium",
+                ))
+            hit = line_for(text, re.compile(r"ORDER\s+BY\s+RANDOM\s*\(", re.I))
+            if hit:
+                findings.append(Finding(
+                    "high",
+                    "D1 query orders by RANDOM()",
+                    "cost footgun / missed optimization",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "Random ordering can force expensive scans/sorts and become costly or slow as the table grows.",
+                    "Use indexed sampling, precomputed random keys, or a bounded candidate set.",
+                    "high",
+                ))
+            if len(re.findall(r"\.prepare\s*\(", text)) >= 6:
+                findings.append(Finding(
+                    "low",
+                    "Many D1 prepared statements in one file; check for N+1 queries",
+                    "missed optimization / cost footgun",
+                    rpath,
+                    "Several sequential D1 queries on one request path can multiply latency and billed rows/operations.",
+                    "Trace route-level query counts; batch, join, cache, or denormalize where appropriate.",
+                    "low",
+                ))
+
+        # Durable Object hot spots, validation, and hibernation smells.
+        if re.search(r"idFrom(Name|String)\s*\(|\.get\s*\([^\)]*\)\.fetch\s*\(", text):
+            has_front_door_validation = re.search(r"auth|jwt|session|permission|tenant|validate|schema|zod|method|content-type|rate|turnstile|captcha", text, re.I)
+            if not has_front_door_validation:
+                hit = line_for(text, re.compile(r"idFrom(Name|String)\s*\(|\.get\s*\([^\)]*\)\.fetch\s*\(", re.I)) or (1, "")
+                findings.append(Finding(
+                    "medium",
+                    "Durable Object call path lacks obvious front-door validation",
+                    "cost footgun / security / reliability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "Invalid, bot, oversized, or unauthenticated traffic should be rejected before it becomes Durable Object requests/duration or hot-spots a shard.",
+                    "Validate method/auth/tenant/request size and apply rate limiting before constructing or calling DO stubs.",
+                    "low",
+                ))
+        hit = line_for(text, re.compile(r"idFromName\s*\(\s*['\"](?:global|singleton|default|main|root|all)['\"]", re.I))
+        if hit:
+            findings.append(Finding(
+                "high",
+                "Durable Object idFromName uses a global/singleton key",
+                "wrong primitive / cost footgun / reliability",
+                f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                "A low-cardinality Durable Object key can concentrate traffic into one object, causing hot-spot latency and duration/request amplification.",
+                "Shard Durable Objects by tenant/user/room/resource key, or use D1/KV/R2 if coordination is not required.",
+                "high",
+            ))
+        if "WebSocketPair" in text and re.search(r"\.accept\s*\(\s*\)", text) and "acceptWebSocket" not in text:
+            hit = line_for(text, r"\.accept\s*\(\s*\)") or (1, "")
+            findings.append(Finding(
+                "medium",
+                "WebSocket handling may not use Durable Object hibernation",
+                "cost footgun / missed optimization",
+                f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                "Long-lived idle WebSockets can increase duration cost and reduce survivability if hibernation is not used where available.",
+                "For Durable Object WebSockets, evaluate `ctx.acceptWebSocket` hibernation APIs and persistence model.",
+                "low",
+            ))
+
+        # Cache/write hot path smells.
+        hit = line_for(text, r"await\s+caches\.default\.put\s*\(")
+        if hit:
+            findings.append(Finding(
+                "low",
+                "Cache put awaited in request path",
+                "missed optimization",
+                f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                "Awaiting cache writes can add latency to the user response when the write does not need to complete first.",
+                "Use `ctx.waitUntil(caches.default.put(...))` when correctness allows.",
+                "medium",
+            ))
+
+        # Public worker-to-worker fetch smell.
+        hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(workers\.dev|pages\.dev|cloudflareworkers\.com)", re.I))
+        if hit:
+            findings.append(Finding(
+                "medium",
+                "Public Cloudflare service URL fetch; consider service bindings",
+                "missed optimization / security",
+                f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                "Fetching another Cloudflare service through a public URL can add routing overhead and create avoidable auth/exposure ambiguity.",
+                "Use service bindings for same-account Worker-to-Worker calls when applicable.",
+                "medium",
+            ))
+
+        # Node env assumptions.
+        hit = line_for(text, r"process\.env\.[A-Za-z0-9_]+")
+        if hit and path.suffix not in {".md"}:
+            findings.append(Finding(
+                "low",
+                "process.env reference in Worker-adjacent code",
+                "misconfiguration / runtime compatibility",
+                f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                "Workers receive environment bindings through the handler `env` object; `process.env` may be a build-time or Node-compat assumption.",
+                "Confirm this code runs at build time or under intentional Node compatibility; otherwise use Worker bindings/secrets.",
+                "low",
+            ))
+
+        # Terraform Cloudflare account smells.
+        if path.suffix == ".tf":
+            hit = line_for(text, re.compile(r"ssl\s*=\s*['\"]flexible['\"]", re.I))
+            if hit:
+                findings.append(Finding(
+                    "high",
+                    "Terraform sets SSL/TLS mode to Flexible",
+                    "security / misconfiguration",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "Flexible SSL leaves the Cloudflare-to-origin leg unencrypted and is usually inappropriate for production.",
+                    "Use Full (strict) with a valid origin certificate unless a documented exception exists.",
+                    "high",
+                ))
+            hit = line_for(text, re.compile(r"proxied\s*=\s*false", re.I))
+            if hit:
+                findings.append(Finding(
+                    "medium",
+                    "Terraform has unproxied DNS record; verify origin exposure",
+                    "security / misconfiguration",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "Unproxied records bypass Cloudflare WAF/cache/Access protections and may expose origin infrastructure.",
+                    "Confirm the record is intentionally DNS-only; otherwise enable proxying and restrict direct origin access.",
+                    "medium",
+                ))
+
+
+def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings: dict[str, set[str]], findings: list[Finding], files_scanned: int) -> str:
+    products = sorted(product for product, names in bindings.items() if names)
+    config_paths = [rel(path, root) for path, _, _ in configs]
+    out: list[str] = []
+    out.append("# Cloudflare Doctor static scan")
+    out.append("")
+    out.append("This is a heuristic local scan. Confirm every finding with source context and current Cloudflare docs/pricing before treating it as true.")
+    out.append("")
+    out.append(f"- Root: `{root}`")
+    out.append(f"- Files scanned: {files_scanned}")
+    out.append(f"- Wrangler configs: {', '.join(config_paths) if config_paths else 'none detected'}")
+    out.append(f"- Detected products/bindings: {', '.join(products) if products else 'none detected from parsed config'}")
+    if products:
+        for product in products:
+            names = ", ".join(sorted(bindings[product])) or "(names not parsed)"
+            out.append(f"  - {product}: {names}")
+    out.append("")
+
+    severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    findings_sorted = sorted(findings, key=lambda f: (severity_order.get(f.severity, 9), f.title, f.evidence))
+    out.append(f"## Findings ({len(findings_sorted)})")
+    if not findings_sorted:
+        out.append("")
+        out.append("No scanner findings. This does not mean the project is healthy; account/dashboard settings and access patterns still need audit.")
+        return "\n".join(out) + "\n"
+
+    for finding in findings_sorted:
+        out.append("")
+        out.append(f"### {finding.severity.capitalize()}: {finding.title}")
+        out.append(f"- Category: {finding.category}")
+        out.append(f"- Evidence: {finding.evidence}")
+        out.append(f"- Why it matters: {finding.why}")
+        out.append(f"- Fix: {finding.fix}")
+        out.append(f"- Confidence: {finding.confidence}")
+    out.append("")
+    return "\n".join(out)
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description="Heuristic static scan for Cloudflare projects")
+    parser.add_argument("root", nargs="?", default=".", help="Project root to scan")
+    args = parser.parse_args(argv)
+
+    root = Path(args.root).resolve()
+    if not root.exists():
+        print(f"error: root does not exist: {root}", file=sys.stderr)
+        return 2
+
+    file_texts: list[tuple[Path, str]] = []
+    configs: list[tuple[Path, str, dict[str, Any]]] = []
+    for path in iter_files(root):
+        text = read_text(path)
+        file_texts.append((path, text))
+        if path.name in CONFIG_NAMES:
+            configs.append((path, text, parse_config(path, text)))
+
+    bindings = collect_bindings(configs)
+    findings: list[Finding] = []
+    add_config_findings(root, configs, findings)
+    add_code_findings(root, file_texts, bindings, findings)
+    print(render(root, configs, bindings, findings, len(file_texts)))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
