@@ -124,12 +124,23 @@ Better patterns:
 - For Vectorize, choose dimensions intentionally, reduce namespace/query fan-out, cache embedding/query results where safe, and cite current Vectorize pricing docs.
 - For Browser Run, close sessions in `finally`, set session/request timeouts, reuse sessions only intentionally, and prefer Quick Actions or non-browser primitives for simple scraping/screenshots.
 
+## Third-party origins behind Cloudflare
+
+Footguns:
+- Assuming Cloudflare in front means the origin cannot bill. Cache misses, uncacheable APIs, image optimization endpoints, serverless functions, and direct default hostnames can still hit Vercel/Netlify/Railway/Render/Fly/Heroku/AWS/GCP/Azure/Firebase/Supabase origins.
+- Default provider hostnames remain public (`*.vercel.app`, `*.netlify.app`, `*.railway.app`, `*.onrender.com`, `*.fly.dev`, `*.herokuapp.com`, storage endpoints), bypassing Cloudflare WAF/cache/auth.
+- Origin autoscaling/concurrency caps are unset, so bot traffic through cache misses becomes origin spend.
+
+Better patterns:
+- Lock origins to Cloudflare where possible, disable or protect default hostnames, set origin provider spend/scale controls, and cache/rate-limit before origin-hit paths.
+- Track origin usage alongside Cloudflare metrics; a low Cloudflare bill can still hide a high Vercel/Netlify/Railway/etc. bill.
+
 ## CDN/cache/account products
 
 Footguns:
 - Low cache hit ratio on large public traffic because cache headers/rules are absent or cookies bust cache.
 - Cache Reserve, Argo, Load Balancing, advanced WAF/rate limiting/bot products, Images, Stream, Zero Trust seats, Logpush destinations, and analytics retention enabled without volume/benefit review.
-- Logging every request with high-cardinality payloads or long retention.
+- Logging every request with high-cardinality payloads or long retention; error storms can turn logs/analytics into their own bill.
 - Purge-everything workflows that destroy cache efficiency.
 
 Better patterns:

@@ -11,7 +11,7 @@ When dashboard/account settings matter, ask the user for the smallest evidence p
 3. **Cloudflare API JSON**: read-only API responses for zones, rulesets, Access apps, R2 bucket settings, etc.
 4. **Wrangler read-only output**: project/deployment/binding/migration inventories.
 5. **Billing/usage evidence**: plan, usage graphs, top routes/products, and overage line items.
-6. **Architecture notes**: expected traffic, hot routes, user actions, data access patterns, and which environments are production vs temporary.
+6. **Architecture notes**: expected traffic, hot routes, user actions, data access patterns, which environments are production vs temporary, and whether Cloudflare fronts Vercel/Netlify/Railway/Render/Fly/Heroku/AWS/GCP/Azure/Firebase/Supabase/Fastly origins.
 
 Prefer exact exports over prose. If the user only provides prose, treat it as an architecture statement, not proof of dashboard settings.
 
@@ -44,8 +44,9 @@ Ask only for relevant sections; do not request everything by default.
 ### DNS / zone / origin
 
 - DNS records export: type, name, target, TTL, proxied status.
+- Third-party/default origin hostnames: `*.vercel.app`, `*.netlify.app`, `*.railway.app`, `*.onrender.com`, `*.fly.dev`, `*.herokuapp.com`, cloud storage endpoints, Firebase/Supabase public URLs, or other direct origin URLs.
 - SSL/TLS mode, HSTS, Always Use HTTPS, minimum TLS version.
-- Origin protection evidence: origin firewall allowlists, Authenticated Origin Pulls, mTLS/API Shield when relevant.
+- Origin protection evidence: origin firewall allowlists, Authenticated Origin Pulls, mTLS/API Shield when relevant, and whether direct/default origin URLs are disabled, blocked, or protected.
 - DNSSEC/CAA where applicable.
 
 ### Security rules

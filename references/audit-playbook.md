@@ -6,6 +6,8 @@ Start by refreshing official documentation for the detected products. Use [`clou
 
 When dashboard/account state matters, use [`sharing-cloudflare-state.md`](sharing-cloudflare-state.md) to ask the user for the smallest useful evidence package. Prefer IaC/API exports/redacted screenshots over prose, and mark missing dashboard state as not inspected.
 
+Use [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) to check for failure shapes that have caused real surprise bills on Cloudflare and adjacent serverless platforms. Treat war stories as scenario sources; still cite current Cloudflare docs for Cloudflare-specific pricing, limits, and product behavior.
+
 Inspect local files next:
 
 ```bash
@@ -36,6 +38,7 @@ Do not run mutating commands without explicit approval.
 - **Runtime code**: fetch handlers, Pages Functions, Queue consumers, Durable Object classes, cron handlers, cache use, auth/rate limiting, external fetches.
 - **Data model**: consistency requirements, write rate, read pattern, object size, query shape, transaction/coordination needs, TTL needs.
 - **Account/zone**: DNS proxy status, SSL/TLS mode, WAF/rate limiting/bot rules, cache rules, Page Rules, Transform Rules, Access policies, Logpush/analytics.
+- **Third-party origins behind Cloudflare**: Vercel, Netlify, Railway, Render, Fly.io, Heroku, AWS/GCP/Azure, Firebase/Supabase/Fastly origins; default hostnames; origin lock-down; origin billing model.
 - **Operations**: migrations, preview/staging/prod environments, local dev parity, observability, alarms, DLQs, rollback/deployment strategy.
 - **Cost drivers**: expected request volume, subrequests per request, CPU time, storage/object counts, operation counts, queue retries, logs/analytics retention, add-on products.
 
@@ -63,6 +66,11 @@ For every audit, explicitly consider and either report or mark not applicable / 
 18. Fanout should be bounded: `Promise.all(items.map(...))`, queue fanout, batch sends, recursive workflows, crawler depth, and per-tenant broadcasts need caps/backpressure.
 19. Run summaries should include cost proxies: CPU time, subrequests, storage ops, rows read/written, DO requests/duration, queue retry/DLQ counts, AI neurons/tokens/requests, Browser Run session minutes, image transformations, Stream delivered minutes, Vectorize dimensions queried/stored, and cache hit/miss assumptions.
 20. Layered cache behavior should be explicit: where a request is cached, cache key dimensions, TTL, invalidation owner, and whether browser/CDN/Worker Cache/KV/R2/D1/AI Gateway caches can conflict or leak personalized data.
+21. War-story scenario checks should be considered for matching products: recursive async work, webhook abuse, static/media DDoS bandwidth, image variant explosions, uncached object hotlinks, idle paid resources, direct origin/bucket bypass, and spend-alerts-only controls.
+22. Cloudflare-fronted third-party origins should be checked for denial-of-wallet risk: cache misses, unproxied/default origin hostnames, wildcard routes/middleware, image optimization endpoints, autoscaling/serverless origins, log ingestion, and provider spend caps.
+23. Self-fetch, rewrite, redirect, event-trigger, and origin loop risks should be checked across Workers, Pages Functions, Queues, Workflows, Cron Triggers, webhooks, and storage/database triggers.
+24. Logging/analytics can be a surprise meter; high-cardinality or error-storm logs need sampling, retention, destination lifecycle rules, and volume alerts.
+25. For high-risk public surfaces, recommend a denial-of-wallet game day: synthetic traffic against static asset, function/API route, image transform, storage object, and webhook path to prove cache/rate-limit/auth/alerts fire.
 
 ## Diagnosis loop
 

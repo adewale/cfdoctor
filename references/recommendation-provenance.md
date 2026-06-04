@@ -53,6 +53,7 @@ Use these as starting points, then fetch the current Markdown pages at audit tim
 - Cloudflare docs directory: https://developers.cloudflare.com/llms.txt
 - Product-specific `llms.txt`: `https://developers.cloudflare.com/<product>/llms.txt`
 - Verified best-practices list in this skill: [`cloudflare-best-practices-docs.md`](cloudflare-best-practices-docs.md)
+- War-story-derived scenario list: [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md)
 - General source map: [`official-source-map.md`](official-source-map.md)
 
 ### Workers cost is not just request count

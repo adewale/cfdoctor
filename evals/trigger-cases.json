@@ -4,140 +4,205 @@
     "prompt": "Cloudflare Doctor this repo and tell me where we're wasting money.",
     "expected": "trigger",
     "category": "direct invocation",
-    "description_terms": ["Cloudflare", "cost footguns"]
+    "description_terms": [
+      "Cloudflare",
+      "cost footguns"
+    ]
   },
   {
     "id": "audit-wrangler-config",
     "prompt": "Audit my wrangler.toml for Cloudflare best-practice drift and unsafe bindings.",
     "expected": "trigger",
     "category": "wrangler/config",
-    "description_terms": ["Wrangler", "best-practice drift"]
+    "description_terms": [
+      "Wrangler",
+      "best-practice drift"
+    ]
   },
   {
     "id": "worker-cost-cpu",
     "prompt": "Our Cloudflare Worker bill is high even though request count is low. Can you review CPU and subrequest cost footguns?",
     "expected": "trigger",
     "category": "workers cost",
-    "description_terms": ["Workers", "pricing/overages"]
+    "description_terms": [
+      "Workers",
+      "pricing/overages"
+    ]
   },
   {
     "id": "pages-preview-paid-services",
     "prompt": "Check whether our Cloudflare Pages preview deployments are still connected to D1, R2, or paid AI services.",
     "expected": "trigger",
     "category": "pages/preview cost",
-    "description_terms": ["Pages", "D1", "R2", "Workers AI"]
+    "description_terms": [
+      "Pages",
+      "D1",
+      "R2",
+      "Workers AI"
+    ]
   },
   {
     "id": "kv-counter-primitive-fit",
     "prompt": "We are using Cloudflare KV for rate-limit counters. Is that the wrong primitive?",
     "expected": "trigger",
     "category": "primitive fit",
-    "description_terms": ["KV", "wrong primitive"]
+    "description_terms": [
+      "KV",
+      "wrong primitive"
+    ]
   },
   {
     "id": "d1-rows-read",
     "prompt": "Review our D1 queries for full scans, missing indexes, N+1 patterns, and rows-read cost.",
     "expected": "trigger",
     "category": "d1 cost/performance",
-    "description_terms": ["D1", "cost footguns"]
+    "description_terms": [
+      "D1",
+      "cost footguns"
+    ]
   },
   {
     "id": "r2-no-egress-bill",
     "prompt": "We assumed R2 no egress fees means no bill. Audit our R2 access pattern and lifecycle rules.",
     "expected": "trigger",
     "category": "r2 cost",
-    "description_terms": ["R2", "cost footguns"]
+    "description_terms": [
+      "R2",
+      "cost footguns"
+    ]
   },
   {
     "id": "durable-objects-hibernation",
     "prompt": "Inspect our Durable Objects WebSocket code for hibernation mistakes and hot shards.",
     "expected": "trigger",
     "category": "durable objects",
-    "description_terms": ["Durable Objects"]
+    "description_terms": [
+      "Durable Objects"
+    ]
   },
   {
     "id": "queues-dlq-retry-storm",
     "prompt": "Review our Cloudflare Queues consumers for retry storms, poison messages, DLQs, and idempotency.",
     "expected": "trigger",
     "category": "queues reliability/cost",
-    "description_terms": ["Queues"]
+    "description_terms": [
+      "Queues"
+    ]
   },
   {
     "id": "workflows-retries",
     "prompt": "Audit our Cloudflare Workflows for retry/backoff, idempotency, and unbounded fanout.",
     "expected": "trigger",
     "category": "workflows reliability/cost",
-    "description_terms": ["Workflows"]
+    "description_terms": [
+      "Workflows"
+    ]
   },
   {
     "id": "workers-ai-duplicate-generation",
     "prompt": "My Workers AI app retries image generation and duplicates outputs. Find cost footguns and caching fixes.",
     "expected": "trigger",
     "category": "workers ai cost",
-    "description_terms": ["Workers AI"]
+    "description_terms": [
+      "Workers AI"
+    ]
   },
   {
     "id": "ai-gateway-cache-rate-limit",
     "prompt": "Should we use AI Gateway caching and rate limiting for this Cloudflare AI workload? Audit the setup.",
     "expected": "trigger",
     "category": "ai gateway",
-    "description_terms": ["AI Gateway"]
+    "description_terms": [
+      "AI Gateway"
+    ]
   },
   {
     "id": "vectorize-dimensions",
     "prompt": "Review our Vectorize index dimensions, topK, namespace fanout, and query cost.",
     "expected": "trigger",
     "category": "vectorize cost",
-    "description_terms": ["Vectorize"]
+    "description_terms": [
+      "Vectorize"
+    ]
   },
   {
     "id": "images-variants",
     "prompt": "Audit Cloudflare Images transformations for unbounded variants and cache-key explosions.",
     "expected": "trigger",
     "category": "images cost/cache",
-    "description_terms": ["Images"]
+    "description_terms": [
+      "Images"
+    ]
   },
   {
     "id": "stream-preload",
     "prompt": "Check our Cloudflare Stream embeds for preload/autoplay delivered-minute cost risks.",
     "expected": "trigger",
     "category": "stream cost",
-    "description_terms": ["Stream"]
+    "description_terms": [
+      "Stream"
+    ]
   },
   {
     "id": "browser-run-sessions",
     "prompt": "Browser Run sessions are left open in our Worker. Audit retries, close paths, and costs.",
     "expected": "trigger",
     "category": "browser run cost",
-    "description_terms": ["Browser Run"]
+    "description_terms": [
+      "Browser Run"
+    ]
   },
   {
     "id": "cache-layer-map",
     "prompt": "Map where this Cloudflare request is cached across CDN, Worker Cache, KV, R2, D1, and AI Gateway.",
     "expected": "trigger",
     "category": "cache layering",
-    "description_terms": ["CDN/cache", "AI Gateway"]
+    "description_terms": [
+      "CDN/cache",
+      "AI Gateway"
+    ]
   },
   {
     "id": "waf-access-dns-security",
     "prompt": "Review our Cloudflare DNS, WAF, and Access policies for bypasses and misconfiguration.",
     "expected": "trigger",
     "category": "security/config",
-    "description_terms": ["DNS", "WAF", "Access/Zero Trust"]
+    "description_terms": [
+      "DNS",
+      "WAF",
+      "Access/Zero Trust"
+    ]
   },
   {
     "id": "terraform-cloudflare",
     "prompt": "Audit this Terraform for Cloudflare zones, DNS proxy status, cache rules, and paid add-ons.",
     "expected": "trigger",
     "category": "iac/account",
-    "description_terms": ["IaC", "Cloudflare account"]
+    "description_terms": [
+      "IaC",
+      "Cloudflare account"
+    ]
   },
   {
     "id": "free-paid-overages",
     "prompt": "We moved Cloudflare Workers from Free to Paid. Check what overages and limits changed.",
     "expected": "trigger",
     "category": "pricing/overages",
-    "description_terms": ["pricing/overages", "Workers"]
+    "description_terms": [
+      "pricing/overages",
+      "Workers"
+    ]
+  },
+  {
+    "id": "surprise-billing-war-stories",
+    "prompt": "Use known Cloudflare/serverless surprise-billing horror stories to audit our Cloudflare setup for similar risks.",
+    "expected": "trigger",
+    "category": "war-story scenario audit",
+    "description_terms": [
+      "Cloudflare",
+      "cost footguns",
+      "pricing/overages"
+    ]
   },
   {
     "id": "aws-lambda-cost",

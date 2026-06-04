@@ -849,17 +849,39 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 "medium",
             ))
 
-        # Public worker-to-worker fetch smell.
+        # Public service/origin fetch smells.
         hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(workers\.dev|pages\.dev|cloudflareworkers\.com)", re.I))
         if hit:
             findings.append(Finding(
                 "medium",
                 "Public Cloudflare service URL fetch; consider service bindings",
                 "missed optimization / security",
-                f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                 "Fetching another Cloudflare service through a public URL can add routing overhead and create avoidable auth/exposure ambiguity.",
                 "Use service bindings for same-account Worker-to-Worker calls when applicable.",
                 "medium",
+            ))
+        hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(vercel\.app|netlify\.app|railway\.app|onrender\.com|fly\.dev|herokuapp\.com|firebaseapp\.com|web\.app|supabase\.co)", re.I))
+        if hit:
+            findings.append(Finding(
+                "medium",
+                "Worker fetches a public third-party/serverless origin hostname",
+                "cost footgun / reliability / security",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Cloudflare-fronted third-party origins can still bill on cache misses or direct default-hostname traffic. Public origin URLs may bypass Cloudflare WAF/cache/auth controls.",
+                "Verify the origin is locked to Cloudflare or otherwise protected, cache safe responses before origin, and set origin-provider spend/scale controls.",
+                "medium",
+            ))
+        hit = line_for(text, re.compile(r"fetch\s*\(\s*(request|req|event\.request)\.(url|clone\s*\(\s*\))", re.I))
+        if hit:
+            findings.append(Finding(
+                "medium",
+                "Worker appears to fetch the incoming request URL",
+                "cost footgun / reliability",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Fetching the same URL/host handled by the Worker can create self-fetch loops, extra billable invocations, or Cloudflare 1019 loop errors depending on routing.",
+                "Verify the target URL is an origin/service binding that cannot route back into this Worker; add tests and loop guards.",
+                "low",
             ))
 
         # Node env assumptions.
