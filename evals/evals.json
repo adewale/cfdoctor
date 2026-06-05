@@ -1,0 +1,11 @@
+{
+  "name": "cloudflare-doctor-evals",
+  "description": "Repo-level eval manifest for Cloudflare Doctor. The executable proxy eval uses evals/trigger-cases.json.",
+  "runner": "python3 scripts/eval_skill_trigger.py",
+  "cases": "evals/trigger-cases.json",
+  "assertions": [
+    "positive Cloudflare audit prompts trigger the skill",
+    "false friends and unrelated generic prompts do not trigger the skill",
+    "expected product/intent terms are present in the skill description"
+  ]
+}

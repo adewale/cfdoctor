@@ -11,6 +11,7 @@ python3 scripts/eval_skill_trigger.py
 ```
 
 Inputs:
+- `evals/evals.json` — repo-level eval manifest and runner pointer.
 - `evals/trigger-cases.json` — positive and negative trigger prompts.
 - `SKILL.md` — frontmatter description under test.
 

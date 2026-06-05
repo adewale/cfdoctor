@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest a new Cloudflare Doctor check, reference, or workflow improvement
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What Cloudflare audit gap or repo workflow is hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should Cloudflare Doctor detect, ask, or recommend?
+  - type: textarea
+    id: sources
+    attributes:
+      label: Source basis
+      description: Link current official Cloudflare docs or an accepted war story/operator note if the request depends on product behavior or pricing.

@@ -1,0 +1,35 @@
+{
+  "name": "cfdoctor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cloudflare Doctor skill and read-only scanner for auditing Cloudflare projects.",
+  "keywords": [
+    "pi-package",
+    "agent-skill",
+    "cloudflare",
+    "workers",
+    "durable-objects",
+    "wrangler",
+    "cost-optimization",
+    "security-audit",
+    "repo-health"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adewale/cfdoctor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adewale/cfdoctor/issues"
+  },
+  "homepage": "https://github.com/adewale/cfdoctor#readme",
+  "scripts": {
+    "scan": "./scripts/cfdoctor_static_scan.py .",
+    "eval": "python3 scripts/eval_skill_trigger.py",
+    "test": "python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py && python3 scripts/eval_skill_trigger.py && ./scripts/cfdoctor_static_scan.py ."
+  },
+  "pi": {
+    "skills": [
+      "./"
+    ]
+  }
+}
