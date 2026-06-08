@@ -92,6 +92,7 @@ A Cloudflare Doctor finding is valid only if it includes:
 - Evidence: path+line, config key, command output, dashboard/API export, or user-supplied architecture statement.
 - Cloudflare-specific reason: consistency model, runtime limit, billing meter, route/cache behavior, security boundary, or product contract.
 - Practical fix: exact config/code/account change or better primitive/product.
+- Cost/trade-off: billing meter or cost proxy affected, expected benefit, implementation effort, downside, reversibility, and assumptions.
 - Verification: how to prove the fix and avoid regression.
 - Source basis: official current Cloudflare docs fetched during the audit and/or an accepted war story as defined in [`recommendation-provenance.md`](recommendation-provenance.md).
 

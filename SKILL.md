@@ -59,6 +59,7 @@ Then group findings:
 - Evidence: <file:line/config/account source/command output>
 - Why it matters: <Cloudflare-specific behavior, limit, consistency model, billing mechanism, or failure mode>
 - Fix: <smallest safe remediation; include better primitive/product if applicable>
+- Cost / trade-off: <billing meter or cost proxy affected; expected benefit; implementation effort; latency/complexity/security downside; reversibility; assumptions>
 - Verify: <command, dashboard check, load test, or config check>
 - Source basis: <official Cloudflare docs URL(s) fetched this audit and/or accepted war story URL(s)>
 - Confidence: <high|medium|low>

@@ -4,6 +4,29 @@ Cloudflare Doctor is an Agent Skill plus read-only scanner for auditing Cloudfla
 
 The skill is intentionally source-driven: Cloudflare product behavior, pricing, limits, and best practices must be refreshed from current official Cloudflare docs before final recommendations. War stories are used as scenario prompts, not pricing authority.
 
+## How to use Cloudflare Doctor
+
+Use it as a **read-only audit partner** when you want Cloudflare-specific judgment, not generic linting:
+
+- **Repo/config audit** — inspect Wrangler config, bindings, Workers/Pages code, IaC, tests, and docs before launch or review.
+- **Product-fit review** — ask whether KV, D1, R2, Durable Objects, Queues, Workflows, Vectorize, Workers AI, etc. match the access pattern.
+- **Cost and surprise-billing review** — identify billing meters, fanout, retries, AI/browser/media/vector usage, cache misses, and missing cost proxies.
+- **Security/reliability posture** — check auth boundaries, preview exposure, WAF/rate-limit evidence, queue/DLQ behavior, cron/loop bounds, and observability.
+- **Dashboard/account evidence review** — provide screenshots, API exports, Terraform, `cf-terraforming`, or approved read-only command output for state that is not in the repo.
+- **Scanner triage** — run the static scanner for leads, then use the skill to confirm or suppress findings with source context and current docs.
+
+Good prompts are explicit about scope and evidence:
+
+```text
+Use Cloudflare Doctor to audit this repo for production launch. Refresh current Cloudflare docs, treat scanner output as leads, include Source basis and Cost / trade-off for every finding, and list dashboard evidence you could not inspect.
+```
+
+```text
+Audit our Workers AI + Vectorize search path for cost, abuse, cache, rate-limit, and product-fit risks. Assume 50k searches/day unless repo evidence says otherwise.
+```
+
+Interpret the output as an evidence-backed risk review: findings should include file/account evidence, Cloudflare-specific failure or billing mechanism, smallest safe fix, cost/trade-off, verification, source basis, and confidence. It is not a substitute for live load testing, billing exports, formal security review, or dashboard/account inspection that you did not provide.
+
 ## What you get
 
 - `SKILL.md` — runtime instructions and audit output contract.

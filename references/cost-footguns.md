@@ -169,6 +169,7 @@ Better patterns:
 - Evidence: `src/routes/files.ts:42` calls `env.BUCKET.list({ prefix })` for every GET `/files`.
 - Why it matters: R2 list operations are billed operations and add latency; this turns every page view into a bucket scan/paginated metadata query.
 - Fix: Maintain the visible file index in D1/KV and update it on writes; cache the list response with a safe TTL.
+- Cost / trade-off: Reduces R2 Class A/list operations and latency; adds index maintenance, cache invalidation, and possible stale-list behavior; reversible by falling back to direct R2 listing.
 - Verify: Load-test the route and confirm R2 operation counts fall; add a regression test for pagination/cache behavior.
 - Confidence: high
 ```

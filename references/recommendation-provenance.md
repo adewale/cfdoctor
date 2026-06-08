@@ -38,13 +38,14 @@ Output format:
 
 ## Finding output requirement
 
-Add this line to every finding:
+Add these lines to every finding:
 
 ```markdown
+- Cost / trade-off: <billing meter or cost proxy affected; expected benefit; implementation effort; latency/complexity/security downside; reversibility; assumptions>
 - Source basis: <Official Cloudflare docs URL(s) fetched this audit and/or accepted war story URL(s)>
 ```
 
-If the finding includes both product facts and operational advice, include both kinds of source when needed.
+If the finding includes both product facts and operational advice, include both kinds of source when needed. If a recommendation saves money but adds latency, complexity, migration risk, or operational burden, say that explicitly instead of presenting it as a free win.
 
 ## Official source map by recommendation family
 
