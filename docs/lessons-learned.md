@@ -100,3 +100,46 @@ what was actually true.
 8. Detection fixtures must model the documented failure, not the detector — and false-negative fixes start with a failing fixture.
 9. Document every precision/recall trade-off next to the check it affects, in the coverage matrix.
 10. Plan documents are records: correct wrong premises in place, dated, instead of silently dropping items.
+
+## What we learned in the launch-backlog and usage-documentation pass
+
+The final launch cleanup looked administrative — license, CI, repository metadata, release tag, and usage docs — but it exposed one more product lesson: a skill repo is both a tool and a distribution artifact. Users need to know how to consume it; maintainers need to know how to verify it; neither group should have to reverse-engineer that from package metadata.
+
+### A release tag is part of the API
+
+`pi install https://github.com/adewale/cfdoctor` is convenient, but it tracks the moving default branch. Once the repo is public, users also need a stable install target like `@v0.1.0` so they can pin behavior and update intentionally.
+
+The lesson is: **for installable skills, tags and releases are user-facing API, not ceremonial GitHub decoration**.
+
+### Usage docs must separate user paths from maintainer paths
+
+The README originally documented installation, scanner execution, and validation, but not the mental model connecting them. That left a reasonable question: is a normal user expected to run the shared benchmark, provide private holdout prompts, run the scanner, or just install the skill and ask for an audit?
+
+The right split is explicit:
+
+- normal users install the skill and ask for an audit from the target repo
+- scanner-only users run the Python scanner for quick read-only triage
+- maintainers run validation, shared benchmarks, trigger evals, and ablations
+- private holdout/holdback prompts are maintainer eval assets, not usage prerequisites
+
+The lesson is: **if a repo contains both product files and evaluation machinery, the README must say which parts are for users and which parts are for maintainers**.
+
+### Repository settings are documentation surfaces
+
+Topics, homepage, wiki state, license detection, and release state all shape how the project is understood before anyone reads `SKILL.md`. Leaving the wiki enabled, omitting topics, or lacking a license does not break the skill, but it creates ambiguity about where documentation lives and how the code can be used.
+
+The lesson is: **repository metadata is part of launch readiness because it tells users where to look, what they may do, and whether the project is maintained intentionally**.
+
+### CI should run the same checks maintainers ask humans to run
+
+Adding CI was straightforward because the repo already had a small, deterministic validation loop: JSON manifests, Python compile, trigger eval, static self-scan, and `git diff --check`. That made the automated workflow less a new system and more a codified version of the existing release ritual.
+
+The lesson is: **CI is most useful when it automates the exact validation commands documented for maintainers**.
+
+### Updated lesson list addendum
+
+11. Release tags are part of the install API for Git-installed skills.
+12. READMEs for skill repos must distinguish normal usage, scanner-only triage, and maintainer eval workflows.
+13. Private holdout/holdback eval prompts are not user prerequisites and should be documented as maintainer-only assets.
+14. Repository metadata — topics, homepage, wiki state, license, release — is a documentation surface.
+15. CI should codify the same deterministic checks maintainers are told to run locally.
