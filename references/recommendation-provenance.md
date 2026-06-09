@@ -91,7 +91,7 @@ Use these as starting points, then fetch the current Markdown pages at audit tim
 
 ### Queues, hot retries, DLQs, poison messages, and rate limits
 
-- Queues delivery guarantees: https://developers.cloudflare.com/queues/configuration/delivery-guarantees/
+- Queues delivery guarantees: https://developers.cloudflare.com/queues/reference/delivery-guarantees/
 - Queues batching/retries: https://developers.cloudflare.com/queues/configuration/batching-retries/
 - Queues dead-letter queues: https://developers.cloudflare.com/queues/configuration/dead-letter-queues/
 - Queues metrics: https://developers.cloudflare.com/queues/observability/metrics/
