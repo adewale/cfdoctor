@@ -1,0 +1,9 @@
+{
+  "description": "Blog feed endpoint that loads every post with SELECT * and then runs four more queries per post (author, comments, like total, latest comment) plus a per-post UPDATE inside the loop. Models read-amplification bills where billed rows grow with content size on every page view.",
+  "war_story": "Read-amplification stories generalized from https://news.ycombinator.com/item?id=17661391 (see references/war-story-scenario-checklist.md #5)",
+  "required_check_ids": [
+    "CFDOC-PERF-D1-N-PLUS-ONE",
+    "CFDOC-PERF-D1-SELECT-STAR"
+  ],
+  "forbidden_check_ids": []
+}

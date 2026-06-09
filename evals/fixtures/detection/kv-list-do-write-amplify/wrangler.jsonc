@@ -1,0 +1,12 @@
+{
+  // Link shortener with a per-user dashboard and click analytics in a Durable Object.
+  "name": "shortlink-analytics",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "kv_namespaces": [{ "binding": "LINKS", "id": "0000fixture0000" }],
+  "durable_objects": {
+    "bindings": [{ "name": "CLICK_TRACKER", "class_name": "ClickTracker" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ClickTracker"] }]
+}

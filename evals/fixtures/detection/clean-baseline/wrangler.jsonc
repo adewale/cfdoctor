@@ -1,0 +1,8 @@
+{
+  "name": "status-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "example.com/api/status*", "zone_name": "example.com" }],
+  "vars": { "APP_VERSION": "1.4.2" }
+}

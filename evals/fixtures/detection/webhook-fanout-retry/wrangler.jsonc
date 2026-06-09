@@ -1,0 +1,8 @@
+{
+  // Webhook relay: one inbound event is delivered to every subscriber endpoint.
+  "name": "webhook-relay",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "kv_namespaces": [{ "binding": "SUBSCRIBERS", "id": "0000fixture0000" }]
+}
