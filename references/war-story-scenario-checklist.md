@@ -2,6 +2,8 @@
 
 Use this checklist to turn public billing/failure horror stories into concrete Cloudflare Doctor checks. War stories are not sources for current Cloudflare pricing or limits; use them to motivate scenarios, then cite current Cloudflare docs for Cloudflare-specific product facts.
 
+Link status last verified: 2026-06-09 (scripts/check_links.py; report in evals/results/).
+
 ## How to use
 
 For each relevant scenario:
@@ -17,7 +19,7 @@ For each relevant scenario:
 
 ### 1. Runaway async loop multiplies storage/compute operations
 
-- Story: RetainDB reportedly generated a large Cloudflare bill from an infinite queue loop, billions of KV reads/writes, Durable Object storage writes, and hot-path `kv.list()` scans. Source aggregator: https://serverlesshorrors.com/all/cloudflare-36k; linked original: https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/
+- Story: RetainDB reportedly generated a large Cloudflare bill from an infinite queue loop, billions of KV reads/writes, Durable Object storage writes, and hot-path `kv.list()` scans. Source aggregator: https://serverlesshorrors.com/all/cloudflare-36k; linked original: https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/ (archived: https://web.archive.org/web/20260506025828/https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/)
 - Source type: war story / first-hand linked via aggregator; verify original when using externally.
 - Mechanism: queue message calls internal API with async mode, re-enqueues itself; unbatched DO writes multiply row writes; KV list scan runs on most auth requests.
 - Cloudflare checks:
@@ -43,7 +45,7 @@ For each relevant scenario:
 
 ### 3. Static-site bandwidth/DDoS turns into a giant bill
 
-- Story: Netlify user reported a $104k bill for a simple static site after ~190TB bandwidth in 4 days; Netlify forum follow-up and Reddit post. Sources: https://answers.netlify.com/t/i-am-the-op-of-that-104k-bill-post-and-i-have-some-follow-up-questions/113472 and https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/; ServerlessHorrors summary: https://serverlesshorrors.com/all/netlify-104k
+- Story: Netlify user reported a $104k bill for a simple static site after ~190TB bandwidth in 4 days; Netlify forum follow-up and Reddit post. Sources: https://answers.netlify.com/t/i-am-the-op-of-that-104k-bill-post-and-i-have-some-follow-up-questions/113472 and https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/ (archived: https://web.archive.org/web/20250908035924/https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/); ServerlessHorrors summary: https://serverlesshorrors.com/all/netlify-104k
 - Source type: first-hand forum/reddit + aggregator.
 - Mechanism: attack or abnormal traffic on static assets creates metered bandwidth overage; provider did not hard-stop by default.
 - Cloudflare checks:
@@ -56,7 +58,7 @@ For each relevant scenario:
 
 ### 4. Image optimization/transform APIs get crawled or variant-exploded
 
-- Story: Metacast postmortem on LLM bots and Vercel Image API pricing. Source: “The Cost of Being Crawled: LLM Bots and Vercel Image API Pricing,” https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization; HN discussion: https://news.ycombinator.com/item?id=43687431
+- Story: Metacast postmortem on LLM bots and Vercel Image API pricing. Source: “The Cost of Being Crawled: LLM Bots and Vercel Image API Pricing,” https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization (archived: https://web.archive.org/web/20260304063157/https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization); HN discussion: https://news.ycombinator.com/item?id=43687431
 - Source type: first-hand engineering postmortem / war story.
 - Mechanism: bots/crawlers request many image optimization URLs; transformations are metered and can multiply by width/format/DPR/quality/cache-key variants.
 - Cloudflare checks:
@@ -69,7 +71,7 @@ For each relevant scenario:
 
 ### 5. Firebase/Firestore/Storage reads or uncached origin objects explode
 
-- Stories: “How not to get a $30k bill from Firebase,” Medium, 2019, https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca (may require access); HN discussion “How we spent $30k in Firebase in less than 72 hours,” https://news.ycombinator.com/item?id=17661391; ServerlessHorrors Firebase $100k storage-origin abuse summary: https://serverlesshorrors.com/all/firebase-100k
+- Stories: “How not to get a $30k bill from Firebase,” Medium, 2019, https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca (archived: https://web.archive.org/web/20200429160249/https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca) (may require access); HN discussion “How we spent $30k in Firebase in less than 72 hours,” https://news.ycombinator.com/item?id=17661391; ServerlessHorrors Firebase $100k storage-origin abuse summary: https://serverlesshorrors.com/all/firebase-100k
 - Official docs: Firebase “Avoid surprise bills,” https://firebase.google.com/docs/projects/billing/avoid-surprise-bills; Google Cloud budgets, https://cloud.google.com/billing/docs/how-to/budgets
 - Source type: war stories + official docs.
 - Mechanism: per-document reads/egress/storage requests or direct origin bucket access multiply under loops, bots, or uncached objects.
@@ -131,7 +133,7 @@ For each relevant scenario:
 
 ### 10. Cloudflare-fronted third-party origins still bill at the origin
 
-- Sources: Vercel Spend Management, https://vercel.com/docs/pricing/spend-management; Railway cost-control docs, https://docs.railway.com/pricing/cost-control.md; Render billing/scaling docs, https://render.com/docs/billing and https://render.com/docs/scaling; Fly.io pricing/autostop docs, https://fly.io/docs/about/pricing/ and https://fly.io/docs/apps/autostart-stop/
+- Sources: Vercel Spend Management, https://vercel.com/docs/pricing/spend-management; Railway cost-control docs, https://docs.railway.com/pricing/cost-control.md; Render billing/scaling docs, https://render.com/docs/billing (no archive snapshot found as of 2026-06-09) and https://render.com/docs/scaling; Fly.io pricing/autostop docs, https://fly.io/docs/about/pricing/ and https://fly.io/docs/apps/autostart-stop/
 - Source type: official docs.
 - Mechanism: Cloudflare may absorb/cache some traffic, but cache misses, uncacheable requests, or direct default hostnames can still invoke paid serverless/container origins.
 - Cloudflare checks:
@@ -143,7 +145,7 @@ For each relevant scenario:
 
 ### 11. Public storage/object hotlinking creates request/egress bills
 
-- Source: Maciej Pocwierz, “Anatomy of an AWS bill shock,” 2024, https://www.maciejpocwierz.com/posts/anatomy-of-a-aws-bill-shock/; AWS S3 pricing, https://aws.amazon.com/s3/pricing/
+- Source: Maciej Pocwierz, “Anatomy of an AWS bill shock,” 2024, https://www.maciejpocwierz.com/posts/anatomy-of-a-aws-bill-shock/ (no archive snapshot found as of 2026-06-09); AWS S3 pricing, https://aws.amazon.com/s3/pricing/
 - Source type: first-hand war story + official docs.
 - Mechanism: public object/storage endpoint receives unexpected requests because a bucket/object name or URL is guessed/reused/misconfigured; request charges and egress can accrue even when no app code runs.
 - Cloudflare checks:

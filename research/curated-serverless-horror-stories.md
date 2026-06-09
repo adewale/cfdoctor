@@ -2,12 +2,14 @@
 
 This is the parent-agent research pass. A separate subagent research run may add more examples in `research/serverless-horror-stories.md`.
 
+Link status last verified: 2026-06-09 (scripts/check_links.py; report in evals/results/).
+
 ## Cloudflare
 
 ### RetainDB / Cloudflare KV + Durable Objects + Queues runaway bill
 
 - Source aggregator: https://serverlesshorrors.com/all/cloudflare-36k
-- Linked original: https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/
+- Linked original: https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/ (archived: https://web.archive.org/web/20260506025828/https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/)
 - Type: war story / first-hand linked via aggregator; verify original before external publishing.
 - Claimed mechanism: infinite Queue loop, unbatched Durable Object storage writes, and KV `list()` scans on auth requests produced billions of operations.
 - Scenarios to check: recursive async work, idempotency/dedupe, DLQ/retry caps, DO write batching, KV list hot paths, per-run cost proxies.
@@ -24,7 +26,7 @@ This is the parent-agent research pass. A separate subagent research run may add
 
 ### LLM bots and Vercel Image API pricing
 
-- Source: Metacast engineering postmortem, “The Cost of Being Crawled: LLM Bots and Vercel Image API Pricing,” https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization
+- Source: Metacast engineering postmortem, “The Cost of Being Crawled: LLM Bots and Vercel Image API Pricing,” https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization (archived: https://web.archive.org/web/20260304063157/https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization)
 - HN discussion: https://news.ycombinator.com/item?id=43687431
 - Type: first-hand engineering postmortem.
 - Mechanism: crawlers/bots request image optimization URLs and trigger metered image transformations.
@@ -35,7 +37,7 @@ This is the parent-agent research pass. A separate subagent research run may add
 ### $104k static-site bandwidth bill after abnormal traffic
 
 - Forum follow-up: https://answers.netlify.com/t/i-am-the-op-of-that-104k-bill-post-and-i-have-some-follow-up-questions/113472
-- Original Reddit post: https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/
+- Original Reddit post: https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/ (archived: https://web.archive.org/web/20250908035924/https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/)
 - Aggregator: https://serverlesshorrors.com/all/netlify-104k
 - Type: first-hand forum/reddit + aggregator.
 - Mechanism: abnormal traffic / likely DDoS consumed massive bandwidth on a static site.
@@ -45,7 +47,7 @@ This is the parent-agent research pass. A separate subagent research run may add
 
 ### Firebase reads/usage surprise bills
 
-- Medium article: “How not to get a $30k bill from Firebase,” https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca (access may be restricted)
+- Medium article: “How not to get a $30k bill from Firebase,” https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca (archived: https://web.archive.org/web/20200429160249/https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca) (access may be restricted)
 - HN discussion: https://news.ycombinator.com/item?id=17661391
 - Official Firebase docs: “Avoid surprise bills,” https://firebase.google.com/docs/projects/billing/avoid-surprise-bills
 - Official GCP budgets: https://cloud.google.com/billing/docs/how-to/budgets
