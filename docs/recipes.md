@@ -40,7 +40,7 @@ Use before authenticated commands or screenshots. The skill should ask for exact
 python3 /path/to/cfdoctor/scripts/cfdoctor_static_scan.py .
 ```
 
-Use in CI or as a pre-audit smoke check. The Python scanner parses local `wrangler.jsonc`, `wrangler.json`, and legacy `wrangler.toml` configs plus source/docs/IaC text to build a product inventory and heuristic risk leads. Scanner findings are leads, not proof: they do not replace current Cloudflare docs, account/dashboard evidence, traffic/billing data, or the full Cloudflare Doctor audit contract.
+Use in CI or as a pre-audit smoke check. The Python scanner parses local `wrangler.jsonc`, `wrangler.json`, and legacy `wrangler.toml` configs plus source/docs/IaC text to build a product inventory and heuristic risk leads. Every finding carries a stable check ID from the registry (`--list-checks`); add `--json` for machine-readable output and `--exclude REL_PATH` to scope out subtrees (when scanning this repo itself, use `--exclude evals/fixtures` — the detection fixtures are intentionally bad). Scanner findings are leads, not proof: they do not replace current Cloudflare docs, account/dashboard evidence, traffic/billing data, or the full Cloudflare Doctor audit contract.
 
 ## Trigger eval maintenance
 
@@ -49,3 +49,12 @@ python3 scripts/eval_skill_trigger.py
 ```
 
 Run after editing `SKILL.md` or `evals/trigger-cases.json`. Current expected result is 100% proxy accuracy with no missing description terms.
+
+## Detection eval and coverage maintenance
+
+```bash
+python3 scripts/eval_detection.py
+python3 scripts/check_coverage.py
+```
+
+Run after changing scanner heuristics, fixtures, or the coverage matrix. The detection eval must pass every fixture under `evals/fixtures/detection/` (including the `clean-baseline` false-positive guard), and the coverage checker must report the matrix consistent with the scanner registry. When fixing a scanner false negative, add a failing `gap-*` fixture first, then fix the heuristic.

@@ -6,6 +6,22 @@ its intended benefit. Items are implemented in this order. Every item records
 its risks and downsides, because each change can also make the skill worse if
 the risk is ignored.
 
+## Status (end of 2026-06-09 pass)
+
+1. Scanner check IDs + JSON output — **done** (scanner 0.3.0; 56-check registry).
+2. Fixture-based detection evals — **done** (14 fixtures, including five
+   `gap-*` fixtures that reproduced and then closed real false negatives).
+3. Coverage matrix + consistency checker — **done** (CI-enforced).
+4. Link verification + archive fallbacks — **done** (initial run; periodic
+   re-runs tracked in `TODO.md`).
+5. SKILL.md reference routing — **done deterministically** (trigger eval,
+   contract markers); model-graded confirmation still pending (`TODO.md`).
+6. Holdout/holdback scaffolding — **rescoped** (see correction below); two
+   fixture-backed tune cases added to the shared benchmark.
+7. Account-state collector — **deferred** (needs a live Cloudflare account).
+
+Remaining work lives in [`TODO.md`](../TODO.md).
+
 ## Ranking criteria
 
 - **Verifiability**: can a command prove the change works (exit code, diff,

@@ -36,10 +36,11 @@ Interpret the output as an evidence-backed risk review: findings should include 
 - `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
 - `scripts/check_coverage.py` — consistency check between `references/check-coverage-matrix.md` and the scanner's check registry.
 - `scripts/check_links.py` — citation link checker (network-dependent; never gates CI unless `--strict`).
-- `docs/` — recipes and lessons learned.
-- `evals/` — trigger cases, shared benchmark manifest, holdout/holdback placeholders, fixtures, and saved trigger-eval reports.
+- `docs/` — recipes, lessons learned, and the ranked improvement plan with per-change risk analysis.
+- `evals/` — trigger cases, shared benchmark manifest, detection fixtures (war-story known-bad projects plus a clean baseline), holdout/holdback placeholders, and saved eval reports.
 - `examples/` — copy-paste usage examples.
 - `research/` — source notes used to evolve the audit checklist.
+- `TODO.md` — remaining and deferred work.
 
 ## What is bundled into the Pi skill?
 
