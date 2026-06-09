@@ -129,4 +129,4 @@ The skill also refuses to infer dashboard/account state from repository files al
 
 ## Repository status
 
-This repo is public and usable as a Git-installed Pi package. A formal open-source license has not been selected yet; until a root `LICENSE` file is added, default copyright rules apply.
+This repo is public, usable as a Git-installed Pi package, and licensed under the MIT License. See [`LICENSE`](LICENSE).
