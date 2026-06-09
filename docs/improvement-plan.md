@@ -103,18 +103,23 @@ the risk is ignored.
 
 ## 6. Holdout/holdback model-graded eval scaffolding
 
-- **Verifiability: low-medium.** The scaffolding (cases, grading rubric,
-  manifests) is verifiable as structure; grading quality is not verifiable
-  without running a model harness, which this repo cannot do deterministically.
-- **Likelihood of success: medium.** Valuable, but only pays off when someone
-  runs the harness regularly.
+- **Correction (2026-06-09):** this item was planned on a wrong premise. The
+  scaffolding already exists: `evals/shared-benchmark.json` defines 24 cases
+  across `tune`/`holdout`/`holdback` splits, and `evals/holdout/` +
+  `evals/holdback/` are intentionally gitignored so hidden cases stay out of
+  the public repo. "Filling" those directories from an ephemeral session
+  would produce unpushable files, so the scope changes to: strengthen the
+  visible `tune` split with cases backed by the new detection fixtures, so
+  model-graded audit cases and deterministic scanner cases share evidence.
+- **Verifiability: low-medium.** Case structure and JSON shape are
+  verifiable; grading quality still requires running the external
+  skill-eval-harness with a model.
 - **Risks / downsides:**
   - Unused eval scaffolding rots and misleads contributors about coverage.
-    Mitigation: README labels these as requiring a model harness; CI only
-    validates their JSON shape.
-  - Holdout cases committed to a public repo are not truly held out from
-    models trained on public code. Accepted and documented; their value is
-    regression comparison, not contamination-proof benchmarking.
+    Mitigation: CI validates JSON shape only; the harness docs state what
+    requires a model run.
+  - Fixture-backed tune cases are public, so models can memorize them; the
+    gitignored holdout/holdback splits remain the contamination guard.
 
 ## 7. Account-state collector (collect/eval split) — deferred
 
