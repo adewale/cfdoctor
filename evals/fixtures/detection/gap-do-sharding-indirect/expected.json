@@ -1,0 +1,8 @@
+{
+  "description": "Worker that routes all traffic through one Durable Object, but the singleton key is held in a named constant (idFromName(COORDINATOR_KEY)) instead of a string literal, so the literal-only hotspot heuristic misses it.",
+  "war_story": "coey.dev Durable Objects gotchas (see references/war-story-scenario-checklist.md #14, DO-SHARDING-HOTSPOT)",
+  "required_check_ids": [
+    "DO-SHARDING-HOTSPOT"
+  ],
+  "forbidden_check_ids": []
+}

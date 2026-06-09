@@ -1,0 +1,10 @@
+{
+  // Blog feed API backed by D1.
+  "name": "blog-feed-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "blog", "database_id": "0000fixture0000" }
+  ]
+}

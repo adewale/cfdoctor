@@ -1,0 +1,11 @@
+{
+  // Tenant API fronted by one coordinating Durable Object.
+  "name": "tenant-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "COORDINATOR", "class_name": "Coordinator" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Coordinator"] }]
+}

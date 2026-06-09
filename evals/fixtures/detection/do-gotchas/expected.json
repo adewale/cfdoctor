@@ -1,0 +1,10 @@
+{
+  "description": "Chat room and presence Durable Objects with three classic gotchas: storage.list on the per-heartbeat hot path, an alarm handler that always reschedules itself even when the room is idle, and WebSockets accepted without the hibernation API.",
+  "war_story": "https://coey.dev/durable-objects-gotchas (see references/war-story-scenario-checklist.md #14)",
+  "required_check_ids": [
+    "DO-STORAGE-LIST-HOTPATH",
+    "DO-ALARM-RECURSION",
+    "DO-WEBSOCKET-DURATION"
+  ],
+  "forbidden_check_ids": []
+}

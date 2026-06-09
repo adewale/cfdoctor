@@ -1,0 +1,10 @@
+{
+  "description": "Webhook Worker whose wrangler vars hold credential-named values and whose committed .env file carries a database connection string with an inline password plus a signing-secret assignment. All values are fake fixture strings.",
+  "war_story": "Committed-credential incidents generalized in references/war-story-scenario-checklist.md #19 (Worker security controls deserve source-backed review)",
+  "required_check_ids": [
+    "CFDOC-SEC-SECRET-IN-CONFIG",
+    "CFDOC-SEC-SECRET-VALUE",
+    "CFDOC-SEC-SECRET-ASSIGNMENT"
+  ],
+  "forbidden_check_ids": []
+}

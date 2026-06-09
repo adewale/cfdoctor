@@ -1,0 +1,9 @@
+{
+  // Uptime pinger bolted onto the main zone "just to be safe".
+  "name": "uptime-pinger",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "*example.com/*", "zone_name": "example.com" }],
+  "triggers": { "crons": ["* * * * *"] }
+}

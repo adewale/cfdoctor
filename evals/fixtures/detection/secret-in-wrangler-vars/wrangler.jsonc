@@ -1,0 +1,12 @@
+{
+  // Billing webhook receiver. Vars were "temporarily" pasted in to unblock a deploy.
+  "name": "billing-webhook",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "STRIPE_API_KEY": "sk-fixturefake0000000000000000",
+    "WEBHOOK_SIGNING_SECRET": "whsec-fixturefake-00000000000000"
+  }
+}

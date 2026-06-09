@@ -1,0 +1,7 @@
+{
+  "description": "Small, well-configured status endpoint: recent compatibility_date, observability enabled, narrowly scoped route, plain non-sensitive vars, and a handler with no expensive or risky patterns. False-positive guard: the scanner must emit zero findings here.",
+  "war_story": "n/a (clean control fixture)",
+  "required_check_ids": [],
+  "forbidden_check_ids": [],
+  "max_findings": 0
+}

@@ -1,0 +1,14 @@
+{
+  // Chat rooms with presence tracking, one Durable Object per room.
+  "name": "chat-rooms",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [
+      { "name": "CHAT_ROOM", "class_name": "ChatRoom" },
+      { "name": "PRESENCE", "class_name": "PresenceTracker" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChatRoom", "PresenceTracker"] }]
+}

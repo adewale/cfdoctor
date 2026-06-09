@@ -1,0 +1,9 @@
+{
+  "description": "Link shortener that runs a KV prefix list on every dashboard page view and writes five separate Durable Object storage keys per click. Models the hot-path kv.list scans and unbatched DO storage writes from the RetainDB bill and the coey.dev DO gotchas.",
+  "war_story": "https://serverlesshorrors.com/all/cloudflare-36k and https://coey.dev/durable-objects-gotchas (see references/war-story-scenario-checklist.md #1 and #14)",
+  "required_check_ids": [
+    "CFDOC-COST-KV-LIST-HOTPATH",
+    "DO-STORAGE-BATCHING"
+  ],
+  "forbidden_check_ids": []
+}

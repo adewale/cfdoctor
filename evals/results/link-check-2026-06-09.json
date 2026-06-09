@@ -1,0 +1,4126 @@
+{
+  "checked_at": "2026-06-09T19:07:22+00:00",
+  "total": 397,
+  "counts": {
+    "ok": 337,
+    "redirect-ok": 32,
+    "unverifiable-automated": 3,
+    "dead": 20,
+    "error": 5
+  },
+  "results": [
+    {
+      "url": "https://answers.netlify.com/t/i-am-the-op-of-that-104k-bill-post-and-i-have-some-follow-up-questions/113472",
+      "status": 200,
+      "final_url": "https://answers.netlify.com/t/i-am-the-op-of-that-104k-bill-post-and-i-have-some-follow-up-questions/113472",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://aquasecurity.github.io/tfsec/v1.28.1/",
+      "status": 200,
+      "final_url": "https://aquasecurity.github.io/tfsec/v1.28.1/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://aquasecurity.github.io/tfsec/v1.28.1/getting-started/configuration/ignores/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://aws.amazon.com/cloudfront/pricing/",
+      "status": 200,
+      "final_url": "https://aws.amazon.com/cloudfront/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://aws.amazon.com/s3/pricing/",
+      "status": 200,
+      "final_url": "https://aws.amazon.com/s3/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://cloud.google.com/billing/docs/how-to/budgets",
+      "status": 200,
+      "final_url": "https://docs.cloud.google.com/billing/docs/how-to/budgets",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://cloud.google.com/billing/docs/how-to/budgets-programmatic-notifications",
+      "status": 200,
+      "final_url": "https://docs.cloud.google.com/billing/docs/how-to/budgets-programmatic-notifications",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://cloud.google.com/functions/docs/bestpractices/retries",
+      "status": 200,
+      "final_url": "https://docs.cloud.google.com/run/docs/tips/function-retries",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://cloud.google.com/functions/pricing",
+      "status": 200,
+      "final_url": "https://cloud.google.com/functions/pricing-overview",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://cloud.google.com/logging/docs/exclusions",
+      "status": 200,
+      "final_url": "https://docs.cloud.google.com/logging/docs/routing/overview#exclusions",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://cloud.google.com/run/docs/configuring/max-instances",
+      "status": 200,
+      "final_url": "https://docs.cloud.google.com/run/docs/configuring/max-instances",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://cloudcustodian.io/docs/",
+      "status": 200,
+      "final_url": "https://cloudcustodian.io/docs/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://cloudcustodian.io/docs/policy/index.html",
+      "status": 200,
+      "final_url": "https://cloudcustodian.io/docs/policy/index.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://cloudcustodian.io/docs/quickstart/index.html",
+      "status": 200,
+      "final_url": "https://cloudcustodian.io/docs/quickstart/index.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/agentcast",
+      "status": 200,
+      "final_url": "https://coey.dev/agentcast",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/agents-patterns",
+      "status": 200,
+      "final_url": "https://coey.dev/agents-patterns",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/algorithmic-press",
+      "status": 200,
+      "final_url": "https://coey.dev/algorithmic-press",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/bio",
+      "status": 200,
+      "final_url": "https://coey.dev/bio",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/built-in-reverse",
+      "status": 200,
+      "final_url": "https://coey.dev/built-in-reverse",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/campfire",
+      "status": 200,
+      "final_url": "https://coey.dev/campfire",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/casa-tier-2",
+      "status": 200,
+      "final_url": "https://coey.dev/casa-tier-2",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/cf-tutorial",
+      "status": 200,
+      "final_url": "https://coey.dev/cf-tutorial",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/checkout-reality",
+      "status": 200,
+      "final_url": "https://coey.dev/checkout-reality",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/compaction",
+      "status": 200,
+      "final_url": "https://coey.dev/compaction",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/constraint-theory",
+      "status": 200,
+      "final_url": "https://coey.dev/constraint-theory",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/context-cues",
+      "status": 200,
+      "final_url": "https://coey.dev/context-cues",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/correctness",
+      "status": 200,
+      "final_url": "https://coey.dev/correctness",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/cursing-agents",
+      "status": 200,
+      "final_url": "https://coey.dev/cursing-agents",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/deja",
+      "status": 200,
+      "final_url": "https://coey.dev/deja",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/deja-research",
+      "status": 200,
+      "final_url": "https://coey.dev/deja-research",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/durable-objects-gotchas",
+      "status": 200,
+      "final_url": "https://coey.dev/durable-objects-gotchas",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/edgewire",
+      "status": 200,
+      "final_url": "https://coey.dev/edgewire",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/effect-first",
+      "status": 200,
+      "final_url": "https://coey.dev/effect-first",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/effect-taggederror",
+      "status": 200,
+      "final_url": "https://coey.dev/effect-taggederror",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/ego-less",
+      "status": 200,
+      "final_url": "https://coey.dev/ego-less",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/firestore-agents",
+      "status": 200,
+      "final_url": "https://coey.dev/firestore-agents",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/fleet-pattern",
+      "status": 200,
+      "final_url": "https://coey.dev/fleet-pattern",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/gate-review",
+      "status": 200,
+      "final_url": "https://coey.dev/gate-review",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/liquid-primitives",
+      "status": 200,
+      "final_url": "https://coey.dev/liquid-primitives",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/loop",
+      "status": 200,
+      "final_url": "https://coey.dev/loop",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/loop-demo",
+      "status": 200,
+      "final_url": "https://coey.dev/loop-demo",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/parley",
+      "status": 200,
+      "final_url": "https://coey.dev/parley",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/patience",
+      "status": 200,
+      "final_url": "https://coey.dev/patience",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/perfect-do",
+      "status": 200,
+      "final_url": "https://coey.dev/perfect-do",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/preflight",
+      "status": 200,
+      "final_url": "https://coey.dev/preflight",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/promptlog",
+      "status": 200,
+      "final_url": "https://coey.dev/promptlog",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/prompts-are-wishes",
+      "status": 200,
+      "final_url": "https://coey.dev/prompts-are-wishes",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/puzzle",
+      "status": 200,
+      "final_url": "https://coey.dev/puzzle",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/real-time-logging",
+      "status": 200,
+      "final_url": "https://coey.dev/real-time-logging",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/self",
+      "status": 200,
+      "final_url": "https://coey.dev/self",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/show-me",
+      "status": 200,
+      "final_url": "https://coey.dev/show-me",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/sitemap.xml",
+      "status": 200,
+      "final_url": "https://coey.dev/sitemap.xml",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/spread",
+      "status": 200,
+      "final_url": "https://coey.dev/spread",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/taste",
+      "status": 200,
+      "final_url": "https://coey.dev/taste",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/userdo",
+      "status": 200,
+      "final_url": "https://coey.dev/userdo",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/video-to-ascii",
+      "status": 200,
+      "final_url": "https://coey.dev/video-to-ascii",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/vm-api",
+      "status": 200,
+      "final_url": "https://coey.dev/vm-api",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/worker-loaders",
+      "status": 200,
+      "final_url": "https://coey.dev/worker-loaders",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://coey.dev/worms-history",
+      "status": 200,
+      "final_url": "https://coey.dev/worms-history",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/coey-dev-blog-review.md"
+      ]
+    },
+    {
+      "url": "https://devcenter.heroku.com/articles/github-integration-review-apps",
+      "status": 200,
+      "final_url": "https://devcenter.heroku.com/articles/github-integration-review-apps",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://devcenter.heroku.com/articles/limits",
+      "status": 200,
+      "final_url": "https://devcenter.heroku.com/articles/limits",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://devcenter.heroku.com/articles/scaling",
+      "status": 200,
+      "final_url": "https://devcenter.heroku.com/articles/scaling",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://devcenter.heroku.com/articles/usage-and-billing",
+      "status": 200,
+      "final_url": "https://devcenter.heroku.com/articles/usage-and-billing",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://developer.chrome.com/docs/lighthouse/overview/",
+      "status": 200,
+      "final_url": "https://developer.chrome.com/docs/lighthouse/overview/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/",
+      "status": 200,
+      "final_url": "https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/concepts/agentic-patterns/long-running-agents/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/concepts/agentic-patterns/long-running-agents/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/concepts/agentic-patterns/long-running-agents/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/concepts/agentic-patterns/long-running-agents/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/runtime/execution/durable-execution/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/runtime/execution/durable-execution/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/runtime/execution/queue-tasks/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/runtime/execution/queue-tasks/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/runtime/execution/retries/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/runtime/execution/retries/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/runtime/execution/retries/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/runtime/execution/retries/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/runtime/execution/schedule-tasks/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/runtime/execution/schedule-tasks/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/runtime/operations/observability/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/runtime/operations/observability/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/runtime/operations/observability/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/runtime/operations/observability/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/tools/browser/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/tools/browser/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/agents/tools/sandbox/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/agents/tools/sandbox/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/ai-gateway/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/ai-gateway/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/ai-gateway/features/caching/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/ai-gateway/features/caching/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/ai-gateway/features/rate-limiting/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/ai-gateway/features/rate-limiting/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/ai-gateway/observability/costs/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/ai-gateway/observability/costs/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/analytics/analytics-engine/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/analytics/analytics-engine/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/analytics/analytics-engine/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/analytics/analytics-engine/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/analytics/analytics-engine/sampling/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/analytics/analytics-engine/sampling/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/analytics/graphql-api/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/analytics/graphql-api/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/api-shield/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/api-shield/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/api-shield/get-started/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/api-shield/get-started/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/api-shield/security/mtls/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/api-shield/security/mtls/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/api/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/api/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/artifacts/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/artifacts/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/artifacts/concepts/best-practices/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/artifacts/concepts/best-practices/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/artifacts/concepts/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/artifacts/concepts/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/artifacts/guides/authentication/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/artifacts/guides/authentication/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/artifacts/platform/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/artifacts/platform/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/bots/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/bots/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/browser-run/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/browser-run/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/browser-run/cdp/session-management/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/browser-run/cdp/session-management/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/browser-run/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/browser-run/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/browser-run/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/browser-run/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/browser-run/reference/browser-close-reasons/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/browser-run/reference/browser-close-reasons/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/browser-run/reference/timeouts/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/browser-run/reference/timeouts/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/byoip/concepts/dynamic-advertisement/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/byoip/concepts/dynamic-advertisement/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/byoip/concepts/irr-entries/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/byoip/concepts/irr-entries/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/advanced-configuration/cache-analytics/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/advanced-configuration/cache-reserve/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/advanced-configuration/cache-reserve/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/concepts/cache-control/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/concepts/cache-control/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/concepts/cache-keys/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/concepts/default-cache-behavior/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/concepts/default-cache-behavior/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/how-to/cache-keys/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/how-to/cache-keys/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/how-to/cache-rules/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/how-to/cache-rules/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/how-to/purge-cache/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/how-to/purge-cache/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/how-to/tiered-cache/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/how-to/tiered-cache/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/interaction-cloudflare-products/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/interaction-cloudflare-products/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/interaction-cloudflare-products/r2/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/interaction-cloudflare-products/r2/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/interaction-cloudflare-products/workers-cache-rules/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cache/interaction-cloudflare-products/workers-cache-rules/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/client-side-security/best-practices/deploy-rules-in-production/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/client-side-security/best-practices/deploy-rules-in-production/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/client-side-security/best-practices/handle-an-alert/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/client-side-security/best-practices/handle-an-alert/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-network-firewall/best-practices/extended-ruleset/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-network-firewall/best-practices/extended-ruleset/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-network-firewall/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-network-firewall/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-network-firewall/best-practices/magic-transit-egress/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-network-firewall/best-practices/magic-transit-egress/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-network-firewall/best-practices/minimal-ruleset/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-network-firewall/best-practices/minimal-ruleset/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-apps/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/email-security/settings/detection-settings/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/email-security/settings/detection-settings/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/identity/users/session-management/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/access-controls/access-settings/session-management/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/insights/logs/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/insights/logs/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-mesh/tips/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-mesh/tips/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/networks/resolvers-and-proxies/proxy-endpoints/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/networks/resolvers-and-proxies/proxy-endpoints/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/policies/access/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/access-controls/policies/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/get-started/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/get-started/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/packet-filtering/best-practices/extended-ruleset/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/packet-filtering/best-practices/extended-ruleset/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/packet-filtering/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/packet-filtering/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/packet-filtering/best-practices/magic-transit-egress/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/packet-filtering/best-practices/magic-transit-egress/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/packet-filtering/best-practices/minimal-ruleset/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/cloudflare-one/traffic-policies/packet-filtering/best-practices/minimal-ruleset/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/import-export-data/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/import-export-data/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/local-development/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/local-development/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/query-d1/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/query-d1/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/query-d1/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/query-d1/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/read-replication/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/read-replication/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/remote-development/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/remote-development/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/retry-queries/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/retry-queries/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/retry-queries/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/retry-queries/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/use-indexes/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/use-indexes/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/best-practices/use-indexes/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/best-practices/use-indexes/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/llms.txt",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/llms.txt",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/observability/billing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/observability/billing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/observability/metrics-analytics/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/observability/metrics-analytics/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/platform/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/platform/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/reference/migrations/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/d1/reference/migrations/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/ddos-protection/best-practices/proactive-defense/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/ddos-protection/best-practices/proactive-defense/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/ddos-protection/best-practices/third-party/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/ddos-protection/best-practices/third-party/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/additional-options/caa/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/dnssec/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dns/dnssec/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/manage-dns-records/reference/proxied-dns-records/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dns/proxy-status/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/manage-dns-records/reference/wildcard-dns-records/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dns/manage-dns-records/reference/wildcard-dns-records/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/api/alarms/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/api/alarms/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/best-practices/create-durable-object-stubs-and-send-requests/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/best-practices/create-durable-object-stubs-and-send-requests/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/best-practices/error-handling/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/best-practices/error-handling/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/best-practices/error-handling/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/best-practices/error-handling/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/best-practices/rules-of-durable-objects/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/best-practices/rules-of-durable-objects/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/best-practices/rules-of-durable-objects/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/best-practices/rules-of-durable-objects/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/best-practices/websockets/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/best-practices/websockets/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/best-practices/websockets/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/best-practices/websockets/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/platform/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/platform/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dynamic-workers/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dynamic-workers/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dynamic-workers/api-reference/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dynamic-workers/api-reference/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dynamic-workers/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dynamic-workers/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dynamic-workers/usage/egress-control/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dynamic-workers/usage/egress-control/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dynamic-workers/usage/egress-control/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dynamic-workers/usage/egress-control/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dynamic-workers/usage/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dynamic-workers/usage/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/dynamic-workers/usage/limits/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/dynamic-workers/usage/limits/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/fundamentals/concepts/cloudflare-ip-addresses/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/fundamentals/concepts/cloudflare-ip-addresses/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/fundamentals/reference/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/fundamentals/reference/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/hyperdrive/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/hyperdrive/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/images/get-started/key-concepts/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/images/get-started/key-concepts/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/images/get-started/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/images/get-started/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/images/optimization/transformations/overview/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/images/optimization/transformations/overview/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/images/optimization/transformations/transform-via-workers/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/images/optimization/transformations/transform-via-workers/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/images/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/images/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/kv/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/kv/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/kv/concepts/how-kv-works/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/kv/concepts/how-kv-works/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/kv/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/kv/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/kv/platform/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/kv/platform/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/clientless-access/access-application/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/clientless-access/access-application/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/clientless-access/connect-private-applications/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/clientless-access/connect-private-applications/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/clientless-access/migrate-applications/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/clientless-access/migrate-applications/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/phase-1/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/phase-1/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/phase-2/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/phase-2/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/phase-3/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/phase-3/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/phase-4/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/phase-4/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/summary-considerations/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/dns-best-practices/concepts/summary-considerations/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/learning-paths/secure-internet-traffic/build-egress-policies/deploy-egress-ips/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/learning-paths/secure-internet-traffic/build-egress-policies/deploy-egress-ips/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/llms.txt",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/llms.txt",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/audit-playbook.md",
+        "references/cloudflare-best-practices-docs.md",
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/logs/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/logs/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/pages/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/preview-deployments/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/pages/configuration/preview-deployments/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/functions/limits/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/get-started/c3/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/pages/get-started/c3/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/pages/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/pulumi/tutorial/manage-secrets/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/pulumi/tutorial/manage-secrets/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/queues/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/configuration/batching-retries/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/queues/configuration/batching-retries/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/audit-engine-patterns.md",
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/configuration/dead-letter-queues/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/queues/configuration/dead-letter-queues/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/audit-engine-patterns.md",
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/configuration/delivery-guarantees/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/observability/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/queues/observability/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/observability/metrics/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/queues/observability/metrics/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/queues/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/platform/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/queues/platform/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/queues/tutorials/handle-rate-limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/queues/tutorials/handle-rate-limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2-sql/reference/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/r2-sql/reference/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2-sql/reference/limitations-best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/r2-sql/reference/limitations-best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/r2/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2/api/s3/multipart-uploads/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2/buckets/cors/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/r2/buckets/cors/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2/buckets/object-lifecycles/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/r2/buckets/object-lifecycles/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2/buckets/public-buckets/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/r2/buckets/public-buckets/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2/observability/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/r2/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/r2/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/r2/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/reference-architecture/design-guides/designing-ztna-access-policies/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/reference-architecture/design-guides/designing-ztna-access-policies/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/rules/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/rules/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/speed/observatory/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/speed/observatory/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/ssl/origin-configuration/authenticated-origin-pull/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/ssl/origin-configuration/authenticated-origin-pull/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/getting-analytics/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/stream/getting-analytics/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/stream/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/viewing-videos/using-the-stream-player/using-the-player-api/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/stream/viewing-videos/using-the-stream-player/using-the-player-api/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/style-guide/documentation-content-strategy/writing-guidelines/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/style-guide/documentation-content-strategy/writing-guidelines/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1019/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1019/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/terraform/advanced-topics/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/terraform/advanced-topics/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/turnstile/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/turnstile/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/best-practices/create-indexes/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/best-practices/create-indexes/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/best-practices/create-indexes/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/best-practices/create-indexes/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/best-practices/insert-vectors/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/best-practices/insert-vectors/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/best-practices/list-vectors/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/best-practices/list-vectors/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/best-practices/query-vectors/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/best-practices/query-vectors/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/best-practices/query-vectors/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/best-practices/query-vectors/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/vectorize/platform/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/vectorize/platform/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/waf/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/waf/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/waf/analytics/security-events/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/waf/analytics/security-events/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/waf/custom-rules/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/waf/custom-rules/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/waf/managed-rules/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/waf/managed-rules/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/waf/rate-limiting-rules/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/waf/rate-limiting-rules/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/waf/rate-limiting-rules/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/waiting-room/reference/best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/waiting-room/reference/best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers-ai/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers-ai/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers-ai/features/prompt-caching/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers-ai/features/prompt-caching/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers-ai/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers-ai/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/best-practices/workers-best-practices/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/best-practices/workers-best-practices/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/best-practices/workers-best-practices/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/best-practices/workers-best-practices/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/configuration/compatibility-dates/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/configuration/compatibility-dates/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/configuration/cron-triggers/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/configuration/previews/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/configuration/previews/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/configuration/secrets/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/configuration/secrets/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/configuration/smart-placement/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/configuration/placement/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/configuration/versions-and-deployments/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/configuration/versions-and-deployments/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/configuration/versions-and-deployments/gradual-deployments/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/configuration/versions-and-deployments/gradual-deployments/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/configuration/versions-and-deployments/rollbacks/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/configuration/versions-and-deployments/rollbacks/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/llms.txt",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/llms.txt",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/observability/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/observability/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/observability/dev-tools/cpu-usage/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/observability/dev-tools/cpu-usage/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/observability/logs/real-time-logs/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/observability/logs/real-time-logs/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/observability/logs/tail-workers/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/observability/logs/tail-workers/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/observability/logs/workers-logs/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/observability/logs/workers-logs/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/observability/metrics-and-analytics/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/observability/metrics-and-analytics/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/observability/traces/spans-and-attributes/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/observability/traces/spans-and-attributes/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/pricing/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/platform/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/reference/how-the-cache-works/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/reference/how-the-cache-works/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/runtime-apis/cache/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/runtime-apis/cache/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/runtime-apis/nodejs/net/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/runtime-apis/nodejs/net/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/wrangler/configuration/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/wrangler/configuration/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/wrangler/configuration/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/wrangler/configuration/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md",
+        "docs/lessons-learned.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workflows/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workflows/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workflows/build/rules-of-workflows/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workflows/build/rules-of-workflows/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workflows/build/rules-of-workflows/index.md",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workflows/build/rules-of-workflows/index.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/cloudflare-best-practices-docs.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workflows/build/sleeping-and-retrying/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workflows/build/sleeping-and-retrying/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://developers.cloudflare.com/workflows/reference/limits/",
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workflows/reference/limits/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://docs.astral.sh/uv/",
+      "status": 200,
+      "final_url": "https://docs.astral.sh/uv/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "evals/shared-harness.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/cost-management/latest/userguide/getting-started-ad.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/cost-management/latest/userguide/getting-started-ad.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/cost-management/latest/userguide/manage-ad.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/cost-management/latest/userguide/manage-ad.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-recursion.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-recursion.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/cost-optimization-pillar/welcome.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/wellarchitected/latest/cost-optimization-pillar/welcome.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/userguide/intro.html",
+      "status": 200,
+      "final_url": "https://docs.aws.amazon.com/wellarchitected/latest/userguide/intro.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://docs.datadoghq.com/cloud_cost_management/",
+      "status": 200,
+      "final_url": "https://docs.datadoghq.com/cloud_cost_management/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://docs.expo.dev/develop/tools/#expo-doctor",
+      "status": 200,
+      "final_url": "https://docs.expo.dev/develop/tools/#expo-doctor",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://docs.netlify.com/accounts-and-billing/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.netlify.com/accounts-and-billing/monitor-usage/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.netlify.com/edge-functions/limits/",
+      "status": 200,
+      "final_url": "https://docs.netlify.com/build/edge-functions/limits/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.netlify.com/functions/limits/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.netlify.com/image-cdn/overview/",
+      "status": 200,
+      "final_url": "https://docs.netlify.com/build/image-cdn/overview/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.netlify.com/manage/accounts-and-billing/billing",
+      "status": 200,
+      "final_url": "https://docs.netlify.com/manage/accounts-and-billing/billing/overview/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md"
+      ]
+    },
+    {
+      "url": "https://docs.railway.com/deployments/serverless.md",
+      "status": 200,
+      "final_url": "https://docs.railway.com/deployments/serverless.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.railway.com/guides/public-networking",
+      "status": 200,
+      "final_url": "https://docs.railway.com/networking/public-networking",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.railway.com/guides/usage-limits",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.railway.com/pricing/cost-control.md",
+      "status": 200,
+      "final_url": "https://docs.railway.com/pricing/cost-control.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.railway.com/pricing/plans.md",
+      "status": 200,
+      "final_url": "https://docs.railway.com/pricing/plans.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.railway.com/pricing/understanding-your-bill.md",
+      "status": 200,
+      "final_url": "https://docs.railway.com/pricing/understanding-your-bill.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.railway.com/reference/pricing/plans",
+      "status": 200,
+      "final_url": "https://docs.railway.com/pricing/plans",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://docs.snyk.io/scan-with-snyk/snyk-iac",
+      "status": 200,
+      "final_url": "https://docs.snyk.io/scan-fix-and-prevent/scan-with-snyk/snyk-iac",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://firebase.google.com/docs/firestore/pricing",
+      "status": 200,
+      "final_url": "https://firebase.google.com/docs/firestore/pricing",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://firebase.google.com/docs/functions/firestore-events",
+      "status": 200,
+      "final_url": "https://firebase.google.com/docs/functions/firestore-events",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://firebase.google.com/docs/projects/billing/avoid-surprise-bills",
+      "status": 200,
+      "final_url": "https://firebase.google.com/docs/projects/billing/avoid-surprise-bills",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://fireship.io/lessons/firebase-costs/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://fly.io/docs/about/pricing/",
+      "status": 200,
+      "final_url": "https://fly.io/docs/about/pricing/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://fly.io/docs/apps/autostart-stop/",
+      "status": 200,
+      "final_url": "https://fly.io/docs/launch/autostop-autostart/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://fly.io/docs/flyctl/scale-count/",
+      "status": 200,
+      "final_url": "https://fly.io/docs/flyctl/scale-count/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://fly.io/docs/monitoring/metrics/",
+      "status": 200,
+      "final_url": "https://fly.io/docs/monitoring/metrics/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://getconvoy.io/blog/stripe-webhook-delivery-failure",
+      "status": 200,
+      "final_url": "https://www.getconvoy.io/blog/stripe-webhook-delivery-failure",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md",
+      "status": 200,
+      "final_url": "https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://github.com/adewale/cfdoctor",
+      "status": 200,
+      "final_url": "https://github.com/adewale/cfdoctor",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "README.md"
+      ]
+    },
+    {
+      "url": "https://github.com/adewale/skill-eval-harness",
+      "status": 200,
+      "final_url": "https://github.com/adewale/skill-eval-harness",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "evals/shared-harness.md"
+      ]
+    },
+    {
+      "url": "https://github.com/adewale/skill-eval-harness.git@v0.1.1",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "evals/shared-harness.md"
+      ]
+    },
+    {
+      "url": "https://github.com/aidenybai/react-scan",
+      "status": 200,
+      "final_url": "https://github.com/aidenybai/react-scan",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://github.com/react-native-community/cli/tree/main/packages/cli-doctor",
+      "status": 200,
+      "final_url": "https://github.com/react-native-community/cli/tree/main/packages/cli-doctor",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://github.com/welldone-software/why-did-you-render",
+      "status": 200,
+      "final_url": "https://github.com/welldone-software/why-did-you-render",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices",
+      "status": 200,
+      "final_url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-queue-trigger?pivots=programming-language-csharp&tabs=isolated-process%2Cextensionv5#poison-messages",
+      "status": 200,
+      "final_url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-queue-trigger?pivots=programming-language-csharp&tabs=isolated-process%2Cextensionv5#poison-messages",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-consumption-costs",
+      "status": 200,
+      "final_url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-consumption-costs",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale",
+      "status": 200,
+      "final_url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/azure-monitor/app/sampling",
+      "status": 200,
+      "final_url": "https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-sampling",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets",
+      "status": 200,
+      "final_url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca",
+      "status": 403,
+      "final_url": null,
+      "classification": "unverifiable-automated",
+      "detail": "GET 403 (bot-blocked domain; check manually)",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization",
+      "status": 403,
+      "final_url": null,
+      "classification": "error",
+      "detail": "GET 403",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=1688904",
+      "status": 200,
+      "final_url": "https://news.ycombinator.com/item?id=1688904",
+      "classification": "ok",
+      "detail": "GET 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=17661391",
+      "status": 200,
+      "final_url": "https://news.ycombinator.com/item?id=17661391",
+      "classification": "ok",
+      "detail": "GET 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=43687431",
+      "status": 200,
+      "final_url": "https://news.ycombinator.com/item?id=43687431",
+      "classification": "ok",
+      "detail": "GET 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://nextjs.org/docs/app/api-reference/components/image#remotepatterns",
+      "status": 200,
+      "final_url": "https://nextjs.org/docs/app/api-reference/components/image#remotepatterns",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/",
+      "status": 403,
+      "final_url": null,
+      "classification": "unverifiable-automated",
+      "detail": "GET 403 (bot-blocked domain; check manually)",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://react.dev/learn/react-developer-tools",
+      "status": 200,
+      "final_url": "https://react.dev/learn/react-developer-tools",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://react.dev/reference/eslint-plugin-react-hooks",
+      "status": 200,
+      "final_url": "https://react.dev/reference/eslint-plugin-react-hooks",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://react.dev/reference/react/Profiler",
+      "status": 200,
+      "final_url": "https://react.dev/reference/react/Profiler",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://react.dev/reference/react/StrictMode",
+      "status": 200,
+      "final_url": "https://react.dev/reference/react/StrictMode",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs",
+      "status": 200,
+      "final_url": "https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://render.com/docs/billing",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://render.com/docs/ddos-protection",
+      "status": 200,
+      "final_url": "https://render.com/docs/ddos-protection",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://render.com/docs/preview-environments",
+      "status": 200,
+      "final_url": "https://render.com/docs/preview-environments",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://render.com/docs/scaling",
+      "status": 200,
+      "final_url": "https://render.com/docs/scaling",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://semgrep.dev/docs/",
+      "status": 200,
+      "final_url": "https://docs.semgrep.dev/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://semgrep.dev/docs/writing-rules/rule-syntax",
+      "status": 200,
+      "final_url": "https://docs.semgrep.dev/writing-rules/rule-syntax",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://serverlesshorrors.com/all/cloudflare-36k",
+      "status": 200,
+      "final_url": "https://serverlesshorrors.com/all/cloudflare-36k/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/audit-engine-patterns.md",
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://serverlesshorrors.com/all/firebase-100k",
+      "status": 200,
+      "final_url": "https://serverlesshorrors.com/all/firebase-100k/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://serverlesshorrors.com/all/netlify-104k",
+      "status": 200,
+      "final_url": "https://serverlesshorrors.com/all/netlify-104k/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://serverlesshorrors.com/all/vercel-23k",
+      "status": 200,
+      "final_url": "https://serverlesshorrors.com/all/vercel-23k/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+      "status": 200,
+      "final_url": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/functions/limits",
+      "status": 200,
+      "final_url": "https://supabase.com/docs/guides/functions/limits",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/billing-on-supabase",
+      "status": 200,
+      "final_url": "https://supabase.com/docs/guides/platform/billing-on-supabase",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/spend-cap",
+      "status": 200,
+      "final_url": "https://supabase.com/docs/guides/platform/cost-control#spend-cap",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/usage",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/storage/security/access-control",
+      "status": 200,
+      "final_url": "https://supabase.com/docs/guides/storage/security/access-control",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://vercel.com/blog/introducing-spend-management",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://vercel.com/docs/image-optimization/limits-and-pricing",
+      "status": 200,
+      "final_url": "https://vercel.com/docs/image-optimization/limits-and-pricing",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://vercel.com/docs/pricing/spend-management",
+      "status": 200,
+      "final_url": "https://vercel.com/docs/spend-management",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://vercel.com/docs/security/vercel-waf/rate-limiting",
+      "status": 200,
+      "final_url": "https://vercel.com/docs/vercel-firewall/vercel-waf/rate-limiting",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://web.archive.org/web/20200429160249/https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca",
+      "status": 403,
+      "final_url": null,
+      "classification": "error",
+      "detail": "GET 403",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://web.archive.org/web/20250908035924/https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/",
+      "status": 403,
+      "final_url": null,
+      "classification": "error",
+      "detail": "GET 403",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://web.archive.org/web/20260304063157/https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization",
+      "status": 403,
+      "final_url": null,
+      "classification": "error",
+      "detail": "GET 403",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://web.archive.org/web/20260506025828/https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/",
+      "status": 403,
+      "final_url": null,
+      "classification": "error",
+      "detail": "GET 403",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://www.checkov.io/",
+      "status": 200,
+      "final_url": "https://www.checkov.io/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html",
+      "status": 200,
+      "final_url": "https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://www.checkov.io/2.Basics/Suppressing%20and%20Skipping%20Policies.html",
+      "status": 200,
+      "final_url": "https://www.checkov.io/2.Basics/Suppressing%20and%20Skipping%20Policies.html",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://www.cloudflare.com/plans/",
+      "status": 200,
+      "final_url": "https://www.cloudflare.com/plans/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md",
+        "references/recommendation-provenance.md"
+      ]
+    },
+    {
+      "url": "https://www.cloudflare.com/plans/zero-trust-services/",
+      "status": 200,
+      "final_url": "https://www.cloudflare.com/plans/zero-trust-services/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "references/official-source-map.md"
+      ]
+    },
+    {
+      "url": "https://www.duckbillgroup.com/",
+      "status": 200,
+      "final_url": "https://www.duckbillhq.com/",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://www.fastly.com/documentation/guides/compute/limitations/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://www.fastly.com/documentation/guides/integrations/streaming-logs/",
+      "status": 200,
+      "final_url": "https://www.fastly.com/documentation/guides/integrations/streaming-logs/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://www.fastly.com/documentation/guides/security/rate-limiting/",
+      "status": 200,
+      "final_url": "https://www.fastly.com/documentation/guides/security/rate-limiting/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://www.fastly.com/pricing/",
+      "status": 200,
+      "final_url": "https://www.fastly.com/pricing",
+      "classification": "redirect-ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://www.infracost.io/docs/",
+      "status": 200,
+      "final_url": "https://www.infracost.io/docs/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://www.infracost.io/docs/features/usage_based_resources/",
+      "status": 200,
+      "final_url": "https://www.infracost.io/docs/features/usage_based_resources/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://www.lastweekinaws.com/blog/",
+      "status": 200,
+      "final_url": "https://www.lastweekinaws.com/blog/",
+      "classification": "ok",
+      "detail": "HEAD 200",
+      "files": [
+        "research/doctor-patterns-research.md"
+      ]
+    },
+    {
+      "url": "https://www.maciejpocwierz.com/posts/anatomy-of-a-aws-bill-shock/",
+      "status": null,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "DNS failure: [Errno -2] Name or service not known",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://www.netlify.com/blog/addressing-recent-billing-concerns/",
+      "status": 404,
+      "final_url": null,
+      "classification": "dead",
+      "detail": "HEAD 404",
+      "files": [
+        "research/serverless-horror-stories.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/",
+      "status": 403,
+      "final_url": null,
+      "classification": "unverifiable-automated",
+      "detail": "GET 403 (bot-blocked domain; check manually)",
+      "files": [
+        "references/war-story-scenario-checklist.md",
+        "research/curated-serverless-horror-stories.md"
+      ]
+    }
+  ]
+}

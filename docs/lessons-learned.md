@@ -48,6 +48,46 @@ Pi packages progressively disclose skills: the startup prompt sees the skill nam
 
 The lesson is: **document what is bundled and what is loaded**. Users need to know that references, docs, evals, examples, research, and helper scripts ship with the Git-installed package, but the model still has to read/run them on demand.
 
+## What we learned in the check-ID, detection-fixture, and false-negative pass
+
+This pass (2026-06-09) gave every scanner finding a stable check ID, built a
+fixture-based detection eval, verified every citation link, routed SKILL.md
+references by detected product, and then used the new fixtures to find and fix
+five real scanner false negatives.
+
+### Rank work by verifiability, not appeal
+
+Ordering the improvements by "can a command prove this worked" pushed the
+plumbing (check IDs, fixtures, consistency checkers) ahead of the more
+exciting ideas (account-state collector), and that ordering was right: each
+later item consumed the verified output of an earlier one, and the one item
+nothing could verify (the collector) was the one worth deferring entirely.
+
+### Fixtures must be written from the failure, not from the regex
+
+The detection fixtures were written as idiomatic code modeling documented war
+stories first, and only then checked against the scanner. That discipline is
+what surfaced five false negatives — fixtures reverse-engineered from the
+scanner's own patterns would have passed immediately and proven nothing. The
+follow-up rule is now in the recipes: to fix a false negative, commit a
+failing `gap-*` fixture first, then fix the heuristic.
+
+### Heuristic fixes trade precision for recall — say so where users look
+
+Widening the Stream-preload check to work across files also made it fire on
+non-Stream video tags in repos that mention a Stream host anywhere. That
+trade-off is acceptable for a leads-generator, but only because it is written
+down next to the check in the coverage matrix. A widened heuristic with an
+undocumented precision cost is a future trust bug.
+
+### Plans are records — correct them in place
+
+The plan assumed the holdout/holdback eval directories were empty
+placeholders; they turned out to be intentionally gitignored with a working
+split policy. The fix was to amend the plan item in place with the correction
+dated, not to quietly skip it. The plan doc is only useful later if it says
+what was actually true.
+
 ### Updated lesson list
 
 1. Contract evals must assert every mandatory output field, including newly-added fields like `Cost / trade-off`.
@@ -56,6 +96,10 @@ The lesson is: **document what is bundled and what is loaded**. Users need to kn
 4. The Python scanner is a read-only lead generator, not a proof engine or replacement for sourced audit judgment.
 5. Eval fixtures that live in the repo can affect self-scan results and should be intentionally clean or scoped out.
 6. Pi skill packaging is progressive disclosure: `SKILL.md` is discovered, adjacent files are bundled, and references/scripts load on demand.
+7. Rank improvement work by verifiability; defer what nothing in the environment can prove.
+8. Detection fixtures must model the documented failure, not the detector — and false-negative fixes start with a failing fixture.
+9. Document every precision/recall trade-off next to the check it affects, in the coverage matrix.
+10. Plan documents are records: correct wrong premises in place, dated, instead of silently dropping items.
 
 ## What we learned in the launch-backlog and usage-documentation pass
 
@@ -94,8 +138,8 @@ The lesson is: **CI is most useful when it automates the exact validation comman
 
 ### Updated lesson list addendum
 
-7. Release tags are part of the install API for Git-installed skills.
-8. READMEs for skill repos must distinguish normal usage, scanner-only triage, and maintainer eval workflows.
-9. Private holdout/holdback eval prompts are not user prerequisites and should be documented as maintainer-only assets.
-10. Repository metadata — topics, homepage, wiki state, license, release — is a documentation surface.
-11. CI should codify the same deterministic checks maintainers are told to run locally.
+11. Release tags are part of the install API for Git-installed skills.
+12. READMEs for skill repos must distinguish normal usage, scanner-only triage, and maintainer eval workflows.
+13. Private holdout/holdback eval prompts are not user prerequisites and should be documented as maintainer-only assets.
+14. Repository metadata — topics, homepage, wiki state, license, release — is a documentation surface.
+15. CI should codify the same deterministic checks maintainers are told to run locally.
