@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate skill, evals, and scanner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate JSON manifests
+        run: |
+          python3 -m json.tool package.json >/dev/null
+          python3 -m json.tool evals/evals.json >/dev/null
+          python3 -m json.tool evals/trigger-cases.json >/dev/null
+          python3 -m json.tool evals/shared-benchmark.json >/dev/null
+
+      - name: Compile Python helpers
+        run: python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py
+
+      - name: Run trigger eval
+        run: python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
+
+      - name: Run static self-scan
+        run: ./scripts/cfdoctor_static_scan.py .
+
+      - name: Check whitespace in diff
+        run: git diff --check
