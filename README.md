@@ -8,7 +8,7 @@ The skill is intentionally source-driven: Cloudflare product behavior, pricing, 
 
 Use it as a **read-only audit partner** when you want Cloudflare-specific judgment, not generic linting:
 
-- **Repo/config audit** — inspect Wrangler config, bindings, Workers/Pages code, IaC, tests, and docs before launch or review.
+- **Repo/config audit** — inspect Wrangler config (`wrangler.jsonc` for new projects; JSON/TOML also supported), bindings, Workers/Pages code, IaC, tests, and docs before launch or review.
 - **Product-fit review** — ask whether KV, D1, R2, Durable Objects, Queues, Workflows, Vectorize, Workers AI, etc. match the access pattern.
 - **Cost and surprise-billing review** — identify billing meters, fanout, retries, AI/browser/media/vector usage, cache misses, and missing cost proxies.
 - **Security/reliability posture** — check auth boundaries, preview exposure, WAF/rate-limit evidence, queue/DLQ behavior, cron/loop bounds, and observability.
@@ -31,10 +31,24 @@ Interpret the output as an evidence-backed risk review: findings should include 
 
 - `SKILL.md` — runtime instructions and audit output contract.
 - `references/` — product-fit rubrics, account evidence guidance, official docs source map, performance/reliability/cost checks, and war-story scenarios.
-- `scripts/cfdoctor_static_scan.py` — read-only heuristic scanner for local Cloudflare repos.
+- `scripts/cfdoctor_static_scan.py` — read-only Python scanner that parses local Cloudflare configs and source files to generate audit leads.
 - `scripts/eval_skill_trigger.py` — deterministic trigger/description eval for the skill.
-- `evals/trigger-cases.json` — positive and negative trigger cases.
+- `docs/` — recipes and lessons learned.
+- `evals/` — trigger cases, shared benchmark manifest, holdout/holdback placeholders, fixtures, and saved trigger-eval reports.
+- `examples/` — copy-paste usage examples.
 - `research/` — source notes used to evolve the audit checklist.
+
+## What is bundled into the Pi skill?
+
+`package.json` declares:
+
+```json
+"pi": {
+  "skills": ["./"]
+}
+```
+
+That makes the repository root the skill directory. Pi discovers the root `SKILL.md`, puts only the skill name/description in the startup prompt, and loads the full `SKILL.md` plus adjacent files on demand. When installed from Git, the bundled skill directory includes the repo files above: references, docs, examples, evals, research notes, and helper scripts. There are no npm runtime dependencies; the scanner/eval helpers use Python standard-library modules.
 
 ## Install as a Pi skill
 
@@ -64,7 +78,14 @@ From the root of a Cloudflare project:
 python3 /path/to/cfdoctor/scripts/cfdoctor_static_scan.py .
 ```
 
-The scanner is read-only and heuristic. Treat its output as leads; confirmed findings still need repo/account evidence and current Cloudflare docs.
+The Python scanner is a fast triage layer, not the audit itself. It:
+
+- walks local text files while skipping heavy/generated directories such as `.git`, `node_modules`, `.wrangler`, and build outputs;
+- parses `wrangler.jsonc`, `wrangler.json`, and legacy `wrangler.toml` configs;
+- detects Cloudflare products/bindings and flags heuristic risk patterns in config, source, docs, migrations, and IaC;
+- emits leads for the Cloudflare Doctor skill to confirm, suppress, or escalate.
+
+It does **not** fetch current Cloudflare docs, inspect dashboard/account state, know traffic or billing volume, prove a finding, or mutate anything. Confirmed findings still need source context, current Cloudflare docs/pricing, and explicit account/dashboard evidence where applicable.
 
 ## Validate this repo
 
@@ -82,7 +103,7 @@ Current proof from the latest validation run:
 ## Example audit prompts
 
 ```text
-Audit my wrangler.toml for Cloudflare best-practice drift and unsafe bindings.
+Audit my wrangler.jsonc for Cloudflare best-practice drift and unsafe bindings.
 ```
 
 ```text

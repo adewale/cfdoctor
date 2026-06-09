@@ -11,7 +11,7 @@
   },
   {
     "id": "audit-wrangler-config",
-    "prompt": "Audit my wrangler.toml for Cloudflare best-practice drift and unsafe bindings.",
+    "prompt": "Audit my wrangler.jsonc for Cloudflare best-practice drift and unsafe bindings.",
     "expected": "trigger",
     "category": "wrangler/config",
     "description_terms": [

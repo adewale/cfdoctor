@@ -137,7 +137,7 @@ confidence: medium
 evidence_quality: partial
 resource:
   type: cloudflare_queue_consumer
-  ref: wrangler.toml + src/consumer.ts
+  ref: wrangler.jsonc + src/consumer.ts
 observed: consumer can enqueue same logical job without idempotency key
 expected: idempotency key + max attempts + DLQ + run-summary metrics
 source_basis:

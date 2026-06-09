@@ -2,7 +2,7 @@
 
 ## Wrangler/project configuration
 
-Check every `wrangler.toml`, `wrangler.json`, `wrangler.jsonc`, and environment block.
+Check every `wrangler.jsonc` (Cloudflare-recommended for new projects), `wrangler.json`, legacy `wrangler.toml`, and environment block.
 
 - `compatibility_date` exists, is not in the future, and is intentionally maintained. Very old dates can hide behavior changes and missed platform improvements.
 - `compatibility_flags` are justified. `nodejs_compat` can be necessary, but it may increase bundle/polyfill surface; confirm the code really needs Node APIs.
@@ -21,7 +21,7 @@ Check every `wrangler.toml`, `wrangler.json`, `wrangler.jsonc`, and environment 
 ## Secrets and repository hygiene
 
 Flag immediately:
-- Cloudflare API tokens, Global API keys, account IDs paired with tokens, R2 access keys, Artifacts repo tokens, database URLs with credentials, JWT/private keys, OAuth client secrets, or webhook signing secrets in source, `wrangler.toml`, committed `.env`, tests, docs, or CI logs.
+- Cloudflare API tokens, Global API keys, account IDs paired with tokens, R2 access keys, Artifacts repo tokens, database URLs with credentials, JWT/private keys, OAuth client secrets, or webhook signing secrets in source, Wrangler config (`wrangler.jsonc`, `wrangler.json`, or `wrangler.toml`), committed `.env`, tests, docs, or CI logs.
 - `vars` used for credentials. Wrangler vars are configuration, not secret storage.
 - Production secrets reused in preview/dev environments.
 - Publicly documented admin URLs, bypass tokens, or preview URLs with weak auth.

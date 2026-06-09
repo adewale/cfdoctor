@@ -40,7 +40,7 @@ Use before authenticated commands or screenshots. The skill should ask for exact
 python3 /path/to/cfdoctor/scripts/cfdoctor_static_scan.py .
 ```
 
-Use in CI or as a pre-audit smoke check. Scanner findings are leads, not proof.
+Use in CI or as a pre-audit smoke check. The Python scanner parses local `wrangler.jsonc`, `wrangler.json`, and legacy `wrangler.toml` configs plus source/docs/IaC text to build a product inventory and heuristic risk leads. Scanner findings are leads, not proof: they do not replace current Cloudflare docs, account/dashboard evidence, traffic/billing data, or the full Cloudflare Doctor audit contract.
 
 ## Trigger eval maintenance
 

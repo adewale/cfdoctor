@@ -2,6 +2,12 @@
 
 All notable changes to Cloudflare Doctor are tracked here.
 
+## Unreleased
+
+- Clarified that `wrangler.jsonc` is Cloudflare's recommended config format for new Wrangler projects while JSON and legacy TOML remain supported audit inputs.
+- Expanded README and recipes to explain the Python scanner as a read-only triage layer, not proof or a replacement for sourced audit judgment.
+- Added Lessons Learned documentation for eval contract coverage, Wrangler config examples, scanner scope, fixture self-scan noise, and Pi skill bundling.
+
 ## 0.1.0 — 2026-06-05
 
 - Created the public `cfdoctor` repository.
