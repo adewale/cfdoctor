@@ -18,23 +18,29 @@ Use this skill to audit a user's Cloudflare project like a doctor: diagnose from
 
 ## Standard workflow
 
-1. Read [`references/audit-playbook.md`](references/audit-playbook.md), [`references/sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md), [`references/recommendation-provenance.md`](references/recommendation-provenance.md), [`references/audit-engine-patterns.md`](references/audit-engine-patterns.md), [`references/war-story-scenario-checklist.md`](references/war-story-scenario-checklist.md), and [`references/cloudflare-best-practices-docs.md`](references/cloudflare-best-practices-docs.md).
+1. Read [`references/audit-playbook.md`](references/audit-playbook.md) and [`references/recommendation-provenance.md`](references/recommendation-provenance.md) — mandatory for every audit. Route the remaining references with the table below. When in doubt whether a reference applies, read it — skipping a relevant reference risks missed findings; the routing exists to skip clearly irrelevant depth, not to economize on relevant evidence.
+
+   | Reference routing | Read when |
+   |---|---|
+   | [`sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md) | Dashboard/account state matters (the topic of step 2). |
+   | [`cloudflare-best-practices-docs.md`](references/cloudflare-best-practices-docs.md) | Fetching current docs in step 3 — it is the verified URL list. |
+   | [`product-fit-rubric.md`](references/product-fit-rubric.md) | Primitive/product choice is in question, or multiple storage/queue primitives are detected. |
+   | [`config-and-security-checks.md`](references/config-and-security-checks.md) | Wrangler config, bindings, auth surfaces, or security posture are in scope — i.e., almost every repo audit. |
+   | [`performance-and-reliability.md`](references/performance-and-reliability.md) | Hot paths, latency, retries, queues, or reliability posture are in scope. |
+   | [`cost-footguns.md`](references/cost-footguns.md) | Cost/billing is in scope, or any usage-metered product is detected. |
+   | [`war-story-scenario-checklist.md`](references/war-story-scenario-checklist.md) | Cost/abuse/billing risk is in scope, or any scenario shape from its matrix is detected (queues/crons/webhooks/DO/AI/media/public storage). |
+   | [`audit-engine-patterns.md`](references/audit-engine-patterns.md) | Only when designing/changing report or check tooling — not for routine audits. |
+   | [`check-coverage-matrix.md`](references/check-coverage-matrix.md) | Only when deciding whether the static scanner already covers a pattern. |
+   | [`official-source-map.md`](references/official-source-map.md) | Date-sensitive pricing/limits verification (used in step 6). |
 2. If dashboard/account state matters, ask for the smallest evidence package from [`references/sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md). Do not infer dashboard settings from repo files alone.
 3. Fetch current Cloudflare docs for the detected products using `https://developers.cloudflare.com/llms.txt`, product `llms.txt` indexes, and the applicable Markdown pages from the verified best-practices list. Treat local reference files as navigation aids, not authoritative current guidance. Every recommendation needs `Source basis`: official current Cloudflare docs or an accepted war story.
 4. If allowed, run the static scanner from the project root. Use the absolute path to this skill's script (the `scripts/` directory next to this `SKILL.md`):
    ```bash
    python3 <skill-dir>/scripts/cfdoctor_static_scan.py .
    ```
-   Treat scanner output as leads, not proof.
+   Treat scanner output as leads, not proof. Add `--json` for machine-readable leads with stable check IDs. When scanning this skill's own repository, add `--exclude evals/fixtures` (the fixtures are intentionally bad).
 5. Inventory Cloudflare surface area: repo files, Wrangler config, bindings, IaC, package scripts, routes/domains, runtime code, migrations, tests, and any supplied account/dashboard evidence.
-6. Map products and primitives, then read the applicable reference sections:
-   - [`references/product-fit-rubric.md`](references/product-fit-rubric.md)
-   - [`references/config-and-security-checks.md`](references/config-and-security-checks.md)
-   - [`references/performance-and-reliability.md`](references/performance-and-reliability.md)
-   - [`references/cost-footguns.md`](references/cost-footguns.md)
-   - [`references/audit-engine-patterns.md`](references/audit-engine-patterns.md) for report/check/evidence patterns borrowed from React Doctor, Duckbill, Lighthouse, and IaC scanners
-   - [`references/war-story-scenario-checklist.md`](references/war-story-scenario-checklist.md) for cross-platform horror-story scenarios to check
-   - [`references/official-source-map.md`](references/official-source-map.md) for source links and date-sensitive pricing/limits verification
+6. Map products and primitives, then read the references routed by the step-1 table that match the detected products and concerns. Use [`references/official-source-map.md`](references/official-source-map.md) for source links and date-sensitive pricing/limits verification.
 7. Produce findings in the required format below. Prioritize high-impact correctness, security, reliability, and cost findings over exhaustive trivia.
 
 ## Required audit output
