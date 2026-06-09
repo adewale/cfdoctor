@@ -29,6 +29,21 @@ Limitations:
 - This is a deterministic proxy, not proof that a specific model/runtime will load the skill.
 - For model-based evals, run the same prompts in a harness that exposes this skill and judge whether the assistant loads Cloudflare Doctor and emits the required audit scaffold (`Docs refreshed`, `Cost proxy summary`, `Source basis`, and final run summary/cache map sections).
 
+## Detection eval
+
+Run:
+
+```bash
+python3 scripts/eval_detection.py
+```
+
+Deterministic regression suite for the static scanner: each fixture under
+`evals/fixtures/detection/` models a documented war story (see the fixture
+READMEs) and declares required check IDs in `expected.json`; the
+`clean-baseline` fixture guards against false positives with `max_findings: 0`.
+Reports land in `evals/results/detection/`. Repo self-scans must exclude these
+intentionally bad fixtures: `./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures`.
+
 ## Adding cases
 
 Add cases when the trigger policy changes or a false trigger is observed:

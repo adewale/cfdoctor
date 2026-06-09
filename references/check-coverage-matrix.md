@@ -88,3 +88,20 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 - Removing or renaming a scanner check requires updating its row here (rename, or change the status to `skill-prompt-only`/`not-implemented` if the heuristic is dropped but the check idea remains).
 - Proposing a new check in the war-story checklist requires a `not-implemented` (or `skill-prompt-only`, if reference guidance already covers it) row here.
 - Run `python3 scripts/check_coverage.py` locally to verify before pushing; it exits 0 when the matrix and registry are consistent.
+
+## Known false-negative leads (found while building detection fixtures, 2026-06-09)
+
+Realistic code shapes the current heuristics miss. These are scanner
+improvement leads, not reasons to trust a quiet scan:
+
+- `DO-SHARDING-HOTSPOT` only matches literal singleton strings in
+  `idFromName("global"|"singleton"|...)`; hotspots via variables or
+  constants (`idFromName(env.REGION)`) are invisible.
+- `CFDOC-REL-QUEUE-NO-DLQ` is config-only; consumers defined solely in the
+  dashboard are out of static reach (expected, but worth stating).
+- `CFDOC-COST-ASYNC-LOOP` catches `fetch(request.url)` / `fetch(request.clone())`
+  but not the common `fetch(new URL(path, request.url))` self-fetch shape.
+- `DO-ALARM-RECURSION` is suppressed by any `if (` near the `alarm()` body, so
+  an unconditional reschedule containing an unrelated guard is missed.
+- `CFDOC-COST-MEDIA-VARIANT-EXPLOSION`'s Stream arm requires the Stream
+  hostname and `preload="auto"` in the same file; config-imported URLs evade it.
