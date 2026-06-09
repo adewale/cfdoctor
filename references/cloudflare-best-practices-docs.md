@@ -42,6 +42,7 @@ The list below was discovered from official Cloudflare `llms.txt` product indexe
 ## Workers, Pages, Workflows, and data platform docs
 
 - [Workers Best Practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/index.md) — Code patterns and configuration guidance for fast, reliable, observable, and secure Workers.
+- [Wrangler configuration](https://developers.cloudflare.com/workers/wrangler/configuration/index.md) — Current config-file formats; Cloudflare recommends `wrangler.jsonc` for new projects while still supporting JSON and TOML.
 - [Pages C3 CLI](https://developers.cloudflare.com/pages/get-started/c3/index.md) — New-project setup guide that follows Cloudflare and framework best practices.
 - [Rules of Workflows](https://developers.cloudflare.com/workflows/build/rules-of-workflows/index.md) — Best practices for resilient Workflows, idempotency, state management, and error handling.
 - [Agents: long-running agents](https://developers.cloudflare.com/agents/concepts/agentic-patterns/long-running-agents/index.md) — Wake-on-demand, restart survival, and long-running work patterns for Cloudflare Agents.

@@ -9,6 +9,7 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Workers pricing: https://developers.cloudflare.com/workers/platform/pricing/
 - Workers CPU profiling: https://developers.cloudflare.com/workers/observability/dev-tools/cpu-usage/
 - Workers metrics and analytics: https://developers.cloudflare.com/workers/observability/metrics-and-analytics/
+- Wrangler configuration: https://developers.cloudflare.com/workers/wrangler/configuration/
 - Workers secrets: https://developers.cloudflare.com/workers/configuration/secrets/
 - Compatibility dates: https://developers.cloudflare.com/workers/configuration/compatibility-dates/
 - `ExecutionContext.waitUntil`: https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil

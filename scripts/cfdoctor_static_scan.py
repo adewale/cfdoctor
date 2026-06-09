@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Heuristic local scanner for the Cloudflare Doctor skill.
 
-This script is intentionally read-only. It emits leads for a human/agent audit;
-its findings are not proof without checking project context and current
-Cloudflare documentation/pricing.
+This script is intentionally read-only. It parses wrangler.jsonc, wrangler.json,
+legacy wrangler.toml, and local source/docs/IaC text to emit leads for a
+human/agent audit; its findings are not proof without checking project context,
+current Cloudflare documentation/pricing, and account/dashboard evidence.
 """
 
 from __future__ import annotations

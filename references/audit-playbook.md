@@ -12,7 +12,7 @@ Inspect local files next:
 
 ```bash
 find . -maxdepth 3 -type f \
-  \( -name 'wrangler.toml' -o -name 'wrangler.json' -o -name 'wrangler.jsonc' -o -name 'package.json' -o -name 'vite.config.*' -o -name 'next.config.*' -o -name 'astro.config.*' -o -name 'terraform.tf' -o -name '*.tf' \) \
+  \( -name 'wrangler.jsonc' -o -name 'wrangler.json' -o -name 'wrangler.toml' -o -name 'package.json' -o -name 'vite.config.*' -o -name 'next.config.*' -o -name 'astro.config.*' -o -name 'terraform.tf' -o -name '*.tf' \) \
   -not -path './node_modules/*' -not -path './.git/*'
 rg -n "(kv_namespaces|d1_databases|r2_buckets|durable_objects|queues|hyperdrive|vectorize|ai|analytics_engine|services|routes|triggers|compatibility_date|compatibility_flags|observability)" .
 ```
@@ -33,7 +33,7 @@ Do not run mutating commands without explicit approval.
 
 ## Product inventory checklist
 
-- **Workers/Pages**: `wrangler.toml/json`, `pages_build_output_dir`, `main`, `assets`, routes, custom domains, env sections, build scripts.
+- **Workers/Pages**: `wrangler.jsonc`/`wrangler.json`/legacy `wrangler.toml`, `pages_build_output_dir`, `main`, `assets`, routes, custom domains, env sections, build scripts.
 - **Bindings**: KV, D1, R2, Durable Objects, Queues, Hyperdrive, Vectorize, AI, Analytics Engine, Dynamic Worker Loaders, Artifacts, service bindings, secrets, vars.
 - **Runtime code**: fetch handlers, Pages Functions, Queue consumers, Durable Object classes, Agents SDK classes, Dynamic Worker loader paths, cron/scheduled handlers, cache use, auth/rate limiting, external fetches/TCP sockets.
 - **Data model**: consistency requirements, write rate, read pattern, object size, query shape, transaction/coordination needs, TTL needs.
