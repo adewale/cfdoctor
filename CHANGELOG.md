@@ -7,6 +7,7 @@ All notable changes to Cloudflare Doctor are tracked here.
 - Created the public `cfdoctor` repository.
 - Added MIT license metadata and root `LICENSE`.
 - Added CI validation for JSON manifests, Python helpers, trigger evals, self-scan, and diff whitespace.
+- Documented user, scanner-only, and maintainer usage modes plus what evidence users should provide.
 - Clarified that `wrangler.jsonc` is Cloudflare's recommended config format for new Wrangler projects while JSON and legacy TOML remain supported audit inputs.
 - Expanded README and recipes to explain the Python scanner as a read-only triage layer, not proof or a replacement for sourced audit judgment.
 - Added Lessons Learned documentation for eval contract coverage, Wrangler config examples, scanner scope, fixture self-scan noise, and Pi skill bundling.

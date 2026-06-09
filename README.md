@@ -50,25 +50,83 @@ Interpret the output as an evidence-backed risk review: findings should include 
 
 That makes the repository root the skill directory. Pi discovers the root `SKILL.md`, puts only the skill name/description in the startup prompt, and loads the full `SKILL.md` plus adjacent files on demand. When installed from Git, the bundled skill directory includes the repo files above: references, docs, examples, evals, research notes, and helper scripts. There are no npm runtime dependencies; the scanner/eval helpers use Python standard-library modules.
 
-## Install as a Pi skill
+## Usage modes
 
-From GitHub:
+### Use the installed skill for real audits
+
+Install the latest released version:
+
+```bash
+pi install https://github.com/adewale/cfdoctor@v0.1.0
+```
+
+Or install the current `main` branch:
 
 ```bash
 pi install https://github.com/adewale/cfdoctor
 ```
 
-For one-off local use without installing:
+Then open Pi from the Cloudflare project you want audited and ask for the audit:
 
 ```bash
-pi --skill ./SKILL.md
+pi "Use Cloudflare Doctor to audit this repo for production launch. Refresh current Cloudflare docs, run the static scan if useful, include Source basis and Cost / trade-off for every finding, and list dashboard/account evidence you could not inspect."
 ```
 
-Then ask for an audit, for example:
+In interactive Pi, you can also force-load the skill:
 
 ```text
-Cloudflare Doctor this repo and tell me where we're wasting money.
+/skill:cloudflare-doctor audit this repo for Workers/D1/Queues cost and reliability risks
 ```
+
+For one-off local use without installing this repo as a package:
+
+```bash
+pi --skill ./SKILL.md "Cloudflare Doctor this repo and tell me where we're wasting money."
+```
+
+### Run scanner-only triage
+
+Use the Python scanner when you want a quick read-only inventory/risk lead pass without invoking an agent:
+
+```bash
+python3 /path/to/cfdoctor/scripts/cfdoctor_static_scan.py /path/to/cloudflare-project
+```
+
+Then feed the scanner output into a Cloudflare Doctor audit if you want sourced recommendations. Scanner output alone is not a final audit.
+
+### Maintain the skill and evals
+
+Repository maintainers can run the local validation suite:
+
+```bash
+npm test
+```
+
+or the explicit checks:
+
+```bash
+python3 -m json.tool package.json
+python3 -m json.tool evals/evals.json
+python3 -m json.tool evals/trigger-cases.json
+python3 -m json.tool evals/shared-benchmark.json
+python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py
+python3 scripts/eval_skill_trigger.py
+./scripts/cfdoctor_static_scan.py .
+git diff --check
+```
+
+The shared benchmark manifest is for maintainers who want paired with-skill/without-skill and ablation evaluation. Hidden holdout/holdback prompts are intentionally private and are not required for normal users.
+
+## What to provide for best results
+
+Cloudflare Doctor can audit repo evidence by itself, but stronger audits need the evidence that proves runtime/account state:
+
+- repo/config evidence: `wrangler.jsonc`, `wrangler.json`, legacy `wrangler.toml`, Worker/Pages code, migrations, tests, docs, and IaC;
+- usage assumptions: requests/day, routes/jobs/crons that are hot, D1 query volume, AI/vector/media/browser usage, retry/backlog patterns;
+- account/dashboard evidence when relevant: redacted screenshots, Terraform/API exports, `cf-terraforming`, billing/product usage exports, WAF/cache/DNS/Access/Logpush settings;
+- constraints: acceptable latency, cost ceiling, rollback requirements, migration effort, and whether authenticated read-only Cloudflare commands are approved.
+
+If account evidence is missing, Cloudflare Doctor should mark that scope as **not inspected** rather than infer dashboard state from repo files.
 
 ## Run the scanner directly
 
