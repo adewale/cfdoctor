@@ -105,7 +105,7 @@ python3 scripts/check_coverage.py
 Current proof from the latest validation run (2026-06-09):
 
 - Trigger eval: `38/38 = 100%` (`evals/results/latest.md`).
-- Detection eval: `9/9` war-story fixtures pass (`evals/results/detection/latest.md`).
+- Detection eval: `14/14` war-story fixtures pass, including five `gap-*` fixtures that reproduce previously missed code shapes (`evals/results/detection/latest.md`).
 - Coverage matrix: consistent with the 56-check scanner registry.
 - Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).
 - Citation links: 397 checked, dead official-docs links re-pointed, war stories annotated with verified archive snapshots (`evals/results/link-check-2026-06-09.md`).

@@ -96,7 +96,7 @@ SECRET_ASSIGN_RE = re.compile(
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
 NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
 
-SCANNER_VERSION = "0.2.0"
+SCANNER_VERSION = "0.3.0"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -615,8 +615,11 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                 ))
 
 
-def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[str, set[str]], findings: list[Finding]) -> None:
+def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[str, set[str]], findings: list[Finding], queue_consumer_configured: bool = False) -> None:
     kv_names = bindings.get("KV", set())
+    project_has_stream_host = any(
+        re.search(r"(cloudflarestream\.com|videodelivery\.net|<stream|stream-player)", t, re.I) for _, t in files
+    )
     d1_names = bindings.get("D1", set())
     r2_names = bindings.get("R2", set())
     ai_names = bindings.get("Workers AI", set()) or {"AI"}
@@ -731,7 +734,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 "medium",
             ))
 
-        if re.search(r"(cloudflarestream\.com|videodelivery\.net|<stream|stream-player)", text, re.I) and re.search(r"preload\s*=\s*['\"]auto['\"]", text, re.I):
+        if project_has_stream_host and re.search(r"preload\s*=\s*['\"]auto['\"]", text, re.I):
             hit = line_for(text, r"preload\s*=\s*['\"]auto['\"]") or (1, "")
             findings.append(Finding(
                 "CFDOC-COST-MEDIA-VARIANT-EXPLOSION",
@@ -999,6 +1002,15 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                     "low",
                 ))
         hit = line_for(text, re.compile(r"idFromName\s*\(\s*['\"](?:global|singleton|default|main|root|all|system|scheduler|broadcast|counter|idempotency)['\"]", re.I))
+        if not hit:
+            # Same hotspot through one level of indirection: a name held in a
+            # same-file string constant, or a per-deployment env var (one value
+            # per environment means one object).
+            ident = re.search(r"idFromName\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)", text)
+            if ident and re.search(r"(?:const|let|var)\s+" + re.escape(ident.group(1)) + r"\s*=\s*['\"][^'\"]*['\"]", text):
+                hit = line_for(text, re.compile(r"idFromName\s*\(\s*" + re.escape(ident.group(1)) + r"\s*\)"))
+            else:
+                hit = line_for(text, re.compile(r"idFromName\s*\(\s*env\.[A-Za-z0-9_]+\s*\)"))
         if hit:
             findings.append(Finding(
                 "DO-SHARDING-HOTSPOT",
@@ -1036,7 +1048,11 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             ))
         if do_shaped:
             alarm_idx = re.search(r"\balarm\s*\([^)]*\)\s*[{=>]", text)
-            if alarm_idx and re.search(r"\bsetAlarm\s*\(", text[alarm_idx.start():], re.I) and not re.search(r"if\s*\(|hasWork|pending|remaining|next|should|enabled|disabled|backoff|max|attempt|empty|queue", text[alarm_idx.start():alarm_idx.start() + 1200], re.I):
+            alarm_window = text[alarm_idx.start():alarm_idx.start() + 1200] if alarm_idx else ""
+            set_alarm = re.search(r"\bsetAlarm\s*\(", alarm_window, re.I)
+            # Only guards between the alarm declaration and the reschedule count;
+            # an unrelated `if (` after setAlarm() does not make it conditional.
+            if set_alarm and not re.search(r"if\s*\(|hasWork|pending|remaining|next|should|enabled|disabled|backoff|max|attempt|empty|queue", alarm_window[:set_alarm.start()], re.I):
                 hit = line_for(text, re.compile(r"\bsetAlarm\s*\(", re.I)) or (1, "")
                 findings.append(Finding(
                     "DO-ALARM-RECURSION",
@@ -1163,7 +1179,20 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 "Verify the origin is locked to Cloudflare or otherwise protected, cache safe responses before origin, and set origin-provider spend/scale controls.",
                 "medium",
             ))
-        hit = line_for(text, re.compile(r"fetch\s*\(\s*(request|req|event\.request)\.(url|clone\s*\(\s*\))", re.I))
+        if not queue_consumer_configured:
+            hit = line_for(text, re.compile(r"\basync\s+queue\s*\("))
+            if hit:
+                findings.append(Finding(
+                    "CFDOC-REL-QUEUE-NO-DLQ",
+                    "medium",
+                    "Queue consumer handler without consumer config in repo",
+                    "misconfiguration / reliability / cost footgun",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "This code exports a queue() consumer but no repo config declares the consumer, so retry/DLQ settings are likely dashboard-managed and invisible to review. Poison messages can retry unbounded.",
+                    "Declare the consumer with intentional retry/batch/DLQ settings in Wrangler config, or supply the dashboard consumer settings as audit evidence.",
+                    "low",
+                ))
+        hit = line_for(text, re.compile(r"fetch\s*\(\s*(?:(?:request|req|event\.request)\.(?:url|clone\s*\(\s*\))|new\s+URL\s*\([^)]*,\s*(?:request|req|event\.request)\.url)", re.I))
         if hit:
             findings.append(Finding(
                 "CFDOC-COST-ASYNC-LOOP",
@@ -1335,7 +1364,8 @@ def main(argv: list[str]) -> int:
     bindings = collect_bindings(configs)
     findings: list[Finding] = []
     add_config_findings(root, configs, findings)
-    add_code_findings(root, file_texts, bindings, findings)
+    queue_consumer_configured = any(queue_consumers(data) for _, _, data in configs if data)
+    add_code_findings(root, file_texts, bindings, findings, queue_consumer_configured=queue_consumer_configured)
     if args.json:
         print(render_json(root, bindings, findings))
     else:

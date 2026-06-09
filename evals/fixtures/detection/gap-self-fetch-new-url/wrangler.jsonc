@@ -1,0 +1,8 @@
+{
+  // Marketing site worker that "warms" its own API cache after each page view.
+  "name": "marketing-site",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "example.com/*", "zone_name": "example.com" }]
+}

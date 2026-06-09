@@ -1,0 +1,8 @@
+{
+  // Course site that embeds Cloudflare Stream lessons.
+  "name": "course-site",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "courses.example.com/lessons/*", "zone_name": "example.com" }]
+}

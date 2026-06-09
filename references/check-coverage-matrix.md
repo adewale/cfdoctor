@@ -89,19 +89,37 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 - Proposing a new check in the war-story checklist requires a `not-implemented` (or `skill-prompt-only`, if reference guidance already covers it) row here.
 - Run `python3 scripts/check_coverage.py` locally to verify before pushing; it exits 0 when the matrix and registry are consistent.
 
-## Known false-negative leads (found while building detection fixtures, 2026-06-09)
+## False-negative leads found while building detection fixtures
 
-Realistic code shapes the current heuristics miss. These are scanner
-improvement leads, not reasons to trust a quiet scan:
+Five gaps were found on 2026-06-09 and fixed in scanner 0.3.0, each with a
+`gap-*` fixture under `evals/fixtures/detection/` that failed before the fix
+and passes after:
 
-- `DO-SHARDING-HOTSPOT` only matches literal singleton strings in
-  `idFromName("global"|"singleton"|...)`; hotspots via variables or
-  constants (`idFromName(env.REGION)`) are invisible.
-- `CFDOC-REL-QUEUE-NO-DLQ` is config-only; consumers defined solely in the
-  dashboard are out of static reach (expected, but worth stating).
-- `CFDOC-COST-ASYNC-LOOP` catches `fetch(request.url)` / `fetch(request.clone())`
-  but not the common `fetch(new URL(path, request.url))` self-fetch shape.
-- `DO-ALARM-RECURSION` is suppressed by any `if (` near the `alarm()` body, so
-  an unconditional reschedule containing an unrelated guard is missed.
-- `CFDOC-COST-MEDIA-VARIANT-EXPLOSION`'s Stream arm requires the Stream
-  hostname and `preload="auto"` in the same file; config-imported URLs evade it.
+- `DO-SHARDING-HOTSPOT` now also matches a singleton name held in a same-file
+  string constant (`idFromName(COORDINATOR_KEY)`) or a per-deployment env var
+  (`idFromName(env.REGION)`), not just literal singleton strings.
+- `CFDOC-REL-QUEUE-NO-DLQ` gained a code arm: a `queue()` consumer handler
+  with no consumer config anywhere in the repo (dashboard-managed consumer)
+  is flagged as unreviewable retry/DLQ posture.
+- `CFDOC-COST-ASYNC-LOOP` now also matches the
+  `fetch(new URL(path, request.url))` self-fetch shape.
+- `DO-ALARM-RECURSION` now only treats guards *between* the alarm declaration
+  and the `setAlarm()` call as idle checks; an unrelated `if (` after the
+  reschedule no longer suppresses the finding.
+- `CFDOC-COST-MEDIA-VARIANT-EXPLOSION`'s Stream arm now fires when
+  `preload="auto"` and the Stream hostname are in different files of the same
+  project.
+
+Remaining known limits (honest scanner reach, not bugs to hide):
+
+- Sharding indirection deeper than one same-file constant (imported
+  constants, computed keys) is invisible.
+- The queue code arm is project-global: one properly configured consumer
+  silences it, which can mask a second dashboard-managed consumer.
+- Alarm guard words (`next`, `max`, `attempt`, ...) in ordinary variable
+  names before `setAlarm()` still suppress `DO-ALARM-RECURSION`.
+- The project-wide Stream arm trades precision for recall: `preload="auto"`
+  on a non-Stream `<video>` in a repo that mentions a Stream host anywhere
+  now produces a (low-confidence) lead.
+- Self-fetch through a URL variable assigned earlier still evades
+  `CFDOC-COST-ASYNC-LOOP`.

@@ -1,0 +1,11 @@
+{
+  // Metrics rollup object that sweeps counters on a fixed alarm cadence.
+  "name": "metrics-rollup",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "ROLLUP", "class_name": "MetricsRollup" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["MetricsRollup"] }]
+}
