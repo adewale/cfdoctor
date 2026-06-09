@@ -96,9 +96,76 @@ SECRET_ASSIGN_RE = re.compile(
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
 NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
 
+SCANNER_VERSION = "0.2.0"
+
+# check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
+_CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
+    ("CFDOC-CONFIG-NO-COMPAT-DATE", "CONFIG", "medium", "high", "Missing compatibility_date in Wrangler config", "Wrangler config scope has no explicit compatibility_date."),
+    ("CFDOC-CONFIG-COMPAT-DATE-FUTURE", "CONFIG", "high", "high", "compatibility_date is in the future", "compatibility_date is later than today, which can fail deploys or hide unverified copied config."),
+    ("CFDOC-CONFIG-COMPAT-DATE-OLD", "CONFIG", "low", "medium", "compatibility_date is old", "compatibility_date is very old, deferring runtime fixes and raising upgrade risk."),
+    ("CFDOC-CONFIG-COMPAT-DATE-FORMAT", "CONFIG", "medium", "high", "compatibility_date is not ISO formatted", "compatibility_date is not a YYYY-MM-DD date and can break deploys."),
+    ("CFDOC-CONFIG-NODEJS-COMPAT", "CONFIG", "low", "medium", "nodejs_compat enabled; confirm it is required", "nodejs_compat flag is set; unnecessary Node polyfills can hide runtime assumptions."),
+    ("CFDOC-SEC-SECRET-IN-CONFIG", "SEC", "high", "medium", "Possible secret stored in Wrangler vars", "A Wrangler vars entry looks like a credential; secrets belong in secret storage."),
+    ("CFDOC-CONFIG-DO-NO-MIGRATIONS", "CONFIG", "high", "medium", "Durable Object bindings without migrations in same config scope", "Durable Object bindings exist without Wrangler migrations entries."),
+    ("CFDOC-CONFIG-D1-NO-MIGRATIONS", "CONFIG", "medium", "low", "D1 binding without local migration files detected", "A D1 binding has no nearby checked-in migration files; schema may drift."),
+    ("CFDOC-REL-QUEUE-NO-DLQ", "REL", "medium", "medium", "Queue consumer lacks explicit retry or dead-letter configuration", "Queue consumer has no DLQ/retry settings; poison messages can retry unbounded."),
+    ("CFDOC-COST-BROAD-ROUTE", "COST", "medium", "medium", "Broad Worker route should be verified", "A catchall/wildcard Worker route can intercept unintended traffic and invocations."),
+    ("CFDOC-COST-CRON-EVERY-MINUTE", "COST", "medium", "high", "Cron trigger runs every minute", "Every-minute cron schedules create constant invocations and downstream usage."),
+    ("CFDOC-CONFIG-ENV-BINDING-PARITY", "CONFIG", "low", "low", "Environment binding parity needs verification", "Wrangler env scope is missing bindings declared at top level; envs commonly drift."),
+    ("CFDOC-COST-TEMP-ENV-PAID-BINDINGS", "COST", "medium", "medium", "Temporary/preview environment is connected to paid or stateful Cloudflare services", "Preview/demo/workshop env uses paid or stateful Cloudflare products."),
+    ("CFDOC-CONFIG-NO-OBSERVABILITY", "CONFIG", "low", "low", "Wrangler observability not configured in this scope", "No observability config; cost/error regressions are harder to diagnose."),
+    ("CFDOC-CONFIG-UNPARSEABLE", "CONFIG", "medium", "medium", "Could not parse Wrangler config and no compatibility_date text found", "Wrangler config failed to parse and no compatibility date text was visible."),
+    ("CFDOC-SEC-SECRET-VALUE", "SEC", "critical", "medium", "Credential-shaped value appears in repository text", "A token/key/connection-string shaped value appears in tracked text."),
+    ("CFDOC-SEC-SECRET-ASSIGNMENT", "SEC", "high", "medium", "Credential-like assignment appears in repository text", "A secret-named variable is assigned a literal value in tracked text."),
+    ("CFDOC-COST-PAGES-FUNCTION-ROUTES", "COST", "medium", "medium", "Pages _routes.json broadly invokes Functions without obvious static exclusions", "Broad _routes.json include can send static asset traffic through billable Functions."),
+    ("CFDOC-COST-AI-NO-IDEMPOTENCY", "COST", "medium", "medium", "Workers AI call lacks obvious idempotency/cache or is inside retry/loop-shaped code", "Loops, retries, or duplicate actions can repeat paid inference without idempotency/caching."),
+    ("CFDOC-COST-VECTORIZE-DIMENSIONS", "COST", "medium", "low", "Vectorize query path should account for queried dimensions and fan-out", "Vectorize cost can depend on dimensions/topK/namespaces; verify against current pricing."),
+    ("CFDOC-COST-MEDIA-VARIANT-EXPLOSION", "COST", "medium", "medium", "Media transformation variants or delivery preload may be unbounded", "Image transformation variants or Stream preload can multiply paid work per asset."),
+    ("CFDOC-COST-BROWSER-NO-CLOSE", "COST", "high", "medium", "Browser Run session is opened without an obvious close path", "Browser sessions left open or retried blindly can dominate session-time billing."),
+    ("DYNAMIC-WORKER-SANDBOX-CAPABILITIES", "SEC", "high", "medium", "Dynamic Worker/code execution lacks obvious capability or resource bounds", "User/LLM code execution without explicit egress/binding/limit posture risks exfiltration and spend."),
+    ("CFDOC-COST-DYNAMIC-WORKER-DEDUPE", "COST", "medium", "low", "Dynamic Worker load path lacks obvious stable ID/dedupe", "New Dynamic Workers for repeated identical code can multiply unique-worker cost."),
+    ("AGENT-AUTONOMOUS-LOOP-COST", "COST", "medium", "low", "Cloudflare Agent loop/tool path lacks obvious bounds or cancellation", "Agent loops/tools/schedules without max steps or cancellation can repeat paid work."),
+    ("ARTIFACTS-UPDATE-SUPPLY-CHAIN", "SEC", "low", "low", "Artifacts-backed loader/update path needs token, signing, and rollback review", "Mutable artifact update flow lacks visible token scope, signing, or rollback controls."),
+    ("WORKER-TCP-DB-FIT", "REL", "medium", "low", "Worker TCP/external database path lacks obvious pooling/TLS/timeout controls", "Direct sockets from Workers need TLS, timeouts, pooling, and Hyperdrive fit review."),
+    ("CFDOC-COST-UNBOUNDED-FANOUT", "COST", "medium", "medium", "Promise.all map fanout lacks an obvious concurrency cap", "Unbounded fanout multiplies subrequests and downstream paid usage per action."),
+    ("CFDOC-COST-RETRY-AMPLIFY", "COST", "medium", "low", "Retry/loop-shaped expensive path lacks obvious backoff or circuit breaker", "Hot retries into paid primitives or degraded dependencies amplify spend and outages."),
+    ("CFDOC-SEC-CORS-WILDCARD-CREDS", "SEC", "high", "medium", "Wildcard CORS appears near credentialed responses", "Access-Control-Allow-Origin * combined with credentials breaks browser auth safety."),
+    ("CFDOC-SEC-SPOOFABLE-IP-HEADER", "SEC", "medium", "medium", "Code reads spoofable client-IP header", "x-forwarded-for/x-real-ip can be spoofed unless ingress is guaranteed through Cloudflare."),
+    ("CFDOC-COST-KV-LIST-HOTPATH", "COST", "medium", "medium", "KV list operation appears in application code", "KV list/prefix scans on hot paths add latency and operation costs."),
+    ("CFDOC-FIT-KV-COORDINATION", "FIT", "high", "medium", "KV read-modify-write smell for coordination/counters", "Eventually consistent KV is unsafe for locks, counters, inventory, or rate-limit state."),
+    ("CFDOC-COST-R2-LIST-HOTPATH", "COST", "medium", "medium", "R2 bucket list appears in application code", "R2 listing is a storage operation and a poor metadata query path at volume."),
+    ("CFDOC-PERF-R2-BUFFERING", "PERF", "medium", "low", "R2 object may be buffered instead of streamed", "Buffering R2 objects increases memory/CPU pressure and delays first byte."),
+    ("CFDOC-PERF-D1-SELECT-STAR", "PERF", "medium", "medium", "D1 query uses SELECT *", "Wide/unbounded reads increase rows/bytes processed and hide schema coupling."),
+    ("CFDOC-COST-D1-ORDER-RANDOM", "COST", "high", "high", "D1 query orders by RANDOM()", "Random ordering forces expensive scans/sorts that grow with table size."),
+    ("CFDOC-PERF-D1-N-PLUS-ONE", "PERF", "low", "low", "Many D1 prepared statements in one file; check for N+1 queries", "Several sequential queries per request can multiply latency and billed rows."),
+    ("CFDOC-COST-DO-FRONT-DOOR", "COST", "medium", "low", "Durable Object call path lacks obvious front-door validation", "Invalid/bot traffic should be rejected before it becomes DO requests/duration."),
+    ("DO-SHARDING-HOTSPOT", "COST", "high", "high", "Durable Object idFromName uses a global/singleton key", "Low-cardinality DO keys concentrate traffic into one hot object."),
+    ("DO-EPHEMERAL-IDEMPOTENCY-OBJECTS", "FIT", "medium", "low", "Durable Object key appears tied to an ephemeral id/request", "One DO per request/idempotency key creates many idle objects and cleanup work."),
+    ("DO-STORAGE-LIST-HOTPATH", "COST", "medium", "medium", "Durable Object storage.list appears in code", "DO storage list/prefix scans on hot paths cost more than fetching known keys."),
+    ("DO-ALARM-RECURSION", "COST", "medium", "low", "Alarm handler reschedules without obvious idle guard", "Alarms that always reschedule create recurring wake-ups when no work remains."),
+    ("DO-STORAGE-BATCHING", "COST", "medium", "low", "Multiple Durable Object storage.put calls should be reviewed", "Many small DO writes per logical event multiply operation counts versus batching."),
+    ("DO-WEBSOCKET-DURATION", "COST", "medium", "low", "WebSocket handling may not use Durable Object hibernation", "Idle WebSockets without hibernation can increase duration cost."),
+    ("DO-SOCKET-CLOSE-HYGIENE", "REL", "medium", "low", "WebSocket path lacks obvious close/error cleanup", "Missing close/error/timeout handling leaves stale connection state."),
+    ("DO-WAITUNTIL-LIFECYCLE", "REL", "low", "low", "Durable Object background work should be bounded and API-correct", "DO background work needs the right lifecycle API and a durable primitive for long work."),
+    ("KV-VS-DO-STORAGE-FIT", "FIT", "low", "low", "Durable Object storage used for possibly read-heavy data", "Read-heavy write-rare data may fit KV/D1/R2 without DO coordination cost."),
+    ("DO-FANOUT-TAX", "COST", "medium", "low", "Fan-out to Durable Objects lacks obvious backpressure", "Waking many DOs from one request concentrates latency and duration without caps."),
+    ("CFDOC-PERF-AWAITED-CACHE-PUT", "PERF", "low", "medium", "Cache put awaited in request path", "Awaiting cache writes adds user-visible latency when waitUntil would do."),
+    ("CFDOC-PERF-PUBLIC-SERVICE-URL", "PERF", "medium", "medium", "Public Cloudflare service URL fetch; consider service bindings", "Public URLs between same-account Workers add routing overhead and auth ambiguity."),
+    ("CFDOC-COST-THIRD-PARTY-ORIGIN", "COST", "medium", "medium", "Worker fetches a public third-party/serverless origin hostname", "Cloudflare-fronted third-party origins still bill on cache misses or direct hostname access."),
+    ("CFDOC-COST-ASYNC-LOOP", "COST", "medium", "low", "Worker appears to fetch the incoming request URL", "Self-fetch of the handled URL/host can recursively trigger billable invocations or loop errors."),
+    ("CFDOC-CONFIG-PROCESS-ENV", "CONFIG", "low", "low", "process.env reference in Worker-adjacent code", "Workers receive env via handler bindings; process.env may be a Node assumption."),
+    ("CFDOC-SEC-TLS-FLEXIBLE", "SEC", "high", "high", "Terraform sets SSL/TLS mode to Flexible", "Flexible SSL leaves the Cloudflare-to-origin leg unencrypted."),
+    ("CFDOC-SEC-DNS-UNPROXIED", "SEC", "medium", "medium", "Terraform has unproxied DNS record; verify origin exposure", "DNS-only records bypass Cloudflare WAF/cache/Access and may expose origin."),
+]
+CHECKS: dict[str, dict[str, str]] = {
+    cid: {"pillar": pillar, "severity": severity, "confidence": confidence, "title": title, "description": description}
+    for cid, pillar, severity, confidence, title, description in _CHECK_ROWS
+}
+
 
 @dataclass
 class Finding:
+    check_id: str
     severity: str
     title: str
     category: str
@@ -106,6 +173,10 @@ class Finding:
     why: str
     fix: str
     confidence: str = "medium"
+
+    def __post_init__(self) -> None:
+        if self.check_id not in CHECKS:
+            raise ValueError(f"unregistered check_id: {self.check_id}")
 
 
 def rel(path: Path, root: Path) -> str:
@@ -316,6 +387,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
         compatibility_date = data.get("compatibility_date")
         if not compatibility_date and not is_env:
             findings.append(Finding(
+                "CFDOC-CONFIG-NO-COMPAT-DATE",
                 "medium",
                 "Missing compatibility_date in Wrangler config",
                 "misconfiguration / best-practice drift",
@@ -329,6 +401,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                 dt = _dt.date.fromisoformat(compatibility_date)
                 if dt > today + _dt.timedelta(days=1):
                     findings.append(Finding(
+                        "CFDOC-CONFIG-COMPAT-DATE-FUTURE",
                         "high",
                         "compatibility_date is in the future",
                         "misconfiguration",
@@ -339,6 +412,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                     ))
                 elif today - dt > _dt.timedelta(days=540):
                     findings.append(Finding(
+                        "CFDOC-CONFIG-COMPAT-DATE-OLD",
                         "low",
                         "compatibility_date is old",
                         "best-practice drift / missed optimization",
@@ -349,6 +423,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                     ))
             except ValueError:
                 findings.append(Finding(
+                    "CFDOC-CONFIG-COMPAT-DATE-FORMAT",
                     "medium",
                     "compatibility_date is not ISO formatted",
                     "misconfiguration",
@@ -361,6 +436,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
         flags = data.get("compatibility_flags")
         if isinstance(flags, list) and any(str(f).lower() == "nodejs_compat" for f in flags):
             findings.append(Finding(
+                "CFDOC-CONFIG-NODEJS-COMPAT",
                 "low",
                 "nodejs_compat enabled; confirm it is required",
                 "best-practice drift / missed optimization",
@@ -376,6 +452,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                 value_s = str(value)
                 if SECRET_NAME_RE.search(name) or SECRET_VALUE_RE.search(value_s):
                     findings.append(Finding(
+                        "CFDOC-SEC-SECRET-IN-CONFIG",
                         "high",
                         "Possible secret stored in Wrangler vars",
                         "security / misconfiguration",
@@ -390,6 +467,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
         inherited_migrations = bool(parent_data.get("migrations"))
         if has_do and not data.get("migrations") and not inherited_migrations:
             findings.append(Finding(
+                "CFDOC-CONFIG-DO-NO-MIGRATIONS",
                 "high",
                 "Durable Object bindings without migrations in same config scope",
                 "misconfiguration / reliability",
@@ -402,6 +480,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
         if data.get("d1_databases") and path not in d1_migrations_reported and not has_local_d1_migrations(path, data):
             d1_migrations_reported.add(path)
             findings.append(Finding(
+                "CFDOC-CONFIG-D1-NO-MIGRATIONS",
                 "medium",
                 "D1 binding without local migration files detected",
                 "misconfiguration / reliability",
@@ -418,6 +497,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                 consumers_missing_dlq.append(str(consumer.get("queue") or consumer.get("name") or "consumer"))
         if consumers_missing_dlq:
             findings.append(Finding(
+                "CFDOC-REL-QUEUE-NO-DLQ",
                 "medium",
                 "Queue consumer lacks explicit retry or dead-letter configuration",
                 "misconfiguration / reliability / cost footgun",
@@ -440,6 +520,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
         for route in route_values:
             if route in {"*", "*/*"} or route.startswith("*") or route.count("*") >= 2:
                 findings.append(Finding(
+                    "CFDOC-COST-BROAD-ROUTE",
                     "medium",
                     "Broad Worker route should be verified",
                     "misconfiguration / cost footgun",
@@ -454,6 +535,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
             for cron in triggers["crons"]:
                 if isinstance(cron, str) and re.match(r"^(\*|\*/1)\s", cron):
                     findings.append(Finding(
+                        "CFDOC-COST-CRON-EVERY-MINUTE",
                         "medium",
                         "Cron trigger runs every minute",
                         "cost footgun / reliability",
@@ -475,6 +557,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                     missing = [k for k in binding_keys_present if k not in env_data]
                     if missing:
                         findings.append(Finding(
+                            "CFDOC-CONFIG-ENV-BINDING-PARITY",
                             "low",
                             "Environment binding parity needs verification",
                             "misconfiguration / reliability",
@@ -488,6 +571,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                         inherited_paid = [k for k in paid_or_stateful_keys if k in data and k not in env_data]
                         if env_paid or inherited_paid:
                             findings.append(Finding(
+                                "CFDOC-COST-TEMP-ENV-PAID-BINDINGS",
                                 "medium",
                                 "Temporary/preview environment is connected to paid or stateful Cloudflare services",
                                 "cost footgun / misconfiguration",
@@ -499,6 +583,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
 
         if not is_env and not data.get("observability"):
             findings.append(Finding(
+                "CFDOC-CONFIG-NO-OBSERVABILITY",
                 "low",
                 "Wrangler observability not configured in this scope",
                 "best-practice drift / reliability",
@@ -519,6 +604,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
         else:
             if "compatibility_date" not in text:
                 findings.append(Finding(
+                    "CFDOC-CONFIG-UNPARSEABLE",
                     "medium",
                     "Could not parse Wrangler config and no compatibility_date text found",
                     "misconfiguration",
@@ -548,6 +634,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         if hit:
             line_no, line = hit
             findings.append(Finding(
+                "CFDOC-SEC-SECRET-VALUE",
                 "critical",
                 "Credential-shaped value appears in repository text",
                 "security",
@@ -560,6 +647,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             match = SECRET_ASSIGN_RE.search(line)
             if match and is_sensitive_assignment(match):
                 findings.append(Finding(
+                    "CFDOC-SEC-SECRET-ASSIGNMENT",
                     "high",
                     "Credential-like assignment appears in repository text",
                     "security",
@@ -587,6 +675,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             static_excluded = any(re.search(r"\.(?:css|js|mjs|png|jpe?g|gif|svg|webp|ico|woff2?)(?:\*|$)", str(v), re.I) for v in exclude_values)
             if broad_include and not static_excluded:
                 findings.append(Finding(
+                    "CFDOC-COST-PAGES-FUNCTION-ROUTES",
                     "medium",
                     "Pages _routes.json broadly invokes Functions without obvious static exclusions",
                     "cost footgun / missed optimization",
@@ -604,6 +693,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             has_idempotency = re.search(r"idempot|dedupe|cache|fingerprint|requestId|jobId", text, re.I)
             if has_loop_or_retry or not has_idempotency:
                 findings.append(Finding(
+                    "CFDOC-COST-AI-NO-IDEMPOTENCY",
                     "high" if has_loop_or_retry else "medium",
                     "Workers AI call lacks obvious idempotency/cache or is inside retry/loop-shaped code",
                     "cost footgun / reliability",
@@ -618,6 +708,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, vector_pattern)
             if hit:
                 findings.append(Finding(
+                    "CFDOC-COST-VECTORIZE-DIMENSIONS",
                     "medium",
                     "Vectorize query path should account for queried dimensions and fan-out",
                     "cost footgun / missed optimization",
@@ -630,6 +721,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"(/cdn-cgi/image/|cf\s*:\s*\{\s*image|\bimage\s*:\s*\{)", re.I | re.S))
         if hit:
             findings.append(Finding(
+                "CFDOC-COST-MEDIA-VARIANT-EXPLOSION",
                 "medium",
                 "Image transformation path should bound variants and cache keys",
                 "cost footgun / missed optimization",
@@ -642,6 +734,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         if re.search(r"(cloudflarestream\.com|videodelivery\.net|<stream|stream-player)", text, re.I) and re.search(r"preload\s*=\s*['\"]auto['\"]", text, re.I):
             hit = line_for(text, r"preload\s*=\s*['\"]auto['\"]") or (1, "")
             findings.append(Finding(
+                "CFDOC-COST-MEDIA-VARIANT-EXPLOSION",
                 "medium",
                 "Stream player preloads video automatically",
                 "cost footgun",
@@ -655,6 +748,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             if not re.search(r"\.close\s*\(", text):
                 hit = line_for(text, re.compile(r"(puppeteer|playwright|Browser Run|env\.[A-Z0-9_]*BROWSER)", re.I)) or (1, "")
                 findings.append(Finding(
+                    "CFDOC-COST-BROWSER-NO-CLOSE",
                     "high",
                     "Browser Run session is opened without an obvious close path",
                     "cost footgun / reliability",
@@ -672,6 +766,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             has_limits = re.search(r"limits\s*:|timeout|AbortController|max(?:Cpu|CPU|Requests|Duration|Unique|Depth|Steps)|budget|quota", text, re.I)
             if user_code_shaped and (not has_egress_policy or not has_limits):
                 findings.append(Finding(
+                    "DYNAMIC-WORKER-SANDBOX-CAPABILITIES",
                     "high",
                     "Dynamic Worker/code execution lacks obvious capability or resource bounds",
                     "security / cost footgun / reliability",
@@ -682,6 +777,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 ))
             if ".load" in hit[1] and not re.search(r"\.get\s*\(|hash|digest|fingerprint|cache|dedupe|version", text, re.I):
                 findings.append(Finding(
+                    "CFDOC-COST-DYNAMIC-WORKER-DEDUPE",
                     "medium",
                     "Dynamic Worker load path lacks obvious stable ID/dedupe",
                     "cost footgun / missed optimization",
@@ -697,6 +793,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             if has_loop_or_tool and not has_agent_bounds:
                 hit = line_for(text, re.compile(r"\b(Agent|AIChatAgent|McpAgent|subAgent|startFiber|runFiber|scheduleTask|queueTask)\b")) or (1, "")
                 findings.append(Finding(
+                    "AGENT-AUTONOMOUS-LOOP-COST",
                     "medium",
                     "Cloudflare Agent loop/tool path lacks obvious bounds or cancellation",
                     "cost footgun / reliability",
@@ -711,6 +808,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, artifacts_pattern)
             if hit and not re.search(r"sign|signature|verify|rollback|token|namespace|tenant|environment|repo", text, re.I):
                 findings.append(Finding(
+                    "ARTIFACTS-UPDATE-SUPPLY-CHAIN",
                     "low",
                     "Artifacts-backed loader/update path needs token, signing, and rollback review",
                     "security / reliability / cost footgun",
@@ -723,6 +821,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"\bconnect\s*\(.*(?:hostname|host|port)|from ['\"]cloudflare:sockets['\"]|node:net|\bnet\.Socket\b|createConnection\s*\(", re.I))
         if hit and not re.search(r"hyperdrive|pool|tls|secureTransport|timeout|AbortController|close\s*\(|end\s*\(|destroy\s*\(", text, re.I):
             findings.append(Finding(
+                "WORKER-TCP-DB-FIT",
                 "medium",
                 "Worker TCP/external database path lacks obvious pooling/TLS/timeout controls",
                 "reliability / cost footgun / security",
@@ -735,6 +834,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"Promise\.all\s*\([^\n;]*\.map\s*\(", re.I))
         if hit and not re.search(r"pLimit|limit|concurrency|batch|chunk|slice\s*\(|semaphore|queue", text, re.I):
             findings.append(Finding(
+                "CFDOC-COST-UNBOUNDED-FANOUT",
                 "medium",
                 "Promise.all map fanout lacks an obvious concurrency cap",
                 "cost footgun / reliability",
@@ -750,6 +850,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         if retry_shaped and expensive_call and not has_resilience_controls:
             hit = line_for(text, re.compile(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", re.I)) or (1, "")
             findings.append(Finding(
+                "CFDOC-COST-RETRY-AMPLIFY",
                 "medium",
                 "Retry/loop-shaped expensive path lacks obvious backoff or circuit breaker",
                 "cost footgun / reliability",
@@ -763,6 +864,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         if re.search(r"Access-Control-Allow-Origin['\"\s:,{]+\*", text) and re.search(r"Access-Control-Allow-Credentials['\"\s:,{]+true", text, re.I):
             hit = line_for(text, r"Access-Control-Allow-Origin") or (1, "")
             findings.append(Finding(
+                "CFDOC-SEC-CORS-WILDCARD-CREDS",
                 "high",
                 "Wildcard CORS appears near credentialed responses",
                 "security / misconfiguration",
@@ -776,6 +878,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, r"headers\.get\(['\"](x-forwarded-for|x-real-ip)['\"]\)")
         if hit:
             findings.append(Finding(
+                "CFDOC-SEC-SPOOFABLE-IP-HEADER",
                 "medium",
                 "Code reads spoofable client-IP header",
                 "security / best-practice drift",
@@ -791,6 +894,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, rf"env\.{safe}\.list\s*\(")
             if hit:
                 findings.append(Finding(
+                    "CFDOC-COST-KV-LIST-HOTPATH",
                     "medium",
                     "KV list operation appears in application code",
                     "cost footgun / missed optimization",
@@ -802,6 +906,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             if re.search(rf"env\.{safe}\.get\s*\(", text) and re.search(rf"env\.{safe}\.put\s*\(", text) and re.search(r"counter|count|rate|limit|lock|nonce|inventory|balance", text, re.I):
                 hit = line_for(text, rf"env\.{safe}\.(get|put)\s*\(") or (1, "")
                 findings.append(Finding(
+                    "CFDOC-FIT-KV-COORDINATION",
                     "high",
                     "KV read-modify-write smell for coordination/counters",
                     "wrong primitive / reliability",
@@ -817,6 +922,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, rf"env\.{safe}\.list\s*\(")
             if hit:
                 findings.append(Finding(
+                    "CFDOC-COST-R2-LIST-HOTPATH",
                     "medium",
                     "R2 bucket list appears in application code",
                     "cost footgun / wrong primitive",
@@ -828,6 +934,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             if re.search(rf"env\.{safe}\.get\s*\(", text) and re.search(r"\.(arrayBuffer|text|json)\s*\(\s*\)", text):
                 hit = line_for(text, rf"env\.{safe}\.get\s*\(") or (1, "")
                 findings.append(Finding(
+                    "CFDOC-PERF-R2-BUFFERING",
                     "medium",
                     "R2 object may be buffered instead of streamed",
                     "missed optimization / reliability",
@@ -842,6 +949,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, re.compile(r"SELECT\s+\*", re.I))
             if hit:
                 findings.append(Finding(
+                    "CFDOC-PERF-D1-SELECT-STAR",
                     "medium",
                     "D1 query uses SELECT *",
                     "missed optimization / cost footgun",
@@ -853,6 +961,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, re.compile(r"ORDER\s+BY\s+RANDOM\s*\(", re.I))
             if hit:
                 findings.append(Finding(
+                    "CFDOC-COST-D1-ORDER-RANDOM",
                     "high",
                     "D1 query orders by RANDOM()",
                     "cost footgun / missed optimization",
@@ -863,6 +972,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 ))
             if len(re.findall(r"\.prepare\s*\(", text)) >= 6:
                 findings.append(Finding(
+                    "CFDOC-PERF-D1-N-PLUS-ONE",
                     "low",
                     "Many D1 prepared statements in one file; check for N+1 queries",
                     "missed optimization / cost footgun",
@@ -879,6 +989,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             if not has_front_door_validation:
                 hit = line_for(text, re.compile(r"idFrom(Name|String)\s*\(|\.get\s*\([^\)]*\)\.fetch\s*\(", re.I)) or (1, "")
                 findings.append(Finding(
+                    "CFDOC-COST-DO-FRONT-DOOR",
                     "medium",
                     "Durable Object call path lacks obvious front-door validation",
                     "cost footgun / security / reliability",
@@ -890,8 +1001,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"idFromName\s*\(\s*['\"](?:global|singleton|default|main|root|all|system|scheduler|broadcast|counter|idempotency)['\"]", re.I))
         if hit:
             findings.append(Finding(
+                "DO-SHARDING-HOTSPOT",
                 "high",
-                "DO-SHARDING-HOTSPOT: Durable Object idFromName uses a global/singleton key",
+                "Durable Object idFromName uses a global/singleton key",
                 "wrong primitive / cost footgun / reliability",
                 f"{rpath}:{hit[0]}: {hit[1][:160]}",
                 "A low-cardinality Durable Object key can concentrate traffic into one object, causing hot-spot latency and duration/request amplification.",
@@ -901,8 +1013,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"idFromName\s*\([^\)]*(idempot|requestId|request_id|eventId|event_id|messageId|message_id|nonce|randomUUID|Date\.now|crypto\.randomUUID)", re.I))
         if hit:
             findings.append(Finding(
+                "DO-EPHEMERAL-IDEMPOTENCY-OBJECTS",
                 "medium",
-                "DO-EPHEMERAL-IDEMPOTENCY-OBJECTS: Durable Object key appears tied to an ephemeral id/request",
+                "Durable Object key appears tied to an ephemeral id/request",
                 "wrong primitive / cost footgun",
                 f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                 "One Durable Object per idempotency key, request ID, event ID, or nonce can create many mostly idle objects and storage cleanup work without much coordination benefit.",
@@ -912,8 +1025,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"(?:this\.)?(?:ctx|state)\.storage\.list\s*\(|this\.storage\.list\s*\(", re.I))
         if hit:
             findings.append(Finding(
+                "DO-STORAGE-LIST-HOTPATH",
                 "medium",
-                "DO-STORAGE-LIST-HOTPATH: Durable Object storage.list appears in code",
+                "Durable Object storage.list appears in code",
                 "cost footgun / missed optimization",
                 f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                 "Durable Object storage list/prefix scans can be much more expensive and slower than fetching known keys when used on request or wake-up hot paths.",
@@ -925,8 +1039,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             if alarm_idx and re.search(r"\bsetAlarm\s*\(", text[alarm_idx.start():], re.I) and not re.search(r"if\s*\(|hasWork|pending|remaining|next|should|enabled|disabled|backoff|max|attempt|empty|queue", text[alarm_idx.start():alarm_idx.start() + 1200], re.I):
                 hit = line_for(text, re.compile(r"\bsetAlarm\s*\(", re.I)) or (1, "")
                 findings.append(Finding(
+                    "DO-ALARM-RECURSION",
                     "medium",
-                    "DO-ALARM-RECURSION: alarm handler reschedules without obvious idle guard",
+                    "Alarm handler reschedules without obvious idle guard",
                     "cost footgun / reliability",
                     f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                     "A Durable Object alarm that always schedules another alarm can create recurring requests/duration even when no work remains.",
@@ -938,8 +1053,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             if len(storage_puts) >= 4 or put_in_loop:
                 hit = line_for(text, re.compile(r"storage\.put\s*\(", re.I)) or (1, "")
                 findings.append(Finding(
+                    "DO-STORAGE-BATCHING",
                     "medium",
-                    "DO-STORAGE-BATCHING: multiple Durable Object storage.put calls should be reviewed",
+                    "Multiple Durable Object storage.put calls should be reviewed",
                     "cost footgun / missed optimization",
                     f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                     "Many small DO storage writes per logical event/record can multiply operation counts and latency compared with batching or coalescing where correctness allows.",
@@ -949,8 +1065,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         if "WebSocketPair" in text and re.search(r"\.accept\s*\(\s*\)", text) and "acceptWebSocket" not in text:
             hit = line_for(text, r"\.accept\s*\(\s*\)") or (1, "")
             findings.append(Finding(
+                "DO-WEBSOCKET-DURATION",
                 "medium",
-                "DO-WEBSOCKET-DURATION: WebSocket handling may not use Durable Object hibernation",
+                "WebSocket handling may not use Durable Object hibernation",
                 "cost footgun / missed optimization",
                 f"{rpath}:{hit[0]}: {hit[1][:160]}",
                 "Long-lived idle WebSockets can increase duration cost and reduce survivability if hibernation is not used where available.",
@@ -960,8 +1077,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         if do_shaped and re.search(r"WebSocketPair|acceptWebSocket|\.accept\s*\(\s*\)", text) and not re.search(r"webSocketClose|webSocketError|addEventListener\s*\(\s*['\"]close|\.close\s*\(|clearTimeout|timeout|disconnect", text, re.I):
             hit = line_for(text, re.compile(r"WebSocketPair|acceptWebSocket|\.accept\s*\(\s*\)", re.I)) or (1, "")
             findings.append(Finding(
+                "DO-SOCKET-CLOSE-HYGIENE",
                 "medium",
-                "DO-SOCKET-CLOSE-HYGIENE: WebSocket path lacks obvious close/error cleanup",
+                "WebSocket path lacks obvious close/error cleanup",
                 "cost footgun / reliability",
                 f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                 "Durable Object WebSocket code without close/error/timeout cleanup can leave stale connection state and keep sessions alive longer than intended.",
@@ -972,8 +1090,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, re.compile(r"(?:event|ctx)\.waitUntil\s*\(", re.I)) or (1, "")
             severity = "medium" if "event.waitUntil" in hit[1] else "low"
             findings.append(Finding(
+                "DO-WAITUNTIL-LIFECYCLE",
                 severity,
-                "DO-WAITUNTIL-LIFECYCLE: Durable Object background work should be bounded and API-correct",
+                "Durable Object background work should be bounded and API-correct",
                 "reliability / cost footgun",
                 f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                 "Background work in Durable Objects is a lifecycle and billing decision. The Worker entrypoint `event.waitUntil()` API is not the same as DO context APIs, and long work may need alarms, Queues, Workflows, or Agents durable execution.",
@@ -983,8 +1102,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         if do_shaped and re.search(r"session|preference|prefs|config|cache|read[-_ ]?heavy|profile", text, re.I) and not re.search(r"WebSocketPair|acceptWebSocket|alarm\s*\(|lock|counter|rate|limit|coordination|serialize|transaction", text, re.I):
             hit = line_for(text, re.compile(r"\.storage\.(get|put)\s*\(", re.I)) or (1, "")
             findings.append(Finding(
+                "KV-VS-DO-STORAGE-FIT",
                 "low",
-                "KV-VS-DO-STORAGE-FIT: Durable Object storage used for possibly read-heavy data",
+                "Durable Object storage used for possibly read-heavy data",
                 "wrong primitive / cost footgun",
                 f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                 "Read-heavy, write-rare session/preference/config data may not need Durable Object coordination or duration costs if eventual consistency or SQL queries are acceptable.",
@@ -994,8 +1114,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         if do_shaped and re.search(r"Promise\.all\s*\([^\)]*(idFromName|idFromString|stub|\.fetch\s*\()", text, re.I | re.S) and not re.search(r"pLimit|limit|concurrency|batch|chunk|semaphore|backpressure|queue", text, re.I):
             hit = line_for(text, re.compile(r"Promise\.all", re.I)) or (1, "")
             findings.append(Finding(
+                "DO-FANOUT-TAX",
                 "medium",
-                "DO-FANOUT-TAX: fan-out to Durable Objects lacks obvious backpressure",
+                "Fan-out to Durable Objects lacks obvious backpressure",
                 "cost footgun / reliability",
                 f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
                 "One request or job that wakes many Durable Objects can concentrate latency, requests, and duration unless fan-out is capped and paced.",
@@ -1007,6 +1128,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, r"await\s+caches\.default\.put\s*\(")
         if hit:
             findings.append(Finding(
+                "CFDOC-PERF-AWAITED-CACHE-PUT",
                 "low",
                 "Cache put awaited in request path",
                 "missed optimization",
@@ -1020,6 +1142,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(workers\.dev|pages\.dev|cloudflareworkers\.com)", re.I))
         if hit:
             findings.append(Finding(
+                "CFDOC-PERF-PUBLIC-SERVICE-URL",
                 "medium",
                 "Public Cloudflare service URL fetch; consider service bindings",
                 "missed optimization / security",
@@ -1031,6 +1154,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(vercel\.app|netlify\.app|railway\.app|onrender\.com|fly\.dev|herokuapp\.com|firebaseapp\.com|web\.app|supabase\.co)", re.I))
         if hit:
             findings.append(Finding(
+                "CFDOC-COST-THIRD-PARTY-ORIGIN",
                 "medium",
                 "Worker fetches a public third-party/serverless origin hostname",
                 "cost footgun / reliability / security",
@@ -1042,6 +1166,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, re.compile(r"fetch\s*\(\s*(request|req|event\.request)\.(url|clone\s*\(\s*\))", re.I))
         if hit:
             findings.append(Finding(
+                "CFDOC-COST-ASYNC-LOOP",
                 "medium",
                 "Worker appears to fetch the incoming request URL",
                 "cost footgun / reliability",
@@ -1055,6 +1180,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
         hit = line_for(text, r"process\.env\.[A-Za-z0-9_]+")
         if hit and path.suffix not in {".md"}:
             findings.append(Finding(
+                "CFDOC-CONFIG-PROCESS-ENV",
                 "low",
                 "process.env reference in Worker-adjacent code",
                 "misconfiguration / runtime compatibility",
@@ -1069,6 +1195,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, re.compile(r"ssl\s*=\s*['\"]flexible['\"]", re.I))
             if hit:
                 findings.append(Finding(
+                    "CFDOC-SEC-TLS-FLEXIBLE",
                     "high",
                     "Terraform sets SSL/TLS mode to Flexible",
                     "security / misconfiguration",
@@ -1080,6 +1207,7 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             hit = line_for(text, re.compile(r"proxied\s*=\s*false", re.I))
             if hit:
                 findings.append(Finding(
+                    "CFDOC-SEC-DNS-UNPROXIED",
                     "medium",
                     "Terraform has unproxied DNS record; verify origin exposure",
                     "security / misconfiguration",
@@ -1098,6 +1226,7 @@ def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings
     out.append("")
     out.append("This is a heuristic local scan. Confirm every finding with source context and current Cloudflare docs/pricing before treating it as true.")
     out.append("")
+    out.append(f"- Scanner version: {SCANNER_VERSION}")
     out.append(f"- Root: `{root}`")
     out.append(f"- Files scanned: {files_scanned}")
     out.append(f"- Wrangler configs: {', '.join(config_paths) if config_paths else 'none detected'}")
@@ -1118,7 +1247,7 @@ def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings
 
     for finding in findings_sorted:
         out.append("")
-        out.append(f"### {finding.severity.capitalize()}: {finding.title}")
+        out.append(f"### [{finding.check_id}] {finding.severity.capitalize()}: {finding.title}")
         out.append(f"- Category: {finding.category}")
         out.append(f"- Evidence: {finding.evidence}")
         out.append(f"- Why it matters: {finding.why}")
@@ -1128,19 +1257,76 @@ def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings
     return "\n".join(out)
 
 
+def split_evidence(evidence: str) -> tuple[str, int | None, str]:
+    match = re.match(r"^(.*?):(\d+):\s?(.*)$", evidence)
+    if match:
+        return match.group(1), int(match.group(2)), match.group(3)
+    head, _, rest = evidence.partition(": ")
+    return re.sub(r"\s*\[env\.[^\]]*\]$", "", head), None, rest
+
+
+def render_json(root: Path, bindings: dict[str, set[str]], findings: list[Finding]) -> str:
+    products = sorted(product for product, names in bindings.items() if names)
+    severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    findings_sorted = sorted(findings, key=lambda f: (severity_order.get(f.severity, 9), f.check_id, f.evidence))
+    items = []
+    for finding in findings_sorted:
+        path, line, exc = split_evidence(finding.evidence)
+        items.append({
+            "check_id": finding.check_id,
+            "title": finding.title,
+            "severity": finding.severity,
+            "confidence": finding.confidence,
+            "category": finding.category,
+            "path": path,
+            "line": line,
+            "message": finding.why,
+            "excerpt": exc,
+        })
+    counts: dict[str, int] = {"total": len(findings_sorted)}
+    for sev in ("critical", "high", "medium", "low"):
+        counts[sev] = sum(1 for f in findings_sorted if f.severity == sev)
+    doc = {
+        "scanner_version": SCANNER_VERSION,
+        "scanned_root": str(root),
+        "detected_products": products,
+        "findings": items,
+        "counts": counts,
+    }
+    return json.dumps(doc, indent=2, sort_keys=True)
+
+
+def render_check_list() -> str:
+    doc = {
+        "scanner_version": SCANNER_VERSION,
+        "checks": [{"check_id": cid, **CHECKS[cid]} for cid in sorted(CHECKS)],
+    }
+    return json.dumps(doc, indent=2, sort_keys=True)
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Heuristic static scan for Cloudflare projects")
     parser.add_argument("root", nargs="?", default=".", help="Project root to scan")
+    parser.add_argument("--json", action="store_true", help="Emit a machine-readable JSON report instead of the human report")
+    parser.add_argument("--list-checks", action="store_true", help="Print the check registry as JSON and exit")
+    parser.add_argument("--exclude", action="append", default=[], metavar="REL_PATH", help="Skip files whose root-relative POSIX path starts with this prefix (repeatable)")
     args = parser.parse_args(argv)
+
+    if args.list_checks:
+        print(render_check_list())
+        return 0
 
     root = Path(args.root).resolve()
     if not root.exists():
         print(f"error: root does not exist: {root}", file=sys.stderr)
         return 2
 
+    excludes = [e[2:] if e.startswith("./") else e for e in args.exclude]
     file_texts: list[tuple[Path, str]] = []
     configs: list[tuple[Path, str, dict[str, Any]]] = []
     for path in iter_files(root):
+        if excludes and any(Path(rel(path, root)).as_posix().startswith(e) for e in excludes):
+            continue
         text = read_text(path)
         file_texts.append((path, text))
         if path.name in CONFIG_NAMES:
@@ -1150,7 +1336,10 @@ def main(argv: list[str]) -> int:
     findings: list[Finding] = []
     add_config_findings(root, configs, findings)
     add_code_findings(root, file_texts, bindings, findings)
-    print(render(root, configs, bindings, findings, len(file_texts)))
+    if args.json:
+        print(render_json(root, bindings, findings))
+    else:
+        print(render(root, configs, bindings, findings, len(file_texts)))
     return 0
 
 
