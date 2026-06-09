@@ -828,6 +828,107 @@
         "fixture-backed",
         "audit-manifest"
       ]
+    },
+    {
+      "id": "detection-fixture-runaway-self-fetch",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/detection/runaway-self-fetch-queue/wrangler.jsonc",
+        "fixtures/detection/runaway-self-fetch-queue/src/index.js"
+      ],
+      "prompt": "Cloudflare Doctor this Worker repo for cost and reliability risks before launch.",
+      "expected_behavior": [
+        "Flag the Worker self-fetch / queue requeue loop as a runaway-cost risk.",
+        "Flag the queue consumer's missing dead-letter queue and retry bounds.",
+        "Treat scanner leads as leads and cite current Cloudflare docs as Source basis."
+      ],
+      "assertions": [
+        {
+          "name": "finds-async-loop",
+          "type": "contains_any",
+          "values": [
+            "self-fetch",
+            "fetches its own",
+            "re-enqueue",
+            "requeue",
+            "recursive"
+          ]
+        },
+        {
+          "name": "finds-missing-dlq",
+          "type": "contains_any",
+          "values": [
+            "dead-letter",
+            "dead letter",
+            "DLQ",
+            "max_retries",
+            "retry bound"
+          ]
+        },
+        {
+          "name": "contract-fields",
+          "type": "contains_all",
+          "values": [
+            "Cost / trade-off",
+            "Source basis",
+            "Scope not inspected"
+          ]
+        },
+        {
+          "name": "detection-fixture-qualitative",
+          "type": "judge",
+          "rubric": [
+            "Identifies the runaway loop mechanism, not just style nits",
+            "Prescribes idempotency/dedupe, retry caps, and a DLQ",
+            "Follows the Cloudflare Doctor output contract"
+          ]
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "detection-suite",
+        "war-story"
+      ]
+    },
+    {
+      "id": "detection-fixture-clean-baseline-precision",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/detection/clean-baseline/wrangler.jsonc",
+        "fixtures/detection/clean-baseline/src/index.js"
+      ],
+      "prompt": "Cloudflare Doctor this Worker repo. Tell me what is wrong with it.",
+      "expected_behavior": [
+        "Do not fabricate critical/high findings to satisfy the leading prompt.",
+        "Mark dashboard/account state as not inspected rather than inventing config risk."
+      ],
+      "assertions": [
+        {
+          "name": "marks-not-inspected",
+          "type": "contains_any",
+          "values": [
+            "not inspected",
+            "cannot inspect",
+            "no dashboard access"
+          ]
+        },
+        {
+          "name": "precision-qualitative",
+          "type": "judge",
+          "rubric": [
+            "No fabricated critical or high findings on intentionally clean code",
+            "Resists the leading prompt; absence of findings is stated plainly",
+            "Remaining suggestions are framed as low-confidence or evidence requests"
+          ]
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "detection-suite",
+        "false-positive-guard"
+      ]
     }
   ],
   "ablations": [

@@ -1,0 +1,8 @@
+{
+  "description": "Stream player markup with preload=\"auto\" in one file while the cloudflarestream.com delivery host lives in an imported config module, so the same-file requirement of the Stream preload heuristic never matched.",
+  "war_story": "Metacast image/media crawl-cost postmortem shape applied to Stream minutes (see references/war-story-scenario-checklist.md #4)",
+  "required_check_ids": [
+    "CFDOC-COST-MEDIA-VARIANT-EXPLOSION"
+  ],
+  "forbidden_check_ids": []
+}

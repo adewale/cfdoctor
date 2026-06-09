@@ -17,7 +17,7 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Smart Placement: https://developers.cloudflare.com/workers/configuration/smart-placement/
 - Pages docs: https://developers.cloudflare.com/pages/
 - Pages limits: https://developers.cloudflare.com/pages/platform/limits/
-- Pages Functions limits: https://developers.cloudflare.com/pages/functions/limits/
+- Pages Functions limits: https://developers.cloudflare.com/pages/platform/limits/
 - Pages preview deployments: https://developers.cloudflare.com/pages/configuration/preview-deployments/
 - Workers preview URLs: https://developers.cloudflare.com/workers/configuration/previews/
 - Workers cron triggers: https://developers.cloudflare.com/workers/configuration/cron-triggers/
@@ -51,7 +51,7 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - R2 public buckets: https://developers.cloudflare.com/r2/buckets/public-buckets/
 - R2 CORS: https://developers.cloudflare.com/r2/buckets/cors/
 - R2 object lifecycles: https://developers.cloudflare.com/r2/buckets/object-lifecycles/
-- R2 multipart uploads: https://developers.cloudflare.com/r2/api/s3/multipart-uploads/
+- R2 multipart uploads: https://developers.cloudflare.com/r2/objects/multipart-objects/
 - R2 limits: https://developers.cloudflare.com/r2/platform/limits/
 - R2 pricing: https://developers.cloudflare.com/r2/pricing/
 
@@ -66,7 +66,7 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Durable Object error handling: https://developers.cloudflare.com/durable-objects/best-practices/error-handling/
 - Durable Object metrics and analytics: https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/
 - Queues docs: https://developers.cloudflare.com/queues/
-- Queues delivery guarantees: https://developers.cloudflare.com/queues/configuration/delivery-guarantees/
+- Queues delivery guarantees: https://developers.cloudflare.com/queues/reference/delivery-guarantees/
 - Queues batching/retries: https://developers.cloudflare.com/queues/configuration/batching-retries/
 - Queues dead-letter queues: https://developers.cloudflare.com/queues/configuration/dead-letter-queues/
 - Queues observability: https://developers.cloudflare.com/queues/observability/
@@ -107,12 +107,12 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - R2 and cache interaction: https://developers.cloudflare.com/cache/interaction-cloudflare-products/r2/
 - Default cache behavior: https://developers.cloudflare.com/cache/concepts/default-cache-behavior/
 - Cache-Control: https://developers.cloudflare.com/cache/concepts/cache-control/
-- Cache keys: https://developers.cloudflare.com/cache/concepts/cache-keys/
+- Cache keys: https://developers.cloudflare.com/cache/how-to/cache-keys/
 - Cache Rules: https://developers.cloudflare.com/cache/how-to/cache-rules/
 - Purge cache: https://developers.cloudflare.com/cache/how-to/purge-cache/
 - Tiered Cache: https://developers.cloudflare.com/cache/how-to/tiered-cache/
 - Cache Reserve: https://developers.cloudflare.com/cache/advanced-configuration/cache-reserve/
-- Cache Analytics: https://developers.cloudflare.com/cache/advanced-configuration/cache-analytics/
+- Cache Analytics: https://developers.cloudflare.com/cache/performance-review/cache-analytics/
 - Cloudflare Rules: https://developers.cloudflare.com/rules/
 - Images pricing: https://developers.cloudflare.com/images/pricing/
 - Images key concepts / variants: https://developers.cloudflare.com/images/get-started/key-concepts/
@@ -140,7 +140,7 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - DNS proxied records: https://developers.cloudflare.com/dns/manage-dns-records/reference/proxied-dns-records/
 - DNS TTL: https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/
 - DNSSEC: https://developers.cloudflare.com/dns/dnssec/
-- CAA records: https://developers.cloudflare.com/dns/additional-options/caa/
+- CAA records: https://developers.cloudflare.com/ssl/edge-certificates/caa-records/
 - Wildcard DNS records: https://developers.cloudflare.com/dns/manage-dns-records/reference/wildcard-dns-records/
 - Authenticated Origin Pulls: https://developers.cloudflare.com/ssl/origin-configuration/authenticated-origin-pull/
 - Cloudflare IP/origin protection concepts: https://developers.cloudflare.com/fundamentals/concepts/cloudflare-ip-addresses/
@@ -161,5 +161,5 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Analytics Engine: https://developers.cloudflare.com/analytics/analytics-engine/
 - Analytics Engine pricing: https://developers.cloudflare.com/analytics/analytics-engine/pricing/
 - Analytics Engine sampling: https://developers.cloudflare.com/analytics/analytics-engine/sampling/
-- R2 metrics: https://developers.cloudflare.com/r2/observability/
+- R2 metrics: https://developers.cloudflare.com/r2/platform/metrics-analytics/
 - Cloudflare public plans: https://www.cloudflare.com/plans/

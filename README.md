@@ -30,13 +30,17 @@ Interpret the output as an evidence-backed risk review: findings should include 
 ## What you get
 
 - `SKILL.md` — runtime instructions and audit output contract.
-- `references/` — product-fit rubrics, account evidence guidance, official docs source map, performance/reliability/cost checks, and war-story scenarios.
-- `scripts/cfdoctor_static_scan.py` — read-only Python scanner that parses local Cloudflare configs and source files to generate audit leads.
+- `references/` — product-fit rubrics, account evidence guidance, official docs source map, performance/reliability/cost checks, war-story scenarios, and the check coverage matrix.
+- `scripts/cfdoctor_static_scan.py` — read-only Python scanner that parses local Cloudflare configs and source files to generate audit leads with stable check IDs (`--list-checks`, `--json`, `--exclude`).
 - `scripts/eval_skill_trigger.py` — deterministic trigger/description eval for the skill.
-- `docs/` — recipes and lessons learned.
-- `evals/` — trigger cases, shared benchmark manifest, holdout/holdback placeholders, fixtures, and saved trigger-eval reports.
+- `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
+- `scripts/check_coverage.py` — consistency check between `references/check-coverage-matrix.md` and the scanner's check registry.
+- `scripts/check_links.py` — citation link checker (network-dependent; never gates CI unless `--strict`).
+- `docs/` — recipes, lessons learned, and the ranked improvement plan with per-change risk analysis.
+- `evals/` — trigger cases, shared benchmark manifest, detection fixtures (war-story known-bad projects plus a clean baseline), holdout/holdback placeholders, and saved eval reports.
 - `examples/` — copy-paste usage examples.
 - `research/` — source notes used to evolve the audit checklist.
+- `TODO.md` — remaining and deferred work.
 
 ## What is bundled into the Pi skill?
 
@@ -141,22 +145,29 @@ The Python scanner is a fast triage layer, not the audit itself. It:
 - walks local text files while skipping heavy/generated directories such as `.git`, `node_modules`, `.wrangler`, and build outputs;
 - parses `wrangler.jsonc`, `wrangler.json`, and legacy `wrangler.toml` configs;
 - detects Cloudflare products/bindings and flags heuristic risk patterns in config, source, docs, migrations, and IaC;
-- emits leads for the Cloudflare Doctor skill to confirm, suppress, or escalate.
+- emits leads with stable check IDs for the Cloudflare Doctor skill to confirm, suppress, or escalate (`--json` for machine-readable output, `--list-checks` for the registry, `--exclude REL_PATH` to scope out subtrees such as this repo's intentionally bad eval fixtures).
+
+Coverage status for every check — implemented heuristic vs skill-guidance-only — lives in [`references/check-coverage-matrix.md`](references/check-coverage-matrix.md), enforced by `scripts/check_coverage.py`.
 
 It does **not** fetch current Cloudflare docs, inspect dashboard/account state, know traffic or billing volume, prove a finding, or mutate anything. Confirmed findings still need source context, current Cloudflare docs/pricing, and explicit account/dashboard evidence where applicable.
 
 ## Validate this repo
 
 ```bash
-python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py
+python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
 python3 scripts/eval_skill_trigger.py
-./scripts/cfdoctor_static_scan.py .
+python3 scripts/eval_detection.py
+python3 scripts/check_coverage.py
+./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
 ```
 
-Current proof from the latest validation run:
+Current proof from the latest validation run (2026-06-09):
 
 - Trigger eval: `38/38 = 100%` (`evals/results/latest.md`).
-- Static self-scan: `0 findings` on this repository.
+- Detection eval: `14/14` war-story fixtures pass, including five `gap-*` fixtures that reproduce previously missed code shapes (`evals/results/detection/latest.md`).
+- Coverage matrix: consistent with the 56-check scanner registry.
+- Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).
+- Citation links: 397 checked, dead official-docs links re-pointed, war stories annotated with verified archive snapshots (`evals/results/link-check-2026-06-09.md`).
 
 ## Example audit prompts
 

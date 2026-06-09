@@ -1,0 +1,9 @@
+{
+  "description": "Health-check Worker attached to a wildcard route that captures the apex and every subdomain of the zone, plus an every-minute cron trigger. Models broad-interception traffic bills and constant scheduled invocations.",
+  "war_story": "https://serverlesshorrors.com/all/netlify-104k (see references/war-story-scenario-checklist.md #3 and #7)",
+  "required_check_ids": [
+    "CFDOC-COST-BROAD-ROUTE",
+    "CFDOC-COST-CRON-EVERY-MINUTE"
+  ],
+  "forbidden_check_ids": []
+}

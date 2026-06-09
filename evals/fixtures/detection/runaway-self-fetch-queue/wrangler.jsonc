@@ -1,0 +1,11 @@
+{
+  // Export pipeline worker: accepts export requests and processes them via a queue.
+  "name": "retain-export-worker",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "queues": {
+    "producers": [{ "binding": "EXPORT_QUEUE", "queue": "tenant-exports" }],
+    "consumers": [{ "queue": "tenant-exports", "max_batch_size": 25 }]
+  }
+}

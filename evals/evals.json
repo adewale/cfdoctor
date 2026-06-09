@@ -1,11 +1,18 @@
 {
   "name": "cloudflare-doctor-evals",
-  "description": "Repo-level eval manifest for Cloudflare Doctor. The executable proxy eval uses evals/trigger-cases.json.",
+  "description": "Repo-level eval manifest for Cloudflare Doctor. Deterministic runners cover skill triggering and scanner detection; the shared benchmark covers model-graded audit quality.",
   "runner": "python3 scripts/eval_skill_trigger.py",
   "cases": "evals/trigger-cases.json",
+  "additional_runners": {
+    "detection": "python3 scripts/eval_detection.py",
+    "coverage": "python3 scripts/check_coverage.py"
+  },
   "assertions": [
     "positive Cloudflare audit prompts trigger the skill",
     "false friends and unrelated generic prompts do not trigger the skill",
-    "expected product/intent terms are present in the skill description"
+    "expected product/intent terms are present in the skill description",
+    "every detection fixture's required check IDs are emitted by the scanner",
+    "the clean-baseline fixture produces zero findings",
+    "the check coverage matrix stays consistent with the scanner registry"
   ]
 }

@@ -1,0 +1,8 @@
+{
+  "description": "Worker exporting a queue() consumer handler while the repo has no consumer config at all (consumer was attached in the dashboard), so the config-only DLQ heuristic has nothing to inspect.",
+  "war_story": "RetainDB runaway loop, https://serverlesshorrors.com/all/cloudflare-36k (see references/war-story-scenario-checklist.md #1)",
+  "required_check_ids": [
+    "CFDOC-REL-QUEUE-NO-DLQ"
+  ],
+  "forbidden_check_ids": []
+}

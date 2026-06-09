@@ -1,0 +1,27 @@
+CREATE TABLE posts (
+  id INTEGER PRIMARY KEY,
+  author_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  views INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  handle TEXT NOT NULL,
+  display_name TEXT NOT NULL
+);
+
+CREATE TABLE comments (
+  id INTEGER PRIMARY KEY,
+  post_id INTEGER NOT NULL,
+  author_id INTEGER NOT NULL,
+  body TEXT NOT NULL
+);
+
+CREATE TABLE likes (
+  id INTEGER PRIMARY KEY,
+  post_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL
+);
