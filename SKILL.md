@@ -41,7 +41,7 @@ Use this skill to audit a user's Cloudflare project like a doctor: diagnose from
 
 This output contract is mandatory for every Cloudflare Doctor audit response, including terse/direct prompts such as “Cloudflare Doctor this Worker …” and prompts that provide only a user-supplied scenario instead of repo files. Do not replace it with a free-form diagnosis. If the only evidence is the prompt, still emit the scaffold below: set `Scope inspected` to the user-supplied statement, set `Scope not inspected` to missing repo/account/dashboard/deploy evidence, and mark findings as suspected/needs verification when repo or dashboard evidence is absent.
 
-Before finalizing, verify the answer contains these literal contract markers: `Scope inspected:`, `Scope not inspected:`, `Docs refreshed:`, `Detected products:`, `Cost proxy summary:`, `Overall risk:`, `### Severity:`, `- Evidence:`, `- Fix:`, `- Verify:`, `- Source basis:`, `- Confidence:`, and `## Run summary with cost proxies`.
+Before finalizing, verify the answer contains these literal contract markers: `Scope inspected:`, `Scope not inspected:`, `Docs refreshed:`, `Detected products:`, `Cost proxy summary:`, `Overall risk:`, `### Severity:`, `- Evidence:`, `- Fix:`, `- Cost / trade-off:`, `- Verify:`, `- Source basis:`, `- Confidence:`, and `## Run summary with cost proxies`.
 
 Start with:
 
@@ -63,6 +63,7 @@ Then group findings:
 - Evidence: <file:line/config/account source/command output, or "User-supplied prompt/architecture statement" when no files were provided>
 - Why it matters: <Cloudflare-specific behavior, limit, consistency model, billing mechanism, or failure mode>
 - Fix: <smallest safe remediation; include better primitive/product if applicable>
+- Cost / trade-off: <billing meter or cost proxy affected; expected benefit; implementation effort; latency/complexity/security downside; reversibility; assumptions>
 - Verify: <command, dashboard check, load test, or config check>
 - Source basis: <official Cloudflare docs URL(s) fetched this audit and/or accepted war story URL(s)>
 - Confidence: <high|medium|low>

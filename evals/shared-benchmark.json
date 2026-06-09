@@ -61,6 +61,7 @@
             "Severity",
             "Evidence",
             "Fix",
+            "Cost / trade-off",
             "Verify",
             "Source basis"
           ]
@@ -106,6 +107,7 @@
             "Severity",
             "Evidence",
             "Fix",
+            "Cost / trade-off",
             "Verify",
             "Source basis"
           ]
@@ -151,6 +153,7 @@
             "Severity",
             "Evidence",
             "Fix",
+            "Cost / trade-off",
             "Verify",
             "Source basis"
           ]
@@ -196,6 +199,7 @@
             "Severity",
             "Evidence",
             "Fix",
+            "Cost / trade-off",
             "Verify",
             "Source basis"
           ]
@@ -241,6 +245,7 @@
             "Severity",
             "Evidence",
             "Fix",
+            "Cost / trade-off",
             "Verify",
             "Source basis"
           ]
@@ -287,6 +292,7 @@
             "Severity",
             "Evidence",
             "Fix",
+            "Cost / trade-off",
             "Verify",
             "Source basis"
           ]
@@ -332,6 +338,7 @@
             "Severity",
             "Evidence",
             "Fix",
+            "Cost / trade-off",
             "Verify",
             "Source basis"
           ]
@@ -848,6 +855,14 @@
       "removed_component": "source-basis field",
       "expected_regressions": [
         "Findings lack evidence trace."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-cost-tradeoff",
+      "removed_component": "cost/trade-off field",
+      "expected_regressions": [
+        "Findings present cost savings or mitigations without billing proxies, implementation effort, downsides, reversibility, or assumptions."
       ],
       "applies_to_cases": []
     },
