@@ -81,6 +81,16 @@
     ]
   },
   {
+    "id": "dead-rpc-rpctarget",
+    "prompt": "Audit our RpcTarget and WorkerEntrypoint public methods for dead cross-boundary RPC surface.",
+    "expected": "trigger",
+    "category": "workers rpc",
+    "description_terms": [
+      "RpcTarget",
+      "WorkerEntrypoint"
+    ]
+  },
+  {
     "id": "queues-dlq-retry-storm",
     "prompt": "Review our Cloudflare Queues consumers for retry storms, poison messages, DLQs, and idempotency.",
     "expected": "trigger",

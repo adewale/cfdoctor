@@ -1,6 +1,6 @@
 ---
 name: cloudflare-doctor
-description: Audits concrete Cloudflare projects/configurations for best-practice drift, wrong primitive/product choices, missed optimizations, product misconfiguration, security gaps, reliability risks, and cost footguns. Use when reviewing repo/account evidence for Workers, Pages, Wrangler, KV, D1, R2, Durable Objects, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Agents SDK, Artifacts, Analytics Engine, Workers Logs, CDN/cache, DNS, WAF, Access/Zero Trust, Cloudflare account settings, pricing/overages, or IaC decisions. Do not use for generic Cloudflare status-page/uptime questions, product news, or conceptual Cloudflare explainers without project/config/account evidence to audit.
+description: Audits concrete Cloudflare projects/configurations for best-practice drift, wrong primitive/product choices, missed optimizations, product misconfiguration, security gaps, reliability risks, and cost footguns. Use when reviewing repo/account evidence for Workers, Pages, Wrangler, KV, D1, R2, Durable Objects, WorkerEntrypoint/RpcTarget RPC, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Agents SDK, Artifacts, Analytics Engine, Workers Logs, CDN/cache, DNS, WAF, Access/Zero Trust, Cloudflare account settings, pricing/overages, or IaC decisions. Do not use for generic Cloudflare status-page/uptime questions, product news, or conceptual Cloudflare explainers without project/config/account evidence to audit.
 ---
 
 # Cloudflare Doctor
@@ -39,9 +39,10 @@ Use this skill to audit a user's Cloudflare project like a doctor: diagnose from
    python3 <skill-dir>/scripts/cfdoctor_static_scan.py .
    ```
    Treat scanner output as leads, not proof. Add `--json` for machine-readable leads with stable check IDs. When scanning this skill's own repository, add `--exclude evals/fixtures` (the fixtures are intentionally bad).
-5. Inventory Cloudflare surface area: repo files, Wrangler config, bindings, IaC, package scripts, routes/domains, runtime code, migrations, tests, and any supplied account/dashboard evidence.
-6. Map products and primitives, then read the references routed by the step-1 table that match the detected products and concerns. Use [`references/official-source-map.md`](references/official-source-map.md) for source links and date-sensitive pricing/limits verification.
-7. Produce findings in the required format below. Prioritize high-impact correctness, security, reliability, and cost findings over exhaustive trivia.
+5. If the repo is TypeScript and exposes `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, or Agents SDK classes, include the optional dead cross-boundary RPC audit path from [`references/performance-and-reliability.md`](references/performance-and-reliability.md): inventory public non-runtime methods; if the user approves third-party tooling or it is already pinned in repo tooling, run `npx @acoyfellow/deadlint . --check dead-rpc --json`; treat output as reachability leads, not proof, and ask about dynamic/cross-repo callers before recommending deletion.
+6. Inventory Cloudflare surface area: repo files, Wrangler config, bindings, IaC, package scripts, routes/domains, runtime code, migrations, tests, and any supplied account/dashboard evidence.
+7. Map products and primitives, then read the references routed by the step-1 table that match the detected products and concerns. Use [`references/official-source-map.md`](references/official-source-map.md) for source links and date-sensitive pricing/limits verification.
+8. Produce findings in the required format below. Prioritize high-impact correctness, security, reliability, and cost findings over exhaustive trivia.
 
 ## Required audit output
 
@@ -102,5 +103,6 @@ End with:
 ## Safe command policy
 
 - Local read-only commands are fine: `find`, `rg`, `python3 <skill-dir>/scripts/cfdoctor_static_scan.py .`, package manager metadata commands, and unauthenticated Cloudflare docs fetches such as `curl -fsSL https://developers.cloudflare.com/workers/llms.txt`.
+- Ask before running third-party code or network-installing tools with `npx`/package managers unless the user already approved that class of tooling. For example, `npx @acoyfellow/deadlint . --check dead-rpc --json` is read-only analysis, but still executes third-party code and should be approved or pinned in repo tooling first.
 - Ask before authenticated Cloudflare commands, even read-only ones, because they may expose account/project names or consume API rate limits.
 - Never deploy, mutate bindings, create/delete resources, purge cache, change DNS/WAF/rules, or rotate secrets unless the user explicitly asks.

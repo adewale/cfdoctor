@@ -21,10 +21,16 @@ Use when spend is high or traffic patterns changed. The answer should identify m
 ## Durable Objects deep dive
 
 ```text
-Inspect our Durable Objects for WebSocket hibernation/close hygiene, storage.list hot paths, alarm recursion, hot shards, one-object-per-idempotency-key patterns, storage batching, fanout to many objects, and KV-vs-DO storage fit.
+Inspect our Durable Objects for WebSocket hibernation/close hygiene, storage.list hot paths, alarm recursion, hot shards, one-object-per-idempotency-key patterns, storage batching, fanout to many objects, KV-vs-DO storage fit, and dead public cross-boundary RPC methods.
 ```
 
-Pair with DO class code, Wrangler migrations, object naming strategy, and metrics for requests/duration/storage ops.
+Pair with DO class code, Wrangler migrations, object naming strategy, and metrics for requests/duration/storage ops. For TypeScript repos with `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, or Agents SDK classes, optionally approve a read-only third-party analyzer:
+
+```bash
+npx @acoyfellow/deadlint . --check dead-rpc --json
+```
+
+Treat its output as reachability leads. Before deleting a method, check for dynamic dispatch, frontend companion files, API docs, old deployed versions, and callers in other repositories.
 
 ## Dashboard/account evidence request
 
@@ -45,16 +51,16 @@ Use in CI or as a pre-audit smoke check. The Python scanner parses local `wrangl
 ## Trigger eval maintenance
 
 ```bash
-python3 scripts/eval_skill_trigger.py
+python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 ```
 
-Run after editing `SKILL.md` or `evals/trigger-cases.json`. Current expected result is 100% proxy accuracy with no missing description terms.
+Run after editing `SKILL.md` or `evals/trigger-cases.json`. Current expected result is 100% proxy accuracy with no missing description terms. Use `npm run update-results` only when the checked-in report under `evals/results/` should be refreshed.
 
 ## Detection eval and coverage maintenance
 
 ```bash
-python3 scripts/eval_detection.py
+python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
 python3 scripts/check_coverage.py
 ```
 
-Run after changing scanner heuristics, fixtures, or the coverage matrix. The detection eval must pass every fixture under `evals/fixtures/detection/` (including the `clean-baseline` false-positive guard), and the coverage checker must report the matrix consistent with the scanner registry. When fixing a scanner false negative, add a failing `gap-*` fixture first, then fix the heuristic.
+Run after changing scanner heuristics, fixtures, or the coverage matrix. The detection eval must pass every fixture under `evals/fixtures/detection/` (including the `clean-baseline` false-positive guard), and the coverage checker must report the matrix consistent with the scanner registry. When fixing a scanner false negative, add a failing `gap-*` fixture first, then fix the heuristic. Use `npm run update-results` only when the checked-in report under `evals/results/detection/` should be refreshed.

@@ -3,7 +3,7 @@
 Remaining work, ordered by the same criteria as
 [`docs/improvement-plan.md`](docs/improvement-plan.md) (verifiability first,
 then likelihood of delivering value). Items completed on 2026-06-09 — stable
-scanner check IDs (v0.3.0), the 14-fixture detection eval, the coverage
+scanner check IDs (v0.3.0), the fixture-based detection eval (now 15 fixtures after the dead-RPC review-surface case), the coverage
 matrix + CI consistency checker, citation link verification, SKILL.md
 reference routing, and five false-negative heuristic fixes — are recorded in
 the plan doc and the git history, not repeated here.

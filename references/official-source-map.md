@@ -14,6 +14,10 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Compatibility dates: https://developers.cloudflare.com/workers/configuration/compatibility-dates/
 - `ExecutionContext.waitUntil`: https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil
 - Service bindings: https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/
+- Workers RPC overview: https://developers.cloudflare.com/workers/runtime-apis/rpc/
+- Workers RPC TypeScript: https://developers.cloudflare.com/workers/runtime-apis/rpc/typescript/
+- Workers RPC visibility/security model: https://developers.cloudflare.com/workers/runtime-apis/rpc/visibility/
+- Service binding RPC (`WorkerEntrypoint`): https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/rpc/
 - Smart Placement: https://developers.cloudflare.com/workers/configuration/smart-placement/
 - Pages docs: https://developers.cloudflare.com/pages/
 - Pages limits: https://developers.cloudflare.com/pages/platform/limits/
@@ -58,6 +62,7 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 ## Coordination and async
 
 - Durable Objects docs: https://developers.cloudflare.com/durable-objects/
+- Durable Object invoke methods/RPC: https://developers.cloudflare.com/durable-objects/best-practices/create-durable-object-stubs-and-send-requests/
 - Durable Object migrations: https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/
 - Durable Object WebSocket hibernation: https://developers.cloudflare.com/durable-objects/best-practices/websockets/
 - Durable Object alarms: https://developers.cloudflare.com/durable-objects/api/alarms/

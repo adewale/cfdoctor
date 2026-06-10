@@ -25,8 +25,9 @@
   "homepage": "https://github.com/adewale/cfdoctor#readme",
   "scripts": {
     "scan": "./scripts/cfdoctor_static_scan.py .",
-    "eval": "python3 scripts/eval_skill_trigger.py",
-    "test": "python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py && python3 scripts/eval_skill_trigger.py && ./scripts/cfdoctor_static_scan.py ."
+    "eval": "python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval",
+    "update-results": "python3 scripts/eval_skill_trigger.py && python3 scripts/eval_detection.py",
+    "test": "python3 -m json.tool package.json >/dev/null && find evals -name '*.json' -print0 | xargs -0 -I{} python3 -m json.tool {} >/dev/null && python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py && python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval && ./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures --json | python3 -c \"import json,sys; d=json.load(sys.stdin); f=d['findings']; assert not f, f; print('self-scan clean')\" && python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval && python3 scripts/check_coverage.py"
   },
   "pi": {
     "skills": [
