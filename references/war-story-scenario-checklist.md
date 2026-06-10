@@ -281,6 +281,17 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
   - Audit output records docs refreshed, cost proxies, cache maps, and evidence gaps so future turns do not infer missing dashboard state.
 - Evidence to request: tests/gates, CI checks, audit artifacts, run summaries, docs URLs fetched.
 
+### 22. Dead public cross-boundary RPC methods evade generic linters
+
+- Source: Jordan Coeyman X post, 2026-05-13, https://x.com/acoyfellow/status/2054685542369952158; `deadlint` repository, https://github.com/acoyfellow/deadlint
+- Source type: operator tooling note; scenario source only. Pair with current Cloudflare Workers RPC, Durable Objects, and Agents docs before making platform/API claims.
+- Mechanism: public methods on `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, and `Agent` subclasses look like live API surface to generic linters (`knip`, `oxlint`, ESLint), so stale methods can accumulate. Some may still be callable by stubs, service bindings, frontend RPC proxies, old deployed clients, or cross-repo callers.
+- Cloudflare checks:
+  - Inventory public non-runtime methods on cross-boundary classes separately from platform hooks (`fetch`, `alarm`, `run`, WebSocket callbacks, Agent lifecycle hooks).
+  - Before deleting, check TypeScript references, `.method()` / `["method"]()` calls, `.call("method", ...)` string dispatch, companion frontend files, API docs, old versions, and cross-repo clients.
+  - Optional tool path: with explicit approval or pinned repo tooling, run `npx @acoyfellow/deadlint . --check dead-rpc --json` and treat output as leads, not proof.
+- Evidence to request: boundary class code, TypeScript config(s), generated/typed RPC stubs, frontend companion files, service bindings, public client/API docs, and evidence of external callers.
+
 ## Scenario-to-check matrix
 
 | Scenario | Cloudflare products/configs to inspect |
@@ -302,6 +313,7 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 | Agents SDK autonomous loops/tools | Agent classes, scheduled tasks, queue tasks, sub-agents, retries, browser/sandbox tools, WebSockets/SSE, cancellation, observability |
 | Artifacts-backed app/firmware loaders | Artifacts namespaces/repos/tokens, signed releases, A-B/rollback flow, device/app update channels, token rotation |
 | Workers TCP/external database | TCP sockets, Node `net`, Hyperdrive fit, TLS, pooling/reuse, timeouts, bounded concurrency, DB region/query metrics |
+| Dead cross-boundary RPC methods | `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, `Agent` classes, public methods, TS references, stub calls, `.call("method")`, companion frontend files, cross-repo clients |
 | OAuth/WebAuthn/webhook security | Workers handlers, headers, CORS, token encryption, redirect allowlists, timing-safe compares, webhook signatures/idempotency, WAF/rate limits |
 
 ## Checks to add or strengthen
@@ -331,3 +343,4 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - `AGENT-AUTONOMOUS-LOOP-COST`: Agents SDK loops/tools/schedules lack max steps, cancellation, retry/backoff, idempotency, and cost proxies.
 - `ARTIFACTS-UPDATE-SUPPLY-CHAIN`: Artifacts-backed app/firmware update path lacks token scope, signing, rollback, or namespace separation.
 - `WORKER-TCP-DB-FIT`: Worker TCP/external DB path lacks Hyperdrive/product-fit review, TLS, pooling, timeouts, or fanout limits.
+- `CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD`: Cross-boundary public RPC methods need reachability review; optional deadlint/human review verifies deadness before deletion.

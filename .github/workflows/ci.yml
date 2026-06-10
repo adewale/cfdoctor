@@ -38,7 +38,7 @@ jobs:
             | python3 -c "import json,sys; d=json.load(sys.stdin); f=d['findings']; assert not f, f; print('self-scan clean')"
 
       - name: Run detection eval against fixtures
-        run: python3 scripts/eval_detection.py
+        run: python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
 
       - name: Check coverage matrix consistency
         run: python3 scripts/check_coverage.py

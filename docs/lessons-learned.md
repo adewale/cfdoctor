@@ -143,3 +143,32 @@ The lesson is: **CI is most useful when it automates the exact validation comman
 13. Private holdout/holdback eval prompts are not user prerequisites and should be documented as maintainer-only assets.
 14. Repository metadata — topics, homepage, wiki state, license, release — is a documentation surface.
 15. CI should codify the same deterministic checks maintainers are told to run locally.
+
+## What we learned from deadlint and the cross-boundary RPC pass
+
+The deadlint note was a useful reminder that Cloudflare-specific correctness gaps often live one abstraction layer above generic tooling. A normal dead-code checker sees a public method and stops. In Workers RPC, Durable Objects, Agents, and service bindings, that public method might be a real external entry point — or it might be a forgotten callable surface that no generic tool will flag.
+
+### Public boundary methods are not ordinary public methods
+
+`DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, and `Agent` classes expose public methods across stubs, service bindings, frontend proxies, and sometimes old deployed clients. That makes their reachability different from ordinary in-process TypeScript methods.
+
+The lesson is: **cross-boundary methods need their own audit path**. A repo-only scanner can identify the review surface, but it cannot prove deletion safety without checking dynamic dispatch, companion frontend files, API docs, old versions, and cross-repo callers.
+
+### Optional third-party analyzers need approval and framing
+
+`deadlint` is useful because it combines TypeScript references with token scans for `.method()`, `["method"]()`, and `.call("method", ...)` caller shapes. But running it through `npx` executes third-party code, and its output is still a reachability lead, not final proof.
+
+The lesson is: **recommend optional analyzers as gated tools, not hidden default steps**. Ask before `npx`, prefer pinned repo tooling when available, and report analyzer output as evidence to verify rather than evidence to delete.
+
+### Fixture coverage should test the review surface, not pretend to solve reachability
+
+The new scanner check deliberately says "cross-boundary public RPC methods need reachability review" instead of "dead method found". The detection fixture asserts that the scanner notices the boundary-class public methods. It does not assert deadness, because that would require a richer TypeScript/call-graph analyzer and external-caller evidence.
+
+The lesson is: **name scanner checks after what they can actually prove**. Precision starts with honest wording.
+
+### Updated lesson list addendum
+
+16. Cross-boundary public methods need a Cloudflare-specific reachability review; generic dead-code tools stop too early.
+17. `npx`-based analyzers are optional gated tools: ask approval or use pinned repo tooling before running them.
+18. Dead-RPC scanner output is a lead to review dynamic/cross-repo callers, not deletion proof.
+19. Fixture coverage should assert the detectable review surface, not a semantic claim the scanner cannot prove.

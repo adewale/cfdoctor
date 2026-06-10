@@ -4,9 +4,9 @@
 
 ## Validation
 
-- [ ] `python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py`
-- [ ] `python3 scripts/eval_skill_trigger.py`
-- [ ] `./scripts/cfdoctor_static_scan.py .`
+- [ ] `npm test`
+- [ ] `git diff --check -- . ':(exclude)evals/results'`
+- [ ] If changing scanner heuristics or trigger cases: `npm run update-results` and review the eval report diff
 - [ ] Docs/references updated when skill behavior changes
 
 ## Notes

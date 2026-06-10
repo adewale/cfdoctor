@@ -11,11 +11,12 @@ asserts:
 
 Exit codes: 0 all fixtures pass, 1 one or more fixtures fail, 2 harness error.
 Stdlib only; deterministic; writes a timestamped markdown report plus
-`latest.md` to `evals/results/detection/`.
+`latest.md` to `evals/results/detection/` by default, or to `--out-dir`.
 """
 
 from __future__ import annotations
 
+import argparse
 import datetime as dt
 import json
 import subprocess
@@ -26,7 +27,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCANNER = REPO_ROOT / "scripts" / "cfdoctor_static_scan.py"
 FIXTURES_DIR = REPO_ROOT / "evals" / "fixtures" / "detection"
-RESULTS_DIR = REPO_ROOT / "evals" / "results" / "detection"
+DEFAULT_RESULTS_DIR = REPO_ROOT / "evals" / "results" / "detection"
 
 
 class HarnessError(RuntimeError):
@@ -161,7 +162,22 @@ def render_report(results: list[FixtureResult], timestamp: dt.datetime) -> str:
     return "\n".join(lines)
 
 
-def main() -> int:
+def display_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description="Run scanner detection fixtures")
+    parser.add_argument(
+        "--out-dir",
+        help="Directory for markdown reports (default: evals/results/detection)",
+    )
+    args = parser.parse_args(argv)
+    results_dir = Path(args.out_dir) if args.out_dir else DEFAULT_RESULTS_DIR
+
     if not SCANNER.exists():
         print(f"harness error: scanner not found at {SCANNER}", file=sys.stderr)
         return 2
@@ -193,14 +209,14 @@ def main() -> int:
 
     timestamp = dt.datetime.now()
     report = render_report(results, timestamp)
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    stamped = RESULTS_DIR / f"detection-eval-{timestamp.strftime('%Y%m%d-%H%M%S')}.md"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    stamped = results_dir / f"detection-eval-{timestamp.strftime('%Y%m%d-%H%M%S')}.md"
     stamped.write_text(report, encoding="utf-8")
-    (RESULTS_DIR / "latest.md").write_text(report, encoding="utf-8")
-    print(f"report: {stamped.relative_to(REPO_ROOT)} (and latest.md)")
+    (results_dir / "latest.md").write_text(report, encoding="utf-8")
+    print(f"report: {display_path(stamped)} (and latest.md)")
 
     return 0 if passed == len(results) else 1
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))

@@ -8,8 +8,8 @@ the risk is ignored.
 
 ## Status (end of 2026-06-09 pass)
 
-1. Scanner check IDs + JSON output — **done** (scanner 0.3.0; 56-check registry).
-2. Fixture-based detection evals — **done** (14 fixtures, including five
+1. Scanner check IDs + JSON output — **done** (scanner 0.3.0; 56-check registry; scanner 0.3.1 adds the dead-RPC review-surface lead, bringing the registry to 57 checks).
+2. Fixture-based detection evals — **done** (15 fixtures, including five
    `gap-*` fixtures that reproduced and then closed real false negatives).
 3. Coverage matrix + consistency checker — **done** (CI-enforced).
 4. Link verification + archive fallbacks — **done** (initial run; periodic

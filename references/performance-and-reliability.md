@@ -71,6 +71,18 @@ For each layer, record: cache owner, key, TTL, invalidation trigger, stale-while
 - Keep object methods short; offload expensive work to Queues/Workflows where possible. Fan-out to many DOs needs concurrency caps, backpressure, and per-run metrics.
 - Ensure Wrangler migrations track class lifecycle.
 
+## Cross-boundary RPC reachability
+
+Workers and Durable Objects can expose JavaScript-native RPC across `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, and Agents SDK classes. Generic dead-code tools often stop at the public class-member boundary because a stub, service binding, frontend proxy, or external repository might call the method.
+
+When a TypeScript repo has these boundary classes:
+
+- Inventory public non-runtime methods and separate platform hooks (`fetch`, `alarm`, `run`, `onConnect`, WebSocket callbacks, etc.) from app-specific RPC methods.
+- Look for three caller shapes before treating a method as removable: TypeScript references, direct stub calls such as `.method()` / `["method"]()`, and string-key dispatch such as `.call("method", ...)` used by some proxy/Agent patterns.
+- Scan companion frontend files (`.svelte`, `.vue`, `.astro`, `.tsx`, `.jsx`) when callers may live outside the Worker tsconfig.
+- Treat "not called in this repo" as **needs verification** if external clients, old deployed versions, dynamic method names, API docs, or another repository may call it.
+- Optional tool path: after explicit approval (or when already pinned in repo tooling), run `npx @acoyfellow/deadlint . --check dead-rpc --json` and treat output as leads, not proof.
+
 ## D1 reliability/performance
 
 - Schema migrations are checked in and applied intentionally per environment.

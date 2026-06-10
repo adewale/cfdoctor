@@ -113,11 +113,15 @@ python3 -m json.tool package.json
 python3 -m json.tool evals/evals.json
 python3 -m json.tool evals/trigger-cases.json
 python3 -m json.tool evals/shared-benchmark.json
-python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py
-python3 scripts/eval_skill_trigger.py
-./scripts/cfdoctor_static_scan.py .
-git diff --check
+python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
+python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
+python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
+./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
+python3 scripts/check_coverage.py
+git diff --check -- . ':(exclude)evals/results'
 ```
+
+Use `npm run update-results` only when you intentionally want to refresh the checked-in eval report artifacts under `evals/results/`.
 
 The shared benchmark manifest is for maintainers who want paired with-skill/without-skill and ablation evaluation. Hidden holdout/holdback prompts are intentionally private and are not required for normal users.
 
@@ -155,17 +159,19 @@ It does **not** fetch current Cloudflare docs, inspect dashboard/account state, 
 
 ```bash
 python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
-python3 scripts/eval_skill_trigger.py
-python3 scripts/eval_detection.py
+python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
+python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
 python3 scripts/check_coverage.py
 ./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
 ```
 
-Current proof from the latest validation run (2026-06-09):
+Run `npm run update-results` when the checked-in proof reports should change.
 
-- Trigger eval: `38/38 = 100%` (`evals/results/latest.md`).
-- Detection eval: `14/14` war-story fixtures pass, including five `gap-*` fixtures that reproduce previously missed code shapes (`evals/results/detection/latest.md`).
-- Coverage matrix: consistent with the 56-check scanner registry.
+Current proof from the latest validation run (2026-06-10):
+
+- Trigger eval: `39/39 = 100%` (`evals/results/latest.md`).
+- Detection eval: `15/15` war-story fixtures pass, including five `gap-*` fixtures that reproduce previously missed code shapes and one dead-RPC review-surface fixture (`evals/results/detection/latest.md`).
+- Coverage matrix: consistent with the 57-check scanner registry.
 - Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).
 - Citation links: 397 checked, dead official-docs links re-pointed, war stories annotated with verified archive snapshots (`evals/results/link-check-2026-06-09.md`).
 
@@ -176,7 +182,7 @@ Audit my wrangler.jsonc for Cloudflare best-practice drift and unsafe bindings.
 ```
 
 ```text
-Review our Durable Objects WebSocket code for hibernation mistakes, storage.list hot paths, alarm recursion, and hot shards.
+Review our Durable Objects and Agents/RPC code for hibernation mistakes, storage.list hot paths, alarm recursion, hot shards, and dead public cross-boundary RPC methods.
 ```
 
 ```text

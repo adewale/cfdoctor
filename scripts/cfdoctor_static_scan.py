@@ -96,7 +96,7 @@ SECRET_ASSIGN_RE = re.compile(
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
 NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
 
-SCANNER_VERSION = "0.3.0"
+SCANNER_VERSION = "0.3.1"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -109,6 +109,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-CONFIG-DO-NO-MIGRATIONS", "CONFIG", "high", "medium", "Durable Object bindings without migrations in same config scope", "Durable Object bindings exist without Wrangler migrations entries."),
     ("CFDOC-CONFIG-D1-NO-MIGRATIONS", "CONFIG", "medium", "low", "D1 binding without local migration files detected", "A D1 binding has no nearby checked-in migration files; schema may drift."),
     ("CFDOC-REL-QUEUE-NO-DLQ", "REL", "medium", "medium", "Queue consumer lacks explicit retry or dead-letter configuration", "Queue consumer has no DLQ/retry settings; poison messages can retry unbounded."),
+    ("CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD", "REL", "low", "low", "Cross-boundary public RPC methods need reachability review", "Public methods on DurableObject/WorkerEntrypoint/WorkflowEntrypoint/RpcTarget/Agent classes may evade generic dead-code linters."),
     ("CFDOC-COST-BROAD-ROUTE", "COST", "medium", "medium", "Broad Worker route should be verified", "A catchall/wildcard Worker route can intercept unintended traffic and invocations."),
     ("CFDOC-COST-CRON-EVERY-MINUTE", "COST", "medium", "high", "Cron trigger runs every minute", "Every-minute cron schedules create constant invocations and downstream usage."),
     ("CFDOC-CONFIG-ENV-BINDING-PARITY", "CONFIG", "low", "low", "Environment binding parity needs verification", "Wrangler env scope is missing bindings declared at top level; envs commonly drift."),
@@ -982,6 +983,39 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                     rpath,
                     "Several sequential D1 queries on one request path can multiply latency and billed rows/operations.",
                     "Trace route-level query counts; batch, join, cache, or denormalize where appropriate.",
+                    "low",
+                ))
+
+        # Durable Object / Workers RPC public-method reachability.
+        rpc_boundary = re.search(r"\bclass\s+([A-Za-z_$][\w$]*)\s+extends\s+(?:[A-Za-z_$][\w$]*\.)?(DurableObject|WorkerEntrypoint|WorkflowEntrypoint|RpcTarget|Agent)\b", text)
+        if rpc_boundary:
+            runtime_hooks = {
+                "constructor", "fetch", "scheduled", "queue", "tail", "trace", "email", "test",
+                "alarm", "webSocketMessage", "webSocketClose", "webSocketError", "run",
+                "onStart", "onConnect", "onMessage", "onClose", "onError", "onRequest",
+                "onChatMessage", "onStateUpdate",
+            }
+            control_words = {"if", "for", "while", "switch", "catch", "function"}
+            public_methods: list[str] = []
+            method_rx = re.compile(
+                r"^\s*(?!(?:private|protected|static)\b)(?:public\s+)?(?:async\s+)?([A-Za-z_$][\w$]*)\s*\([^;{}]*\)\s*(?::\s*[^;{]+)?\{",
+                re.M,
+            )
+            for match in method_rx.finditer(text):
+                name = match.group(1)
+                if name not in runtime_hooks and name not in control_words and not name.startswith("_") and name not in public_methods:
+                    public_methods.append(name)
+            if public_methods:
+                hit = line_for(text, re.compile(r"\bclass\s+" + re.escape(rpc_boundary.group(1)) + r"\s+extends\s+")) or (1, "")
+                methods = ", ".join(public_methods[:5]) + ("…" if len(public_methods) > 5 else "")
+                findings.append(Finding(
+                    "CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD",
+                    "low",
+                    "Cross-boundary public RPC methods need reachability review",
+                    "reliability / security / maintainability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])} (public methods: {methods})",
+                    "Generic dead-code linters usually treat public methods on DurableObject, WorkerEntrypoint, WorkflowEntrypoint, RpcTarget, and Agent classes as live API surface. Stale RPC methods can accumulate as forgotten callable behavior, auth/schema bypass paths, or maintenance debt.",
+                    "Optionally run a dead cross-boundary RPC analyzer such as `npx @acoyfellow/deadlint . --check dead-rpc --json` after explicit approval or from a pinned repo dependency; confirm dynamic/cross-repo callers before deleting methods.",
                     "low",
                 ))
 

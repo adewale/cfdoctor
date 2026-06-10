@@ -2,6 +2,10 @@
 
 All notable changes to Cloudflare Doctor are tracked here.
 
+## Unreleased
+
+- Added optional dead cross-boundary RPC audit path for TypeScript `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, and Agents SDK classes, including scanner lead `CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD`, fixture coverage (`15/15` detection fixtures), trigger coverage (`39/39`), and gated `deadlint` guidance.
+
 ## 0.1.0 — 2026-06-09
 
 - Created the public `cfdoctor` repository.

@@ -176,6 +176,71 @@
       "tags": []
     },
     {
+      "id": "pos-dead-cross-boundary-rpc",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Cloudflare Doctor this TypeScript Worker: class RoomObject extends DurableObject has public methods activeCount() and deprecatedResetForOldClient(). The repo has no obvious calls to deprecatedResetForOldClient(). Should we delete it?",
+      "expected_behavior": [
+        "Use the Cloudflare Doctor audit contract.",
+        "Identify the dead cross-boundary RPC review surface without claiming deadness from repo-only evidence.",
+        "Mention optional deadlint or equivalent reachability review and dynamic/cross-repo caller caveats."
+      ],
+      "assertions": [
+        {
+          "name": "detect-dead-rpc-surface",
+          "type": "contains_any",
+          "values": [
+            "deadlint",
+            "cross-boundary",
+            "RPC",
+            "public method",
+            "DurableObject"
+          ]
+        },
+        {
+          "name": "no-deletion-proof-overclaim",
+          "type": "contains_any",
+          "values": [
+            "needs verification",
+            "cross-repo",
+            "dynamic",
+            "external caller",
+            "not proof"
+          ]
+        },
+        {
+          "name": "output-contract",
+          "type": "contains_all",
+          "values": [
+            "Scope",
+            "Docs",
+            "Detected",
+            "Severity",
+            "Evidence",
+            "Fix",
+            "Cost / trade-off",
+            "Verify",
+            "Source basis"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Evidence-first",
+            "Optional tool is gated by approval",
+            "Does not claim repo-only deadness as proof"
+          ]
+        }
+      ],
+      "tags": [
+        "rpc",
+        "durable-objects",
+        "dead-code",
+        "deadlint"
+      ]
+    },
+    {
       "id": "pos-queues-retry-storm",
       "split": "tune",
       "kind": "audit-output",
