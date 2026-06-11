@@ -54,6 +54,21 @@ Interpret the output as an evidence-backed risk review: findings should include 
 
 That makes the repository root the skill directory. Pi discovers the root `SKILL.md`, puts only the skill name/description in the startup prompt, and loads the full `SKILL.md` plus adjacent files on demand. When installed from Git, the bundled skill directory includes the repo files above: references, docs, examples, evals, research notes, and helper scripts. There are no npm runtime dependencies; the scanner/eval helpers use Python standard-library modules.
 
+
+## Agent compatibility
+
+The installable skill directory is `.`. It uses the Agent Skills `SKILL.md` format and is configured for Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
+
+Cloudflare Doctor's canonical skill entry is the repository root `SKILL.md`; the scanner, references, docs, examples, and eval fixtures are intentionally repo-adjacent.
+
+| Agent/client | Install or use |
+|---|---|
+| Codex | `cp -R . ~/.codex/skills/cloudflare-doctor` |
+| OpenCode | `cp -R . ~/.config/opencode/skills/cloudflare-doctor` or use `.opencode/skills/cloudflare-doctor` in a project |
+| Pi | `pi install https://github.com/adewale/cfdoctor` or `pi --skill .` |
+| Gemini CLI | `gemini skills install https://github.com/adewale/cfdoctor --path .` or copy to `.gemini/skills/cloudflare-doctor` |
+| Claude Code | Clone/copy the repo to `.claude/skills/cloudflare-doctor` |
+
 ## Usage modes
 
 ### Use the installed skill for real audits
@@ -61,7 +76,7 @@ That makes the repository root the skill directory. Pi discovers the root `SKILL
 Install the latest released version:
 
 ```bash
-pi install https://github.com/adewale/cfdoctor@v0.2.0
+pi install https://github.com/adewale/cfdoctor@v0.2.1
 ```
 
 Or install the current `main` branch:

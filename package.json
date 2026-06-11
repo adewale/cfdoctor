@@ -1,6 +1,6 @@
 {
   "name": "cfdoctor",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "license": "MIT",
   "description": "Cloudflare Doctor skill and read-only scanner for auditing Cloudflare projects.",
@@ -13,7 +13,13 @@
     "wrangler",
     "cost-optimization",
     "security-audit",
-    "repo-health"
+    "repo-health",
+    "agent-skills",
+    "codex",
+    "opencode",
+    "pi",
+    "gemini",
+    "claude-code"
   ],
   "repository": {
     "type": "git",
@@ -32,6 +38,16 @@
   "pi": {
     "skills": [
       "./"
+    ]
+  },
+  "skill": {
+    "entry": "SKILL.md",
+    "harnesses": [
+      "codex",
+      "opencode",
+      "pi",
+      "gemini",
+      "claude-code"
     ]
   }
 }
