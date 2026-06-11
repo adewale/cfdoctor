@@ -4,7 +4,12 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
+## 0.2.0 — 2026-06-11
+
 - Added optional dead cross-boundary RPC audit path for TypeScript `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, and Agents SDK classes, including scanner lead `CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD`, fixture coverage (`15/15` detection fixtures), trigger coverage (`39/39`), and gated `deadlint` guidance.
+- Added stable scanner check IDs, JSON scanner output, fixture-backed detection evals, coverage-matrix consistency checks, and CI validation for clean self-scans.
+- Added v0.3 shared eval quality oracles and updated shared benchmark guidance.
+- Refreshed README usage modes, validation commands, recipes, lessons learned, official source maps, and Wrangler config guidance.
 
 ## 0.1.0 — 2026-06-09
 

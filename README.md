@@ -61,7 +61,7 @@ That makes the repository root the skill directory. Pi discovers the root `SKILL
 Install the latest released version:
 
 ```bash
-pi install https://github.com/adewale/cfdoctor@v0.1.0
+pi install https://github.com/adewale/cfdoctor@v0.2.0
 ```
 
 Or install the current `main` branch:
