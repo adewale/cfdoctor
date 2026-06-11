@@ -4,7 +4,7 @@
   "harness": {
     "name": "skill-eval-harness",
     "url": "https://github.com/adewale/skill-eval-harness",
-    "version": ">=0.2.0"
+    "version": ">=0.3.0"
   },
   "skill_paths": [
     "SKILL.md"
@@ -814,6 +814,19 @@
           ]
         },
         {
+          "name": "fixture-script-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "round3-fixture-dashboard-claim"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."
+        },
+        {
           "name": "round-3-qualitative-review",
           "type": "judge",
           "rubric": [
@@ -876,6 +889,19 @@
           ]
         },
         {
+          "name": "fixture-script-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "detection-fixture-runaway-self-fetch"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."
+        },
+        {
           "name": "detection-fixture-qualitative",
           "type": "judge",
           "rubric": [
@@ -913,6 +939,19 @@
             "cannot inspect",
             "no dashboard access"
           ]
+        },
+        {
+          "name": "fixture-script-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "detection-fixture-clean-baseline-precision"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."
         },
         {
           "name": "precision-qualitative",
