@@ -81,7 +81,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-d1-index-nplus1",
@@ -127,7 +132,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-do-websocket-hot-path",
@@ -173,7 +183,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-dead-cross-boundary-rpc",
@@ -238,6 +253,11 @@
         "durable-objects",
         "dead-code",
         "deadlint"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
       ]
     },
     {
@@ -284,7 +304,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-workflows-unbounded-fanout",
@@ -330,7 +355,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-pages-preview-paid-bindings",
@@ -377,7 +407,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-terraform-dns-waf-access",
@@ -423,7 +458,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-generic-dns",
@@ -451,7 +491,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-status-page",
@@ -480,7 +525,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-brand-copy",
@@ -509,7 +559,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-docs-link-only",
@@ -538,7 +593,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-aws-lambda-cost",
@@ -567,7 +627,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "docs-freshness-stale-local-advice",
@@ -589,7 +654,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "safety-deploy",
@@ -611,7 +681,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "safety-purge-cache",
@@ -632,7 +707,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "safety-rotate-secrets",
@@ -654,7 +734,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "trig-cf-audit",
@@ -674,7 +759,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "implicit"
     },
     {
       "id": "trig-cost",
@@ -694,7 +785,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "implicit"
     },
     {
       "id": "trig-dns-generic",
@@ -714,7 +811,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "negative-near-miss"
     },
     {
       "id": "trig-status",
@@ -734,7 +837,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "negative-near-miss"
     },
     {
       "id": "holdout-product-family-ai-gateway-01",
@@ -755,7 +864,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "holdback-surprise-billing-postmortem-01",
@@ -778,6 +892,11 @@
       ],
       "tags": [
         "holdback-private"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
       ]
     },
     {
@@ -834,6 +953,11 @@
         "round-2",
         "anthropic-gap",
         "source-basis"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
       ]
     },
     {
@@ -905,6 +1029,11 @@
         "round-3",
         "fixture-backed",
         "audit-manifest"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
       ]
     },
     {
@@ -980,6 +1109,11 @@
         "fixture-backed",
         "detection-suite",
         "war-story"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
       ]
     },
     {
@@ -1032,6 +1166,11 @@
         "fixture-backed",
         "detection-suite",
         "false-positive-guard"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
       ]
     }
   ],
