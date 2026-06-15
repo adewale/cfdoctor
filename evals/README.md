@@ -13,7 +13,7 @@ python3 scripts/eval_skill_trigger.py
 Inputs:
 - `evals/evals.json` — repo-level eval manifest and runner pointer.
 - `evals/trigger-cases.json` — positive and negative trigger prompts.
-- `SKILL.md` — frontmatter description under test.
+- `skills/cloudflare-doctor/SKILL.md` — frontmatter description under test.
 
 Outputs:
 - `evals/results/latest.md`
@@ -42,7 +42,7 @@ Deterministic regression suite for the static scanner: each fixture under
 READMEs) and declares required check IDs in `expected.json`; the
 `clean-baseline` fixture guards against false positives with `max_findings: 0`.
 Reports land in `evals/results/detection/`. Repo self-scans must exclude these
-intentionally bad fixtures: `./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures`.
+intentionally bad fixtures: `./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures`.
 
 ## Adding cases
 

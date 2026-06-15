@@ -11,7 +11,7 @@ the plan doc and the git history, not repeated here.
 ## Scanner
 
 - [ ] Fix the remaining known false-negative limits listed at the bottom of
-      [`references/check-coverage-matrix.md`](references/check-coverage-matrix.md),
+      [`skills/cloudflare-doctor/references/check-coverage-matrix.md`](skills/cloudflare-doctor/references/check-coverage-matrix.md),
       fixture-first (add a failing `gap-*` fixture before changing a
       heuristic): deeper sharding indirection, per-queue (not project-global)
       consumer-config matching, alarm guard words in ordinary variable names,
@@ -38,7 +38,7 @@ the plan doc and the git history, not repeated here.
       skill-eval-harness with a real model, including the two new
       fixture-backed tune cases (`detection-fixture-runaway-self-fetch`,
       `detection-fixture-clean-baseline-precision`), and review whether the
-      SKILL.md reference-routing change regressed audit quality — that change
+      skills/cloudflare-doctor/SKILL.md reference-routing change regressed audit quality — that change
       carries the plan's main regression risk and has only been validated
       deterministically (trigger eval + contract markers).
 - [ ] Populate holdout/holdback cases from a non-ephemeral environment (the

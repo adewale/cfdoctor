@@ -7,13 +7,13 @@ This directory gives quick copy-paste examples for using Cloudflare Doctor.
 On a Cloudflare project:
 
 ```bash
-./scripts/cfdoctor_static_scan.py /path/to/project
+./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py /path/to/project
 ```
 
 On this repository, exclude the intentionally bad detection fixtures:
 
 ```bash
-./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
+./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
 ```
 
 Expected for this repository at the time of writing:
@@ -25,7 +25,7 @@ No scanner findings. This does not mean the project is healthy; account/dashboar
 ```
 
 Each finding carries a stable check ID (see
-[`references/check-coverage-matrix.md`](../references/check-coverage-matrix.md)).
+[`skills/cloudflare-doctor/references/check-coverage-matrix.md`](../skills/cloudflare-doctor/references/check-coverage-matrix.md)).
 Use `--list-checks` for the registry and `--json` for machine-readable leads.
 
 ## Example 2: prompt for a Cloudflare Worker repo

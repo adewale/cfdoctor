@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Enforce consistency between the check coverage matrix and the scanner registry.
 
-Compares references/check-coverage-matrix.md against the check registry reported
-by `scripts/cfdoctor_static_scan.py --list-checks` and fails when they drift:
+Compares skills/cloudflare-doctor/references/check-coverage-matrix.md against the check registry reported
+by `skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py --list-checks` and fails when they drift:
 
   (a) every registered scanner check ID has exactly one matrix row with status
       `scanner-lead`;
@@ -25,8 +25,8 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCANNER = REPO_ROOT / "scripts" / "cfdoctor_static_scan.py"
-MATRIX = REPO_ROOT / "references" / "check-coverage-matrix.md"
+SCANNER = REPO_ROOT / "skills" / "cloudflare-doctor" / "scripts" / "cfdoctor_static_scan.py"
+MATRIX = REPO_ROOT / "skills" / "cloudflare-doctor" / "references" / "check-coverage-matrix.md"
 
 SIMPLE_STATUSES = ("scanner-lead", "skill-prompt-only", "not-implemented")
 FOLDED_PREFIX = "folded-into:"

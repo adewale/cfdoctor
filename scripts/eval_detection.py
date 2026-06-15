@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Detection eval for the Cloudflare Doctor static scanner.
 
-Runs `scripts/cfdoctor_static_scan.py --json` against every fixture under
+Runs `skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py --json` against every fixture under
 `evals/fixtures/detection/<scenario>/` that declares an `expected.json`, then
 asserts:
 
@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCANNER = REPO_ROOT / "scripts" / "cfdoctor_static_scan.py"
+SCANNER = REPO_ROOT / "skills" / "cloudflare-doctor" / "scripts" / "cfdoctor_static_scan.py"
 FIXTURES_DIR = REPO_ROOT / "evals" / "fixtures" / "detection"
 DEFAULT_RESULTS_DIR = REPO_ROOT / "evals" / "results" / "detection"
 
@@ -124,7 +124,7 @@ def render_report(results: list[FixtureResult], timestamp: dt.datetime) -> str:
     lines.append("# Detection eval report")
     lines.append("")
     lines.append(f"- Generated: {timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
-    lines.append(f"- Scanner: `scripts/cfdoctor_static_scan.py --json`")
+    lines.append(f"- Scanner: `skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py --json`")
     lines.append(f"- Fixture root: `evals/fixtures/detection/`")
     lines.append(f"- Result: {len(passed)}/{len(results)} fixtures passed")
     lines.append("")

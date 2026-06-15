@@ -228,7 +228,7 @@ def render_report(results: list[CaseResult], description: str, skill_path: Path,
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Evaluate Cloudflare Doctor trigger coverage")
-    parser.add_argument("--skill", default="SKILL.md", help="Path to SKILL.md")
+    parser.add_argument("--skill", default="skills/cloudflare-doctor/SKILL.md", help="Path to SKILL.md")
     parser.add_argument("--cases", default="evals/trigger-cases.json", help="Path to trigger cases JSON")
     parser.add_argument("--out-dir", default="evals/results", help="Directory for reports")
     parser.add_argument("--min-accuracy", type=float, default=1.0, help="Minimum required accuracy")

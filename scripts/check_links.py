@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Link checker for cfdoctor citation URLs.
 
-Extracts unique http(s) URLs from markdown files in README.md, references/,
+Extracts unique http(s) URLs from markdown files in README.md, skills/cloudflare-doctor/references/,
 research/, docs/, and evals/ (recursive), checks each one over the network,
 and classifies the result:
 

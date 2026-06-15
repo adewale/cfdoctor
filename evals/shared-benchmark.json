@@ -7,7 +7,7 @@
     "version": ">=0.4.0"
   },
   "skill_paths": [
-    "SKILL.md"
+    "skills/cloudflare-doctor/SKILL.md"
   ],
   "old_skill_paths": [],
   "variants": [

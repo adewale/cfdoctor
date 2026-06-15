@@ -1,6 +1,6 @@
 # Check coverage matrix
 
-This matrix is the single source of truth for how every Cloudflare Doctor check ID is covered. It lists one row for every check ID registered in the static scanner (`scripts/cfdoctor_static_scan.py --list-checks`) and every check ID proposed in the "Checks to add or strengthen" section of [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md), so the gap between proposed and implemented checks stays visible.
+This matrix is the single source of truth for how every Cloudflare Doctor check ID is covered. It lists one row for every check ID registered in the static scanner (`skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py --list-checks`) and every check ID proposed in the "Checks to add or strengthen" section of [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md), so the gap between proposed and implemented checks stays visible.
 
 `scripts/check_coverage.py` enforces consistency between this matrix and the scanner registry in CI: every registered scanner ID must have exactly one `scanner-lead` row here, and every `scanner-lead` row must exist in the registry. If the scanner registry and this document drift, CI fails.
 
