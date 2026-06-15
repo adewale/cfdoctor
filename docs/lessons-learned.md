@@ -44,7 +44,7 @@ The lesson is: **fixture repos are still repo files**. If a self-scan traverses 
 
 ### Bundled skill contents need an explicit mental model
 
-Pi packages progressively disclose skills: the startup prompt sees the skill name and description, then the model reads `SKILL.md`, and only then loads references/scripts/docs as needed. Because `cfdoctor` declares `"pi": { "skills": ["./"] }`, the repository root is the skill directory and adjacent files are available to the skill even though they are not all injected up front.
+Pi packages progressively disclose skills: the startup prompt sees the skill name and description, then the model reads `SKILL.md`, and only then loads references/scripts as needed. Because `cfdoctor` declares `"pi": { "skills": ["./skills/cloudflare-doctor"] }`, only `skills/cloudflare-doctor` is the installable skill directory; repo-only evals, research notes, and saved results stay outside the runtime bundle.
 
 The lesson is: **document what is bundled and what is loaded**. Users need to know that references, docs, evals, examples, research, and helper scripts ship with the Git-installed package, but the model still has to read/run them on demand.
 

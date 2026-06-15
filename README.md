@@ -29,12 +29,12 @@ Interpret the output as an evidence-backed risk review: findings should include 
 
 ## What you get
 
-- `SKILL.md` — runtime instructions and audit output contract.
-- `references/` — product-fit rubrics, account evidence guidance, official docs source map, performance/reliability/cost checks, war-story scenarios, and the check coverage matrix.
-- `scripts/cfdoctor_static_scan.py` — read-only Python scanner that parses local Cloudflare configs and source files to generate audit leads with stable check IDs (`--list-checks`, `--json`, `--exclude`).
+- `skills/cloudflare-doctor/SKILL.md` — runtime instructions and audit output contract.
+- `skills/cloudflare-doctor/references/` — product-fit rubrics, account evidence guidance, official docs source map, performance/reliability/cost checks, war-story scenarios, and the check coverage matrix.
+- `skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py` — read-only Python scanner that parses local Cloudflare configs and source files to generate audit leads with stable check IDs (`--list-checks`, `--json`, `--exclude`).
 - `scripts/eval_skill_trigger.py` — deterministic trigger/description eval for the skill.
 - `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
-- `scripts/check_coverage.py` — consistency check between `references/check-coverage-matrix.md` and the scanner's check registry.
+- `scripts/check_coverage.py` — consistency check between `skills/cloudflare-doctor/references/check-coverage-matrix.md` and the scanner's check registry.
 - `scripts/check_links.py` — citation link checker (network-dependent; never gates CI unless `--strict`).
 - `docs/` — recipes, lessons learned, and the ranked improvement plan with per-change risk analysis.
 - `evals/` — trigger cases, shared benchmark manifest, detection fixtures (war-story known-bad projects plus a clean baseline), holdout/holdback placeholders, and saved eval reports.
@@ -52,22 +52,22 @@ Interpret the output as an evidence-backed risk review: findings should include 
 }
 ```
 
-That makes the repository root the skill directory. Pi discovers the root `SKILL.md`, puts only the skill name/description in the startup prompt, and loads the full `SKILL.md` plus adjacent files on demand. When installed from Git, the bundled skill directory includes the repo files above: references, docs, examples, evals, research notes, and helper scripts. There are no npm runtime dependencies; the scanner/eval helpers use Python standard-library modules.
+That makes `skills/cloudflare-doctor` the skill directory. Pi discovers `skills/cloudflare-doctor/SKILL.md`, puts only the skill name/description in the startup prompt, and loads the full `SKILL.md` plus adjacent runtime references/scripts on demand. Repo-only evals, research notes, docs, and saved results stay outside the installable skill boundary. There are no npm runtime dependencies; the scanner uses Python standard-library modules.
 
 
 ## Agent compatibility
 
-The installable skill directory is `.`. It uses the Agent Skills `SKILL.md` format and is configured for Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
+The installable skill directory is `skills/cloudflare-doctor`. It uses the Agent Skills `SKILL.md` format and is configured for Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
 
-Cloudflare Doctor's canonical skill entry is the repository root `SKILL.md`; the scanner, references, docs, examples, and eval fixtures are intentionally repo-adjacent.
+Cloudflare Doctor's canonical skill entry is `skills/cloudflare-doctor/SKILL.md`; the scanner and references are adjacent to that entrypoint, while docs, examples, eval fixtures, research notes, and saved results remain repo-only.
 
 | Agent/client | Install or use |
 |---|---|
-| Codex | `cp -R . ~/.codex/skills/cloudflare-doctor` |
-| OpenCode | `cp -R . ~/.config/opencode/skills/cloudflare-doctor` or use `.opencode/skills/cloudflare-doctor` in a project |
-| Pi | `pi install https://github.com/adewale/cfdoctor` or `pi --skill .` |
-| Gemini CLI | `gemini skills install https://github.com/adewale/cfdoctor --path .` or copy to `.gemini/skills/cloudflare-doctor` |
-| Claude Code | Clone/copy the repo to `.claude/skills/cloudflare-doctor` |
+| Codex | `cp -R skills/cloudflare-doctor ~/.codex/skills/cloudflare-doctor` |
+| OpenCode | `cp -R skills/cloudflare-doctor ~/.config/opencode/skills/cloudflare-doctor` or use `.opencode/skills/cloudflare-doctor` in a project |
+| Pi | `pi install https://github.com/adewale/cfdoctor` or `pi --skill skills/cloudflare-doctor` |
+| Gemini CLI | `gemini skills install https://github.com/adewale/cfdoctor --path skills/cloudflare-doctor` or copy to `.gemini/skills/cloudflare-doctor` |
+| Claude Code | `cp -R skills/cloudflare-doctor ~/.claude/skills/cloudflare-doctor` |
 
 ## Usage modes
 
@@ -100,7 +100,7 @@ In interactive Pi, you can also force-load the skill:
 For one-off local use without installing this repo as a package:
 
 ```bash
-pi --skill ./SKILL.md "Cloudflare Doctor this repo and tell me where we're wasting money."
+pi --skill ./skills/cloudflare-doctor/SKILL.md "Cloudflare Doctor this repo and tell me where we're wasting money."
 ```
 
 ### Run scanner-only triage
@@ -108,7 +108,7 @@ pi --skill ./SKILL.md "Cloudflare Doctor this repo and tell me where we're wasti
 Use the Python scanner when you want a quick read-only inventory/risk lead pass without invoking an agent:
 
 ```bash
-python3 /path/to/cfdoctor/scripts/cfdoctor_static_scan.py /path/to/cloudflare-project
+python3 /path/to/cfdoctor/skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py /path/to/cloudflare-project
 ```
 
 Then feed the scanner output into a Cloudflare Doctor audit if you want sourced recommendations. Scanner output alone is not a final audit.
@@ -128,10 +128,10 @@ python3 -m json.tool package.json
 python3 -m json.tool evals/evals.json
 python3 -m json.tool evals/trigger-cases.json
 python3 -m json.tool evals/shared-benchmark.json
-python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
+python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
-./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
+./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
 python3 scripts/check_coverage.py
 git diff --check -- . ':(exclude)evals/results'
 ```
@@ -156,7 +156,7 @@ If account evidence is missing, Cloudflare Doctor should mark that scope as **no
 From the root of a Cloudflare project:
 
 ```bash
-python3 /path/to/cfdoctor/scripts/cfdoctor_static_scan.py .
+python3 /path/to/cfdoctor/skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py .
 ```
 
 The Python scanner is a fast triage layer, not the audit itself. It:
@@ -166,18 +166,18 @@ The Python scanner is a fast triage layer, not the audit itself. It:
 - detects Cloudflare products/bindings and flags heuristic risk patterns in config, source, docs, migrations, and IaC;
 - emits leads with stable check IDs for the Cloudflare Doctor skill to confirm, suppress, or escalate (`--json` for machine-readable output, `--list-checks` for the registry, `--exclude REL_PATH` to scope out subtrees such as this repo's intentionally bad eval fixtures).
 
-Coverage status for every check — implemented heuristic vs skill-guidance-only — lives in [`references/check-coverage-matrix.md`](references/check-coverage-matrix.md), enforced by `scripts/check_coverage.py`.
+Coverage status for every check — implemented heuristic vs skill-guidance-only — lives in [`skills/cloudflare-doctor/references/check-coverage-matrix.md`](skills/cloudflare-doctor/references/check-coverage-matrix.md), enforced by `scripts/check_coverage.py`.
 
 It does **not** fetch current Cloudflare docs, inspect dashboard/account state, know traffic or billing volume, prove a finding, or mutate anything. Confirmed findings still need source context, current Cloudflare docs/pricing, and explicit account/dashboard evidence where applicable.
 
 ## Validate this repo
 
 ```bash
-python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
+python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
 python3 scripts/check_coverage.py
-./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
+./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
 ```
 
 Run `npm run update-results` when the checked-in proof reports should change.

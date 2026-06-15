@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 — 2026-06-14
+
+- Moved the runtime skill from the repository root to `skills/cloudflare-doctor/`.
+- Kept only `SKILL.md`, runtime references, and the static scanner inside the installable skill boundary.
+- Updated Pi/package metadata, install commands, eval manifest paths, and CI checks for the narrow installable directory.
+
 All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased

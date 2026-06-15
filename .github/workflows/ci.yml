@@ -27,14 +27,14 @@ jobs:
           find evals -name '*.json' -print0 | xargs -0 -I{} python3 -m json.tool {} >/dev/null
 
       - name: Compile Python helpers
-        run: python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
+        run: python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py scripts/check_install_boundary.py
 
       - name: Run trigger eval
         run: python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 
       - name: Run static self-scan (fixtures excluded, must be clean)
         run: |
-          ./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures --json \
+          ./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures --json \
             | python3 -c "import json,sys; d=json.load(sys.stdin); f=d['findings']; assert not f, f; print('self-scan clean')"
 
       - name: Run detection eval against fixtures

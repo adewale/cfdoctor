@@ -1,6 +1,6 @@
 {
   "name": "cfdoctor",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "license": "MIT",
   "description": "Cloudflare Doctor skill and read-only scanner for auditing Cloudflare projects.",
@@ -30,18 +30,18 @@
   },
   "homepage": "https://github.com/adewale/cfdoctor#readme",
   "scripts": {
-    "scan": "./scripts/cfdoctor_static_scan.py .",
+    "scan": "./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py .",
     "eval": "python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval",
     "update-results": "python3 scripts/eval_skill_trigger.py && python3 scripts/eval_detection.py",
-    "test": "python3 -m json.tool package.json >/dev/null && find evals -name '*.json' -print0 | xargs -0 -I{} python3 -m json.tool {} >/dev/null && python3 -m py_compile scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py && python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval && ./scripts/cfdoctor_static_scan.py . --exclude evals/fixtures --json | python3 -c \"import json,sys; d=json.load(sys.stdin); f=d['findings']; assert not f, f; print('self-scan clean')\" && python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval && python3 scripts/check_coverage.py"
+    "test": "python3 -m json.tool package.json >/dev/null && find evals -name '*.json' -print0 | xargs -0 -I{} python3 -m json.tool {} >/dev/null && python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py scripts/check_install_boundary.py && python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval && ./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures --json | python3 -c \"import json,sys; d=json.load(sys.stdin); f=d['findings']; assert not f, f; print('self-scan clean')\" && python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval && python3 scripts/check_coverage.py && find skills/cloudflare-doctor -type d -name __pycache__ -prune -exec rm -rf {} + && python3 scripts/check_install_boundary.py"
   },
   "pi": {
     "skills": [
-      "./"
+      "./skills/cloudflare-doctor"
     ]
   },
   "skill": {
-    "entry": "SKILL.md",
+    "entry": "skills/cloudflare-doctor/SKILL.md",
     "harnesses": [
       "codex",
       "opencode",
@@ -49,5 +49,12 @@
       "gemini",
       "claude-code"
     ]
-  }
+  },
+  "files": [
+    "skills/cloudflare-doctor",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "package.json"
+  ]
 }

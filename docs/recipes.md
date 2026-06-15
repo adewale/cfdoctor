@@ -43,7 +43,7 @@ Use before authenticated commands or screenshots. The skill should ask for exact
 ## Static scan only
 
 ```bash
-python3 /path/to/cfdoctor/scripts/cfdoctor_static_scan.py .
+python3 /path/to/cfdoctor/skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py .
 ```
 
 Use in CI or as a pre-audit smoke check. The Python scanner parses local `wrangler.jsonc`, `wrangler.json`, and legacy `wrangler.toml` configs plus source/docs/IaC text to build a product inventory and heuristic risk leads. Every finding carries a stable check ID from the registry (`--list-checks`); add `--json` for machine-readable output and `--exclude REL_PATH` to scope out subtrees (when scanning this repo itself, use `--exclude evals/fixtures` — the detection fixtures are intentionally bad). Scanner findings are leads, not proof: they do not replace current Cloudflare docs, account/dashboard evidence, traffic/billing data, or the full Cloudflare Doctor audit contract.
@@ -54,7 +54,7 @@ Use in CI or as a pre-audit smoke check. The Python scanner parses local `wrangl
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 ```
 
-Run after editing `SKILL.md` or `evals/trigger-cases.json`. Current expected result is 100% proxy accuracy with no missing description terms. Use `npm run update-results` only when the checked-in report under `evals/results/` should be refreshed.
+Run after editing `skills/cloudflare-doctor/SKILL.md` or `evals/trigger-cases.json`. Current expected result is 100% proxy accuracy with no missing description terms. Use `npm run update-results` only when the checked-in report under `evals/results/` should be refreshed.
 
 ## Detection eval and coverage maintenance
 
