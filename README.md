@@ -76,7 +76,7 @@ Cloudflare Doctor's canonical skill entry is `skills/cloudflare-doctor/SKILL.md`
 Install the latest released version:
 
 ```bash
-pi install https://github.com/adewale/cfdoctor@v0.2.1
+pi install https://github.com/adewale/cfdoctor@v0.2.2
 ```
 
 Or install the current `main` branch:
