@@ -182,7 +182,9 @@ If recommending a specific circuit-breaker or kill-switch pattern beyond these d
 - Cache docs: https://developers.cloudflare.com/cache/
 - Cache interaction with Cloudflare products: https://developers.cloudflare.com/cache/interaction-cloudflare-products/
 - Workers + Cache Rules interaction: https://developers.cloudflare.com/cache/interaction-cloudflare-products/workers-cache-rules/
-- Workers Cache API: https://developers.cloudflare.com/workers/runtime-apis/cache/
+- Workers Cache (per-Worker declarative cache; billing/tiering/collapsing): https://developers.cloudflare.com/workers/cache/
+- Workers Cache limitations: https://developers.cloudflare.com/workers/cache/limitations/
+- Workers Cache API (`caches.default`): https://developers.cloudflare.com/workers/runtime-apis/cache/
 - How Workers cache works: https://developers.cloudflare.com/workers/reference/how-the-cache-works/
 - Cache-Control: https://developers.cloudflare.com/cache/concepts/cache-control/
 - Cache keys: https://developers.cloudflare.com/cache/how-to/cache-keys/

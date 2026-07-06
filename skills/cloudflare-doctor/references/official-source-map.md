@@ -107,6 +107,13 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 ## Cache/CDN/rules/media/browser
 
 - Cache docs: https://developers.cloudflare.com/cache/
+- Workers Cache (per-Worker declarative cache; billing, tiering, request collapsing): https://developers.cloudflare.com/workers/cache/
+- Workers Cache cache keys (path + entrypoint + `ctx.props` + version): https://developers.cloudflare.com/workers/cache/cache-keys/
+- Workers Cache configuration (per-entrypoint `cache.enabled`, `cf.cacheControl`/`cf.cacheKey`): https://developers.cloudflare.com/workers/cache/configuration/
+- Workers Cache purge (`ctx.cache.purge()`): https://developers.cloudflare.com/workers/cache/purge/
+- Workers Cache limitations (GET/HEAD only, 206/520-526 bypass, size limit): https://developers.cloudflare.com/workers/cache/limitations/
+- Workers Cache pricing example: https://developers.cloudflare.com/workers/platform/pricing/#example-5-worker-with-caching
+- Workers Cache API (`caches.default`, single-colo, silent `put()` no-ops): https://developers.cloudflare.com/workers/runtime-apis/cache/
 - Cache interaction with Cloudflare products: https://developers.cloudflare.com/cache/interaction-cloudflare-products/
 - Workers and Cache Rules interaction: https://developers.cloudflare.com/cache/interaction-cloudflare-products/workers-cache-rules/
 - R2 and cache interaction: https://developers.cloudflare.com/cache/interaction-cloudflare-products/r2/

@@ -1,0 +1,12 @@
+{
+  "name": "cached-gateway",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-06",
+  "observability": { "enabled": true },
+  // Footgun: Workers Cache is enabled on the whole Worker, including the
+  // default entrypoint that performs authentication. A cache hit skips
+  // Worker execution and therefore skips the auth check, and enabling
+  // caching also bills previously-free static-asset and worker-to-worker
+  // (service binding / ctx.exports) traffic at the standard request rate.
+  "cache": { "enabled": true }
+}

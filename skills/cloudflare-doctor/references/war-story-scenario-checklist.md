@@ -292,6 +292,18 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
   - Optional tool path: with explicit approval or pinned repo tooling, run `npx @acoyfellow/deadlint . --check dead-rpc --json` and treat output as leads, not proof.
 - Evidence to request: boundary class code, TypeScript config(s), generated/typed RPC stubs, frontend companion files, service bindings, public client/API docs, and evidence of external callers.
 
+### 23. Enabling Workers Cache changes the billing surface and can bypass auth
+
+- Source: Cloudflare blog, "Your Worker can now have its own cache in front of it," 2026-07-06, https://blog.cloudflare.com/workers-cache/; official docs https://developers.cloudflare.com/workers/cache/ and https://developers.cloudflare.com/workers/cache/limitations/
+- Source type: official product announcement + docs. Verify pricing/limits against current docs before quoting numbers.
+- Mechanism: Workers Cache (`cache.enabled`) puts a tiered cache in front of the Worker. A cache hit skips Worker execution — saving CPU but still billing a request — and, because it skips execution, it also skips any auth/gateway logic on that entrypoint. Enabling it also bills requests that are normally free (static assets and worker-to-worker invocations via service bindings / `ctx.exports`), so a static-heavy or fan-out-heavy Worker can get *more* expensive even though per-request CPU drops.
+- Cloudflare checks:
+  - Auth/gateway entrypoints set `cache.enabled = false`; only inner, safely cacheable entrypoints are cached. Automatic bypass for `Set-Cookie`/`Authorization` is a backstop, not the authorization boundary.
+  - Multi-tenant separation is carried by `ctx.props` in the cache key (not hostname/cookies); callers over service bindings set distinct `ctx.props`.
+  - Billing-surface change is modeled: hits still bill a request, and normally-free static-asset and worker-to-worker traffic becomes billed at the standard request rate.
+  - `Cache-Control`/TTL, `Vary`, and `ctx.cache.purge()` ownership are intentional; only `GET`/`HEAD` are cached (`206`, `520`–`526`, WebSocket upgrades, and custom RPC methods bypass).
+- Evidence to request: Wrangler `cache`/`exports[*].cache` config, entrypoint layout (which entrypoint authenticates), `Cache-Control` headers set in code, `ctx.props`/cache-key composition, purge call sites, and request/CPU metrics before vs after enabling.
+
 ## Scenario-to-check matrix
 
 | Scenario | Cloudflare products/configs to inspect |
@@ -305,7 +317,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 | Public storage/object hotlinking | R2 public buckets/custom domains, signed URLs, cache rules, object operation counts, WAF/rate limiting |
 | Meter hidden behind one request | Workers CPU/subrequests, D1 rows read, R2/KV ops, DO duration/storage writes, Queue retries, AI/Vectorize units |
 | Temporary env left live | Pages previews, Workers preview URLs/routes, env bindings, crons, queues, D1/R2/KV prod sharing |
-| Cache layer conflict/leak | Browser cache, CDN/Cache Rules, Worker Cache API, KV/D1/R2 caches, AI Gateway cache, cache keys/TTLs/purge |
+| Cache layer conflict/leak | Browser cache, CDN/Cache Rules, Workers Cache (`cache.enabled`), Worker Cache API, KV/D1/R2 caches, AI Gateway cache, cache keys/TTLs/purge |
+| Workers Cache billing/auth surface | Wrangler `cache`/`exports[*].cache`, auth/gateway entrypoint exclusion, `ctx.props` cache-key separation, `Cache-Control`/`Vary`, `ctx.cache.purge()`, request/CPU metrics before vs after |
 | Logging as a meter | Workers Logs, Logpush, Analytics Engine, destination retention/lifecycle, log sampling/redaction, error-storm alerts |
 | Public previews/review apps | Pages previews, Workers preview URLs, preview routes/domains, paid env bindings, crons, queues, cleanup/noindex policies |
 | Durable Object billing/lifecycle gotchas | DO WebSockets, hibernation, alarms, storage list/get/put patterns, shard keys, object cardinality, stub fanout, idempotency design, metrics |
@@ -328,6 +341,7 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - `CFDOC-COST-SPEND-ALERTS-ONLY`: Billing alerts exist but no rate limit/kill switch/backpressure for expensive paths.
 - `CFDOC-COST-THIRD-PARTY-ORIGIN`: Cloudflare-fronted Vercel/Netlify/Railway/Render/Fly/Heroku/AWS/GCP/Azure/Supabase/Firebase origin can still be billed through cache misses or direct default hostname access.
 - `CFDOC-COST-LOG-VOLUME`: Workers Logs/Logpush/Analytics Engine or external log ingestion can spike under error/bot traffic without sampling/retention controls.
+- `CFDOC-COST-WORKERS-CACHE-BILLING`: Workers Cache (`cache.enabled`) is on; verify hits still bill a request, that normally-free static-asset and worker-to-worker traffic becoming billed is intended, and that auth/gateway entrypoints set `cache.enabled = false`.
 - `CFDOC-COST-PREVIEW-PUBLIC-PAID`: Preview/review/demo environment is public, indexed, or connected to paid/prod services without TTL cleanup.
 - `DO-WEBSOCKET-DURATION`: Long-lived DO WebSocket lacks hibernation/close strategy and duration observability.
 - `DO-STORAGE-LIST-HOTPATH`: DO storage list/prefix scan appears on request, alarm, or wake-up path.
