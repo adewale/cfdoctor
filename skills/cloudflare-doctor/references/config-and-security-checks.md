@@ -49,6 +49,8 @@ Check request handlers and routes:
 - Public cached responses vary on the right dimensions (`Accept-Encoding`, locale, device, auth absence) and do not include cookies accidentally.
 - Workers Cache API entries are not shared across incompatible request variants.
 - HTML/API responses with auth-sensitive data are not cached by broad Cache Rules.
+- When Workers Cache (`cache.enabled`) is on, auth/gateway entrypoints set `cache.enabled = false` so a cache hit cannot serve a protected response without running the auth check; only inner, safely cacheable entrypoints are cached. Cloudflare auto-bypasses `Set-Cookie` responses and `Authorization` requests, but that is a backstop, not the authorization boundary.
+- Workers Cache tenant/user separation is carried by `ctx.props` (part of the cache key), not by hostname or cookies; multi-tenant callers over service bindings must set distinct `ctx.props` or they share cached responses.
 
 ## Dynamic Workers, Artifacts, and sandboxed execution
 

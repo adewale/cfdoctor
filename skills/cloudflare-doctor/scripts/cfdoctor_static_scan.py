@@ -96,7 +96,7 @@ SECRET_ASSIGN_RE = re.compile(
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
 NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
 
-SCANNER_VERSION = "0.3.1"
+SCANNER_VERSION = "0.3.2"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -115,6 +115,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-CONFIG-ENV-BINDING-PARITY", "CONFIG", "low", "low", "Environment binding parity needs verification", "Wrangler env scope is missing bindings declared at top level; envs commonly drift."),
     ("CFDOC-COST-TEMP-ENV-PAID-BINDINGS", "COST", "medium", "medium", "Temporary/preview environment is connected to paid or stateful Cloudflare services", "Preview/demo/workshop env uses paid or stateful Cloudflare products."),
     ("CFDOC-CONFIG-NO-OBSERVABILITY", "CONFIG", "low", "low", "Wrangler observability not configured in this scope", "No observability config; cost/error regressions are harder to diagnose."),
+    ("CFDOC-COST-WORKERS-CACHE-BILLING", "COST", "low", "low", "Workers Cache is enabled; verify billing surface and auth-entrypoint exclusion", "Enabling cache.enabled bills hits as requests and makes normally-free static-asset and worker-to-worker traffic billable; auth/gateway entrypoints must disable caching."),
     ("CFDOC-CONFIG-UNPARSEABLE", "CONFIG", "medium", "medium", "Could not parse Wrangler config and no compatibility_date text found", "Wrangler config failed to parse and no compatibility date text was visible."),
     ("CFDOC-SEC-SECRET-VALUE", "SEC", "critical", "medium", "Credential-shaped value appears in repository text", "A token/key/connection-string shaped value appears in tracked text."),
     ("CFDOC-SEC-SECRET-ASSIGNMENT", "SEC", "high", "medium", "Credential-like assignment appears in repository text", "A secret-named variable is assigned a literal value in tracked text."),
@@ -445,6 +446,28 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                 "Node compatibility can be necessary, but unnecessary polyfills can increase bundle surface and hide runtime assumptions.",
                 "Keep it if the code uses supported Node APIs; otherwise remove and prefer Web/Workers-native APIs.",
                 "medium",
+            ))
+
+        cache_obj = data.get("cache")
+        top_cache_on = isinstance(cache_obj, dict) and bool(cache_obj.get("enabled"))
+        exports_obj = data.get("exports")
+        cached_entrypoints: list[str] = []
+        if isinstance(exports_obj, dict):
+            for ep_name, ep_data in exports_obj.items():
+                ep_cache = ep_data.get("cache") if isinstance(ep_data, dict) else None
+                if isinstance(ep_cache, dict) and ep_cache.get("enabled"):
+                    cached_entrypoints.append(str(ep_name))
+        if top_cache_on or cached_entrypoints:
+            where = f"exports: {', '.join(cached_entrypoints)}" if cached_entrypoints else "cache.enabled=true"
+            findings.append(Finding(
+                "CFDOC-COST-WORKERS-CACHE-BILLING",
+                "low",
+                "Workers Cache is enabled; verify billing surface and auth-entrypoint exclusion",
+                "cost footgun / security",
+                f"{label}: {where}",
+                "Workers Cache serves hits without running the Worker (saving CPU) but still bills each hit as a request, and it makes normally-free traffic billable: static-asset requests and worker-to-worker invocations through service bindings or ctx.exports are charged at the standard request rate once caching is on. A cache hit also skips any auth/gateway logic on the cached entrypoint.",
+                "Confirm the billing-surface change is intended; disable caching on auth/gateway entrypoints (`exports.<name>.cache.enabled = false`) and cache only inner entrypoints; carry tenant/authorization context in `ctx.props` so cached responses are not shared across tenants. Verify against current Workers Cache pricing/limits docs.",
+                "low",
             ))
 
         vars_obj = data.get("vars")

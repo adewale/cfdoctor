@@ -31,16 +31,19 @@ Check that expensive or failure-amplifying paths have:
 ## Caching and CDN behavior
 
 Look for missed cache opportunities:
-- Public expensive API responses lacking `Cache-Control`, `s-maxage`, `stale-while-revalidate`, `ETag`, or Worker Cache API usage.
+- Public expensive API responses lacking `Cache-Control`, `s-maxage`, `stale-while-revalidate`, `ETag`, Workers Cache (`cache.enabled`), or Cache API usage.
 - Static assets not served by Pages/Workers Static Assets/CDN with immutable hashed filenames.
 - R2 public/object responses not cached at the CDN when safe.
 - D1/KV/R2 reads for data that could be precomputed, cached, or invalidated on write.
 - No cache purge/invalidation strategy for content updates.
+- Expensive Worker responses reused across requests but cached only via the Cache API, which runs the Worker on every request and does not collapse concurrent requests. Workers Cache serves hits without running the Worker (saving CPU) and collapses a burst to a cold key into one invocation.
 
 Look for dangerous caching:
 - Authenticated or tenant-specific responses cached by URL only.
 - Cache key ignores headers/query/body dimensions that change response content.
 - Cookies accidentally make otherwise static assets uncacheable.
+- Workers Cache enabled on a Worker whose default/gateway entrypoint performs auth: a cache hit skips execution and therefore skips the auth check. Auth/gateway entrypoints need `cache.enabled = false`; cache only inner entrypoints. Multi-tenant separation depends on `ctx.props` in the cache key, not hostname or cookies.
+- Workers Cache enabled without accounting for its billing-surface change: normally-free static-asset and worker-to-worker (service binding / `ctx.exports`) requests become billed at the standard request rate once caching is on (see [`cost-footguns.md`](cost-footguns.md)).
 
 ## Layered Cloudflare cache map
 
@@ -50,7 +53,8 @@ When a request crosses multiple Cloudflare primitives, require an explicit cache
 |---|---|
 | Browser/client | `Cache-Control`, `ETag`, preload/autoplay behavior, service-worker caches, and whether private data is cacheable. |
 | Cloudflare CDN / Cache Rules | Route/path match, cache eligibility, cache key dimensions, cookies/query normalization, tiered/cache reserve interactions, and purge/tag strategy. |
-| Worker Cache API | Per-data-center behavior, explicit cache key, TTL, personalization boundaries, and `ctx.waitUntil` for writes when safe. |
+| Workers Cache (`cache.enabled`) | Tiered, in front of the Worker: which entrypoints have `cache.enabled` (auth/gateway entrypoints must be `false`), `Cache-Control`/TTL, `ctx.props` in the cache key for tenant separation, `ctx.cache.purge()` owner, and the billing-surface change (hits still bill a request; static-asset and worker-to-worker traffic becomes billed). |
+| Worker Cache API (`caches.default`) | Per-data-center behavior (no tiered cache), no request collapsing, Worker runs on every request, explicit cache key, TTL, personalization boundaries, silent `put()` no-ops, and `ctx.waitUntil` for writes when safe. Prefer Workers Cache for new Workers. |
 | KV as cache | Eventual consistency, TTL, negative caching, versioned keys, stampede prevention, and whether KV is incorrectly treated as authoritative state. |
 | D1/R2-backed cache | Whether D1 indexes/rows-read and R2 operations are reduced rather than shifted; metadata in D1/KV, bytes in R2, CDN cache in front when public. |
 | Durable Object cache/state | Whether DO is used only where coordination/serialization is needed; avoid using DO as a broad read cache. |

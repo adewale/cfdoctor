@@ -29,6 +29,23 @@ Diagnosis:
 - Estimate CPU/subrequests per request and multiply by traffic.
 - Check whether a user request fans out to storage/API calls, queue retries, and logs.
 
+## Workers Cache (declarative per-Worker cache)
+
+Workers Cache (enabled with `cache = { enabled = true }` in Wrangler, and per-entrypoint via `exports.<name>.cache.enabled`) puts a tiered cache in front of the Worker so cacheable requests are served without executing it. It is distinct from the imperative Cache API (`caches.default`). Verify all numbers against current pricing docs.
+
+Cost model:
+- A cache **hit** is still billed at the standard Workers **request** rate; only **CPU time** is saved (the Worker does not run). Caching does **not** reduce billed request count — it trades CPU for the same per-request charge. Misses and bypasses bill both request and CPU.
+- **Enabling caching makes normally-free traffic billable.** Static-asset requests and worker-to-worker invocations through service bindings or `ctx.exports` are billed at the standard request rate once caching is on, because each now consults the cache in front of the Worker. A Worker that serves many static assets or fans out heavily over service bindings can see its **bill rise** after enabling caching even as per-request CPU falls; model both effects before enabling it broadly.
+- Real savings come from fewer Worker executions on hits: less CPU, plus the downstream KV/R2/D1/origin operations the skipped code would have run (subrequests are not separately billed, but the KV read units, R2 Class B ops, and D1 rows read behind them are).
+- Request collapsing: Workers Cache runs the Worker **once** for a burst of concurrent requests to the same cold cache key, avoiding a thundering herd of billable executions. The Cache API does **not** collapse — a burst to a fresh URL invokes the Worker once per request.
+- No separate SKU and no per-GB storage fee.
+
+Footguns:
+- **Auth bypass:** a cache hit skips Worker execution, so it also skips any auth/gateway logic. Disable caching on the default/gateway entrypoint (`exports.default.cache.enabled = false`) and cache only inner entrypoints. Cloudflare auto-bypasses responses carrying `Set-Cookie` and requests carrying `Authorization`, but do not rely on that alone for an authorization boundary.
+- **Personalization leak:** the cache key is path + entrypoint + `ctx.props` + Worker version — not hostname or cookies. Multi-tenant callers must put the tenant/authorization context in `ctx.props` or they will share cached responses.
+- Only `GET`/`HEAD` are cached; `206`, `520`–`526`, WebSocket upgrades, and custom RPC methods bypass. At launch, all responses are capped at the Free-plan cacheable size limit regardless of account plan (temporary).
+- Cache API caveats remain (Cloudflare now recommends Workers Cache over the Cache API for new Workers): the Cache API runs the Worker on every request (no CPU saving), is single-data-center (no tiered cache), does not collapse concurrent requests, and `cache.put()` silently no-ops on `Set-Cookie`/`no-store`/oversize/`206`/`Vary: *`. It is also a no-op on `workers.dev` and in the dashboard editor/Playground.
+
 ## KV
 
 Footguns:

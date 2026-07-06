@@ -95,15 +95,18 @@ Wrong-primitive/security smells:
 - Agents with autonomous loops, tool calls, browser/sandbox tools, scheduled tasks, or sub-agents without max steps, retries/backoff, cancellation, idempotency, and per-run cost proxies.
 - Browser-capable agents used for simple fetch/parse/API tasks where Workers fetch, Queues, or a lighter tool would be sufficient.
 
-## Cache API, CDN cache, Cache Rules
+## Workers Cache, Cache API, CDN cache, Cache Rules
 
 Good fit:
 - HTTP-cacheable responses, static assets, derived responses, origin shielding, public data with TTL/stale controls.
+- **Workers Cache** (`cache.enabled`) for caching a Worker's own `GET`/`HEAD` responses so hits skip Worker execution (saving CPU) and bursts collapse into one invocation. Cloudflare recommends it over the Cache API for new Workers; it is tiered by default.
 
 Smells:
 - KV/R2/D1 read on every request for content that could be CDN-cached.
 - Missing `Cache-Control`, `ETag`, `s-maxage`, `stale-while-revalidate`, or explicit cache keys on expensive public responses.
-- Personalized/private responses cached under broad keys, causing data leaks.
+- Personalized/private responses cached under broad keys, causing data leaks. With Workers Cache, tenant separation depends on `ctx.props` in the cache key, and auth/gateway entrypoints must set `cache.enabled = false` so a cache hit cannot skip the auth check.
+- Reaching for the Cache API (`caches.default`) when Workers Cache would fit: the Cache API still runs the Worker on every request, is single-data-center, does not collapse concurrent requests, and `put()` silently no-ops on `Set-Cookie`/`no-store`/oversize/`206`/`Vary: *`.
+- Enabling Workers Cache without modeling its billing-surface change: previously-free static-asset and worker-to-worker (service binding / `ctx.exports`) requests become billed at the standard request rate, and hits still bill a request (only CPU is saved).
 
 ## Hyperdrive and external databases
 
