@@ -1,0 +1,4 @@
+@@ -18,1 +18,0 @@
+-- Cost issues are findings even when the app works. Estimate the cost mechanism, not exact dollars unless the user supplied volumes and plan details.
+@@ -74,1 +74,0 @@
+-- Cost / trade-off: <billing meter or cost proxy affected; expected benefit; implementation effort; latency/complexity/security downside; reversibility; assumptions>
