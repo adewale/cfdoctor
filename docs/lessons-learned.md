@@ -484,3 +484,25 @@ Cloudflare authentication still does.
 53. Treat post-fix review as a distinct validation phase because remediation can introduce adjacent omissions.
 54. Product capability claims must stay product-specific: Workers expose active-version metadata; Pages exposes deployments and downloaded config.
 55. Boundary tests need positive and negative controls: preserve required authentication while excluding unrelated secrets, injection options, and stdin.
+
+### A benchmark cannot value functionality it never exercises
+
+The first GPT-5.5 PR round scored below current main even though their
+`SKILL.md` files were byte-identical and none of the divergent cases loaded the
+new Wrangler reference. Trace comparison showed autonomous trajectory variance:
+one run searched the whole skill tree or read broad references while its paired
+run stopped early. The non-significant paired result was a regression signal,
+not causal evidence against the new guidance.
+
+More importantly, the benchmark had no Wrangler snapshot cases. Adding four
+focused cases changed the question from “did unrelated legacy answers vary?” to
+“does the model safely reconcile and collect this new evidence?” A dedicated,
+short routed reference then improved that four-case slice from 68.21% to 100%
+objective, while the fresh 24-case legacy slice stayed within 0.21 points of
+main. The targeted slice is small, but it now guards the actual product behavior.
+
+56. Add eval cases for a feature before using aggregate model scores to judge that feature's value.
+57. When paired variants share identical loaded instructions and the changed reference was never read, inspect trajectory variance before claiming causation.
+58. Compare traces, commands, reference reads, and token outliers—not only final percentages—to explain model regressions.
+59. Route narrow workflows to dedicated references; burying them in broad guidance increases omission risk and unnecessary context.
+60. Report legacy and new-feature slices separately so a broad aggregate cannot hide either regression or genuine feature lift.

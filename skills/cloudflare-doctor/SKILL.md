@@ -35,7 +35,8 @@ Use this skill only when the request includes concrete Cloudflare project, confi
    |---|---|
    | [`audit-playbook.md`](references/audit-playbook.md) | Broad repo/account audit, multiple product families, or the user requests the full audit. |
    | [`recommendation-provenance.md`](references/recommendation-provenance.md) | Before publishing confirmed findings that need sourced recommendations. |
-   | [`sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md) | A specific hypothesis depends on dashboard/account state. |
+   | [`wrangler-snapshots.md`](references/wrangler-snapshots.md) | The user supplies a Wrangler snapshot or asks to collect deployed Worker/Pages state. |
+   | [`sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md) | A different specific hypothesis depends on dashboard/account state. |
    | [`cloudflare-best-practices-docs.md`](references/cloudflare-best-practices-docs.md) | Locating official pages for an already identified hypothesis. |
    | [`product-fit-rubric.md`](references/product-fit-rubric.md) | A primitive/product choice is materially in question. |
    | [`config-and-security-checks.md`](references/config-and-security-checks.md) | Concrete Wrangler, binding, auth, secret, route, or IaC evidence is in scope. |

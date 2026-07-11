@@ -68,6 +68,24 @@ SPECS = {
         "forbid": [r"(?i)(confirmed|definitely) (?:that )?(?:there is )?no (?:DLQ|dead[- ]letter queue)"],
         "require_core": True,
     },
+    "wrangler-snapshot-worker-reconciliation": {
+        "all": ["worker-deployments-status.json", "worker-version-view.json"],
+        "any": [
+            ["two active", "2 active", "25%", "25 percent"],
+            ["second active version", "other active version", "20000000-0000-0000-0000-000000000000"],
+            ["not supplied", "missing", "not inspected", "cannot reconcile"],
+        ],
+        "forbid": [r"(?i)(?:only|sole) active version (?:is|was) 10000000-0000-0000-0000-000000000000"],
+    },
+    "wrangler-snapshot-pages-reconciliation": {
+        "all": ["pages-deployments.json"],
+        "any": [
+            ["Pages", "Pages deployment"],
+            ["deployment list", "deployment history", "Production"],
+            ["config not supplied", "repository intent", "not inspected", "cannot determine"],
+        ],
+        "forbid": [r"(?i)confirmed (?:Worker )?(?:CPU limit|binding|active version)"],
+    },
 }
 
 

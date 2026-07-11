@@ -168,6 +168,35 @@ Overall risk: medium
         proc = self.run_oracle("detection-fixture-queue-dashboard-ambiguous", with_request)
         self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
 
+    def test_worker_snapshot_requires_every_active_version(self) -> None:
+        complete = """I inspected worker-deployments-status.json and worker-version-view.json.
+The status shows two active versions: one receives 25% and the other 75%.
+Only the first version view was supplied, so the second active version metadata is missing and cannot be reconciled yet.
+Keep the snapshot private and request only that missing version view.
+"""
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", complete)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        false_complete = """I inspected worker-deployments-status.json and worker-version-view.json.
+The only active version is 10000000-0000-0000-0000-000000000000.
+"""
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", false_complete)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
+    def test_pages_snapshot_does_not_prove_worker_runtime_state(self) -> None:
+        calibrated = """I inspected pages-deployments.json as a Pages deployment list.
+It shows a Production deployment history, but repository intent and downloaded config were not supplied.
+I therefore cannot determine Worker-style bindings, runtime limits, or active versions from this file.
+"""
+        proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", calibrated)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        overclaim = calibrated + "\nConfirmed Worker CPU limit is 50 ms.\n"
+        proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", overclaim)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
     def test_runaway_case_requires_complete_finding(self) -> None:
         text = """## Cloudflare Doctor audit
 Scope inspected: fixture
