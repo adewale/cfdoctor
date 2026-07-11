@@ -6,7 +6,7 @@ Date: 2026-07-11
 
 Use Wrangler's existing authenticated read commands before designing a custom account collector or universal facts schema. Wrangler already owns authentication profiles, current Cloudflare API compatibility, and product-specific normalization.
 
-The repository wrapper is `scripts/capture_wrangler_snapshot.py`. It does not install Wrangler. It prints an exact plan, requires explicit approval, runs an allowlist of read commands, writes a private local snapshot, and records command/file hashes. It never evaluates findings or calls a mutation command.
+The repository wrapper is `scripts/capture_wrangler_snapshot.py`. It does not install Wrangler. It prints the static command plan and the runtime active-version command shape, requires explicit approval, runs an allowlist of read commands, writes a private local snapshot, and records command/file hashes. It never evaluates findings or calls a mutation command.
 
 ## Worker snapshot
 

@@ -192,7 +192,7 @@ def collect_files(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
             except OSError:
                 errors.append(f"symlink-removal-failed:{relative}")
             continue
-        if path.name == "manifest.json":
+        if path == root / "manifest.json":
             continue
         if path.is_dir():
             path.chmod(0o700)

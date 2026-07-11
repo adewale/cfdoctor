@@ -36,7 +36,7 @@ Interpret the output as an evidence-backed risk review: findings should include 
 - `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
 - `scripts/check_coverage.py` — consistency check between `skills/cloudflare-doctor/references/check-coverage-matrix.md` and the scanner's check registry.
 - `scripts/check_claim_ledger.py` — validates stable evidence/source-cluster IDs, source quality, confidence dimensions, scenario/check/fixture lineage, and freshness in `research/incident-claim-ledger.json`.
-- `scripts/capture_wrangler_snapshot.py` — explicitly approved, private Wrangler snapshot wrapper for deployed Worker/Pages config, active versions, bindings, limits, deployments, and secret names; it never installs Wrangler or mutates Cloudflare state.
+- `scripts/capture_wrangler_snapshot.py` — explicitly approved, private Wrangler snapshot wrapper for deployed Worker/Pages config and secret names, Worker active versions/bindings/limits, and Pages deployments; it never installs Wrangler or mutates Cloudflare state.
 - `scripts/check_links.py` — checks the installable runtime references plus current research/docs, excluding historical generated reports; optional semantic anchors detect critical official-doc content drift.
 - `docs/` — recipes, lessons learned, and the ranked improvement plan with per-change risk analysis.
 - `evals/` — trigger cases, shared benchmark manifest, detection fixtures (war-story known-bad projects plus a clean baseline), holdout/holdback placeholders, and saved eval reports.
@@ -158,7 +158,7 @@ If account evidence is missing, Cloudflare Doctor should mark that scope as **no
 
 ## Capture deployed Worker or Pages state
 
-Use the project-pinned Wrangler executable. Review the exact authenticated-read plan first, then write the snapshot to a private directory outside Git:
+Use the project-pinned Wrangler executable. Review the static authenticated-read plan first; for Workers, Wrangler expands the displayed `versions view <ACTIVE_VERSION_ID>` shape after reading deployment status. Then write the snapshot to a private directory outside Git:
 
 ```bash
 python3 scripts/capture_wrangler_snapshot.py \
@@ -170,7 +170,7 @@ python3 scripts/capture_wrangler_snapshot.py \
   --wrangler ./node_modules/.bin/wrangler --approve-authenticated-read
 ```
 
-Use `--kind pages` for Pages and `--metadata-only` to skip deployed source/config download. The snapshot compares repository intent with downloaded dashboard configuration and active version metadata; it can contain deployed source, plain vars, routes, resource names, and account metadata, so review `REVIEW_BEFORE_SHARING.txt` and redact before sharing. See [`research/wrangler-state-snapshot.md`](research/wrangler-state-snapshot.md).
+Use `--kind pages` for Pages and `--metadata-only` to skip deployed source/config download. Worker snapshots compare repository intent with downloaded dashboard configuration and active version metadata; Pages snapshots compare intent with downloaded config and the deployment list; it can contain deployed source, plain vars, routes, resource names, and account metadata, so review `REVIEW_BEFORE_SHARING.txt` and redact before sharing. See [`research/wrangler-state-snapshot.md`](research/wrangler-state-snapshot.md).
 
 ## Run the scanner directly
 
@@ -212,7 +212,7 @@ Current proof from the latest validation run (2026-07-11):
 - Detection eval: `19/19` fixtures pass, including valid/malformed JSONC and Queue-DLQ near-miss controls (`evals/results/detection/latest.md`).
 - Coverage matrix: consistent with the 58-check scanner registry.
 - Evidence ledger: 27 structured records cover all 23 checklist scenarios and have reciprocal fixture lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, and Cloudflare outage evidence.
-- Wrangler snapshot wrapper: 12 offline tests cover explicit approval/planning, exact Worker/Pages command shapes, profile forwarding, Worker config/source and active-version capture, Pages config/metadata capture, metadata-only mode, environment isolation, version/active-state failure gates, symlink removal, recursive private permissions, and Git-worktree refusal. Approved private live runs completed against `readability-worker` (Wrangler 4.71.0), `atlas` (4.94.0), and `keyboardia-staging` (4.53.0); only sanitized shapes were retained.
+- Wrangler snapshot wrapper: 14 offline tests cover explicit approval/planning, exact Worker/Pages command shapes, profile forwarding, Worker config/source and active-version capture, Pages config/metadata capture, metadata-only mode, environment isolation, version/active-state failure gates, symlink removal, recursive private permissions, and Git-worktree refusal. Approved private live runs completed against `readability-worker` (Wrangler 4.71.0), `atlas` (4.94.0), and `keyboardia-staging` (4.53.0); only sanitized shapes were retained.
 - Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass.
 - GPT-5.5 three-way value eval: 24 cases / 72 outputs comparing local, GitHub `origin/main`, and no skill. Local scored 97.22% objective / 97.57% combined, versus GitHub 60.28% / 65.23% and no skill 73.19% / 70.50%; local cut mean tokens 57.9% and elapsed time 50.3% versus GitHub (`evals/results/gpt-5.5-value/latest.md`).
 - Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).

@@ -150,8 +150,9 @@ Remaining work lives in [`TODO.md`](../TODO.md).
   Pages `download config`, deployment status, and version view expose much of
   the effective Worker/Pages state without a custom API/token layer.
 - **Decision:** use `scripts/capture_wrangler_snapshot.py` as the first account
-  evidence path. It requires an existing pinned Wrangler binary, exact plan
-  review, explicit authenticated-read approval, and private output outside Git.
+  evidence path. It requires an existing pinned Wrangler binary, static plan
+  and dynamic version-command-shape review, explicit authenticated-read approval,
+  and private output outside Git.
   Do not build a universal collector. Add targeted read-only API evidence only
   when a concrete DNS/WAF/Access/cache/analytics/billing hypothesis remains
   unresolved after a real Wrangler snapshot.

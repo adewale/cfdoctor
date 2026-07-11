@@ -24,7 +24,9 @@ class WranglerSnapshotTests(unittest.TestCase):
         fail_version: bool = False,
         status_json: str | None = None,
         create_symlink: bool = False,
+        create_nested_manifest: bool = False,
         require_api_token: bool = False,
+        require_eof_stdin: bool = False,
     ) -> Path:
         fake = root / "wrangler"
         status_payload = status_json or (FIXTURES / "worker-deployments-status.json").read_text()
@@ -44,6 +46,9 @@ class WranglerSnapshotTests(unittest.TestCase):
                 if {require_api_token!r} and os.environ.get("CLOUDFLARE_API_TOKEN") != "fixture-token":
                     print("required Cloudflare authentication missing", file=sys.stderr)
                     raise SystemExit(13)
+                if {require_eof_stdin!r} and sys.stdin.read() != "":
+                    print("parent stdin leaked", file=sys.stderr)
+                    raise SystemExit(14)
                 profile = []
                 if len(raw_args) >= 2 and raw_args[-2] == "--profile":
                     profile = raw_args[-2:]
@@ -76,6 +81,10 @@ class WranglerSnapshotTests(unittest.TestCase):
                     (project / "src/index.js").write_text('export default {{ fetch() {{ return new Response("ok") }} }}')
                     if {create_symlink!r}:
                         (project / "external-link").symlink_to("/etc/passwd")
+                    if {create_nested_manifest!r}:
+                        nested_manifest = project / "manifest.json"
+                        nested_manifest.write_text('{{"downloaded": true}}')
+                        nested_manifest.chmod(0o644)
                     print("downloaded fixture-project")
                 elif args == ["pages", "deployment", "list", "--project-name", "fixture-project", "--json"]:
                     print((fixture_dir / "pages-deployments.json").read_text(), end="")
@@ -100,6 +109,7 @@ class WranglerSnapshotTests(unittest.TestCase):
         output: Path,
         *extra: str,
         env: dict[str, str] | None = None,
+        input_text: str | None = None,
     ) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [
@@ -116,6 +126,7 @@ class WranglerSnapshotTests(unittest.TestCase):
             capture_output=True,
             text=True,
             env=env,
+            input=input_text,
         )
 
     def test_plan_needs_no_approval_and_writes_nothing(self) -> None:
@@ -227,6 +238,34 @@ class WranglerSnapshotTests(unittest.TestCase):
             link = output / "download/fixture-project/external-link"
             self.assertFalse(link.exists())
             self.assertFalse(link.is_symlink())
+
+    def test_nested_downloaded_manifest_is_private_and_inventoried(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake = self.make_fake_wrangler(root, create_nested_manifest=True)
+            output = root / "snapshot"
+            proc = self.run_capture(fake, output, "--kind", "worker", "--approve-authenticated-read")
+            self.assertEqual(0, proc.returncode, proc.stderr)
+            manifest = json.loads((output / "manifest.json").read_text())
+            relative = "download/fixture-project/manifest.json"
+            self.assertIn(relative, {item["path"] for item in manifest["files"]})
+            self.assertEqual(0o600, stat.S_IMODE((output / relative).stat().st_mode))
+
+    def test_wrangler_subprocess_cannot_read_parent_stdin(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake = self.make_fake_wrangler(root, require_eof_stdin=True)
+            output = root / "snapshot"
+            proc = self.run_capture(
+                fake,
+                output,
+                "--kind",
+                "worker",
+                "--metadata-only",
+                "--approve-authenticated-read",
+                input_text="must-not-reach-wrangler",
+            )
+            self.assertEqual(0, proc.returncode, proc.stderr)
 
     def test_unrelated_parent_credentials_and_node_options_are_not_forwarded(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

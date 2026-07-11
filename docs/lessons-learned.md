@@ -375,14 +375,16 @@ confirmation before any authenticated production change.
 
 The first ground-truth design invented a general facts schema before checking
 whether the official client could already retrieve the state we needed.
-Wrangler can download Worker/Pages configuration, identify every active version,
-show version-specific bindings/runtime limits, and list secret names. That is a
+Wrangler can download Worker/Pages configuration and list secret names; for
+Workers, it can also identify every active version and show version-specific
+bindings/runtime limits. That is a
 more current and testable normalization layer than a new API abstraction.
 
 The lesson is: **use the product's maintained read surface before building a
 collector**. Capture the raw official-client evidence privately, compare repo
-intent with downloaded configuration and active version metadata, then add one
-targeted API read only for a remaining hypothesis.
+Worker intent with downloaded configuration and active version metadata (or
+Pages intent with downloaded config and deployments), then add one targeted API
+read only for a remaining hypothesis.
 
 Wrangler output is not harmless or complete: `init --from-dash` downloads
 source, plain vars and resource metadata may be present, gradual deployments can
@@ -459,3 +461,5 @@ state tests now make safety regressions observable.
 48. Private output requires a restrictive creation umask and recursive directory-mode assertions, not just root/file chmods.
 49. A read-only child process should receive only the credentials and configuration it needs; unrelated parent secrets and runtime injection variables stay outside the boundary.
 50. Command-allowlist tests must assert complete argv shapes because prefix fakes silently accept dangerous flag drift.
+51. Reserved wrapper filenames must be excluded by exact root path, not basename, or legitimate downloaded files can escape permissions and inventory.
+52. A plan containing runtime-discovered version IDs is a static command-shape review, not an exact concrete command transcript.
