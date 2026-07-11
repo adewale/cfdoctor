@@ -463,3 +463,24 @@ state tests now make safety regressions observable.
 50. Command-allowlist tests must assert complete argv shapes because prefix fakes silently accept dangerous flag drift.
 51. Reserved wrapper filenames must be excluded by exact root path, not basename, or legitimate downloaded files can escape permissions and inventory.
 52. A plan containing runtime-discovered version IDs is a static command-shape review, not an exact concrete command transcript.
+
+### Review the fixes, not only the original change
+
+The first audit found real boundary failures; the post-fix audit then found a
+newly visible basename bug. Skipping every file named `manifest.json` was meant
+to exclude the wrapper's root manifest, but it also excluded legitimate
+downloaded project manifests from chmod, hashing, and inventory. Scoping the
+exception to the exact root path closed that gap. A final reviewer also caught
+that documentation still described runtime-expanded commands as an exact plan
+and blurred Worker active-version evidence into the Pages deployment model.
+
+The lesson is: **a fix is a new change that needs independent verification**.
+Run a fresh post-fix reviewer against the complete committed range, use focused
+regression probes for each accepted finding, and repeat until no fix worth doing
+now remains. Security-boundary tests should prove both directions: unrelated
+credentials and stdin do not cross the process boundary, while the required
+Cloudflare authentication still does.
+
+53. Treat post-fix review as a distinct validation phase because remediation can introduce adjacent omissions.
+54. Product capability claims must stay product-specific: Workers expose active-version metadata; Pages exposes deployments and downloaded config.
+55. Boundary tests need positive and negative controls: preserve required authentication while excluding unrelated secrets, injection options, and stdin.
