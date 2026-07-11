@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -62,5 +64,7 @@ jobs:
           find skills/cloudflare-doctor -type d -name __pycache__ -prune -exec rm -rf {} +
           python3 scripts/check_install_boundary.py
 
-      - name: Check whitespace in diff
-        run: git diff --check -- . ':(exclude)evals/results'
+      - name: Check whitespace in committed diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: git diff --check "$BASE_SHA"...HEAD

@@ -118,7 +118,7 @@ class StaticScannerTests(unittest.TestCase):
         })
         finding = next(f for f in report["findings"] if f["check_id"] == "CFDOC-PERF-D1-SELECT-STAR")
         self.assertEqual("low", finding["severity"])
-        self.assertIn("does not by itself prove", finding["message"]) 
+        self.assertIn("does not by itself prove", finding["message"])
 
     def test_do_batching_lead_distinguishes_batching_from_coalescing(self) -> None:
         puts = "\n".join(f"await this.ctx.storage.put('k{i}', value);" for i in range(4))

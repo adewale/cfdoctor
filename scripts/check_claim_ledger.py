@@ -53,6 +53,16 @@ def validate(ledger: dict, as_of: dt.date) -> tuple[list[str], list[str]]:
     warnings: list[str] = []
     if ledger.get("version") != 1:
         errors.append("ledger.version must be 1")
+    cadence = ledger.get("review_cadence_days")
+    if not isinstance(cadence, int) or isinstance(cadence, bool) or cadence < 1 or cadence > 366:
+        errors.append("ledger.review_cadence_days must be an integer from 1 to 366")
+        cadence = None
+    try:
+        ledger_as_of = dt.date.fromisoformat(ledger["as_of"])
+        if ledger_as_of > as_of:
+            errors.append(f"ledger.as_of {ledger_as_of.isoformat()} is later than validation date {as_of.isoformat()}")
+    except (KeyError, TypeError, ValueError):
+        errors.append("ledger.as_of must be an ISO date")
     records = ledger.get("records")
     if not isinstance(records, list) or not records:
         return ["ledger.records must be a non-empty list"], warnings
@@ -131,6 +141,8 @@ def validate(ledger: dict, as_of: dt.date) -> tuple[list[str], list[str]]:
             due = dt.date.fromisoformat(record["review_due"])
             if due < verified:
                 errors.append(f"{rid}: review_due precedes verified_at")
+            if cadence is not None and due > verified + dt.timedelta(days=cadence):
+                errors.append(f"{rid}: review_due exceeds {cadence}-day ledger cadence")
             if due <= as_of:
                 message = f"{rid}: evidence review due since {due.isoformat()}"
                 (errors if record.get("status") == "accepted" else warnings).append(message)
@@ -181,11 +193,17 @@ def validate(ledger: dict, as_of: dt.date) -> tuple[list[str], list[str]]:
         if not isinstance(evidence_ids, list):
             errors.append(f"{fixture_id}: evidence_ids must be a list")
             continue
+        fixture_check_ids = set(manifest.get("required_check_ids", [])) | set(manifest.get("forbidden_check_ids", []))
+        records_by_id = {record.get("id"): record for record in records if isinstance(record, dict) and isinstance(record.get("id"), str)}
         for rid in evidence_ids:
             if rid not in ids:
                 errors.append(f"{fixture_id}: unknown evidence id {rid}")
+                continue
             if rid not in ledger_fixture_links.get(fixture_id, set()):
                 errors.append(f"{fixture_id}: ledger record {rid} lacks reciprocal fixture_ids link")
+            linked_checks = set(records_by_id[rid].get("check_ids", []))
+            if not fixture_check_ids.intersection(linked_checks):
+                errors.append(f"{fixture_id}: evidence {rid} has no check_id matching required/forbidden fixture behavior")
         required_ids = set(manifest.get("required_check_ids", []))
         parser_contract_only = bool(required_ids) and required_ids <= {"CFDOC-CONFIG-UNPARSEABLE"}
         if fixture_id != "clean-baseline" and required_ids and not evidence_ids and not parser_contract_only:

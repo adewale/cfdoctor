@@ -45,6 +45,20 @@ class ClaimLedgerTests(unittest.TestCase):
         errors, _ = module.validate(ledger, dt.date(2026, 7, 11))
         self.assertTrue(any("review due" in error for error in errors))
 
+    def test_review_due_cannot_exceed_declared_cadence(self) -> None:
+        ledger = copy.deepcopy(self.ledger)
+        ledger["records"][0]["review_due"] = "2099-01-01"
+        errors, _ = module.validate(ledger, dt.date(2026, 7, 11))
+        self.assertTrue(any("exceeds 92-day ledger cadence" in error for error in errors))
+
+    def test_top_level_freshness_metadata_is_validated(self) -> None:
+        ledger = copy.deepcopy(self.ledger)
+        ledger["as_of"] = "not-a-date"
+        ledger["review_cadence_days"] = 0
+        errors, _ = module.validate(ledger, dt.date(2026, 7, 11))
+        self.assertTrue(any("ledger.as_of" in error for error in errors))
+        self.assertTrue(any("review_cadence_days" in error for error in errors))
+
     def test_duplicate_primary_source_across_clusters_is_rejected(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][1]["sources"][0]["url"] = ledger["records"][0]["sources"][0]["url"]
@@ -68,6 +82,12 @@ class ClaimLedgerTests(unittest.TestCase):
         ledger["records"][0]["check_ids"].append("CFDOC-NOT-REAL")
         errors, _ = module.validate(ledger, dt.date(2026, 7, 11))
         self.assertTrue(any("unknown check_id" in error for error in errors))
+
+    def test_fixture_evidence_must_match_a_fixture_check(self) -> None:
+        ledger = copy.deepcopy(self.ledger)
+        ledger["records"][0]["check_ids"] = []
+        errors, _ = module.validate(ledger, dt.date(2026, 7, 11))
+        self.assertTrue(any("has no check_id matching required/forbidden fixture behavior" in error for error in errors))
 
 
 if __name__ == "__main__":

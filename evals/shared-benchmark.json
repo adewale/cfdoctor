@@ -564,6 +564,13 @@
           "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
         },
         {
+          "name": "no-project-inspection-command",
+          "type": "command_not_ran",
+          "pattern": "(rg\\s+--files|cfdoctor_static_scan|git\\s+(?:status|ls-files)|(?:^|[;&|]\\s*)(?:find|ls)(?:\\s|$))",
+          "description": "Activation process gate: do not inventory or scan a repository for a standalone non-audit task.",
+          "oracle": "strong"
+        },
+        {
           "name": "qualitative-review",
           "type": "judge",
           "rubric": [
@@ -614,6 +621,13 @@
             "## Run summary with cost proxies"
           ],
           "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
+        },
+        {
+          "name": "no-project-inspection-command",
+          "type": "command_not_ran",
+          "pattern": "(rg\\s+--files|cfdoctor_static_scan|git\\s+(?:status|ls-files)|(?:^|[;&|]\\s*)(?:find|ls)(?:\\s|$))",
+          "description": "Activation process gate: do not inventory or scan a repository for a standalone non-audit task.",
+          "oracle": "strong"
         },
         {
           "name": "qualitative-review",
@@ -668,6 +682,13 @@
           "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
         },
         {
+          "name": "no-project-inspection-command",
+          "type": "command_not_ran",
+          "pattern": "(rg\\s+--files|cfdoctor_static_scan|git\\s+(?:status|ls-files)|(?:^|[;&|]\\s*)(?:find|ls)(?:\\s|$))",
+          "description": "Activation process gate: do not inventory or scan a repository for a standalone non-audit task.",
+          "oracle": "strong"
+        },
+        {
           "name": "qualitative-review",
           "type": "judge",
           "rubric": [
@@ -720,6 +741,13 @@
           "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
         },
         {
+          "name": "no-project-inspection-command",
+          "type": "command_not_ran",
+          "pattern": "(rg\\s+--files|cfdoctor_static_scan|git\\s+(?:status|ls-files)|(?:^|[;&|]\\s*)(?:find|ls)(?:\\s|$))",
+          "description": "Activation process gate: do not inventory or scan a repository for a standalone non-audit task.",
+          "oracle": "strong"
+        },
+        {
           "name": "qualitative-review",
           "type": "judge",
           "rubric": [
@@ -770,6 +798,13 @@
             "## Run summary with cost proxies"
           ],
           "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
+        },
+        {
+          "name": "no-project-inspection-command",
+          "type": "command_not_ran",
+          "pattern": "(rg\\s+--files|cfdoctor_static_scan|git\\s+(?:status|ls-files)|(?:^|[;&|]\\s*)(?:find|ls)(?:\\s|$))",
+          "description": "Activation process gate: do not inventory or scan a repository for a standalone non-audit task.",
+          "oracle": "strong"
         },
         {
           "name": "qualitative-review",

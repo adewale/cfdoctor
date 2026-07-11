@@ -24,6 +24,8 @@ class CheckLinksTests(unittest.TestCase):
         self.assertEqual([], missing)
         self.assertIn("skills/cloudflare-doctor/references/official-source-map.md", rels)
         self.assertIn("skills/cloudflare-doctor/SKILL.md", rels)
+        self.assertIn("research/incident-claim-ledger.json", rels)
+        self.assertIn("evals/link-check-policy.json", rels)
         self.assertFalse(any(path.startswith("evals/results/") for path in rels))
         self.assertFalse(any(path.startswith("evals/fixtures/") for path in rels))
 
@@ -45,6 +47,13 @@ class CheckLinksTests(unittest.TestCase):
     def test_overdue_content_policy_fails(self) -> None:
         policy = json.loads((ROOT / "evals/link-check-policy.json").read_text())
         self.assertTrue(any("overdue" in error for error in module.validate_content_policy(policy, dt.date(2026, 10, 12))))
+
+    def test_ledger_only_url_is_extracted(self) -> None:
+        urls = module.extract_urls(ROOT, module.DEFAULT_TARGETS)
+        ledger = json.loads((ROOT / "research/incident-claim-ledger.json").read_text())
+        ledger_only_url = ledger["records"][0]["sources"][0]["archive_url"]
+        self.assertIn(ledger_only_url, urls)
+        self.assertIn("research/incident-claim-ledger.json", urls[ledger_only_url])
 
     def test_extract_urls_respects_excluded_generated_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

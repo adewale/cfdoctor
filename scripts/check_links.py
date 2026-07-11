@@ -55,6 +55,8 @@ DEFAULT_TARGETS = [
     "docs",
     "evals/README.md",
     "evals/shared-harness.md",
+    "research/incident-claim-ledger.json",
+    "evals/link-check-policy.json",
 ]
 DEFAULT_EXCLUDES = {
     ".pi-subagents",
@@ -101,7 +103,7 @@ def clean_url(url: str) -> str:
 
 
 def discover_markdown_files(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> tuple[list[Path], list[str]]:
-    """Return selected Markdown files and required targets that were missing."""
+    """Return selected Markdown files plus explicitly targeted JSON evidence files."""
     md_files: list[Path] = []
     missing: list[str] = []
     for target in targets:
@@ -123,7 +125,7 @@ def discover_markdown_files(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> t
 
 
 def extract_urls(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> dict:
-    """Return {url: [files containing it]} for unique cleaned URLs."""
+    """Return {url: [files containing it]} from selected Markdown/JSON evidence files."""
     found = {}
     md_files, _ = discover_markdown_files(root, targets, excludes)
     for md in md_files:

@@ -1,8 +1,10 @@
 # GPT-5.5 three-way value, precision, and efficiency eval
 
-Run date: 2026-07-11  
-Answer model: `openai-codex/gpt-5.5` (`high` reasoning)  
-Judge model: `openai-codex/gpt-5.5` (`high` reasoning)  
+Run date: 2026-07-11
+
+Answer model: `openai-codex/gpt-5.5` (`high` reasoning)
+
+Judge model: `openai-codex/gpt-5.5` (`high` reasoning)
 Harness: Skill Eval Harness v0.6.0, commit `abd8d7d57aae788658bc293abac1dab80dfb24ac`
 
 ## Compared variants
