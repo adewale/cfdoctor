@@ -393,3 +393,40 @@ review-before-sharing remain mandatory.
 36. Prefer maintained Wrangler read commands over a custom universal account-state schema.
 37. Effective Worker state requires deployment status plus every active version, not merely the latest version or downloaded config.
 38. Wrangler snapshots are sensitive local evidence: keep them outside Git, hash the artifacts, and review/redact before sharing.
+
+### Live Wrangler validation changed what we knew
+
+A disposable account was not a technical requirement. After explicit approval,
+existing projects covered the useful integration boundaries: a Worker without
+Assets exercised complete source/config capture, a Pages project exercised the
+experimental config downloader, and a staging Worker with Assets exercised the
+metadata-only path. All commands completed across Wrangler 4.53.0, 4.71.0, and
+4.94.0 without a Cloudflare mutation.
+
+The live outputs caught mock-reality drift. Pages `--json` returned capitalized
+display fields (`Id`, `Environment`, `Branch`, `Source`, `Deployment`, `Status`,
+and `Build`), while Worker version output included `number`, `annotations`, and
+nested `resources`. The fake was valuable for approval, allowlist, failure,
+permission, and manifest behavior, but it could not establish Cloudflare's real
+response contract. Sanitized fixtures must come from observed shapes.
+
+The metadata-only label also understated the privacy boundary. Wrangler wrote
+`.wrangler/cache` account metadata beneath its working directory even when no
+source was downloaded. Full Worker capture produced a substantial deployed
+bundle, and Pages download produced local config plus Wrangler cache files. The
+correct retention unit is therefore the entire snapshot directory: keep it
+private, extract only minimal schema evidence, and delete the raw directory.
+
+Finally, project dependency declarations were not uniformly installable with
+`npm ci` from the relevant subdirectories. Resolving each exact Wrangler version
+from the repository lockfile and installing only that version in an isolated
+temporary directory—with lifecycle scripts disabled—validated the intended
+client without modifying projects or executing unrelated setup code.
+
+39. Existing approved non-production projects can validate read-only collection; disposability is a safety option, not a correctness requirement.
+40. Handwritten fakes prove wrapper behavior, not external response fidelity; derive committed contract fixtures from reviewed, sanitized live shapes.
+41. Workers with Assets need a metadata-only path because `init --from-dash` cannot currently clone them.
+42. “Metadata-only” does not mean non-sensitive: Wrangler cache files can contain account metadata.
+43. Treat the complete snapshot directory as sensitive, including command stderr, downloaded config, source, and `.wrangler/cache`.
+44. Use exact lockfile-resolved client versions in isolated tooling directories when project installs are not reproducible; disable lifecycle scripts for read-only validation setup.
+45. Delete raw authenticated evidence after extracting the smallest durable schema facts needed for tests and documentation.
