@@ -212,7 +212,7 @@ Current proof from the latest validation run (2026-07-11):
 - Detection eval: `19/19` fixtures pass, including valid/malformed JSONC and Queue-DLQ near-miss controls (`evals/results/detection/latest.md`).
 - Coverage matrix: consistent with the 58-check scanner registry.
 - Evidence ledger: 27 structured records cover all 23 checklist scenarios and have reciprocal fixture lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, and Cloudflare outage evidence.
-- Wrangler snapshot wrapper: 7 offline tests cover explicit approval/planning, Worker config/source and active-version capture, Pages config/metadata capture, metadata-only mode, private permissions, and Git-worktree refusal.
+- Wrangler snapshot wrapper: 7 offline tests cover explicit approval/planning, Worker config/source and active-version capture, Pages config/metadata capture, metadata-only mode, private permissions, and Git-worktree refusal. Approved private live runs completed against `readability-worker` (Wrangler 4.71.0), `atlas` (4.94.0), and `keyboardia-staging` (4.53.0); only sanitized shapes were retained.
 - Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass.
 - GPT-5.5 three-way value eval: 24 cases / 72 outputs comparing local, GitHub `origin/main`, and no skill. Local scored 97.22% objective / 97.57% combined, versus GitHub 60.28% / 65.23% and no skill 73.19% / 70.50%; local cut mean tokens 57.9% and elapsed time 50.3% versus GitHub (`evals/results/gpt-5.5-value/latest.md`).
 - Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).

@@ -1,8 +1,12 @@
 {
   "id": "fixture-deployment",
+  "source": "wrangler",
   "strategy": "percentage",
+  "author_email": "maintainer@example.invalid",
+  "annotations": {"workers/triggered_by": "deployment"},
   "versions": [
     {"version_id": "10000000-0000-0000-0000-000000000000", "percentage": 25},
     {"version_id": "20000000-0000-0000-0000-000000000000", "percentage": 75}
-  ]
+  ],
+  "created_on": "2026-07-11T12:00:00Z"
 }

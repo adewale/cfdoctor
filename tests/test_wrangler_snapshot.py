@@ -129,7 +129,13 @@ class WranglerSnapshotTests(unittest.TestCase):
             self.assertEqual(2, sum(label.startswith("version-view:") for label in labels))
             self.assertIn("init-from-dash", labels)
             self.assertTrue((output / "download/fixture-project/wrangler.jsonc").is_file())
-            self.assertTrue((output / "worker/active-versions/10000000-0000-0000-0000-000000000000.json").is_file())
+            version = json.loads((output / "worker/active-versions/10000000-0000-0000-0000-000000000000.json").read_text())
+            self.assertEqual({"id", "number", "metadata", "annotations", "resources"}, set(version))
+            status = json.loads((output / "worker/deployments-status.json").read_text())
+            self.assertEqual(
+                {"id", "source", "strategy", "author_email", "annotations", "versions", "created_on"},
+                set(status),
+            )
             forbidden = {"deploy", "delete", "put", "bulk", "rollback"}
             for entry in manifest["commands"]:
                 self.assertTrue(forbidden.isdisjoint(entry["argv"][1:3]), entry["argv"])
@@ -188,7 +194,11 @@ class WranglerSnapshotTests(unittest.TestCase):
             manifest = json.loads((output / "manifest.json").read_text())
             self.assertTrue(manifest["success"])
             self.assertTrue((output / "download/wrangler.jsonc").is_file())
-            self.assertTrue((output / "pages/deployments.json").is_file())
+            deployments = json.loads((output / "pages/deployments.json").read_text())
+            self.assertEqual(
+                {"Id", "Environment", "Branch", "Source", "Deployment", "Status", "Build"},
+                set(deployments[0]),
+            )
             self.assertTrue((output / "pages/secret-names.txt").is_file())
 
     def test_snapshot_refuses_git_worktree_output_by_default(self) -> None:

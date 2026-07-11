@@ -84,6 +84,16 @@ Wrangler does not provide one universal download for DNS, zone settings, WAF/rul
 
 The current Worker direct downloader rejects Workers with Assets. `init --from-dash` does not continuously synchronize dashboard changes, so each audit needs a fresh temporary snapshot. Plain vars may be present; secret values should not be, but all output still requires review.
 
-## Next validation step
+## Live validation
 
-Run the wrapper against an explicitly approved disposable Cloudflare test account using the project's pinned Wrangler version. Review the exact command plan first. Keep raw output outside the repository, then commit only minimal redacted fixtures needed to lock observed Wrangler output shapes. No broader collector should be built until this path proves insufficient for a real diagnosis.
+On 2026-07-11, after explicit approval, the wrapper was run against existing non-production/public example projects using the exact Wrangler versions resolved by their lockfiles:
+
+- `tasche/readability-worker` with Wrangler 4.71.0 exercised the complete Worker path, including deployment/version reads and direct config/source download.
+- `atlas` with Wrangler 4.94.0 exercised the complete Pages path, including deployment listing and experimental config download.
+- `keyboardia-staging` with Wrangler 4.53.0 exercised the metadata-only Worker path for a Worker with Assets.
+
+Every planned command returned zero and every manifest reported a complete snapshot. Raw snapshots stayed in a mode-`0700` temporary directory and were deleted after shape-only review. No credential, secret value, account dump, downloaded source, route, deployment/version identifier, or cache file was retained.
+
+The review found two details now represented by sanitized fixtures and tests: Pages deployment JSON uses capitalized display keys (`Id`, `Environment`, `Branch`, `Source`, `Deployment`, `Status`, and `Build`), while Worker version JSON includes top-level `number`, `annotations`, and `resources` in addition to `id` and `metadata`. Wrangler also writes `.wrangler/cache` account metadata beneath the command working directory; the wrapper keeps and hashes those files inside the private snapshot, so the whole directory remains sensitive even when source download is disabled.
+
+No broader collector should be built until this path proves insufficient for a concrete diagnosis.

@@ -1,8 +1,11 @@
 [
   {
-    "id": "fixture-pages-deployment",
-    "environment": "production",
-    "created_on": "2026-07-11T12:00:00Z",
-    "url": "https://fixture.pages.dev"
+    "Id": "fixture-pages-deployment",
+    "Environment": "Production",
+    "Branch": "main",
+    "Source": "fixture-commit",
+    "Deployment": "https://fixture.pages.dev",
+    "Status": "Success",
+    "Build": "https://dash.cloudflare.com/fixture/pages/view/fixture/deployment"
   }
 ]

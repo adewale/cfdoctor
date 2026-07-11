@@ -18,7 +18,7 @@ the risk is ignored.
    contract markers); model-graded confirmation still pending (`TODO.md`).
 6. Holdout/holdback scaffolding — **rescoped** (see correction below); two
    fixture-backed tune cases added to the shared benchmark.
-7. Deployed-state evidence — **Wrangler-first wrapper complete offline; live validation deferred** (needs an approved disposable Cloudflare account).
+7. Deployed-state evidence — **Wrangler-first wrapper and approved live validation complete**.
 
 Remaining work lives in [`TODO.md`](../TODO.md).
 
@@ -137,13 +137,14 @@ Remaining work lives in [`TODO.md`](../TODO.md).
   - Fixture-backed tune cases are public, so models can memorize them; the
     gitignored holdout/holdback splits remain the contamination guard.
 
-## 7. Wrangler-first deployed-state snapshot — offline wrapper complete
+## 7. Wrangler-first deployed-state snapshot — complete
 
-- **Verifiability: medium.** A purpose-built fake Wrangler proves command
-  allowlisting, approval/plan gates, active-version expansion, private file
-  permissions, Git-worktree refusal, Worker source/config download, Pages
-  config download, metadata-only mode, and manifest hashes. Only a real test
-  account can prove Cloudflare response fidelity.
+- **Verifiability: high for the supported Worker/Pages scope.** A purpose-built
+  fake Wrangler proves command allowlisting, approval/plan gates,
+  active-version expansion, private file permissions, Git-worktree refusal,
+  downloads, metadata-only mode, and manifest hashes. Approved live runs against
+  `readability-worker`, `atlas`, and `keyboardia-staging` proved the Worker,
+  Pages, and Assets metadata-only paths with Wrangler 4.71.0, 4.94.0, and 4.53.0.
 - **Likelihood of success: high for Workers/Pages.** Wrangler already owns
   authentication profiles and current API normalization. `init --from-dash`,
   Pages `download config`, deployment status, and version view expose much of
