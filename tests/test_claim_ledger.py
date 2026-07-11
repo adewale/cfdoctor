@@ -71,6 +71,12 @@ class ClaimLedgerTests(unittest.TestCase):
         errors, _ = module.validate(ledger, dt.date(2026, 7, 11))
         self.assertTrue(any("lacks reciprocal evidence_id" in error for error in errors))
 
+    def test_unavailable_source_requires_unverified_status(self) -> None:
+        ledger = copy.deepcopy(self.ledger)
+        ledger["records"][0]["sources"][0]["availability"] = "unavailable"
+        errors, _ = module.validate(ledger, dt.date(2026, 7, 11))
+        self.assertTrue(any("unavailable source requires unverified" in error for error in errors))
+
     def test_malformed_source_entry_is_reported_without_crashing(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][0]["sources"] = ["not-an-object"]

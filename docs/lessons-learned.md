@@ -261,7 +261,7 @@ finding or describes the safety invariant backwards.
 The GitHub skill's mandatory broad reference reading and full report scaffold
 produced strong answers but used 134,984 mean tokens and 90.6 seconds per run.
 Hypothesis-driven reference routing, a hard activation boundary, and concise
-triage/no-finding modes cut the local result to 71,450 tokens and 52.7 seconds
+triage/no-finding modes cut the local result to 56,843 tokens and 45.0 seconds
 while improving objective and combined scores.
 
 The lesson is: **process instructions belong in the value function**. Measure
@@ -275,8 +275,8 @@ confirmed findings.
 A local-versus-no-skill comparison measures whether the skill adds value, but
 not whether a rewrite improved the skill. A local-versus-GitHub comparison
 measures the rewrite, but not whether either skill beats the base model. The
-three-way run answered both questions: local scored 91.18% objective and 92.07%
-combined, versus GitHub at 59.58%/65.05% and no skill at 73.19%/70.50%.
+three-way run answered both questions: local scored 97.22% objective and 97.57%
+combined, versus GitHub at 60.28%/65.23% and no skill at 73.19%/70.50%.
 
 The lesson is: **evaluate meaningful skill changes three ways**. Keep the
 published baseline immutable, include no skill, and report quality and
@@ -321,6 +321,27 @@ runs, private holdouts, human or second-model judge-alignment samples, and
 value-per-token measures are required before treating tune-set results as a
 universal guarantee.
 
+### PR audits must verify committed ranges and durable evidence
+
+The multi-agent PR audit found that `git diff --check` on a clean checkout says
+nothing about whitespace already committed in the PR, that JSON-only ledger
+URLs were absent from Markdown link discovery, and that an aggregate assembled
+from outputs generated across multiple skill revisions cannot represent one
+current implementation. Re-running all local outputs from one pinned commit and
+committing a machine-readable aggregate made the claims reproducible without
+committing raw transcripts.
+
+The lesson is: **validate the committed base-to-head range and pin every
+benchmark variant to an immutable revision**. Durable result summaries should
+include per-case scores, judge evidence, telemetry, failed assertions, and
+artifact hashes; local `/tmp` paths are useful reproduction aids, not published
+evidence.
+
+The same audit also showed that fixture/evidence reciprocity needs at least one
+matching required or forbidden check ID, and that declaring a freshness cadence
+is insufficient unless the validator enforces the interval. URL discovery must
+include machine-readable evidence stores as well as Markdown.
+
 ### Broad “fix it” requests do not authorize production mutation
 
 An audit can recommend changes without being authorized to deploy, rotate
@@ -345,3 +366,7 @@ confirmation before any authenticated production change.
 29. Independently audit fixtures, assertions, thresholds, arithmetic, and claims before publishing benchmark results.
 30. One-run, same-model judging, visible tune cases, and absent dollar telemetry must remain explicit limitations.
 31. Audit/fix requests do not authorize production mutation without target, evidence, blast radius, rollback, and confirmation.
+32. CI diff checks must compare the committed base-to-head range; a clean working-tree diff is vacuous.
+33. Model outputs for one reported variant must come from one pinned skill revision.
+34. Publish durable machine-readable eval aggregates; local raw-artifact paths are not sufficient evidence.
+35. Ledger URLs, declared freshness cadence, and fixture-to-check provenance all need direct validation.

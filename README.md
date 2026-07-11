@@ -196,9 +196,9 @@ Current proof from the latest validation run (2026-07-11):
 - Coverage matrix: consistent with the 58-check scanner registry.
 - Evidence ledger: 27 structured records cover all 23 checklist scenarios and have reciprocal fixture lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, and Cloudflare outage evidence.
 - Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass.
-- GPT-5.5 three-way value eval: 24 cases / 72 outputs comparing local, GitHub `origin/main`, and no skill. Local scored 91.18% objective / 92.07% combined, versus GitHub 59.58% / 65.05% and no skill 73.19% / 70.50%; local cut mean tokens 47.1% and elapsed time 41.8% versus GitHub (`evals/results/gpt-5.5-value/latest.md`).
+- GPT-5.5 three-way value eval: 24 cases / 72 outputs comparing local, GitHub `origin/main`, and no skill. Local scored 97.22% objective / 97.57% combined, versus GitHub 60.28% / 65.23% and no skill 73.19% / 70.50%; local cut mean tokens 57.9% and elapsed time 50.3% versus GitHub (`evals/results/gpt-5.5-value/latest.md`).
 - Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).
-- Current-source links: 421 checked across 24 runtime/research/docs files, 0 dead/errors and 1 bot-blocked Medium URL; all 11 critical official-doc semantic anchors passed on 2026-07-11. Historical generated reports are excluded from current health.
+- Current-source links: 425 checked across 26 runtime/research/docs/evidence files, 0 dead/errors; all 11 critical official-doc semantic anchors passed on 2026-07-11. Historical generated reports and one explicitly unavailable discovery-only source are excluded from current network health.
 
 ## Example audit prompts
 

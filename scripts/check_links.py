@@ -124,6 +124,30 @@ def discover_markdown_files(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> t
     return md_files, missing
 
 
+def _explicitly_unavailable_urls(path: Path) -> set[str]:
+    """Return URLs deliberately retained as unavailable discovery evidence."""
+    if path.suffix != ".json":
+        return set()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return set()
+    unavailable: set[str] = set()
+
+    def walk(value) -> None:
+        if isinstance(value, dict):
+            if value.get("availability") == "unavailable" and isinstance(value.get("url"), str):
+                unavailable.add(value["url"])
+            for child in value.values():
+                walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+
+    walk(payload)
+    return unavailable
+
+
 def extract_urls(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> dict:
     """Return {url: [files containing it]} from selected Markdown/JSON evidence files."""
     found = {}
@@ -134,9 +158,10 @@ def extract_urls(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> dict:
         except OSError:
             continue
         rel = str(md.relative_to(root))
+        unavailable = _explicitly_unavailable_urls(md)
         for match in URL_RE.finditer(text):
             url = clean_url(match.group(0))
-            if not url or "://" not in url:
+            if not url or "://" not in url or url in unavailable:
                 continue
             parsed = urllib.parse.urlsplit(url)
             if (parsed.hostname or "").lower() == "github.com" and (".git@" in parsed.path or re.search(r"@v\d", parsed.path)):

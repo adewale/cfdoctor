@@ -55,6 +55,12 @@ class CheckLinksTests(unittest.TestCase):
         self.assertIn(ledger_only_url, urls)
         self.assertIn("research/incident-claim-ledger.json", urls[ledger_only_url])
 
+    def test_explicitly_unavailable_ledger_url_is_not_network_checked(self) -> None:
+        urls = module.extract_urls(ROOT, module.DEFAULT_TARGETS)
+        ledger = json.loads((ROOT / "research/incident-claim-ledger.json").read_text())
+        unavailable = next(source["url"] for record in ledger["records"] for source in record["sources"] if source.get("availability") == "unavailable")
+        self.assertNotIn(unavailable, urls)
+
     def test_extract_urls_respects_excluded_generated_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

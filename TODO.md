@@ -35,7 +35,7 @@ the plan doc and the git history, not repeated here.
 ## Evals
 
 - [ ] Add a human-labeled or second-model judge-alignment sample and repeated runs for precision-critical fixtures. The current three-way GPT-5.5 round has one run per variant and uses GPT-5.5 as both answerer and judge.
-- [ ] Continue reducing the remaining local-vs-no-skill overhead (2.77× mean tokens, 1.96× elapsed) without regressing the local skill's objective/combined lift.
+- [ ] Continue reducing the remaining local-vs-no-skill overhead (2.20× mean tokens, 1.67× elapsed) without regressing the local skill's objective/combined lift.
 - [ ] Populate holdout/holdback cases from a non-ephemeral environment (the
       directories are gitignored by design; see plan item 6 correction).
 

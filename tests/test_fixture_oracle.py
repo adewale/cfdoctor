@@ -26,6 +26,20 @@ class FixtureOracleTests(unittest.TestCase):
         self.assertEqual(1, proc.returncode)
         self.assertIn("missing core audit marker", proc.stdout)
 
+    def test_dashboard_claim_oracle_allows_quoted_claim_but_rejects_assertion(self) -> None:
+        quoted = """Scope inspected: README.md and wrangler.toml
+Scope not inspected: account state
+Docs refreshed: Cache Reserve docs
+The README claims Cache Reserve is disabled, but account state was not inspected.
+"""
+        proc = self.run_oracle("round3-fixture-dashboard-claim", quoted)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        asserted = "Cache Reserve is definitely disabled.\n" + quoted
+        proc = self.run_oracle("round3-fixture-dashboard-claim", asserted)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
     def test_concise_clean_no_finding_triage_can_pass(self) -> None:
         text = """## Cloudflare Doctor triage
 Scope inspected: fixture files

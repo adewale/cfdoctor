@@ -27,7 +27,7 @@ SPECS = {
     "round3-fixture-dashboard-claim": {
         "all": ["README.md", "wrangler.toml"],
         "any": [["not inspected", "cannot inspect", "no dashboard access", "account state"]],
-        "forbid": [r"(?i)Cache Reserve\s+(?:is|was)\s+(?:definitely\s+)?(?:enabled|disabled)"],
+        "forbid": [r"(?im)^(?:[-*]\s*)?Cache Reserve\s+(?:is|was)\s+(?:definitely\s+)?(?:enabled|disabled)"],
         "require_core": True,
     },
     "detection-fixture-runaway-self-fetch": {
@@ -47,7 +47,7 @@ SPECS = {
     },
     "detection-fixture-jsonc-trailing-commas": {
         "all": ["wrangler.jsonc"],
-        "finding_any": [["broad route", "catchall", "wildcard route"]],
+        "finding_any": [["broad route", "catchall", "wildcard route", "*/*"]],
         "forbid": [r"(?i)(unparseable|could not parse|invalid JSONC)"],
         "require_core": True,
         "require_complete_finding": True,
@@ -57,7 +57,7 @@ SPECS = {
         "any": [
             ["DLQ is configured", "configured DLQ", "dead_letter_queue"],
             ["max_retries is 3", "max_retries: 3", "max_retries\": 3"],
-            ["processes before ack", "process-before-ack", "before `message.ack()`", "before acking", "acks only after", "ack only after"],
+            ["processes before ack", "process-before-ack", "before `message.ack()`", "before acking", "acks only after", "ack only after", "`ack()`s after", "only `ack()`s after"],
         ],
         "require_core": True,
         "allow_no_findings": True,

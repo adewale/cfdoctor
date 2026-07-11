@@ -120,6 +120,11 @@ def validate(ledger: dict, as_of: dt.date) -> tuple[list[str], list[str]]:
                 for field in ("role", "author_org", "published_at"):
                     if not source.get(field):
                         errors.append(f"{rid}: source.{field} is required")
+                availability = source.get("availability", "available")
+                if availability not in {"available", "unavailable"}:
+                    errors.append(f"{rid}: source.availability must be available or unavailable")
+                if availability == "unavailable" and record.get("status") != "unverified":
+                    errors.append(f"{rid}: unavailable source requires unverified record status")
                 if source.get("role") == "primary" and isinstance(url, str):
                     normalized = url.rstrip("/").casefold()
                     owner = primary_url_clusters.get(normalized)
