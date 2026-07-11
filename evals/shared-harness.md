@@ -3,13 +3,13 @@
 This repo participates in the shared Skill Eval Harness:
 
 - Repo: https://github.com/adewale/skill-eval-harness
-- Version: `>=0.3.0`
+- Version: `>=0.6.0`
 - Manifest: `evals/shared-benchmark.json`
 
 Install the harness from GitHub with [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv tool install git+https://github.com/adewale/skill-eval-harness.git@v0.3.0
+uv tool install git+https://github.com/adewale/skill-eval-harness.git@v0.6.0
 ```
 
 Splits:
@@ -20,7 +20,8 @@ Splits:
 Validate from this repo root:
 
 ```sh
-skill-benchmark validate evals/shared-benchmark.json
+skill-benchmark validate evals/shared-benchmark.json --strict-leakage --leakage-min-chars 1 --check-ablations
+skill-benchmark audit-manifest evals/shared-benchmark.json --fail-on-blockers
 ```
 
 Prepare paired run tasks:
@@ -56,4 +57,6 @@ skill-benchmark judge evals/shared-benchmark.json --runs eval-runs/latest --judg
 skill-benchmark benchmark evals/shared-benchmark.json --runs eval-runs/latest --allow-scripts --judge-results /tmp/cfdoctor-judge-results.jsonl --out /tmp/cfdoctor-benchmark.json
 ```
 
-Script assertions are deterministic repo-owned oracles and require `--allow-scripts` during grading.
+Script assertions are deterministic repo-owned oracles and require `--allow-scripts` during grading. Judge assertions use an explicit `0.85` threshold. Tune answer cases also include `total_tokens_le` and `elapsed_seconds_le` assertions; grade with `--strict` when those soft efficiency budgets should gate the run.
+
+For a three-way release comparison, materialize the GitHub baseline outside the working tree, populate `old_skill_paths` in a temporary manifest copy, and prepare with `--include-old-skill`. Never point `old_skill` at the mutable local skill tree.

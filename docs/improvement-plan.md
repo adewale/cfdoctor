@@ -120,7 +120,7 @@ Remaining work lives in [`TODO.md`](../TODO.md).
 ## 6. Holdout/holdback model-graded eval scaffolding
 
 - **Correction (2026-06-09):** this item was planned on a wrong premise. The
-  scaffolding already exists: `evals/shared-benchmark.json` defines 24 cases
+  scaffolding already exists: `evals/shared-benchmark.json` defines 30 cases
   across `tune`/`holdout`/`holdback` splits, and `evals/holdout/` +
   `evals/holdback/` are intentionally gitignored so hidden cases stay out of
   the public repo. "Filling" those directories from an ephemeral session

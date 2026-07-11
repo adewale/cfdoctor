@@ -1,71 +1,83 @@
 #!/usr/bin/env python3
-"""Fixture-backed output oracle for shared Skill Eval Harness script assertions."""
+"""Structural fixture-backed output oracle for shared Skill Eval Harness assertions."""
 from __future__ import annotations
+
 import json
 import re
 import sys
 from pathlib import Path
 
-CHECKS = {
-  "round3-fixture-dashboard-claim": {
-    "all": [
-      "README.md",
-      "wrangler.toml"
-    ],
-    "any": [
-      [
-        "not inspected",
-        "cannot inspect",
-        "no dashboard access",
-        "account state"
-      ],
-      [
-        "source basis",
-        "confidence",
-        "confirmed vs suspected",
-        "evidence"
-      ]
-    ]
-  },
-  "detection-fixture-runaway-self-fetch": {
-    "all": [
-      "Cost / trade-off",
-      "Source basis",
-      "Scope not inspected"
-    ],
-    "any": [
-      [
-        "self-fetch",
-        "fetches its own",
-        "re-enqueue",
-        "requeue",
-        "recursive"
-      ],
-      [
-        "dead-letter",
-        "dead letter",
-        "DLQ",
-        "max_retries",
-        "retry bound"
-      ]
-    ]
-  },
-  "detection-fixture-clean-baseline-precision": {
-    "any": [
-      [
-        "not inspected",
-        "cannot inspect",
-        "no dashboard access"
-      ]
-    ],
-    "forbid": [
-      "\\b(CRITICAL|BLOCKING|HIGH)\\b"
-    ]
-  }
+CORE_MARKERS = [
+    "Scope inspected:",
+    "Scope not inspected:",
+    "Docs refreshed:",
+]
+FINDING_FIELDS = [
+    "- Category:",
+    "- Evidence:",
+    "- Why it matters:",
+    "- Fix:",
+    "- Cost / trade-off:",
+    "- Verify:",
+    "- Source basis:",
+    "- Confidence:",
+]
+
+SPECS = {
+    "round3-fixture-dashboard-claim": {
+        "all": ["README.md", "wrangler.toml"],
+        "any": [["not inspected", "cannot inspect", "no dashboard access", "account state"]],
+        "forbid": [r"(?i)Cache Reserve\s+(?:is|was)\s+(?:definitely\s+)?(?:enabled|disabled)"],
+        "require_core": True,
+    },
+    "detection-fixture-runaway-self-fetch": {
+        "all": ["Cost / trade-off", "Source basis", "Scope not inspected"],
+        "finding_any": [
+            ["self-fetch", "fetches its own", "re-enqueue", "requeue", "recursive"],
+            ["dead-letter", "dead letter", "DLQ", "max_retries", "retry bound"],
+        ],
+        "require_core": True,
+        "require_complete_finding": True,
+    },
+    "detection-fixture-clean-baseline-precision": {
+        "any": [["not inspected", "cannot inspect", "no dashboard access"]],
+        "require_core": True,
+        "allow_no_findings": True,
+        "max_findings": 0,
+    },
+    "detection-fixture-jsonc-trailing-commas": {
+        "all": ["wrangler.jsonc"],
+        "finding_any": [["broad route", "catchall", "wildcard route"]],
+        "forbid": [r"(?i)(unparseable|could not parse|invalid JSONC)"],
+        "require_core": True,
+        "require_complete_finding": True,
+    },
+    "detection-fixture-queue-dlq-safe": {
+        "all": ["wrangler.jsonc"],
+        "any": [
+            ["DLQ is configured", "configured DLQ", "dead_letter_queue"],
+            ["max_retries is 3", "max_retries: 3", "max_retries\": 3"],
+            ["processes before ack", "process-before-ack", "before `message.ack()`", "before acking", "acks only after", "ack only after"],
+        ],
+        "require_core": True,
+        "allow_no_findings": True,
+        "max_findings": 0,
+    },
+    "detection-fixture-queue-dashboard-ambiguous": {
+        "evidence_request_any": [["dashboard-managed", "dashboard settings", "consumer config", "retry/DLQ settings"]],
+        "forbid": [r"(?i)(confirmed|definitely) (?:that )?(?:there is )?no (?:DLQ|dead[- ]letter queue)"],
+        "require_core": True,
+    },
 }
+
 
 def contains(text: str, needle: str) -> bool:
     return needle.casefold() in text.casefold()
+
+
+def finding_blocks(text: str) -> list[str]:
+    return re.findall(r"(?ms)^### Severity:.*?(?=^### Severity:|^## |\Z)", text)
+
 
 def main() -> int:
     if len(sys.argv) != 3:
@@ -73,7 +85,7 @@ def main() -> int:
         return 2
     output_dir = Path(sys.argv[1])
     case_id = sys.argv[2]
-    spec = CHECKS.get(case_id)
+    spec = SPECS.get(case_id)
     if not spec:
         print(f"unknown case id: {case_id}", file=sys.stderr)
         return 2
@@ -84,6 +96,13 @@ def main() -> int:
     text = out.read_text(encoding="utf-8", errors="replace")
     failures: list[str] = []
     checks = 0
+
+    if spec.get("require_core"):
+        for marker in CORE_MARKERS:
+            checks += 1
+            if not contains(text, marker):
+                failures.append(f"missing core audit marker: {marker!r}")
+
     for needle in spec.get("all", []):
         checks += 1
         if not contains(text, needle):
@@ -92,14 +111,38 @@ def main() -> int:
         checks += 1
         if not any(contains(text, needle) for needle in group):
             failures.append("missing one of: " + ", ".join(repr(x) for x in group))
-    for pattern in spec.get("regex", []):
-        checks += 1
-        if not re.search(pattern, text, re.I | re.M | re.S):
-            failures.append(f"missing regex: {pattern}")
     for pattern in spec.get("forbid", []):
         checks += 1
-        if re.search(pattern, text, re.I | re.M | re.S):
-            failures.append(f"forbidden regex present: {pattern}")
+        if re.search(pattern, text):
+            failures.append(f"forbidden pattern present: {pattern}")
+
+    questions_match = re.search(r"(?ms)^## Questions / evidence needed\s*(.*?)(?=^## |\Z)", text)
+    questions = questions_match.group(1) if questions_match else ""
+    for group in spec.get("evidence_request_any", []):
+        checks += 1
+        if not questions or not any(contains(questions, needle) for needle in group):
+            failures.append("Questions / evidence needed does not request one of: " + ", ".join(repr(x) for x in group))
+
+    blocks = finding_blocks(text)
+    max_findings = spec.get("max_findings")
+    if isinstance(max_findings, int):
+        checks += 1
+        if len(blocks) > max_findings:
+            failures.append(f"too many finding blocks: {len(blocks)} > {max_findings}")
+    complete = [block for block in blocks if all(contains(block, field) for field in FINDING_FIELDS)]
+    if spec.get("require_complete_finding"):
+        checks += 1
+        if not complete:
+            failures.append("no structurally complete finding block")
+    for group in spec.get("finding_any", []):
+        checks += 1
+        if not any(any(contains(block, needle) for needle in group) for block in complete):
+            failures.append("no complete finding contains one of: " + ", ".join(repr(x) for x in group))
+    if spec.get("allow_no_findings") and not blocks:
+        checks += 1
+        if not contains(text, "No confirmed findings."):
+            failures.append("no-finding audit must say 'No confirmed findings.'")
+
     score = max(checks - len(failures), 0)
     print(json.dumps({"score": score, "max_score": checks or 1, "case_id": case_id}))
     if failures:
@@ -109,6 +152,7 @@ def main() -> int:
         return 1
     print("OK fixture oracle: " + case_id)
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

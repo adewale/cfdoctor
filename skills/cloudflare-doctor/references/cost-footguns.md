@@ -15,7 +15,7 @@ Ask for or infer cautiously:
 ## Workers
 
 Footguns:
-- Assuming Workers cost is only request count. Workers cost and limits can also involve CPU time/duration/subrequests depending on plan and runtime path; CPU-heavy work can become the real bill or limit even when request count looks low.
+- Assuming Workers cost is only request count. Under current Standard pricing, Worker requests and CPU time are direct meters; duration is not billed and subrequests are not separately billed. Subrequests still consume limits and amplify separately metered KV/D1/R2/AI/origin work. Verify Enterprise/legacy contracts separately.
 - Expensive CPU work in request path: compression, image/video transforms, crypto loops, large JSON/HTML transformations.
 - Awaiting analytics/logging/email/webhook/cache writes instead of using `ctx.waitUntil` or Queues.
 - Multiple public Worker-to-Worker fetches where service bindings would reduce latency and simplify security/accounting.
@@ -61,7 +61,7 @@ Better patterns:
 ## D1
 
 Footguns:
-- Unbounded queries, table scans, `SELECT *`, missing indexes, or `ORDER BY RANDOM()` on hot routes. D1 rows read can dominate cost even when result count is small.
+- Unbounded queries, table scans, missing indexes, or `ORDER BY RANDOM()` on hot routes. D1 rows read can dominate cost even when result count is small. `SELECT *` alone is a projection/schema-coupling lead, not proof of extra billed rows; confirm predicates, indexes, limits, query plan, and `rows_read` metadata.
 - N+1 query patterns in Workers; count queries and rows read per user-visible request, not just HTTP request count.
 - Using D1 as an analytics/event sink or queue.
 - Recomputing public query results on every request instead of caching.
@@ -93,7 +93,7 @@ Footguns:
 - WebSocket code with no close/error/timeout cleanup; zombie sessions can keep state and duration alive longer than intended.
 - Alarm handlers that unconditionally call `setAlarm()` again, creating a persistent wake-up loop even when no work remains.
 - `storage.list()` on hot paths or on wake-up as a generic read mechanism; list/pagination amplifies reads and latency versus fetching known keys or compact state.
-- Many `storage.put()` calls per logical event/record instead of batching/coalescing; operation count can dominate small writes.
+- Repeated writes to the same logical state that could be coalesced. Multi-key batching of distinct keys can improve correctness/latency but current pricing still bills the distinct rows/units, so do not claim savings from batching alone; verify SQLite versus legacy KV-backed storage and actual rows/units changed.
 - One DO per ephemeral idempotency key/request ID/notification/short-lived event, causing object-count and storage cleanup problems without much coordination benefit.
 - Fan-out from one Worker/request/job to hundreds or thousands of DO stubs with no backpressure, batching, or urgency distinction.
 - DO used as a generic database with many trivial object invocations.
@@ -102,18 +102,20 @@ Footguns:
 
 Better patterns:
 - Validate and rate-limit before obtaining/calling DO stubs; reject malformed/unauthorized requests in the Worker where possible.
-- Shard by natural key or bounded hash/time buckets, use hibernation for WebSockets, close/cleanup sockets, persist state intentionally, batch small storage writes, only reschedule alarms when work remains, offload heavy/background work to Queues/Workflows, and use D1/KV/R2 for data that does not need per-key coordination.
+- Shard by natural key or bounded hash/time buckets, use hibernation for WebSockets, close/cleanup sockets, persist state intentionally, coalesce redundant writes, use transactions/multi-key APIs for correctness and latency rather than assumed billing savings, only reschedule alarms when work remains, offload heavy/background work to Queues/Workflows, and use D1/KV/R2 for data that does not need per-key coordination.
 
 ## Queues and Workflows
 
 Footguns:
 - Retry storms from non-idempotent consumers or aggressive retry settings.
-- Poison messages repeatedly consuming attempts without DLQ/alerting.
+- Poison messages exhausting the retry limit and being permanently deleted when no DLQ/alerting/replay path exists; Cloudflare currently defaults to three retries.
 - Enqueueing enormous fan-outs from a single request with no quota/backpressure.
 - Workflows used for simple fire-and-forget tasks where Queues would suffice, or ad hoc queues implemented in KV/D1.
+- Treating Workflow steps or retained instance state as free. Current pricing meters requests, CPU, persisted storage, and steps; Cloudflare announced that Paid-plan step and storage billing starts no earlier than August 10, 2026. Sleeps and event waits are steps even though idle wait time does not consume CPU.
+- Retrying terminal failures or ignoring provider-specific `Retry-After` guidance. Workflows now supports dynamic retry delay functions and `NonRetryableError` for permanent failures.
 
 Better patterns:
-- Idempotency keys, DLQs, bounded retries, backoff, alerting, and explicit fan-out limits.
+- Idempotency keys, DLQs, bounded retries, adaptive backoff, `NonRetryableError` for permanent failures, alerting, explicit fan-out limits, coarse meaningful Workflow steps, and intentional instance-state retention. Verify the announced billing start date before making a current invoice claim.
 
 ## Spend-amplification controls
 
@@ -141,7 +143,7 @@ Footguns:
 - Workers AI loops, retries, duplicate generation, or Queue replay without idempotency/dedupe. For generation and embeddings, the same user action can trigger multiple paid inferences.
 - Workers AI requests not using caching/session affinity where applicable, or no cap on model/tool-call loops.
 - Vectorize search hiding queried/stored dimensions. Cost can be tied to queried dimensions and stored vector dimensions; audit index dimensions, topK, namespace fan-out, and repeated embedding/query flows.
-- Image transformations multiplied by variants: unbounded width/height/format/DPR/quality combinations, flexible variants exposed to arbitrary user input, or per-request transformations without cache normalization.
+- Image transformations multiplied by unique variants: unbounded width/height/format/DPR/quality combinations or flexible variants exposed to arbitrary user input. As of July 2026, Images binding calls are billed per unique source-and-parameter transformation per calendar month, not per call; `.info()` is free. Repeating the same uncached transform still reruns decode/encode work and the Worker, adding latency and Worker CPU/request usage even when it does not add another Images transformation unit.
 - Stream preloading/buffering counted as delivered minutes: players using aggressive preload/autoplay, background tabs, hidden players, or custom HLS/DASH clients that fetch media before users intentionally watch.
 - Browser Run sessions left open, retried blindly, or launched per request when a lighter fetch/HTML parser/API would work. Browser hours/concurrency can dominate cost.
 
@@ -151,7 +153,7 @@ Better patterns:
 - For Artifacts, scope repo tokens, separate namespaces by env/tenant where needed, sign artifacts used for app/firmware updates, and keep rollback/lifecycle cleanup evidence.
 - Add idempotency keys and persistent result caches for AI/image/browser jobs; dedupe Queue messages before expensive calls.
 - Bound AI/tool/browser retry loops with exponential backoff, max attempts, and circuit breakers.
-- For Images, use predefined variants or strict allowlists, normalize transformation URLs/cache keys, and cache transformed outputs.
+- For Images, use predefined variants or strict allowlists and normalize transformation inputs. Enable Workers Cache only where the response is safely cacheable: it avoids rerunning the Worker/transformation on hits, but cache hits remain billed Worker requests and auth/tenant cache-key rules still apply.
 - For Stream, avoid eager preload for pay-sensitive embeds, secure URLs, and measure delivered minutes by player/route.
 - For Vectorize, choose dimensions intentionally, reduce namespace/query fan-out, cache embedding/query results where safe, and cite current Vectorize pricing docs.
 - For Browser Run, close sessions in `finally`, set session/request timeouts, reuse sessions only intentionally, and prefer Quick Actions or non-browser primitives for simple scraping/screenshots.

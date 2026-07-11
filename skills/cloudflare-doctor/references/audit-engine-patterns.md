@@ -86,15 +86,15 @@ Pattern:
 - Show month-to-date, projected month-end, top deltas vs baseline, owner/tag attribution, assumptions, and confidence.
 
 Cloudflare cost proxies:
-- Workers requests + CPU/duration + subrequests.
+- Workers requests and CPU are direct Standard-plan meters. Duration and subrequests are limits/amplification proxies under current Standard pricing; subrequests can trigger separately metered downstream products. Verify Enterprise/legacy contracts.
 - D1 rows read/written and storage.
 - KV reads/writes/lists and key churn.
 - R2 storage + Class A/B operations + lifecycle gaps.
 - DO requests/duration/storage writes/hot shards.
-- Queue messages/retries/DLQ/backlog.
+- Queue messages/retries/DLQ/backlog; Workflow invocations/steps/retained-state storage.
 - Workers AI neurons/requests, AI Gateway tokens/cache hits/costs.
 - Vectorize queried/stored dimensions.
-- Images transformations/variants, Stream delivered minutes, Browser Run session time/concurrency.
+- Images unique transformations/variants plus uncached binding executions, Stream delivered minutes, Browser Run session time/concurrency.
 - Dynamic Worker requests/CPU/unique workers and Agent tool/browser/sandbox/model loops.
 - Artifacts storage/operations/token/repo lifecycle metrics.
 - Logpush/analytics volume and retention.

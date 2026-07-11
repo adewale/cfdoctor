@@ -1,0 +1,7 @@
+{
+  "description": "Explicit Queue DLQ suppresses the missing-terminal-policy lead.",
+  "evidence_ids": ["CFDOC-EVD-RETAINDB-LOOP"],
+  "required_check_ids": [],
+  "forbidden_check_ids": ["CFDOC-REL-QUEUE-NO-DLQ"],
+  "max_findings": 0
+}

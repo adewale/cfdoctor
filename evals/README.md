@@ -38,11 +38,24 @@ python3 scripts/eval_detection.py
 ```
 
 Deterministic regression suite for the static scanner: each fixture under
-`evals/fixtures/detection/` models a documented war story (see the fixture
-READMEs) and declares required check IDs in `expected.json`; the
-`clean-baseline` fixture guards against false positives with `max_findings: 0`.
+`evals/fixtures/detection/` models an accepted evidence mechanism, parser
+contract, or near-miss control and declares required/forbidden check IDs plus
+optional diagnostic evidence terms in `expected.json`. Clean/near-miss fixtures
+use `max_findings: 0` where appropriate.
+
+Fixture `evidence_ids` resolve through `research/incident-claim-ledger.json`.
+`scripts/check_claim_ledger.py` validates source-cluster deduplication,
+evidence class, confidence/freshness, scenario/check lineage, and reciprocal
+fixture links. The fixture runner proves scanner behavior; the ledger validator
+proves that experience-report provenance is not merely free-text decoration.
 Reports land in `evals/results/detection/`. Repo self-scans must exclude these
 intentionally bad fixtures: `./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures`.
+
+## Paired model value eval
+
+The latest GPT-5.5 three-way round (`with_skill` local, `old_skill` from GitHub `origin/main`, and `without_skill`) is summarized in [`results/gpt-5.5-value/latest.md`](results/gpt-5.5-value/latest.md). It grades diagnostic lift, precision, token/latency overhead, and the requested clean/DLQ/no-trigger fixes. Raw model transcripts stay outside the repository; the checked-in report records the protocol, metrics, limitations, and artifact paths.
+
+Qualitative assertions now use an explicit `0.85` threshold instead of the fake-red implicit `1.0`. Every tune answer case also has token and elapsed-time assertions. Keep the multi-dimensional objective/qualitative/efficiency view rather than collapsing value to one pass number.
 
 ## Adding cases
 

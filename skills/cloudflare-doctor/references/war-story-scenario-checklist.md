@@ -2,7 +2,9 @@
 
 Use this checklist to turn public billing/failure horror stories into concrete Cloudflare Doctor checks. War stories are not sources for current Cloudflare pricing or limits; use them to motivate scenarios, then cite current Cloudflare docs for Cloudflare-specific product facts.
 
-Link status last verified: 2026-06-09 (scripts/check_links.py; report in evals/results/).
+The canonical source/lineage/taxonomy record is the repo-only `research/incident-claim-ledger.json` in the [cfdoctor repository](https://github.com/adewale/cfdoctor/tree/main/research). Each scenario below carries an evidence ID; aggregators, mirrors, and discussions are aliases within one source cluster rather than independent corroboration. Incident observations, operator inferences, official guidance, and current product semantics remain distinct evidence classes.
+
+Link and claim status last verified: 2026-07-11 (`scripts/check_links.py` and `scripts/check_claim_ledger.py`).
 
 ## How to use
 
@@ -19,18 +21,22 @@ For each relevant scenario:
 
 ### 1. Runaway async loop multiplies storage/compute operations
 
+- Evidence ID: `CFDOC-EVD-RETAINDB-LOOP`
+
 - Story: RetainDB reportedly generated a large Cloudflare bill from an infinite queue loop, billions of KV reads/writes, Durable Object storage writes, and hot-path `kv.list()` scans. Source aggregator: https://serverlesshorrors.com/all/cloudflare-36k; linked original: https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/ (archived: https://web.archive.org/web/20260506025828/https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/)
 - Source type: war story / first-hand linked via aggregator; verify original when using externally.
-- Mechanism: queue message calls internal API with async mode, re-enqueues itself; unbatched DO writes multiply row writes; KV list scan runs on most auth requests.
+- Mechanism: queue message calls internal API with async mode and re-enqueues itself; repeated DO writes and KV list scans amplify work. Current billing interpretation depends on the DO storage backend and rows/units changed—multi-key batching of distinct keys does not itself reduce billed storage units.
 - Cloudflare checks:
   - Queue consumers cannot enqueue the same logical job without idempotency/dedupe.
-  - Queue retry limits, DLQ, poison-message alerts, backlog alerts exist.
-  - DO storage writes are batched/coalesced; no per-field write storms.
+  - Queue consumers are idempotent; a DLQ/alert/replay path exists when permanent deletion after the retry limit is unacceptable.
+  - Redundant DO state writes are coalesced; transactions/multi-key writes are used for correctness/latency without assuming they reduce billed rows/units.
   - KV `list()` is not on auth/request hot paths.
   - Run summary logs queue messages, retries, KV reads/writes/lists, DO writes, and logical user action IDs.
 - Evidence to request: Queue config, consumer code, DLQ settings, Worker logs, GraphQL/usage metrics, code paths calling `send`, `sendBatch`, `storage.put`, `KV.list`.
 
 ### 2. Webhook/account-creation abuse triggers paid serverless functions
+
+- Evidence ID: `CFDOC-EVD-CONVOY-WEBHOOK`
 
 - Story: Stripe webhook delivery failure/abuse caused large Vercel bills through repeated webhook-triggered functions. Source: Convoy, “Stripe webhooks DoS caused $23k Vercel bills,” 2024-02-15, https://getconvoy.io/blog/stripe-webhook-delivery-failure; related ServerlessHorrors summary: https://serverlesshorrors.com/all/vercel-23k
 - Source type: first-party blog / war story.
@@ -45,6 +51,8 @@ For each relevant scenario:
 
 ### 3. Static-site bandwidth/DDoS turns into a giant bill
 
+- Evidence ID: `CFDOC-EVD-NETLIFY-104K`
+
 - Story: Netlify user reported a $104k bill for a simple static site after ~190TB bandwidth in 4 days; Netlify forum follow-up and Reddit post. Sources: https://answers.netlify.com/t/i-am-the-op-of-that-104k-bill-post-and-i-have-some-follow-up-questions/113472 and https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/ (archived: https://web.archive.org/web/20250908035924/https://old.reddit.com/r/webdev/comments/1b14bty/netlify_just_sent_me_a_104k_bill_for_a_simple/); ServerlessHorrors summary: https://serverlesshorrors.com/all/netlify-104k
 - Source type: first-hand forum/reddit + aggregator.
 - Mechanism: attack or abnormal traffic on static assets creates metered bandwidth overage; provider did not hard-stop by default.
@@ -58,6 +66,8 @@ For each relevant scenario:
 
 ### 4. Image optimization/transform APIs get crawled or variant-exploded
 
+- Evidence ID: `CFDOC-EVD-METACAST-IMAGE`
+
 - Story: Metacast postmortem on LLM bots and Vercel Image API pricing. Source: “The Cost of Being Crawled: LLM Bots and Vercel Image API Pricing,” https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization (archived: https://web.archive.org/web/20260304063157/https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization); HN discussion: https://news.ycombinator.com/item?id=43687431
 - Source type: first-hand engineering postmortem / war story.
 - Mechanism: bots/crawlers request many image optimization URLs; transformations are metered and can multiply by width/format/DPR/quality/cache-key variants.
@@ -70,6 +80,8 @@ For each relevant scenario:
 - Evidence to request: image transformation code/rules, variant config, cache keys, top transformed URLs, bot/WAF analytics.
 
 ### 5. Firebase/Firestore/Storage reads or uncached origin objects explode
+
+- Evidence ID: `CFDOC-EVD-FIREBASE-READS`
 
 - Stories: “How not to get a $30k bill from Firebase,” Medium, 2019, https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca (archived: https://web.archive.org/web/20200429160249/https://medium.com/@PurpleGreenLemon/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca) (may require access); HN discussion “How we spent $30k in Firebase in less than 72 hours,” https://news.ycombinator.com/item?id=17661391; ServerlessHorrors Firebase $100k storage-origin abuse summary: https://serverlesshorrors.com/all/firebase-100k
 - Official docs: Firebase “Avoid surprise bills,” https://firebase.google.com/docs/projects/billing/avoid-surprise-bills; Google Cloud budgets, https://cloud.google.com/billing/docs/how-to/budgets
@@ -85,6 +97,8 @@ For each relevant scenario:
 
 ### 6. Recursive Lambda/serverless invocations create runaway compute
 
+- Evidence ID: `CFDOC-EVD-AWS-RECURSION`
+
 - Official AWS docs: Lambda recursive loop detection, https://docs.aws.amazon.com/lambda/latest/dg/invocation-recursion.html; AWS Budgets, https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html; AWS Cost Anomaly Detection, https://docs.aws.amazon.com/cost-management/latest/userguide/getting-started-ad.html
 - Source type: official docs; use war stories only as supplemental if fetched.
 - Mechanism: function writes to a queue/topic/bucket/event source that invokes the same function or equivalent path; retries magnify.
@@ -96,6 +110,8 @@ For each relevant scenario:
 - Evidence to request: Queue producers/consumers, cron triggers, Workflows definitions, code paths calling same route/queue/workflow.
 
 ### 7. Idle services are still billable or never scale to zero
+
+- Evidence ID: `CFDOC-EVD-IDLE-SERVICES`
 
 - Railway docs: pricing plans and resource usage, https://docs.railway.com/pricing/plans.md; understanding your bill, https://docs.railway.com/pricing/understanding-your-bill.md; cost control, https://docs.railway.com/pricing/cost-control.md; serverless mode, https://docs.railway.com/deployments/serverless.md
 - Heroku docs: usage and billing, https://devcenter.heroku.com/articles/usage-and-billing; Heroku limits, https://devcenter.heroku.com/articles/limits; old war story: “Tell HN: I accidentally ran up a $1000 Heroku bill,” https://news.ycombinator.com/item?id=1688904
@@ -110,17 +126,21 @@ For each relevant scenario:
 
 ### 8. Consumption-based functions hide cost in executions, memory, duration, logs, and dependencies
 
+- Evidence ID: `CFDOC-EVD-FUNCTION-METERS`
+
 - Azure docs: Azure Functions consumption costs, https://learn.microsoft.com/en-us/azure/azure-functions/functions-consumption-costs; Azure budgets, https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets; Azure Functions best practices, https://learn.microsoft.com/en-us/azure/azure-functions/functions-best-practices
 - Source type: official docs.
 - Mechanism: invocation count alone is incomplete; memory, execution time, storage/logging dependencies, and retries contribute.
 - Cloudflare checks:
-  - Workers cost proxy includes CPU time/duration/subrequests, not only requests.
+  - Workers cost analysis separates direct request/CPU meters from duration and subrequests, which are limits/amplification proxies under current Standard pricing.
   - Logs/analytics/Logpush volume is sampled/redacted/bounded.
   - External dependency retries and queue replays are counted.
   - Run summaries include cost proxy fields.
 - Evidence to request: Workers analytics, logs volume, subrequests, retry counts, Logpush destination/lifecycle.
 
 ### 9. Provider spend controls are alerts, not architecture
+
+- Evidence ID: `CFDOC-EVD-SPEND-CONTROLS`
 
 - Official docs: Vercel Spend Management, https://vercel.com/docs/pricing/spend-management; Netlify billing/usage, https://docs.netlify.com/manage/accounts-and-billing/billing; Firebase avoid surprise bills, https://firebase.google.com/docs/projects/billing/avoid-surprise-bills; Google budgets, https://cloud.google.com/billing/docs/how-to/budgets; Azure budgets, https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets
 - Source type: official docs.
@@ -133,7 +153,9 @@ For each relevant scenario:
 
 ### 10. Cloudflare-fronted third-party origins still bill at the origin
 
-- Sources: Vercel Spend Management, https://vercel.com/docs/pricing/spend-management; Railway cost-control docs, https://docs.railway.com/pricing/cost-control.md; Render billing/scaling docs, https://render.com/docs/billing (no archive snapshot found as of 2026-06-09) and https://render.com/docs/scaling; Fly.io pricing/autostop docs, https://fly.io/docs/about/pricing/ and https://fly.io/docs/apps/autostart-stop/
+- Evidence ID: `CFDOC-EVD-THIRD-PARTY-ORIGIN`
+
+- Sources: Vercel Spend Management, https://vercel.com/docs/pricing/spend-management; Railway cost-control docs, https://docs.railway.com/pricing/cost-control.md; Render scaling docs, https://render.com/docs/scaling (billing-page candidate removed after link verification failed); Fly.io pricing/autostop docs, https://fly.io/docs/about/pricing/ and https://fly.io/docs/apps/autostart-stop/
 - Source type: official docs.
 - Mechanism: Cloudflare may absorb/cache some traffic, but cache misses, uncacheable requests, or direct default hostnames can still invoke paid serverless/container origins.
 - Cloudflare checks:
@@ -145,8 +167,10 @@ For each relevant scenario:
 
 ### 11. Public storage/object hotlinking creates request/egress bills
 
-- Source: Maciej Pocwierz, “Anatomy of an AWS bill shock,” 2024, https://www.maciejpocwierz.com/posts/anatomy-of-a-aws-bill-shock/ (no archive snapshot found as of 2026-06-09); AWS S3 pricing, https://aws.amazon.com/s3/pricing/
-- Source type: first-hand war story + official docs.
+- Evidence ID: `CFDOC-EVD-AWS-S3-HOTLINK`
+
+- Source: an unavailable 2024 first-hand S3 bill-shock candidate remains `unverified` in evidence record `CFDOC-EVD-AWS-S3-HOTLINK`; current AWS S3 pricing: https://aws.amazon.com/s3/pricing/
+- Source type: unverified incident candidate + current official docs. Do not cite the incident externally until a durable primary/archive source is recovered.
 - Mechanism: public object/storage endpoint receives unexpected requests because a bucket/object name or URL is guessed/reused/misconfigured; request charges and egress can accrue even when no app code runs.
 - Cloudflare checks:
   - R2 public buckets/custom domains are intentional and cache/rate-limited.
@@ -156,6 +180,8 @@ For each relevant scenario:
 - Evidence to request: R2 bucket public access/custom domains, CORS, object lifecycle, operation counts, cache rules, WAF coverage.
 
 ### 12. Logging/observability can become the surprise bill
+
+- Evidence ID: `CFDOC-EVD-LOGGING-METER`
 
 - Sources: GCP Logging exclusions, https://cloud.google.com/logging/docs/exclusions; Azure Application Insights sampling, https://learn.microsoft.com/en-us/azure/azure-monitor/app/sampling; AWS CloudWatch pricing/docs as applicable; Cloudflare Logs/Workers Logs docs in [`official-source-map.md`](official-source-map.md).
 - Source type: official docs.
@@ -168,6 +194,8 @@ For each relevant scenario:
 - Evidence to request: logging config, Logpush jobs/destinations, Analytics Engine schemas, retention/lifecycle settings, log volume metrics.
 
 ### 13. Deploy previews/review apps become public paid environments
+
+- Evidence ID: `CFDOC-EVD-PREVIEW-EXPOSURE`
 
 - Sources: Heroku Review Apps, https://devcenter.heroku.com/articles/github-integration-review-apps; Render preview environments, https://render.com/docs/preview-environments; Pages/Workers preview docs in [`official-source-map.md`](official-source-map.md).
 - Source type: official docs.
@@ -185,6 +213,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 
 ### 14. Durable Object duration, storage, alarm, and sharding gotchas
 
+- Evidence ID: `CFDOC-EVD-COEY-DO-GOTCHAS`
+
 - Source: Jordan Coeyman, “Durable Objects Gotchas: The Quiz You Wish You Had,” 2025-12-22 metadata, https://coey.dev/durable-objects-gotchas; related design note “The Perfect Durable Object?,” 2025-12-23, https://coey.dev/perfect-do
 - Source type: operator checklist/design note; scenario source only, not a standalone pricing/limits authority. Coey's embedded example prices must be re-verified with Cloudflare pricing docs before use.
 - Mechanisms to check:
@@ -194,7 +224,7 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
   - `DO-ALARM-RECURSION`: alarm handlers that always call `setAlarm()` can create recurring wake-ups when idle.
   - `DO-SHARDING-HOTSPOT`: singleton/low-cardinality objects hot-spot; over-sharding ephemeral keys multiplies objects.
   - `DO-EPHEMERAL-IDEMPOTENCY-OBJECTS`: one DO per idempotency/request key is often wasteful; prefer bounded shard/time buckets or another primitive.
-  - `DO-STORAGE-BATCHING`: many tiny storage writes per logical record/event should be batched/coalesced when correctness allows.
+  - `DO-STORAGE-BATCHING`: repeated writes need backend-aware coalescing/transaction review. Coalescing redundant state can reduce rows/units; batching distinct keys alone does not.
   - `DO-FANOUT-TAX`: one request/job calling hundreds/thousands of DO stubs needs backpressure and urgency distinction.
   - `DO-WAITUNTIL-LIFECYCLE`: DO background work should use the correct lifecycle API and be bounded; long work may belong in alarms/Queues/Workflows/Agents durable execution.
   - `KV-VS-DO-STORAGE-FIT`: read-heavy, write-rare data that tolerates eventual consistency may not need DO storage/duration.
@@ -202,6 +232,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - Evidence to request: DO class code, stub routing/id naming, WebSocket handlers, alarms, storage access patterns, metrics for requests/duration/storage ops, object cardinality estimate, queue/workflow alternatives.
 
 ### 15. Cloudflare loop patterns can become self-triggering work
+
+- Evidence ID: `CFDOC-EVD-COEY-LOOPS`
 
 - Source: Jordan Coeyman, “Self: Two Tiny Cloudflare Loop Patterns,” 2026-03-05, https://coey.dev/self; “Loop: I'm Not in Control, I'm Just Another Iteration,” 2026-01-20, https://coey.dev/loop; “loop-demo: Dogfooding Until It Worked,” 2026-01-30, https://coey.dev/loop-demo
 - Source type: operator design notes/prototypes.
@@ -215,6 +247,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 
 ### 16. Dynamic Workers and code-as-tool sandboxes need capability bounds
 
+- Evidence ID: `CFDOC-EVD-COEY-DYNAMIC`
+
 - Source: Jordan Coeyman, “Worker Loaders as a Place,” 2026-03-27, https://coey.dev/worker-loaders; “Promptlog: Dynamic Worker Loader with Sandboxed Code Execution,” 2025-10-14, https://coey.dev/promptlog; “desk and living-artifact,” 2026-05-15, https://coey.dev/built-in-reverse
 - Source type: operator design notes/prototypes.
 - Mechanism: Workers or Agents create isolated Dynamic Workers/Worker Loader rooms to execute user/LLM/app code; security and cost depend on egress, bindings, secrets, custom limits, code identity, and lifecycle. Artifacts-backed app/firmware loaders add repo-token, signing, and rollback risks.
@@ -226,6 +260,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - Evidence to request: dynamic Worker loader code/config, egress policy, bindings, custom limits, code hashing/dedupe, logs, Artifacts namespace/repo/token model, signing/rollback docs.
 
 ### 17. Cloudflare Agents and browser/session tools hide long-running cost
+
+- Evidence ID: `CFDOC-EVD-COEY-AGENTS`
 
 - Source: Jordan Coeyman, “Cloudflare Agents Patterns: Using the Agents SDK,” 2025-11-29, https://coey.dev/agents-patterns; “AgentCast: Live browser sessions for AI agents,” 2025-12-08, https://coey.dev/agentcast; “Parley: Two AIs Debate Until They Agree,” 2026-02-02, https://coey.dev/parley
 - Source type: operator design notes/prototypes.
@@ -239,6 +275,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 
 ### 18. Real-time logging sidecars can solve UX while adding meters
 
+- Evidence ID: `CFDOC-EVD-COEY-REALTIME-LOGS`
+
 - Source: Jordan Coeyman, “Real-Time Logging on Cloudflare,” 2025-09-15, https://coey.dev/real-time-logging; related “Checkout Reality: Playwright + Gateproof,” 2026-01-28, https://coey.dev/checkout-reality
 - Source type: operator pattern notes.
 - Mechanism: a Durable Object/WebSocket/LRU layer can provide instant logs while Analytics Engine/Logpush stores queryable history. This helps verification but can add DO duration/fanout/log-volume cost and privacy risk if retention/sampling is absent.
@@ -249,6 +287,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - Evidence to request: Workers Logs/Analytics Engine/Logpush config, DO logging room code, WebSocket fanout, event schema, retention/lifecycle, log-volume metrics.
 
 ### 19. Worker security controls for OAuth/webhooks deserve source-backed review
+
+- Evidence ID: `CFDOC-EVD-COEY-SECURITY`
 
 - Source: Jordan Coeyman, “How we passed Google CASA Tier 2 on a Cloudflare Worker,” 2025-06-24, https://coey.dev/casa-tier-2; “Bio: Single-button WebAuthn auth on Cloudflare,” 2025-11-21, https://coey.dev/bio
 - Source type: first-hand security implementation note.
@@ -261,6 +301,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 
 ### 20. Workers-to-database/TCP paths need pooling, TLS, and regional thinking
 
+- Evidence ID: `CFDOC-EVD-COEY-TCP`
+
 - Source: Jordan Coeyman, “Edgewire: Node.js TCP libraries in Cloudflare Workers,” 2025-12-09, https://coey.dev/edgewire
 - Source type: operator implementation note.
 - Mechanism: Workers can connect to external TCP databases/libraries, but direct sockets can expose connection churn, TLS, unsupported database, latency, and retry/fanout risks. Hyperdrive may fit supported databases; unsupported protocols need explicit controls.
@@ -271,6 +313,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - Evidence to request: TCP socket code, database driver config, TLS options, pooling strategy, query logs, timeouts, retry/backoff, Hyperdrive fit analysis.
 
 ### 21. Correctness, preflight, and adversarial gates improve audit quality
+
+- Evidence ID: `CFDOC-EVD-COEY-EVAL-GATES`
 
 - Source: Jordan Coeyman, “Prompts Are Wishes,” 2026-03-04, https://coey.dev/prompts-are-wishes; “gate-review: Red-Team Your Tests,” 2026-01-30, https://coey.dev/gate-review; “preflight: The Agent That Learned to Slow Down,” 2026-01-30, https://coey.dev/preflight; “Compaction,” 2026-02-23, https://coey.dev/compaction; “Cursing Agents,” 2026-05-23, https://coey.dev/cursing-agents
 - Source type: agent/audit process notes.
@@ -283,6 +327,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 
 ### 22. Dead public cross-boundary RPC methods evade generic linters
 
+- Evidence ID: `CFDOC-EVD-DEADLINT-RPC`
+
 - Source: Jordan Coeyman X post, 2026-05-13, https://x.com/acoyfellow/status/2054685542369952158; `deadlint` repository, https://github.com/acoyfellow/deadlint
 - Source type: operator tooling note; scenario source only. Pair with current Cloudflare Workers RPC, Durable Objects, and Agents docs before making platform/API claims.
 - Mechanism: public methods on `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, and `Agent` subclasses look like live API surface to generic linters (`knip`, `oxlint`, ESLint), so stale methods can accumulate. Some may still be callable by stubs, service bindings, frontend RPC proxies, old deployed clients, or cross-repo callers.
@@ -293,6 +339,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - Evidence to request: boundary class code, TypeScript config(s), generated/typed RPC stubs, frontend companion files, service bindings, public client/API docs, and evidence of external callers.
 
 ### 23. Enabling Workers Cache changes the billing surface and can bypass auth
+
+- Evidence ID: `CFDOC-EVD-WORKERS-CACHE-LAUNCH`
 
 - Source: Cloudflare blog, "Your Worker can now have its own cache in front of it," 2026-07-06, https://blog.cloudflare.com/workers-cache/; official docs https://developers.cloudflare.com/workers/cache/ and https://developers.cloudflare.com/workers/cache/limitations/
 - Source type: official product announcement + docs. Verify pricing/limits against current docs before quoting numbers.
@@ -333,7 +381,7 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 
 - `CFDOC-COST-ASYNC-LOOP`: Queue/Workflow/Cron/self-fetch path can recursively trigger itself without idempotency/max depth.
 - `CFDOC-COST-KV-LIST-HOTPATH`: KV list/prefix scan in auth or public hot route.
-- `CFDOC-COST-DO-UNBATCHED-WRITES`: Multiple DO storage writes per logical record without batching/coalescing.
+- `CFDOC-COST-DO-UNBATCHED-WRITES`: Duplicate alias of the backend-aware DO coalescing/transaction review; do not infer billing savings from batching distinct keys.
 - `CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY`: Webhook endpoint performs side effects or queues work before signature verification and idempotency check.
 - `CFDOC-COST-MEDIA-VARIANT-EXPLOSION`: Images/Stream transformation or preload settings allow unbounded paid variants/minutes.
 - `CFDOC-COST-TEMP-ENV-PAID-BINDINGS`: Preview/demo/workshop env has paid/prod bindings, routes, or crons.
@@ -349,7 +397,7 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - `DO-SOCKET-CLOSE-HYGIENE`: WebSocket path lacks obvious close/error/timeout cleanup.
 - `DO-SHARDING-HOTSPOT`: DO IDs use singleton/low-cardinality keys or unbounded high-cardinality ephemeral keys.
 - `DO-EPHEMERAL-IDEMPOTENCY-OBJECTS`: One DO per idempotency/request key instead of bounded shard/time bucket/TTL store.
-- `DO-STORAGE-BATCHING`: Multiple tiny DO storage writes per logical event without batching/coalescing.
+- `DO-STORAGE-BATCHING`: Repeated DO writes need coalescing/transaction review; verify backend and rows/units changed before making a cost claim.
 - `DO-FANOUT-TAX`: One request/job fans out to many DO stubs without backpressure or urgency/cost budget.
 - `DO-WAITUNTIL-LIFECYCLE`: DO uses background lifecycle work without clear bounded duration, retries, or better Queue/Workflow/Agent fit.
 - `KV-VS-DO-STORAGE-FIT`: DO storage used for read-heavy/write-rare data that may fit KV/D1/R2 once consistency/query needs are known.

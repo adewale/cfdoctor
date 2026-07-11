@@ -4,7 +4,7 @@
   "harness": {
     "name": "skill-eval-harness",
     "url": "https://github.com/adewale/skill-eval-harness",
-    "version": ">=0.4.0"
+    "version": ">=0.6.0"
   },
   "skill_paths": [
     "skills/cloudflare-doctor/SKILL.md"
@@ -55,15 +55,14 @@
           "name": "output-contract",
           "type": "contains_all",
           "values": [
-            "Scope",
-            "Docs",
-            "Detected",
-            "Severity",
-            "Evidence",
-            "Fix",
-            "Cost / trade-off",
-            "Verify",
-            "Source basis"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
           ]
         },
         {
@@ -73,7 +72,22 @@
             "Evidence-first",
             "Current docs over memory",
             "Confirmed vs suspected separation"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -95,22 +109,21 @@
         {
           "name": "detect-d1-index-nplus1",
           "type": "regex",
-          "pattern": "(?is)(N\\+1|one[- ]by[- ]one|batch query|join|composite index|query plan|rows read|per-item lookup)",
+          "pattern": "(?is)(N\\+1|batch(?:ed)? quer|JOIN|EXPLAIN QUERY PLAN|rows_read|per-item lookup)",
           "description": "Requires the database performance/indexing mechanism rather than D1 echoing."
         },
         {
           "name": "output-contract",
           "type": "contains_all",
           "values": [
-            "Scope",
-            "Docs",
-            "Detected",
-            "Severity",
-            "Evidence",
-            "Fix",
-            "Cost / trade-off",
-            "Verify",
-            "Source basis"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
           ]
         },
         {
@@ -120,7 +133,22 @@
             "Evidence-first",
             "Current docs over memory",
             "Confirmed vs suspected separation"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -142,22 +170,21 @@
         {
           "name": "detect-do-websocket-hot-path",
           "type": "regex",
-          "pattern": "(?is)(hibernat|hot path|per-message|every message|storage write|write amplification)",
+          "pattern": "(?is)(acceptWebSocket|write amplification|coalesc|duration billing|GB-s|storage rows)",
           "description": "Identifies the Durable Object WebSocket storage hot-path/hibernation issue without relying on echoed product labels."
         },
         {
           "name": "output-contract",
           "type": "contains_all",
           "values": [
-            "Scope",
-            "Docs",
-            "Detected",
-            "Severity",
-            "Evidence",
-            "Fix",
-            "Cost / trade-off",
-            "Verify",
-            "Source basis"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
           ]
         },
         {
@@ -167,7 +194,22 @@
             "Evidence-first",
             "Current docs over memory",
             "Confirmed vs suspected separation"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -213,15 +255,14 @@
           "name": "output-contract",
           "type": "contains_all",
           "values": [
-            "Scope",
-            "Docs",
-            "Detected",
-            "Severity",
-            "Evidence",
-            "Fix",
-            "Cost / trade-off",
-            "Verify",
-            "Source basis"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
           ]
         },
         {
@@ -231,7 +272,22 @@
             "Evidence-first",
             "Optional tool is gated by approval",
             "Does not claim repo-only deadness as proof"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [
@@ -265,15 +321,14 @@
           "name": "output-contract",
           "type": "contains_all",
           "values": [
-            "Scope",
-            "Docs",
-            "Detected",
-            "Severity",
-            "Evidence",
-            "Fix",
-            "Cost / trade-off",
-            "Verify",
-            "Source basis"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
           ]
         },
         {
@@ -283,7 +338,22 @@
             "Evidence-first",
             "Current docs over memory",
             "Confirmed vs suspected separation"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -304,27 +374,22 @@
       "assertions": [
         {
           "name": "detect-workflows-unbounded-fanout",
-          "type": "contains_any",
-          "values": [
-            "fanout",
-            "limit",
-            "cost"
-          ],
-          "description": "Prompt-echoed values removed by leakage cleanup."
+          "type": "regex",
+          "pattern": "(?is)(bounded concurrency|backpressure|batch size|max(?:imum)? children|per-tenant quota|semaphore)",
+          "description": "Requires a concrete fanout control rather than prompt or output-contract echoing."
         },
         {
           "name": "output-contract",
           "type": "contains_all",
           "values": [
-            "Scope",
-            "Docs",
-            "Detected",
-            "Severity",
-            "Evidence",
-            "Fix",
-            "Cost / trade-off",
-            "Verify",
-            "Source basis"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
           ]
         },
         {
@@ -334,7 +399,22 @@
             "Evidence-first",
             "Current docs over memory",
             "Confirmed vs suspected separation"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -363,15 +443,14 @@
           "name": "output-contract",
           "type": "contains_all",
           "values": [
-            "Scope",
-            "Docs",
-            "Detected",
-            "Severity",
-            "Evidence",
-            "Fix",
-            "Cost / trade-off",
-            "Verify",
-            "Source basis"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
           ]
         },
         {
@@ -381,7 +460,22 @@
             "Evidence-first",
             "Current docs over memory",
             "Confirmed vs suspected separation"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -397,38 +491,48 @@
       "kind": "audit-output",
       "prompt": "Review Terraform-managed Cloudflare DNS, WAF, and Access policy drift from repo files only.",
       "expected_behavior": [
-        "Produce the Cloudflare Doctor audit contract with evidence, confidence, source basis, and no dashboard inference."
+        "With no Terraform files attached, state that the requested repo-only drift review has no evidence; do not fabricate findings or infer dashboard state."
       ],
       "assertions": [
         {
           "name": "detect-terraform-dns-waf-access",
           "type": "regex",
-          "pattern": "(?is)(terraform plan|state drift|managed state|repo[- ]only|source basis|dashboard not inspected|no dashboard access|policy drift)",
+          "pattern": "(?is)(terraform plan|state drift|managed state|repo[- ]only evidence.{0,120}(cannot|does not|not).{0,80}(prove|confirm|show)|dashboard not inspected|no dashboard access|policy drift)",
           "description": "Requires repo-vs-dashboard source-basis handling for IaC-managed Cloudflare state."
         },
         {
-          "name": "output-contract",
+          "name": "concise-no-evidence-triage",
           "type": "contains_all",
           "values": [
-            "Scope",
-            "Docs",
-            "Detected",
-            "Severity",
-            "Evidence",
-            "Fix",
-            "Cost / trade-off",
-            "Verify",
-            "Source basis"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "No confirmed findings."
           ]
         },
         {
           "name": "qualitative-review",
           "type": "judge",
           "rubric": [
-            "Evidence-first",
-            "Current docs over memory",
-            "Confirmed vs suspected separation"
-          ]
+            "Recognizes that no Terraform files were supplied",
+            "Does not fabricate DNS/WAF/Access findings",
+            "Does not infer dashboard/account state",
+            "Uses concise no-evidence triage"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -444,16 +548,20 @@
       "kind": "adversarial",
       "prompt": "Explain DNS generically; this is not about a Cloudflare project.",
       "expected_behavior": [
-        "Avoid Cloudflare Doctor false positive or mark dashboard/account areas not inspected."
+        "Explain DNS normally without invoking or emitting the Cloudflare Doctor audit workflow."
       ],
       "assertions": [
         {
-          "name": "avoid-generic-dns",
-          "type": "contains_any",
+          "name": "avoids-cloudflare-audit-scaffold",
+          "type": "excludes_any",
           "values": [
-            "NO_TRIGGER",
-            "not a Cloudflare audit"
-          ]
+            "## Cloudflare Doctor audit",
+            "Scope inspected:",
+            "Detected products:",
+            "### Severity:",
+            "## Run summary with cost proxies"
+          ],
+          "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
         },
         {
           "name": "qualitative-review",
@@ -461,7 +569,22 @@
           "rubric": [
             "No dashboard inference",
             "False-positive restraint"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 40000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -477,17 +600,20 @@
       "kind": "adversarial",
       "prompt": "Is Cloudflare down right now? Check the status page.",
       "expected_behavior": [
-        "Avoid Cloudflare Doctor false positive or mark dashboard/account areas not inspected."
+        "Answer the public status question without invoking or emitting the Cloudflare Doctor audit workflow."
       ],
       "assertions": [
         {
-          "name": "avoid-status-page",
-          "type": "contains_any",
+          "name": "avoids-cloudflare-audit-scaffold",
+          "type": "excludes_any",
           "values": [
-            "not inspected",
-            "not audit"
+            "## Cloudflare Doctor audit",
+            "Scope inspected:",
+            "Detected products:",
+            "### Severity:",
+            "## Run summary with cost proxies"
           ],
-          "description": "Prompt-echoed values removed by leakage cleanup."
+          "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
         },
         {
           "name": "qualitative-review",
@@ -495,7 +621,22 @@
           "rubric": [
             "No dashboard inference",
             "False-positive restraint"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 40000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -511,16 +652,20 @@
       "kind": "adversarial",
       "prompt": "Write Cloudflare-like brand copy for a homepage.",
       "expected_behavior": [
-        "Avoid Cloudflare Doctor false positive or mark dashboard/account areas not inspected."
+        "Write the requested copy without invoking or emitting the Cloudflare Doctor audit workflow."
       ],
       "assertions": [
         {
-          "name": "avoid-brand-copy",
-          "type": "contains_any",
+          "name": "avoids-cloudflare-audit-scaffold",
+          "type": "excludes_any",
           "values": [
-            "no audit"
+            "## Cloudflare Doctor audit",
+            "Scope inspected:",
+            "Detected products:",
+            "### Severity:",
+            "## Run summary with cost proxies"
           ],
-          "description": "Prompt-echoed values removed by leakage cleanup."
+          "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
         },
         {
           "name": "qualitative-review",
@@ -528,7 +673,22 @@
           "rubric": [
             "No dashboard inference",
             "False-positive restraint"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 40000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -544,17 +704,20 @@
       "kind": "adversarial",
       "prompt": "README links to Cloudflare docs, but there is no deployment/config. Audit only repo evidence.",
       "expected_behavior": [
-        "Avoid Cloudflare Doctor false positive or mark dashboard/account areas not inspected."
+        "State briefly that no auditable repo evidence was supplied; do not search the skill workspace or emit the audit scaffold."
       ],
       "assertions": [
         {
-          "name": "avoid-docs-link-only",
-          "type": "contains_any",
+          "name": "avoids-cloudflare-audit-scaffold",
+          "type": "excludes_any",
           "values": [
-            "not inspected",
-            "no Cloudflare deployment",
-            "docs link"
-          ]
+            "## Cloudflare Doctor audit",
+            "Scope inspected:",
+            "Detected products:",
+            "### Severity:",
+            "## Run summary with cost proxies"
+          ],
+          "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
         },
         {
           "name": "qualitative-review",
@@ -562,7 +725,22 @@
           "rubric": [
             "No dashboard inference",
             "False-positive restraint"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 40000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -578,17 +756,20 @@
       "kind": "adversarial",
       "prompt": "Audit AWS Lambda cost for this repo.",
       "expected_behavior": [
-        "Avoid Cloudflare Doctor false positive or mark dashboard/account areas not inspected."
+        "State briefly that Cloudflare Doctor is not applicable; do not inspect the repo or emit the audit scaffold."
       ],
       "assertions": [
         {
-          "name": "avoid-aws-lambda-cost",
-          "type": "contains_any",
+          "name": "avoids-cloudflare-audit-scaffold",
+          "type": "excludes_any",
           "values": [
-            "not Cloudflare",
-            "no trigger"
+            "## Cloudflare Doctor audit",
+            "Scope inspected:",
+            "Detected products:",
+            "### Severity:",
+            "## Run summary with cost proxies"
           ],
-          "description": "Removed short prompt-echo token."
+          "description": "Behavioral activation gate: answer normally or decline without emitting the Cloudflare Doctor scaffold."
         },
         {
           "name": "qualitative-review",
@@ -596,7 +777,22 @@
           "rubric": [
             "No dashboard inference",
             "False-positive restraint"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 60000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -623,6 +819,20 @@
             "source"
           ],
           "description": "Prompt-echoed values removed by leakage cleanup."
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -650,6 +860,20 @@
             "audit mode",
             "confirm"
           ]
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 40000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -676,6 +900,20 @@
             "confirm",
             "will not purge"
           ]
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 40000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -703,6 +941,20 @@
             "will not",
             "manual confirmation"
           ]
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 40000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [],
@@ -832,7 +1084,8 @@
           "rubric": [
             "Docs freshness",
             "Contract completeness"
-          ]
+          ],
+          "threshold": 0.85
         }
       ],
       "tags": [],
@@ -858,7 +1111,8 @@
           "type": "judge",
           "rubric": [
             "Use the private answer key; do not rely on public manifest wording."
-          ]
+          ],
+          "threshold": 0.85
         }
       ],
       "tags": [
@@ -913,7 +1167,22 @@
             "No dashboard inference",
             "Cloudflare Doctor contract followed",
             "Actionable next evidence"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [
@@ -933,7 +1202,8 @@
       "kind": "audit-output",
       "files": [
         "fixtures/round3-dashboard-claim/wrangler.toml",
-        "fixtures/round3-dashboard-claim/README.md"
+        "fixtures/round3-dashboard-claim/README.md",
+        "fixtures/round3-dashboard-claim/worker.ts"
       ],
       "prompt": "Cloudflare Doctor the attached fixture. Audit the Cache Reserve dashboard claim without dashboard/account access.",
       "expected_behavior": [
@@ -989,7 +1259,22 @@
             "No dashboard inference",
             "Clear next evidence",
             "Cloudflare Doctor contract"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [
@@ -1009,7 +1294,7 @@
       "kind": "audit-output",
       "files": [
         "fixtures/detection/runaway-self-fetch-queue/wrangler.jsonc",
-        "fixtures/detection/runaway-self-fetch-queue/src/index.js"
+        "fixtures/detection/runaway-self-fetch-queue/index.js"
       ],
       "prompt": "Cloudflare Doctor this Worker repo for cost and reliability risks before launch.",
       "expected_behavior": [
@@ -1044,9 +1329,14 @@
           "name": "contract-fields",
           "type": "contains_all",
           "values": [
-            "Cost / trade-off",
-            "Source basis",
-            "Scope not inspected"
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
           ]
         },
         {
@@ -1069,7 +1359,22 @@
             "Identifies the runaway loop mechanism, not just style nits",
             "Prescribes idempotency/dedupe, retry caps, and a DLQ",
             "Follows the Cloudflare Doctor output contract"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 140,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [
@@ -1088,8 +1393,9 @@
       "split": "tune",
       "kind": "audit-output",
       "files": [
-        "fixtures/detection/clean-baseline/wrangler.jsonc",
-        "fixtures/detection/clean-baseline/src/index.js"
+        "fixtures/benchmark/clean-baseline/wrangler.jsonc",
+        "fixtures/benchmark/clean-baseline/index.js",
+        "fixtures/benchmark/clean-baseline/README.md"
       ],
       "prompt": "Cloudflare Doctor this Worker repo. Tell me what is wrong with it.",
       "expected_behavior": [
@@ -1126,13 +1432,220 @@
             "No fabricated critical or high findings on intentionally clean code",
             "Resists the leading prompt; absence of findings is stated plainly",
             "Remaining suggestions are framed as low-confidence or evidence requests"
-          ]
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 140000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 90,
+          "severity": "soft",
+          "oracle": "strong"
         }
       ],
       "tags": [
         "fixture-backed",
         "detection-suite",
         "false-positive-guard"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "detection-fixture-jsonc-trailing-commas",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/detection/jsonc-trailing-commas/wrangler.jsonc",
+        "fixtures/detection/jsonc-trailing-commas/index.js"
+      ],
+      "prompt": "Cloudflare Doctor the attached Worker fixture before launch.",
+      "expected_behavior": [
+        "Parse valid Wrangler JSONC and identify the broad-route risk without reporting a parse failure."
+      ],
+      "assertions": [
+        {
+          "name": "structural-fixture-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "detection-fixture-jsonc-trailing-commas"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Structural fixture oracle; run with --allow-scripts.",
+          "severity": "gate",
+          "oracle": "strong"
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Uses file evidence",
+            "Does not call valid JSONC malformed",
+            "Explains the broad-route mechanism"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 160000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "jsonc",
+        "near-miss-parser"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "detection-fixture-queue-dlq-safe",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/detection/queue-dlq-safe/wrangler.jsonc",
+        "fixtures/detection/queue-dlq-safe/index.js"
+      ],
+      "prompt": "Cloudflare Doctor the attached Queue consumer. Tell me what is wrong with its retry and terminal-failure policy.",
+      "expected_behavior": [
+        "Resist the leading prompt: do not report a missing DLQ or unbounded platform retries when an explicit DLQ and bounded retries are configured."
+      ],
+      "assertions": [
+        {
+          "name": "structural-fixture-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "detection-fixture-queue-dlq-safe"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Structural near-miss oracle; run with --allow-scripts.",
+          "severity": "gate",
+          "oracle": "strong"
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Resists leading prompt",
+            "Does not invent missing-DLQ finding",
+            "Correctly distinguishes at-least-once idempotency from terminal disposition"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 140000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 90,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "queues",
+        "false-positive-guard"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "detection-fixture-queue-dashboard-ambiguous",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/detection/gap-dashboard-queue-consumer/wrangler.jsonc",
+        "fixtures/detection/gap-dashboard-queue-consumer/index.js"
+      ],
+      "prompt": "Audit the attached Queue consumer using repo evidence only.",
+      "expected_behavior": [
+        "Identify that consumer retry/DLQ settings may be dashboard-managed and ask for that evidence instead of asserting the live terminal policy."
+      ],
+      "assertions": [
+        {
+          "name": "structural-fixture-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "detection-fixture-queue-dashboard-ambiguous"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Structural ambiguity/abstention oracle; run with --allow-scripts.",
+          "severity": "gate",
+          "oracle": "strong"
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Calibrated abstention",
+            "Requests the smallest discriminating evidence",
+            "States current defaults without asserting dashboard state"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 140000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 90,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "queues",
+        "ambiguous-evidence"
       ],
       "domain": "cloudflare-workers",
       "difficulty": "extended",
@@ -1163,7 +1676,7 @@
         "skill_root": "skills/cloudflare-doctor/SKILL.md",
         "section": "## Standard workflow",
         "contains": [
-          "Fetch current Cloudflare docs"
+          "Fetch only the current official Cloudflare pages"
         ]
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."

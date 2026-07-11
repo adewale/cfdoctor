@@ -1,6 +1,8 @@
 {
   "description": "Webhook relay that fans out one inbound event to every subscriber with an uncapped Promise.all map, and a delivery helper that hot-loops eight immediate retries per flaky endpoint with no backoff, jitter, or circuit breaker. Models the Stripe-webhook retry-storm bill.",
-  "war_story": "https://getconvoy.io/blog/stripe-webhook-delivery-failure (see references/war-story-scenario-checklist.md #2)",
+  "evidence_ids": [
+    "CFDOC-EVD-CONVOY-WEBHOOK"
+  ],
   "required_check_ids": [
     "CFDOC-COST-UNBOUNDED-FANOUT",
     "CFDOC-COST-RETRY-AMPLIFY"

@@ -1,8 +1,8 @@
 # Curated serverless horror-story sources
 
-This is the parent-agent research pass. A separate subagent research run may add more examples in `research/serverless-horror-stories.md`.
+This is a human-readable research view. The canonical machine-validated record is `research/incident-claim-ledger.json`; use its stable evidence/source-cluster IDs, evidence classes, confidence dimensions, derivation links, and freshness dates. A separate research pass may add candidates to `research/serverless-horror-stories.md`, but candidates do not become accepted evidence until added to the ledger and validated.
 
-Link status last verified: 2026-06-09 (scripts/check_links.py; report in evals/results/).
+Link and claim status last verified: 2026-07-11 (`scripts/check_links.py`; `scripts/check_claim_ledger.py`).
 
 ## Cloudflare
 
@@ -12,7 +12,7 @@ Link status last verified: 2026-06-09 (scripts/check_links.py; report in evals/r
 - Linked original: https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/ (archived: https://web.archive.org/web/20260506025828/https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/)
 - Type: war story / first-hand linked via aggregator; verify original before external publishing.
 - Claimed mechanism: infinite Queue loop, unbatched Durable Object storage writes, and KV `list()` scans on auth requests produced billions of operations.
-- Scenarios to check: recursive async work, idempotency/dedupe, DLQ/retry caps, DO write batching, KV list hot paths, per-run cost proxies.
+- Scenarios to check: recursive async work, idempotency/dedupe, DLQ/terminal-failure policy, backend-aware DO write coalescing/transactions, KV list hot paths, per-run cost proxies.
 
 ## Vercel
 

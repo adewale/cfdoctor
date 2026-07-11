@@ -90,7 +90,7 @@ When a TypeScript repo has these boundary classes:
 ## D1 reliability/performance
 
 - Schema migrations are checked in and applied intentionally per environment.
-- Queries use indexes for common filters/sorts; avoid unbounded `SELECT *`, `ORDER BY RANDOM()`, and table scans on hot paths.
+- Queries use indexes for common filters/sorts; avoid unbounded results, `ORDER BY RANDOM()`, and table scans on hot paths. Treat `SELECT *` as a projection/schema-coupling review, not proof of a billed-row scan; confirm with `EXPLAIN QUERY PLAN` and D1 `rows_read` metadata.
 - Batch statements where practical.
 - Use constraints/unique indexes for correctness rather than only application checks.
 - Add `LIMIT`/pagination to user-controlled queries.
@@ -107,9 +107,17 @@ When a TypeScript repo has these boundary classes:
 ## Queues, retries, and idempotency
 
 - Producers attach idempotency keys or dedupe identifiers where duplicate processing matters, especially before Workers AI, Browser Run, Images/Stream transforms, D1 writes, R2 uploads, and third-party paid APIs.
-- Consumers tolerate at-least-once delivery: side effects are idempotent, external calls have retry/backoff, and poison messages reach a DLQ or alerting path.
-- Retry settings match downstream failure modes; avoid retry storms against a degraded API.
+- Consumers tolerate at-least-once delivery: side effects are idempotent and external calls have retry/backoff.
+- Cloudflare currently retries failed messages three times by default. After the configured limit, messages are permanently deleted unless a DLQ is configured; use a DLQ, alerting, and replay tooling when loss is unacceptable.
+- Retry settings match downstream failure modes; avoid application-level re-enqueue loops or hot retries against a degraded API.
 - User-facing endpoints enqueue quickly and return a status handle when work is asynchronous.
+
+## Workflows steps, retries, and retention
+
+- Count Workflow steps as a current cost proxy alongside requests, CPU, and persisted state. Each unit of durable work—including sleeps and event waits—is a step; Paid-plan step and storage billing was announced to begin no earlier than August 10, 2026, so verify the changelog before asserting that it is active.
+- Use dynamic retry delay functions when the next delay depends on the attempt, error, or downstream `Retry-After`; bound the retry limit and use `NonRetryableError` for permanent failures.
+- Keep steps coarse enough to be meaningful and idempotent rather than wrapping trivial operations merely for visibility. Bound child Workflow creation and per-tenant fan-out.
+- Set instance-state retention intentionally. Running, errored, sleeping, and completed instances contribute to persisted storage until retention or deletion releases it.
 
 ## Dynamic Workers, Agents, and sandboxed code reliability
 

@@ -96,7 +96,7 @@ SECRET_ASSIGN_RE = re.compile(
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
 NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
 
-SCANNER_VERSION = "0.3.2"
+SCANNER_VERSION = "0.3.3"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -108,7 +108,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-SEC-SECRET-IN-CONFIG", "SEC", "high", "medium", "Possible secret stored in Wrangler vars", "A Wrangler vars entry looks like a credential; secrets belong in secret storage."),
     ("CFDOC-CONFIG-DO-NO-MIGRATIONS", "CONFIG", "high", "medium", "Durable Object bindings without migrations in same config scope", "Durable Object bindings exist without Wrangler migrations entries."),
     ("CFDOC-CONFIG-D1-NO-MIGRATIONS", "CONFIG", "medium", "low", "D1 binding without local migration files detected", "A D1 binding has no nearby checked-in migration files; schema may drift."),
-    ("CFDOC-REL-QUEUE-NO-DLQ", "REL", "medium", "medium", "Queue consumer lacks explicit retry or dead-letter configuration", "Queue consumer has no DLQ/retry settings; poison messages can retry unbounded."),
+    ("CFDOC-REL-QUEUE-NO-DLQ", "REL", "medium", "medium", "Queue consumer has no dead-letter queue; verify terminal failure policy", "Queues retry three times by default, then permanently delete a failed message unless a DLQ is configured; consumers must also tolerate at-least-once delivery."),
     ("CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD", "REL", "low", "low", "Cross-boundary public RPC methods need reachability review", "Public methods on DurableObject/WorkerEntrypoint/WorkflowEntrypoint/RpcTarget/Agent classes may evade generic dead-code linters."),
     ("CFDOC-COST-BROAD-ROUTE", "COST", "medium", "medium", "Broad Worker route should be verified", "A catchall/wildcard Worker route can intercept unintended traffic and invocations."),
     ("CFDOC-COST-CRON-EVERY-MINUTE", "COST", "medium", "high", "Cron trigger runs every minute", "Every-minute cron schedules create constant invocations and downstream usage."),
@@ -116,7 +116,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-COST-TEMP-ENV-PAID-BINDINGS", "COST", "medium", "medium", "Temporary/preview environment is connected to paid or stateful Cloudflare services", "Preview/demo/workshop env uses paid or stateful Cloudflare products."),
     ("CFDOC-CONFIG-NO-OBSERVABILITY", "CONFIG", "low", "low", "Wrangler observability not configured in this scope", "No observability config; cost/error regressions are harder to diagnose."),
     ("CFDOC-COST-WORKERS-CACHE-BILLING", "COST", "low", "low", "Workers Cache is enabled; verify billing surface and auth-entrypoint exclusion", "Enabling cache.enabled bills hits as requests and makes normally-free static-asset and worker-to-worker traffic billable; auth/gateway entrypoints must disable caching."),
-    ("CFDOC-CONFIG-UNPARSEABLE", "CONFIG", "medium", "medium", "Could not parse Wrangler config and no compatibility_date text found", "Wrangler config failed to parse and no compatibility date text was visible."),
+    ("CFDOC-CONFIG-UNPARSEABLE", "CONFIG", "medium", "high", "Could not parse Wrangler config", "Wrangler config failed to parse, so semantic config checks are incomplete."),
     ("CFDOC-SEC-SECRET-VALUE", "SEC", "critical", "medium", "Credential-shaped value appears in repository text", "A token/key/connection-string shaped value appears in tracked text."),
     ("CFDOC-SEC-SECRET-ASSIGNMENT", "SEC", "high", "medium", "Credential-like assignment appears in repository text", "A secret-named variable is assigned a literal value in tracked text."),
     ("CFDOC-COST-PAGES-FUNCTION-ROUTES", "COST", "medium", "medium", "Pages _routes.json broadly invokes Functions without obvious static exclusions", "Broad _routes.json include can send static asset traffic through billable Functions."),
@@ -137,7 +137,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-FIT-KV-COORDINATION", "FIT", "high", "medium", "KV read-modify-write smell for coordination/counters", "Eventually consistent KV is unsafe for locks, counters, inventory, or rate-limit state."),
     ("CFDOC-COST-R2-LIST-HOTPATH", "COST", "medium", "medium", "R2 bucket list appears in application code", "R2 listing is a storage operation and a poor metadata query path at volume."),
     ("CFDOC-PERF-R2-BUFFERING", "PERF", "medium", "low", "R2 object may be buffered instead of streamed", "Buffering R2 objects increases memory/CPU pressure and delays first byte."),
-    ("CFDOC-PERF-D1-SELECT-STAR", "PERF", "medium", "medium", "D1 query uses SELECT *", "Wide/unbounded reads increase rows/bytes processed and hide schema coupling."),
+    ("CFDOC-PERF-D1-SELECT-STAR", "PERF", "low", "medium", "D1 query uses SELECT *; review projection and bounds", "SELECT * widens transfer/decoding and couples code to schema, but does not by itself prove a full scan or increase D1 billed rows read."),
     ("CFDOC-COST-D1-ORDER-RANDOM", "COST", "high", "high", "D1 query orders by RANDOM()", "Random ordering forces expensive scans/sorts that grow with table size."),
     ("CFDOC-PERF-D1-N-PLUS-ONE", "PERF", "low", "low", "Many D1 prepared statements in one file; check for N+1 queries", "Several sequential queries per request can multiply latency and billed rows."),
     ("CFDOC-COST-DO-FRONT-DOOR", "COST", "medium", "low", "Durable Object call path lacks obvious front-door validation", "Invalid/bot traffic should be rejected before it becomes DO requests/duration."),
@@ -145,7 +145,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("DO-EPHEMERAL-IDEMPOTENCY-OBJECTS", "FIT", "medium", "low", "Durable Object key appears tied to an ephemeral id/request", "One DO per request/idempotency key creates many idle objects and cleanup work."),
     ("DO-STORAGE-LIST-HOTPATH", "COST", "medium", "medium", "Durable Object storage.list appears in code", "DO storage list/prefix scans on hot paths cost more than fetching known keys."),
     ("DO-ALARM-RECURSION", "COST", "medium", "low", "Alarm handler reschedules without obvious idle guard", "Alarms that always reschedule create recurring wake-ups when no work remains."),
-    ("DO-STORAGE-BATCHING", "COST", "medium", "low", "Multiple Durable Object storage.put calls should be reviewed", "Many small DO writes per logical event multiply operation counts versus batching."),
+    ("DO-STORAGE-BATCHING", "COST", "low", "low", "Multiple Durable Object storage.put calls need coalescing/transaction review", "Batching distinct keys does not reduce their billed storage units; only coalescing redundant writes or changing the data model can reduce rows/units written."),
     ("DO-WEBSOCKET-DURATION", "COST", "medium", "low", "WebSocket handling may not use Durable Object hibernation", "Idle WebSockets without hibernation can increase duration cost."),
     ("DO-SOCKET-CLOSE-HYGIENE", "REL", "medium", "low", "WebSocket path lacks obvious close/error cleanup", "Missing close/error/timeout handling leaves stale connection state."),
     ("DO-WAITUNTIL-LIFECYCLE", "REL", "low", "low", "Durable Object background work should be bounded and API-correct", "DO background work needs the right lifecycle API and a durable primitive for long work."),
@@ -206,53 +206,101 @@ def read_text(path: Path) -> str:
 
 
 def strip_json_comments(src: str) -> str:
-    out: list[str] = []
+    """Remove JSONC comments while preserving offsets and string contents."""
+    out = list(src)
     i = 0
     in_str = False
-    quote = ""
+    escaped = False
     while i < len(src):
         c = src[i]
         nxt = src[i + 1] if i + 1 < len(src) else ""
         if in_str:
-            out.append(c)
-            if c == "\\" and i + 1 < len(src):
-                out.append(src[i + 1])
-                i += 2
-                continue
-            if c == quote:
+            if escaped:
+                escaped = False
+            elif c == "\\":
+                escaped = True
+            elif c == '"':
                 in_str = False
             i += 1
             continue
-        if c in {'"', "'"}:
+        if c == '"':
             in_str = True
-            quote = c
-            out.append(c)
             i += 1
             continue
         if c == "/" and nxt == "/":
+            out[i] = out[i + 1] = " "
+            i += 2
             while i < len(src) and src[i] not in "\r\n":
+                out[i] = " "
                 i += 1
             continue
         if c == "/" and nxt == "*":
+            out[i] = out[i + 1] = " "
             i += 2
             while i + 1 < len(src) and not (src[i] == "*" and src[i + 1] == "/"):
+                if src[i] not in "\r\n":
+                    out[i] = " "
                 i += 1
-            i += 2
+            if i + 1 < len(src):
+                out[i] = out[i + 1] = " "
+                i += 2
+            else:
+                line = src.count("\n", 0, i) + 1
+                raise ValueError(f"unterminated block comment at line {line}")
             continue
-        out.append(c)
         i += 1
     return "".join(out)
 
 
+def strip_json_trailing_commas(src: str) -> str:
+    """Remove JSONC trailing commas outside strings while preserving offsets."""
+    out = list(src)
+    in_str = False
+    escaped = False
+    for i, c in enumerate(src):
+        if in_str:
+            if escaped:
+                escaped = False
+            elif c == "\\":
+                escaped = True
+            elif c == '"':
+                in_str = False
+            continue
+        if c == '"':
+            in_str = True
+            continue
+        if c != ",":
+            continue
+        j = i + 1
+        while j < len(src) and src[j].isspace():
+            j += 1
+        if j < len(src) and src[j] in "]}":
+            out[i] = " "
+    return "".join(out)
+
+
+class ConfigParseError(ValueError):
+    """A Wrangler config could not be parsed."""
+
+
 def parse_config(path: Path, text: str) -> dict[str, Any]:
     try:
-        if path.name == "wrangler.toml" and tomllib:
-            return tomllib.loads(text)
-        if path.name in {"wrangler.json", "wrangler.jsonc"}:
-            return json.loads(strip_json_comments(text))
-    except Exception:
-        return {}
-    return {}
+        if path.name == "wrangler.toml":
+            if tomllib is None:
+                raise ConfigParseError("TOML parsing requires Python 3.11+ or tomli")
+            data = tomllib.loads(text)
+        elif path.name in {"wrangler.json", "wrangler.jsonc"}:
+            normalized = strip_json_trailing_commas(strip_json_comments(text))
+            data = json.loads(normalized)
+        else:
+            raise ConfigParseError(f"unsupported config format: {path.name}")
+    except (json.JSONDecodeError, ConfigParseError) as exc:
+        raise ConfigParseError(str(exc)) from exc
+    except Exception as exc:
+        raise ConfigParseError(str(exc)) from exc
+    if not isinstance(data, dict):
+        raise ConfigParseError("top-level Wrangler config must be an object/table")
+    return data
 
 
 def line_for(text: str, pattern: str | re.Pattern[str]) -> tuple[int, str] | None:
@@ -379,7 +427,7 @@ def queue_consumers(data: dict[str, Any]) -> list[dict[str, Any]]:
     return [entry for entry in consumers if isinstance(entry, dict)] if isinstance(consumers, list) else []
 
 
-def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], findings: list[Finding]) -> None:
+def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], findings: list[Finding], parse_errors: list[tuple[Path, str]] | None = None) -> None:
     today = _dt.date.today()
     d1_migrations_reported: set[Path] = set()
 
@@ -516,18 +564,18 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
 
         consumers_missing_dlq = []
         for consumer in queue_consumers(data):
-            has_retry_or_dlq = any(key in consumer for key in ("dead_letter_queue", "dead_letter_queue_name", "max_retries"))
-            if not has_retry_or_dlq:
+            has_dlq = any(isinstance(consumer.get(key), str) and consumer.get(key).strip() for key in ("dead_letter_queue", "dead_letter_queue_name"))
+            if not has_dlq:
                 consumers_missing_dlq.append(str(consumer.get("queue") or consumer.get("name") or "consumer"))
         if consumers_missing_dlq:
             findings.append(Finding(
                 "CFDOC-REL-QUEUE-NO-DLQ",
                 "medium",
-                "Queue consumer lacks explicit retry or dead-letter configuration",
+                "Queue consumer has no dead-letter queue; verify terminal failure policy",
                 "misconfiguration / reliability / cost footgun",
                 f"{label}: {', '.join(consumers_missing_dlq)}",
-                "Cloudflare Queues deliver messages asynchronously and consumers must handle retries/duplicates. Poison messages or unbounded retry behavior can repeatedly invoke consumers and downstream services.",
-                "Set intentional retry/batch settings, add a DLQ where poison messages matter, and make consumers idempotent.",
+                "Cloudflare Queues use at-least-once delivery and retry a failed message three times by default. After the configured retry limit, a message is permanently deleted unless a DLQ is configured; duplicates and retries can still repeat downstream side effects.",
+                "Make the consumer idempotent, set retry/delay behavior intentionally, and configure a DLQ plus alerting/replay when permanent deletion is not acceptable.",
                 "medium",
             ))
 
@@ -623,20 +671,19 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                     inspect_one(path, text, env_data, f" [env.{env_name}]", is_env=True, parent_data=data)
 
     for path, text, data in configs:
-        if data:
-            inspect_one(path, text, data)
-        else:
-            if "compatibility_date" not in text:
-                findings.append(Finding(
-                    "CFDOC-CONFIG-UNPARSEABLE",
-                    "medium",
-                    "Could not parse Wrangler config and no compatibility_date text found",
-                    "misconfiguration",
-                    rel(path, root),
-                    "The scanner could not parse this config, and no compatibility date was visible.",
-                    "Validate the config with Wrangler and add/verify `compatibility_date`.",
-                    "medium",
-                ))
+        inspect_one(path, text, data)
+
+    for path, error in parse_errors or []:
+        findings.append(Finding(
+            "CFDOC-CONFIG-UNPARSEABLE",
+            "medium",
+            "Could not parse Wrangler config",
+            "misconfiguration",
+            f"{rel(path, root)}: {error[:240]}",
+            "The scanner could not parse this config, so product, binding, route, and environment checks for it are incomplete.",
+            "Validate the config with Wrangler and fix the reported syntax error before relying on scanner results.",
+            "high",
+        ))
 
 
 def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[str, set[str]], findings: list[Finding], queue_consumer_configured: bool = False) -> None:
@@ -977,12 +1024,12 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
             if hit:
                 findings.append(Finding(
                     "CFDOC-PERF-D1-SELECT-STAR",
-                    "medium",
-                    "D1 query uses SELECT *",
-                    "missed optimization / cost footgun",
+                    "low",
+                    "D1 query uses SELECT *; review projection and bounds",
+                    "missed optimization / schema coupling",
                     f"{rpath}:{hit[0]}: {hit[1][:160]}",
-                    "Unbounded/wide reads can increase rows/bytes processed and hide schema coupling on hot routes.",
-                    "Select only needed columns, add `LIMIT`/pagination, and verify indexes for filters/sorts.",
+                    "SELECT * can widen transfer/decoding and couple callers to schema changes, but it does not by itself prove a full scan or increase D1 billed rows read; predicates, indexes, LIMIT, and the query plan determine rows scanned.",
+                    "Select only needed columns where useful, and verify bounds/index use with EXPLAIN QUERY PLAN plus D1 rows_read metadata before making a billing claim.",
                     "medium",
                 ))
             hit = line_for(text, re.compile(r"ORDER\s+BY\s+RANDOM\s*\(", re.I))
@@ -1127,12 +1174,12 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 hit = line_for(text, re.compile(r"storage\.put\s*\(", re.I)) or (1, "")
                 findings.append(Finding(
                     "DO-STORAGE-BATCHING",
-                    "medium",
-                    "Multiple Durable Object storage.put calls should be reviewed",
-                    "cost footgun / missed optimization",
+                    "low",
+                    "Multiple Durable Object storage.put calls need coalescing/transaction review",
+                    "performance / cost review",
                     f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
-                    "Many small DO storage writes per logical event/record can multiply operation counts and latency compared with batching or coalescing where correctness allows.",
-                    "Batch/coalesce writes by logical record or flush interval, and emit per-action storage operation counts.",
+                    "Multiple writes may add latency or repeatedly rewrite the same logical state. Current Durable Objects pricing bills distinct keys/rows even when written with a multi-key API, so batching alone is not a proven billing reduction; backend and rows/units changed matter.",
+                    "Coalesce redundant writes to the same logical state and use transaction/multi-key APIs for correctness or latency where appropriate; verify the storage backend and rows/units written before claiming savings.",
                     "low",
                 ))
         if "WebSocketPair" in text and re.search(r"\.accept\s*\(\s*\)", text) and "acceptWebSocket" not in text:
@@ -1245,8 +1292,8 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                     "Queue consumer handler without consumer config in repo",
                     "misconfiguration / reliability / cost footgun",
                     f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
-                    "This code exports a queue() consumer but no repo config declares the consumer, so retry/DLQ settings are likely dashboard-managed and invisible to review. Poison messages can retry unbounded.",
-                    "Declare the consumer with intentional retry/batch/DLQ settings in Wrangler config, or supply the dashboard consumer settings as audit evidence.",
+                    "This code exports a queue() consumer but no repo config declares it, so retry and DLQ settings are dashboard-managed or otherwise invisible. Cloudflare defaults to three retries and then deletes the message unless a DLQ is configured; the actual terminal policy is not inspectable here.",
+                    "Declare the consumer with intentional retry/delay/DLQ settings in Wrangler config, or supply the dashboard consumer settings as audit evidence; keep processing idempotent for at-least-once delivery.",
                     "low",
                 ))
         hit = line_for(text, re.compile(r"fetch\s*\(\s*(?:(?:request|req|event\.request)\.(?:url|clone\s*\(\s*\))|new\s+URL\s*\([^)]*,\s*(?:request|req|event\.request)\.url)", re.I))
@@ -1366,7 +1413,9 @@ def render_json(root: Path, bindings: dict[str, set[str]], findings: list[Findin
             "category": finding.category,
             "path": path,
             "line": line,
+            "evidence": finding.evidence,
             "message": finding.why,
+            "fix": finding.fix,
             "excerpt": exc,
         })
     counts: dict[str, int] = {"total": len(findings_sorted)}
@@ -1410,17 +1459,21 @@ def main(argv: list[str]) -> int:
     excludes = [e[2:] if e.startswith("./") else e for e in args.exclude]
     file_texts: list[tuple[Path, str]] = []
     configs: list[tuple[Path, str, dict[str, Any]]] = []
+    parse_errors: list[tuple[Path, str]] = []
     for path in iter_files(root):
         if excludes and any(Path(rel(path, root)).as_posix().startswith(e) for e in excludes):
             continue
         text = read_text(path)
         file_texts.append((path, text))
         if path.name in CONFIG_NAMES:
-            configs.append((path, text, parse_config(path, text)))
+            try:
+                configs.append((path, text, parse_config(path, text)))
+            except ConfigParseError as exc:
+                parse_errors.append((path, str(exc)))
 
     bindings = collect_bindings(configs)
     findings: list[Finding] = []
-    add_config_findings(root, configs, findings)
+    add_config_findings(root, configs, findings, parse_errors)
     queue_consumer_configured = any(queue_consumers(data) for _, _, data in configs if data)
     add_code_findings(root, file_texts, bindings, findings, queue_consumer_configured=queue_consumer_configured)
     if args.json:

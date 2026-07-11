@@ -172,3 +172,176 @@ The lesson is: **name scanner checks after what they can actually prove**. Preci
 17. `npx`-based analyzers are optional gated tools: ask approval or use pinned repo tooling before running them.
 18. Dead-RPC scanner output is a lead to review dynamic/cross-repo callers, not deletion proof.
 19. Fixture coverage should assert the detectable review surface, not a semantic claim the scanner cannot prove.
+
+## What we learned from the provenance, precision, and three-way value pass
+
+The 2026-07-11 hardening pass combined live Cloudflare documentation review,
+incident-evidence provenance, parser and scanner fixes, structural oracle
+upgrades, and a 24-case GPT-5.5 comparison of the local skill, GitHub
+`origin/main`, and no skill. It showed that cfdoctor adds substantial diagnostic
+value, but also that workflow overhead and benchmark artifacts can hide or
+inflate that value.
+
+### Current official documentation must govern current recommendations
+
+Incident reports and operator war stories are excellent discovery sources:
+they reveal failure mechanisms, amplification paths, and questions worth
+asking. They are not reliable authority for current product semantics, limits,
+pricing, or probability. Those details change independently of the historical
+incident.
+
+The lesson is: **use war stories to discover mechanisms, then verify every
+current recommendation against current official Cloudflare documentation**.
+Future-dated announcements must stay labeled as future changes until their
+effective date, and historical migrations must not be rewritten to match a new
+default.
+
+### Provenance has to be reciprocal and machine-checkable
+
+A prose bibliography did not make it easy to answer which source justified a
+check, which scenario exercised it, or whether two URLs were duplicates of the
+same source cluster. The incident claim ledger made evidence IDs, confidence,
+freshness, official semantic sources, checks, scenarios, and fixtures explicit.
+Requiring fixture-to-ledger and ledger-to-fixture reciprocity exposed lineage
+mistakes that one-way links would have missed.
+
+The lesson is: **evidence provenance is a graph, not a footnote list**. Validate
+both directions, deduplicate source clusters, reject malformed records without
+crashing, and preserve unverified claims as discovery-only instead of quietly
+promoting them.
+
+### Parser edge cases are product correctness, not implementation trivia
+
+Wrangler JSONC parsing initially confused comments inside strings, trailing
+commas, malformed files, and valid empty objects. That could suppress findings
+or create false ones before any Cloudflare reasoning began.
+
+The lesson is: **configuration parsing needs fixture-first language semantics**.
+Distinguish valid empty config from parse failure, preserve URLs and comment-like
+string content, and emit an actionable diagnostic when evidence cannot be
+parsed.
+
+### Static hygiene without impact evidence erodes trust
+
+Checks for compatibility dates, `SELECT *`, `nodejs_compat`, `process.env`,
+observability defaults, cron cadence, route breadth, or log sampling can be
+useful hypotheses. They become noise when emitted as findings without workload
+intent, runtime metrics, account history, or a concrete amplification path.
+
+The lesson is: **absence of a preferred pattern is not automatically a
+finding**. Static output remains a lead; explicit intent, tests, compensating
+controls, dashboard state, and runtime evidence must be allowed to suppress or
+reclassify it.
+
+### Fixture path fidelity is part of oracle validity
+
+Flattening `src/index.js` into `inputs/index.js` while leaving Wrangler's
+`main` unchanged manufactured a missing-entrypoint problem in the supposedly
+clean fixture. The model was being graded against damage introduced by the eval
+staging process, not the source scenario.
+
+The lesson is: **an eval fixture must preserve the operational relationships it
+claims to test**. Validate staged entrypoints across every benchmark config, not
+just the fixture that first exposed the bug.
+
+### Near-miss controls need semantic, zero-finding oracles
+
+The Queue DLQ-safe case originally overmatched benign wording and did not prove
+that work happened before acknowledgement. A polished but contradictory answer
+could therefore pass. The corrected oracle requires configured bounded retries,
+an explicit DLQ, process-before-ack recognition, and zero finding blocks; a
+contradictory ack-before-work answer is now a regression test.
+
+The lesson is: **precision-critical controls need negative semantics, not just
+keywords**. A safe fixture should fail if the model invents any confirmed
+finding or describes the safety invariant backwards.
+
+### Skill overhead is a measurable product defect
+
+The GitHub skill's mandatory broad reference reading and full report scaffold
+produced strong answers but used 134,984 mean tokens and 90.6 seconds per run.
+Hypothesis-driven reference routing, a hard activation boundary, and concise
+triage/no-finding modes cut the local result to 71,450 tokens and 52.7 seconds
+while improving objective and combined scores.
+
+The lesson is: **process instructions belong in the value function**. Measure
+tokens, elapsed time, and command count alongside correctness. Do not invoke a
+Cloudflare audit for standalone AWS, generic DNS, public status, brand-copy, or
+no-input repo claims, and do not require a full report when there are no
+confirmed findings.
+
+### Benchmarks need old, new, and no-skill baselines
+
+A local-versus-no-skill comparison measures whether the skill adds value, but
+not whether a rewrite improved the skill. A local-versus-GitHub comparison
+measures the rewrite, but not whether either skill beats the base model. The
+three-way run answered both questions: local scored 91.18% objective and 92.07%
+combined, versus GitHub at 59.58%/65.05% and no skill at 73.19%/70.50%.
+
+The lesson is: **evaluate meaningful skill changes three ways**. Keep the
+published baseline immutable, include no skill, and report quality and
+efficiency together.
+
+### Grade behavior, not evaluator passwords
+
+Negative activation cases initially required phrases such as `NO_TRIGGER` or
+“not a Cloudflare audit.” Correct answers that simply explained DNS or checked
+the status page failed because they did not utter the evaluator's password.
+Replacing those assertions with behavior-based exclusions of the Cloudflare
+Doctor scaffold raised validity without changing the requested behavior.
+Likewise, a `1.0` qualitative threshold mislabeled useful 0.92–0.96 answers;
+`0.85` plus critical deterministic vetoes better matches the actual contract.
+
+The lesson is: **oracles should recognize desired behavior, not mandatory
+meta-language**. Use structured extraction and critical vetoes for hard
+requirements, graded judge bands for qualitative quality, and adversarial tests
+against keyword stuffing.
+
+### Audit the benchmark after it reports success
+
+An independent reviewer found both the activation-password problem and the
+missing process-before-ack semantic check after the first three-way report was
+complete. Fixing those issues materially changed the headline rates while
+leaving the local-versus-no-skill objective lift intact.
+
+The lesson is: **the evaluator is part of the system under test**. Run an
+adversarial review of fixtures, staging, assertions, thresholds, arithmetic,
+and claims before publishing results.
+
+### Model evidence needs explicit uncertainty
+
+The final run used one answer per case and GPT-5.5 to judge GPT-5.5. Hidden
+holdout and holdback prompts were unavailable, several efficiency results were
+close to visible thresholds, and dollar-cost telemetry was absent. The seeded
+4,096-sample sign-flip test supports the paired lift, but it does not remove
+run-to-run or judge-alignment risk.
+
+The lesson is: **publish model-eval limitations beside the headline**. Repeated
+runs, private holdouts, human or second-model judge-alignment samples, and
+value-per-token measures are required before treating tune-set results as a
+universal guarantee.
+
+### Broad “fix it” requests do not authorize production mutation
+
+An audit can recommend changes without being authorized to deploy, rotate
+secrets, purge caches, change DNS/WAF policy, or mutate Cloudflare resources.
+That boundary matters more as the skill becomes more capable.
+
+The lesson is: **diagnosis and mutation are separate permissions**. Require an
+exact target, evidence, blast radius, dry run or rollback plan, and final
+confirmation before any authenticated production change.
+
+### Updated lesson list addendum
+
+20. Current official Cloudflare docs govern current semantics; war stories are mechanism-discovery evidence only.
+21. Evidence provenance is a reciprocal, machine-validated graph with explicit confidence and freshness.
+22. JSONC parsing correctness needs fixtures for strings, comments, trailing commas, empty config, and malformed input.
+23. Static hygiene is a lead, not a finding, unless intent or impact evidence makes it material.
+24. Benchmark staging must preserve entrypoint and configuration relationships across every fixture.
+25. Safe near-miss oracles need zero-finding gates and explicit semantic invariants such as process-before-ack.
+26. Token, latency, and command overhead are product-quality metrics, not incidental telemetry.
+27. Major skill revisions should compare local, published baseline, and no skill.
+28. Grade requested behavior rather than evaluator passwords or keyword presence.
+29. Independently audit fixtures, assertions, thresholds, arithmetic, and claims before publishing benchmark results.
+30. One-run, same-model judging, visible tune cases, and absent dollar telemetry must remain explicit limitations.
+31. Audit/fix requests do not authorize production mutation without target, evidence, blast radius, rollback, and confirmation.
