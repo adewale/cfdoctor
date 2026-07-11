@@ -36,6 +36,7 @@ Interpret the output as an evidence-backed risk review: findings should include 
 - `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
 - `scripts/check_coverage.py` — consistency check between `skills/cloudflare-doctor/references/check-coverage-matrix.md` and the scanner's check registry.
 - `scripts/check_claim_ledger.py` — validates stable evidence/source-cluster IDs, source quality, confidence dimensions, scenario/check/fixture lineage, and freshness in `research/incident-claim-ledger.json`.
+- `scripts/capture_wrangler_snapshot.py` — explicitly approved, private Wrangler snapshot wrapper for deployed Worker/Pages config, active versions, bindings, limits, deployments, and secret names; it never installs Wrangler or mutates Cloudflare state.
 - `scripts/check_links.py` — checks the installable runtime references plus current research/docs, excluding historical generated reports; optional semantic anchors detect critical official-doc content drift.
 - `docs/` — recipes, lessons learned, and the ranked improvement plan with per-change risk analysis.
 - `evals/` — trigger cases, shared benchmark manifest, detection fixtures (war-story known-bad projects plus a clean baseline), holdout/holdback placeholders, and saved eval reports.
@@ -129,7 +130,7 @@ python3 -m json.tool package.json
 python3 -m json.tool evals/evals.json
 python3 -m json.tool evals/trigger-cases.json
 python3 -m json.tool evals/shared-benchmark.json
-python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/check_links.py
+python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/capture_wrangler_snapshot.py scripts/check_links.py
 python3 -m unittest discover -s tests
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
@@ -155,6 +156,22 @@ Cloudflare Doctor can audit repo evidence by itself, but stronger audits need th
 
 If account evidence is missing, Cloudflare Doctor should mark that scope as **not inspected** rather than infer dashboard state from repo files.
 
+## Capture deployed Worker or Pages state
+
+Use the project-pinned Wrangler executable. Review the exact authenticated-read plan first, then write the snapshot to a private directory outside Git:
+
+```bash
+python3 scripts/capture_wrangler_snapshot.py \
+  --kind worker --name my-worker --output-dir /tmp/cfdoctor-my-worker \
+  --wrangler ./node_modules/.bin/wrangler --plan
+
+python3 scripts/capture_wrangler_snapshot.py \
+  --kind worker --name my-worker --output-dir /tmp/cfdoctor-my-worker \
+  --wrangler ./node_modules/.bin/wrangler --approve-authenticated-read
+```
+
+Use `--kind pages` for Pages and `--metadata-only` to skip deployed source/config download. The snapshot compares repository intent with downloaded dashboard configuration and active version metadata; it can contain deployed source, plain vars, routes, resource names, and account metadata, so review `REVIEW_BEFORE_SHARING.txt` and redact before sharing. See [`research/wrangler-state-snapshot.md`](research/wrangler-state-snapshot.md).
+
 ## Run the scanner directly
 
 From the root of a Cloudflare project:
@@ -177,7 +194,7 @@ It does **not** fetch current Cloudflare docs, inspect dashboard/account state, 
 ## Validate this repo
 
 ```bash
-python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/check_links.py
+python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/capture_wrangler_snapshot.py scripts/check_links.py
 python3 -m unittest discover -s tests
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
@@ -195,10 +212,11 @@ Current proof from the latest validation run (2026-07-11):
 - Detection eval: `19/19` fixtures pass, including valid/malformed JSONC and Queue-DLQ near-miss controls (`evals/results/detection/latest.md`).
 - Coverage matrix: consistent with the 58-check scanner registry.
 - Evidence ledger: 27 structured records cover all 23 checklist scenarios and have reciprocal fixture lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, and Cloudflare outage evidence.
+- Wrangler snapshot wrapper: 7 offline tests cover explicit approval/planning, Worker config/source and active-version capture, Pages config/metadata capture, metadata-only mode, private permissions, and Git-worktree refusal.
 - Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass.
 - GPT-5.5 three-way value eval: 24 cases / 72 outputs comparing local, GitHub `origin/main`, and no skill. Local scored 97.22% objective / 97.57% combined, versus GitHub 60.28% / 65.23% and no skill 73.19% / 70.50%; local cut mean tokens 57.9% and elapsed time 50.3% versus GitHub (`evals/results/gpt-5.5-value/latest.md`).
 - Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).
-- Current-source links: 425 checked across 26 runtime/research/docs/evidence files, 0 dead/errors; all 11 critical official-doc semantic anchors passed on 2026-07-11. Historical generated reports and one explicitly unavailable discovery-only source are excluded from current network health.
+- Current-source links: 430 checked across 27 runtime/research/docs/evidence files, 0 dead/errors; all 11 critical official-doc semantic anchors passed on 2026-07-11. Historical generated reports and one explicitly unavailable discovery-only source are excluded from current network health.
 
 ## Example audit prompts
 

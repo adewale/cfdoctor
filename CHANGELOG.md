@@ -4,6 +4,7 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
+- Replaced the broad account-collector design with a Wrangler-first deployed-state snapshot workflow: explicitly approved read-only plans, private output outside Git, Worker dashboard/source download, Pages config download, deployment and active-version metadata, binding/runtime limits, secret-name inventory, command/file hashes, metadata-only mode, and offline fake-Wrangler tests. No package installation, credential storage, or Cloudflare mutation is introduced.
 - Hardened scanner correctness and evidence quality:
   - Scanner 0.3.3 parses valid JSONC comments/trailing commas, distinguishes valid empty config from parse failure, always emits actionable parse diagnostics, and includes evidence/fix fields in JSON output.
   - Corrected current-doc semantics for Queue retries/DLQ deletion, Durable Object storage batching versus coalescing/backend billing, D1 `SELECT *`, and direct Workers meters versus downstream amplification.

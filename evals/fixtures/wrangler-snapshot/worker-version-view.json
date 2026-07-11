@@ -1,0 +1,13 @@
+{
+  "id": "10000000-0000-0000-0000-000000000000",
+  "metadata": {"source": "wrangler", "created_on": "2026-07-11T12:00:00Z"},
+  "resources": {
+    "bindings": [{"name": "KV", "type": "kv_namespace", "namespace_id": "fixture-kv-id"}],
+    "script_runtime": {
+      "compatibility_date": "2026-07-01",
+      "compatibility_flags": [],
+      "limits": {"cpu_ms": 50},
+      "usage_model": "standard"
+    }
+  }
+}

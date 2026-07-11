@@ -23,14 +23,19 @@ the plan doc and the git history, not repeated here.
 - [ ] Consider SARIF output (`--sarif`) once a real CI consumer exists; do
       not add it speculatively.
 
-## Account-state collector (deferred — needs a live Cloudflare account)
+## Deployed-state snapshots (Wrangler-first)
 
-- [ ] Implement the `collect` / `eval` split from
-      `research/doctor-patterns-research.md`: a read-only collector that
-      snapshots zone settings, DNS, rulesets, and cache rules into
-      `facts.json` for offline audit. Requires a session with a real test
-      account and API token; ship nothing token-handling that cannot be
-      tested. Start with zone settings + DNS + rulesets only.
+- [x] Add an explicitly approved private Wrangler snapshot wrapper for Workers
+      and Pages. It captures downloaded dashboard config/source, deployments,
+      active version metadata, bindings/runtime limits, and secret names using
+      an existing pinned Wrangler executable; it never installs packages or
+      calls mutation commands.
+- [ ] Run the wrapper against an approved disposable Cloudflare test account,
+      review the exact command plan and redaction surface, and commit only
+      minimal sanitized response-shape fixtures. Keep raw snapshots outside Git.
+- [ ] Add narrowly scoped product/API reads only for concrete hypotheses that
+      Wrangler cannot resolve (for example DNS, rulesets/WAF, Access, cache,
+      analytics, or billing). Do not build a universal account collector.
 
 ## Evals
 

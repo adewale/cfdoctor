@@ -18,7 +18,7 @@ the risk is ignored.
    contract markers); model-graded confirmation still pending (`TODO.md`).
 6. Holdout/holdback scaffolding — **rescoped** (see correction below); two
    fixture-backed tune cases added to the shared benchmark.
-7. Account-state collector — **deferred** (needs a live Cloudflare account).
+7. Deployed-state evidence — **Wrangler-first wrapper complete offline; live validation deferred** (needs an approved disposable Cloudflare account).
 
 Remaining work lives in [`TODO.md`](../TODO.md).
 
@@ -137,18 +137,23 @@ Remaining work lives in [`TODO.md`](../TODO.md).
   - Fixture-backed tune cases are public, so models can memorize them; the
     gitignored holdout/holdback splits remain the contamination guard.
 
-## 7. Account-state collector (collect/eval split) — deferred
+## 7. Wrangler-first deployed-state snapshot — offline wrapper complete
 
-- **Verifiability: low.** Requires a live Cloudflare account, API token, and
-  plan-dependent API surface. Nothing in this environment can prove it works.
-- **Likelihood of success: low right now.** High design risk (token scopes,
-  redaction, plan differences) and the skill's safety policy requires explicit
-  user approval for authenticated reads.
-- **Decision: defer.** Shipping an untested collector that handles API tokens
-  is the kind of risk this plan exists to avoid: secrets handling, silent
-  partial snapshots presented as complete state, and support burden. The
-  design from `research/doctor-patterns-research.md` stands; implementation
-  should happen in a session with a real test account.
+- **Verifiability: medium.** A purpose-built fake Wrangler proves command
+  allowlisting, approval/plan gates, active-version expansion, private file
+  permissions, Git-worktree refusal, Worker source/config download, Pages
+  config download, metadata-only mode, and manifest hashes. Only a real test
+  account can prove Cloudflare response fidelity.
+- **Likelihood of success: high for Workers/Pages.** Wrangler already owns
+  authentication profiles and current API normalization. `init --from-dash`,
+  Pages `download config`, deployment status, and version view expose much of
+  the effective Worker/Pages state without a custom API/token layer.
+- **Decision:** use `scripts/capture_wrangler_snapshot.py` as the first account
+  evidence path. It requires an existing pinned Wrangler binary, exact plan
+  review, explicit authenticated-read approval, and private output outside Git.
+  Do not build a universal collector. Add targeted read-only API evidence only
+  when a concrete DNS/WAF/Access/cache/analytics/billing hypothesis remains
+  unresolved after a real Wrangler snapshot.
 
 ## Cross-cutting risks
 

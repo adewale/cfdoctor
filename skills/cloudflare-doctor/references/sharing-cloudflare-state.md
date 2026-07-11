@@ -15,6 +15,15 @@ When dashboard/account settings matter, ask the user for the smallest evidence p
 
 Prefer exact exports over prose. If the user only provides prose, treat it as an architecture statement, not proof of dashboard settings.
 
+## Wrangler-first snapshot
+
+For Worker or Pages deployment state, prefer a fresh private Wrangler snapshot over a custom broad account dump. After explicit approval, maintainers can use `scripts/capture_wrangler_snapshot.py` from the cfdoctor repository; users can run the equivalent Wrangler commands directly:
+
+- Workers: `deployments status/list --json`, `versions list/view --json`, `secret list`, and `init --from-dash`.
+- Pages: `pages deployment list --json`, `pages secret list`, and experimental `pages download config`.
+
+Compare checked-in intent, the downloaded dashboard approximation, and every active deployed version. Do not assume the latest version is the only version receiving traffic. The snapshot may contain deployed source, plain vars, routes, resource names, and account metadata, so keep it outside Git and review/redact it before sharing. Wrangler does not replace targeted DNS/WAF/Access/cache/analytics/billing evidence when those products are the actual hypothesis.
+
 ## Redaction and safety rules
 
 Tell users to redact:

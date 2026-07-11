@@ -370,3 +370,26 @@ confirmation before any authenticated production change.
 33. Model outputs for one reported variant must come from one pinned skill revision.
 34. Publish durable machine-readable eval aggregates; local raw-artifact paths are not sufficient evidence.
 35. Ledger URLs, declared freshness cadence, and fixture-to-check provenance all need direct validation.
+
+## What we learned from replacing the account collector with Wrangler
+
+The first ground-truth design invented a general facts schema before checking
+whether the official client could already retrieve the state we needed.
+Wrangler can download Worker/Pages configuration, identify every active version,
+show version-specific bindings/runtime limits, and list secret names. That is a
+more current and testable normalization layer than a new API abstraction.
+
+The lesson is: **use the product's maintained read surface before building a
+collector**. Capture the raw official-client evidence privately, compare repo
+intent with downloaded configuration and active version metadata, then add one
+targeted API read only for a remaining hypothesis.
+
+Wrangler output is not harmless or complete: `init --from-dash` downloads
+source, plain vars and resource metadata may be present, gradual deployments can
+have multiple active versions, and downloaded config is an approximation rather
+than continuous sync. Explicit approval, private output, version recording, and
+review-before-sharing remain mandatory.
+
+36. Prefer maintained Wrangler read commands over a custom universal account-state schema.
+37. Effective Worker state requires deployment status plus every active version, not merely the latest version or downloaded config.
+38. Wrangler snapshots are sensitive local evidence: keep them outside Git, hash the artifacts, and review/redact before sharing.
