@@ -1,5 +1,9 @@
 {
   "description": "Durable Object with public custom RPC methods that generic dead-code linters usually treat as live API surface.",
-  "war_story": "Jordan Coeyman deadlint launch note / dead cross-boundary RPC methods (CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD).",
-  "required_check_ids": ["CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD"]
+  "evidence_ids": [
+    "CFDOC-EVD-DEADLINT-RPC"
+  ],
+  "required_check_ids": [
+    "CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD"
+  ]
 }

@@ -1,0 +1,9 @@
+{
+  // Valid JSONC comments and trailing commas must not disable config analysis.
+  "name": "jsonc-trailing-commas",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "observability": { "enabled": true, },
+  "routes": ["*/*",],
+  "vars": { "LITERAL": "https://example.com/a,//b", },
+}

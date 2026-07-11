@@ -1,6 +1,9 @@
 {
   "description": "Durable Object alarm that unconditionally reschedules itself, but a logging if-statement after the setAlarm call suppressed the original heuristic, which treated any 'if (' near the alarm body as an idle guard.",
-  "war_story": "coey.dev Durable Objects gotchas / loop patterns (see references/war-story-scenario-checklist.md #14 and #15, DO-ALARM-RECURSION)",
+  "evidence_ids": [
+    "CFDOC-EVD-COEY-DO-GOTCHAS",
+    "CFDOC-EVD-COEY-LOOPS"
+  ],
   "required_check_ids": [
     "DO-ALARM-RECURSION"
   ],

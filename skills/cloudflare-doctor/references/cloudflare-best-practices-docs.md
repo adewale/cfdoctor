@@ -25,7 +25,7 @@ Before making or finalizing a Cloudflare best-practice, limit, pricing, product-
 
 ## Verification note
 
-The list below was discovered from official Cloudflare `llms.txt` product indexes, spot-verified with HTTP 200 on 2026-06-03, and extended/spot-verified for Dynamic Workers, Agents, and Artifacts on 2026-06-04. Treat it as a starting set to fetch at audit time, not a frozen copy of Cloudflare guidance.
+The list below was discovered from official Cloudflare `llms.txt` product indexes. Critical pricing/semantics pages for Workers, Workers Cache, D1, Durable Objects/migrations, Queues, Workflows, and Images were content-verified on 2026-07-11; the repo-only `evals/link-check-policy.json` records the semantic anchors and review deadline. Runtime reference links were also rechecked and canonical redirects updated. Treat this as a starting set to fetch at audit time, not a frozen copy of Cloudflare guidance.
 
 ## Application/security/account docs
 

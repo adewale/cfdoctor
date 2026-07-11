@@ -1,0 +1,7 @@
+{
+  "description": "Malformed JSONC always emits an actionable parse diagnostic.",
+  "evidence_ids": [],
+  "required_check_ids": ["CFDOC-CONFIG-UNPARSEABLE"],
+  "forbidden_check_ids": [],
+  "expected_evidence_terms": ["line", "column"]
+}

@@ -22,6 +22,8 @@ Operator design notes/checklists (for example coey.dev Durable Object and Dynami
 
 ## War story acceptance criteria
 
+Repository maintainers record accepted incidents, operator reports, official guidance, source aliases, confidence dimensions, review dates, scenario mappings, check IDs, and fixture lineage in the repo-only incident/claim ledger (`research/incident-claim-ledger.json` in the [cfdoctor repository](https://github.com/adewale/cfdoctor/tree/main/research)). `scripts/check_claim_ledger.py` enforces IDs, source clusters, current-semantics sources, reciprocal fixture links, and freshness. Runtime audits use the evidence IDs in `war-story-scenario-checklist.md`; they still fetch current official docs before applying a historical mechanism.
+
 A war story is acceptable only if it has:
 
 - URL and author/org.
@@ -29,6 +31,9 @@ A war story is acceptable only if it has:
 - First-hand operational context (not a generic SEO/blog summary).
 - Mistake → consequence → lesson/fix chain.
 - Clear mapping from that lesson to the audited Cloudflare project.
+- A stable evidence ID and source cluster so aggregators/mirrors are not counted as independent corroboration.
+- Separate confidence for authenticity, mechanism, independence, applicability, and temporal validity.
+- `verified_at` and `review_due`; historical incident facts stay immutable while current product semantics are rechecked.
 
 Output format:
 
@@ -101,7 +106,9 @@ Use these as starting points, then fetch the current Markdown pages at audit tim
 ### Idempotency, anti-rework caching, retries, and Workflows
 
 - Workflows rules: https://developers.cloudflare.com/workflows/build/rules-of-workflows/
-- Workflows sleeping/retrying: https://developers.cloudflare.com/workflows/build/sleeping-and-retrying/
+- Workflows sleeping/retrying (dynamic delays and `NonRetryableError`): https://developers.cloudflare.com/workflows/build/sleeping-and-retrying/
+- Workflows pricing (requests, CPU, storage, and steps): https://developers.cloudflare.com/workflows/reference/pricing/
+- Workflows step/storage billing announcement: https://developers.cloudflare.com/changelog/post/2026-07-07-workflows-billing-updates/
 - Workflows limits: https://developers.cloudflare.com/workflows/reference/limits/
 - D1 retry queries: https://developers.cloudflare.com/d1/best-practices/retry-queries/
 - Queues delivery/retry/DLQ docs above.
@@ -133,7 +140,9 @@ Use these as starting points, then fetch the current Markdown pages at audit tim
 
 ### Images transformations and variants
 
-- Images pricing: https://developers.cloudflare.com/images/pricing/
+- Images pricing (unique-transform billing for binding calls): https://developers.cloudflare.com/images/pricing/
+- Images binding billing/cache behavior: https://developers.cloudflare.com/images/optimization/binding/
+- Images binding billing announcement: https://developers.cloudflare.com/changelog/post/2026-07-01-binding-unique-transformations/
 - Images key concepts / variants: https://developers.cloudflare.com/images/get-started/key-concepts/
 - Images limits/formats: https://developers.cloudflare.com/images/get-started/limits/
 - Image transformations overview: https://developers.cloudflare.com/images/optimization/transformations/overview/
@@ -156,18 +165,18 @@ Use these as starting points, then fetch the current Markdown pages at audit tim
 ### Preview, demo, workshop, cron, and temporary deployments
 
 - Pages preview deployments: https://developers.cloudflare.com/pages/configuration/preview-deployments/
-- Workers preview URLs: https://developers.cloudflare.com/workers/configuration/previews/
+- Workers preview URLs: https://developers.cloudflare.com/workers/versions-and-deployments/preview-urls/
 - Workers cron triggers: https://developers.cloudflare.com/workers/configuration/cron-triggers/
-- Workers versions/deployments: https://developers.cloudflare.com/workers/configuration/versions-and-deployments/
-- Workers rollbacks: https://developers.cloudflare.com/workers/configuration/versions-and-deployments/rollbacks/
-- Gradual deployments: https://developers.cloudflare.com/workers/configuration/versions-and-deployments/gradual-deployments/
+- Workers versions/deployments: https://developers.cloudflare.com/workers/versions-and-deployments/
+- Workers rollbacks: https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/
+- Gradual deployments: https://developers.cloudflare.com/workers/versions-and-deployments/gradual-deployments/
 
 ### Circuit breakers, kill switches, bounded fanout, and run summaries
 
 Official Cloudflare docs rarely use all of these generic architecture terms directly. Anchor recommendations to concrete Cloudflare mechanisms and/or war stories:
 
-- Workers rollbacks: https://developers.cloudflare.com/workers/configuration/versions-and-deployments/rollbacks/
-- Gradual deployments: https://developers.cloudflare.com/workers/configuration/versions-and-deployments/gradual-deployments/
+- Workers rollbacks: https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/
+- Gradual deployments: https://developers.cloudflare.com/workers/versions-and-deployments/gradual-deployments/
 - Workers observability: https://developers.cloudflare.com/workers/observability/
 - Workers traces/spans: https://developers.cloudflare.com/workers/observability/traces/spans-and-attributes/
 - AI Gateway rate limiting: https://developers.cloudflare.com/ai-gateway/features/rate-limiting/

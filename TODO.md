@@ -3,7 +3,7 @@
 Remaining work, ordered by the same criteria as
 [`docs/improvement-plan.md`](docs/improvement-plan.md) (verifiability first,
 then likelihood of delivering value). Items completed on 2026-06-09 — stable
-scanner check IDs (v0.3.0), the fixture-based detection eval (now 15 fixtures after the dead-RPC review-surface case), the coverage
+scanner check IDs (v0.3.0), the fixture-based detection eval (now 19 fixtures, including JSONC parser and Queue-DLQ controls), the coverage
 matrix + CI consistency checker, citation link verification, SKILL.md
 reference routing, and five false-negative heuristic fixes — are recorded in
 the plan doc and the git history, not repeated here.
@@ -34,35 +34,26 @@ the plan doc and the git history, not repeated here.
 
 ## Evals
 
-- [ ] Run the shared benchmark (`evals/shared-benchmark.json`) through
-      skill-eval-harness with a real model, including the two new
-      fixture-backed tune cases (`detection-fixture-runaway-self-fetch`,
-      `detection-fixture-clean-baseline-precision`), and review whether the
-      skills/cloudflare-doctor/SKILL.md reference-routing change regressed audit quality — that change
-      carries the plan's main regression risk and has only been validated
-      deterministically (trigger eval + contract markers).
+- [ ] Add a human-labeled or second-model judge-alignment sample and repeated runs for precision-critical fixtures. The current three-way GPT-5.5 round has one run per variant and uses GPT-5.5 as both answerer and judge.
+- [ ] Continue reducing the remaining local-vs-no-skill overhead (2.20× mean tokens, 1.67× elapsed) without regressing the local skill's objective/combined lift.
 - [ ] Populate holdout/holdback cases from a non-ephemeral environment (the
       directories are gitignored by design; see plan item 6 correction).
 
 ## Citations and sources
 
-- [ ] Find durable replacements for the 11 war-story links annotated
-      `no archive snapshot found as of 2026-06-09` (see
-      `evals/results/link-check-2026-06-09.md`); manually verify the 3
-      bot-blocked URLs (Reddit/Medium/HN 403s) in a browser.
-- [ ] Re-run `python3 scripts/check_links.py` periodically (suggested: each
-      release or quarterly) and refresh the `Link status last verified`
-      lines; the checker is intentionally not in CI.
+- [ ] Resolve or supersede unverified ledger record `CFDOC-EVD-AWS-S3-HOTLINK` at its review boundary; keep it discovery-only until stronger provenance is recorded.
+- [ ] Re-run `python3 scripts/check_links.py --strict --check-content` each release or quarterly. CI validates target presence and content-policy freshness without making network-dependent requests.
 
-## Research backlog (new patterns and horror stories)
+## Research backlog (new patterns and experience reports)
+
+The 27-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, and product announcements; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.
 
 - [ ] Mine the public `cloudflare/cloudflare-docs` git history for added
       warnings/pitfall admonitions — each one is a fossilized user incident;
       turn matches into war-story checklist entries and fixtures.
 - [ ] Sweep `cloudflare/workers-sdk` issues/changelogs for guardrails added
       after failures (recursion detection, limit warnings, default changes).
-- [ ] Ingest the full serverlesshorrors.com catalog (only ~4 entries cited
-      today) and map each story to a scenario/check.
+- [ ] Sample the remaining serverlesshorrors.com catalog as a discovery index, resolve every candidate to a primary source, deduplicate by causal source cluster, and reject entries that cannot meet the ledger's provenance bar.
 - [ ] Broaden beyond billing: cache deception/poisoning against
       Cloudflare-fronted apps, Flexible-SSL redirect loops, dangling DNS /
       `pages.dev` takeover, origins trusting `CF-Connecting-IP` without

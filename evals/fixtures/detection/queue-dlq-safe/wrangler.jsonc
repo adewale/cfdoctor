@@ -1,0 +1,13 @@
+{
+  "name": "queue-dlq-safe",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "observability": { "enabled": true },
+  "queues": {
+    "consumers": [{
+      "queue": "jobs",
+      "max_retries": 3,
+      "dead_letter_queue": "jobs-dlq"
+    }]
+  }
+}

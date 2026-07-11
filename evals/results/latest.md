@@ -1,7 +1,7 @@
 # Cloudflare Doctor trigger eval
 
-Generated: 2026-06-10T18:16:48
-Skill: `SKILL.md`
+Generated: 2026-07-11T13:16:29
+Skill: `skills/cloudflare-doctor/SKILL.md`
 Cases: `evals/trigger-cases.json`
 
 ## Metrics

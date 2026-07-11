@@ -47,7 +47,24 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-DEFAULT_TARGETS = ["README.md", "references", "research", "docs", "evals"]
+DEFAULT_TARGETS = [
+    "README.md",
+    "skills/cloudflare-doctor/SKILL.md",
+    "skills/cloudflare-doctor/references",
+    "research",
+    "docs",
+    "evals/README.md",
+    "evals/shared-harness.md",
+    "research/incident-claim-ledger.json",
+    "evals/link-check-policy.json",
+]
+DEFAULT_EXCLUDES = {
+    ".pi-subagents",
+    "evals/results",
+    "evals/fixtures",
+    "evals/holdout",
+    "evals/holdback",
+}
 
 # Domains that systematically 403/999 automated clients. A 403/999 from these
 # means "cannot verify automatically", not "dead".
@@ -85,30 +102,124 @@ def clean_url(url: str) -> str:
     return url
 
 
-def extract_urls(root: Path, targets) -> dict:
-    """Return {url: [files containing it]} for unique cleaned URLs."""
-    found = {}
-    md_files = []
+def discover_markdown_files(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> tuple[list[Path], list[str]]:
+    """Return selected Markdown files plus explicitly targeted JSON evidence files."""
+    md_files: list[Path] = []
+    missing: list[str] = []
     for target in targets:
         path = root / target
         if path.is_file():
-            md_files.append(path)
+            candidates = [path]
         elif path.is_dir():
-            md_files.extend(sorted(path.rglob("*.md")))
+            candidates = sorted(path.rglob("*.md"))
+        else:
+            missing.append(str(target))
+            continue
+        for candidate in candidates:
+            rel = candidate.relative_to(root).as_posix()
+            if any(rel == prefix or rel.startswith(prefix + "/") for prefix in excludes):
+                continue
+            if candidate not in md_files:
+                md_files.append(candidate)
+    return md_files, missing
+
+
+def _explicitly_unavailable_urls(path: Path) -> set[str]:
+    """Return URLs deliberately retained as unavailable discovery evidence."""
+    if path.suffix != ".json":
+        return set()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return set()
+    unavailable: set[str] = set()
+
+    def walk(value) -> None:
+        if isinstance(value, dict):
+            if value.get("availability") == "unavailable" and isinstance(value.get("url"), str):
+                unavailable.add(value["url"])
+            for child in value.values():
+                walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+
+    walk(payload)
+    return unavailable
+
+
+def extract_urls(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> dict:
+    """Return {url: [files containing it]} from selected Markdown/JSON evidence files."""
+    found = {}
+    md_files, _ = discover_markdown_files(root, targets, excludes)
     for md in md_files:
         try:
             text = md.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
         rel = str(md.relative_to(root))
+        unavailable = _explicitly_unavailable_urls(md)
         for match in URL_RE.finditer(text):
             url = clean_url(match.group(0))
-            if not url or "://" not in url:
+            if not url or "://" not in url or url in unavailable:
                 continue
+            parsed = urllib.parse.urlsplit(url)
+            if (parsed.hostname or "").lower() == "github.com" and (".git@" in parsed.path or re.search(r"@v\d", parsed.path)):
+                continue  # package-manager install syntax, not a browser URL
             found.setdefault(url, [])
             if rel not in found[url]:
                 found[url].append(rel)
     return found
+
+
+def validate_content_policy(policy: dict, as_of: datetime.date) -> list[str]:
+    errors: list[str] = []
+    if policy.get("version") != 1:
+        errors.append("policy.version must be 1")
+    try:
+        verified = datetime.date.fromisoformat(policy["verified_at"])
+        due = datetime.date.fromisoformat(policy["review_due"])
+        if due < verified:
+            errors.append("policy.review_due precedes verified_at")
+        if due < as_of:
+            errors.append(f"content policy review overdue since {due.isoformat()}")
+    except (KeyError, TypeError, ValueError):
+        errors.append("policy verified_at/review_due must be ISO dates")
+    sources = policy.get("critical_sources")
+    if not isinstance(sources, list) or not sources:
+        errors.append("policy.critical_sources must be a non-empty list")
+    else:
+        seen: set[str] = set()
+        for index, source in enumerate(sources):
+            if not isinstance(source, dict):
+                errors.append(f"critical_sources[{index}] must be an object")
+                continue
+            url = source.get("url")
+            terms = source.get("content_terms")
+            if not isinstance(url, str) or not url.startswith("https://"):
+                errors.append("critical source URL must use https")
+            elif url in seen:
+                errors.append(f"duplicate critical source URL: {url}")
+            seen.add(str(url))
+            if not isinstance(terms, list) or not terms or not all(isinstance(t, str) and t for t in terms):
+                errors.append(f"{url}: content_terms must be non-empty strings")
+    return errors
+
+
+def check_content_sources(policy: dict) -> list[dict]:
+    results: list[dict] = []
+    for source in policy.get("critical_sources", []):
+        url = source["url"]
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "text/markdown"})
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as response:
+                text = response.read().decode("utf-8", errors="replace")
+                final_url = response.geturl()
+            missing = [term for term in source["content_terms"] if term.casefold() not in text.casefold()]
+            results.append({"url": url, "final_url": final_url, "missing_terms": missing, "status": "ok" if not missing else "content-drift"})
+        except Exception as exc:  # network check is opt-in and reports rather than hiding uncertainty
+            results.append({"url": url, "final_url": None, "missing_terms": source["content_terms"], "status": "error", "error": str(exc)})
+    return results
 
 
 def domain_of(url: str) -> str:
@@ -237,6 +348,9 @@ def main(argv=None) -> int:
         help="Repository root (default: parent of scripts/).",
     )
     parser.add_argument("--json", type=Path, help="Write JSON report to PATH.")
+    parser.add_argument("--policy", type=Path, default=Path("evals/link-check-policy.json"), help="Critical-source content policy")
+    parser.add_argument("--validate-policy", action="store_true", help="Validate policy/freshness and exit without network access")
+    parser.add_argument("--check-content", action="store_true", help="Fetch critical official pages and verify semantic anchor terms")
     parser.add_argument(
         "--strict",
         action="store_true",
@@ -244,8 +358,28 @@ def main(argv=None) -> int:
     )
     args = parser.parse_args(argv)
 
+    policy_path = args.policy if args.policy.is_absolute() else args.root / args.policy
+    try:
+        policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"ERROR: cannot read content policy {policy_path}: {exc}", file=sys.stderr)
+        return 2
+    policy_errors = validate_content_policy(policy, datetime.date.today())
+    if policy_errors:
+        for error in policy_errors:
+            print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+    if args.validate_policy:
+        print(f"OK: link content policy has {len(policy['critical_sources'])} current critical sources")
+        return 0
+
+    md_files, missing_targets = discover_markdown_files(args.root, DEFAULT_TARGETS)
+    if missing_targets:
+        print("ERROR: required link-check target(s) missing: " + ", ".join(missing_targets), file=sys.stderr)
+        return 2
     urls = extract_urls(args.root, DEFAULT_TARGETS)
-    print(f"Checking {len(urls)} unique URLs from markdown files...\n")
+    print(f"Checking {len(urls)} unique URLs from {len(md_files)} current-source markdown files...")
+    print("Excluded generated/private paths: " + ", ".join(sorted(DEFAULT_EXCLUDES)) + "\n")
 
     results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
@@ -273,14 +407,24 @@ def main(argv=None) -> int:
 
     print("Summary:", ", ".join(f"{cls}={len(by_class[cls])}" for cls in ORDER))
 
+    content_results = check_content_sources(policy) if args.check_content else []
+    if content_results:
+        print("\n== critical content anchors ==")
+        for result in content_results:
+            print(f"  {result['status']}: {result['url']}" + (f" missing={result['missing_terms']}" if result['missing_terms'] else ""))
+
     if args.json:
         report = {
             "checked_at": datetime.datetime.now()
             .astimezone()
             .isoformat(timespec="seconds"),
             "total": len(results),
+            "files_scanned": len(md_files),
+            "targets": DEFAULT_TARGETS,
+            "excludes": sorted(DEFAULT_EXCLUDES),
             "counts": {cls: len(by_class[cls]) for cls in ORDER},
             "results": results,
+            "content_policy": content_results,
         }
         args.json.parent.mkdir(parents=True, exist_ok=True)
         args.json.write_text(
@@ -288,8 +432,9 @@ def main(argv=None) -> int:
         )
         print(f"JSON report written to {args.json}")
 
-    if args.strict and by_class["dead"]:
-        print(f"--strict: {len(by_class['dead'])} dead link(s) found", file=sys.stderr)
+    content_failures = [r for r in content_results if r["status"] != "ok"]
+    if args.strict and (by_class["dead"] or content_failures):
+        print(f"--strict: {len(by_class['dead'])} dead link(s), {len(content_failures)} content-policy failure(s)", file=sys.stderr)
         return 1
     return 0
 

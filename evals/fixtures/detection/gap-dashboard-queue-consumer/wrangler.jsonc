@@ -2,7 +2,7 @@
   // Import processor: the queue consumer was attached in the dashboard,
   // so this config has no consumers block at all.
   "name": "import-processor",
-  "main": "src/index.js",
+  "main": "index.js",
   "compatibility_date": "2026-05-01",
   "observability": { "enabled": true }
 }

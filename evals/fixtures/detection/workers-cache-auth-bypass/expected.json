@@ -1,6 +1,8 @@
 {
   "description": "Gateway Worker authenticates every request but enables Workers Cache (cache.enabled) on the same default entrypoint, so a cache hit serves a tenant-scoped response without running the auth check. Also models the billing-surface change: normally-free static-asset and worker-to-worker traffic becomes billed once caching is on. Grounded in the Workers Cache launch (2026-07-06).",
-  "war_story": "https://blog.cloudflare.com/workers-cache/ and https://developers.cloudflare.com/workers/cache/ (see references/war-story-scenario-checklist.md #23)",
+  "evidence_ids": [
+    "CFDOC-EVD-WORKERS-CACHE-LAUNCH"
+  ],
   "required_check_ids": [
     "CFDOC-COST-WORKERS-CACHE-BILLING"
   ],

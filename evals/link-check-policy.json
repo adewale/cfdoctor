@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "verified_at": "2026-07-11",
+  "review_due": "2026-10-11",
+  "critical_sources": [
+    {"url": "https://developers.cloudflare.com/workers/platform/pricing/", "content_terms": ["CPU time", "subrequests"]},
+    {"url": "https://developers.cloudflare.com/workers/cache/", "content_terms": ["Caching bills requests that are normally free", "cache hit"]},
+    {"url": "https://developers.cloudflare.com/d1/platform/pricing/", "content_terms": ["rows read", "rows written"]},
+    {"url": "https://developers.cloudflare.com/durable-objects/platform/pricing/", "content_terms": ["multi-key", "billed the same"]},
+    {"url": "https://developers.cloudflare.com/queues/reference/delivery-guarantees/", "content_terms": ["at least once"]},
+    {"url": "https://developers.cloudflare.com/queues/configuration/batching-retries/", "content_terms": ["defaults to 3", "additional read operation"]},
+    {"url": "https://developers.cloudflare.com/queues/configuration/dead-letter-queues/", "content_terms": ["deleted permanently"]},
+    {"url": "https://developers.cloudflare.com/workers/wrangler/configuration/", "content_terms": ["workers_dev", "Defaults to true"]},
+    {"url": "https://developers.cloudflare.com/workflows/reference/pricing/", "content_terms": ["Steps", "August 10"]},
+    {"url": "https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/", "content_terms": ["new key-value backed namespace", "new_sqlite_classes"]},
+    {"url": "https://developers.cloudflare.com/images/pricing/", "content_terms": ["unique transformations", "Repeat requests"]}
+  ]
+}

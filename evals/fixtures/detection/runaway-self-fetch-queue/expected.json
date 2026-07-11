@@ -1,6 +1,8 @@
 {
   "description": "Worker that re-fetches its own incoming URL to 'warm the cache' and re-enqueues failed queue messages by hand, with a queue consumer that has no DLQ or retry bounds. Models the RetainDB runaway-loop bill.",
-  "war_story": "https://serverlesshorrors.com/all/cloudflare-36k (see references/war-story-scenario-checklist.md #1 and #15)",
+  "evidence_ids": [
+    "CFDOC-EVD-RETAINDB-LOOP"
+  ],
   "required_check_ids": [
     "CFDOC-COST-ASYNC-LOOP",
     "CFDOC-REL-QUEUE-NO-DLQ"

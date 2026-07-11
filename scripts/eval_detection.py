@@ -42,15 +42,18 @@ class FixtureResult:
     required: list[str]
     forbidden: list[str]
     max_findings: int | None
+    evidence_ids: list[str] = field(default_factory=list)
+    expected_evidence_terms: list[str] = field(default_factory=list)
     found_ids: list[str] = field(default_factory=list)
     total_findings: int = 0
     missing: list[str] = field(default_factory=list)
     forbidden_hit: list[str] = field(default_factory=list)
     over_budget: bool = False
+    missing_evidence_terms: list[str] = field(default_factory=list)
 
     @property
     def passed(self) -> bool:
-        return not self.missing and not self.forbidden_hit and not self.over_budget
+        return not self.missing and not self.forbidden_hit and not self.over_budget and not self.missing_evidence_terms
 
     @property
     def notes(self) -> str:
@@ -61,6 +64,8 @@ class FixtureResult:
             parts.append("forbidden " + ", ".join(self.forbidden_hit))
         if self.over_budget:
             parts.append(f"{self.total_findings} findings > max_findings {self.max_findings}")
+        if self.missing_evidence_terms:
+            parts.append("missing evidence terms " + ", ".join(self.missing_evidence_terms))
         return "; ".join(parts) if parts else "-"
 
 
@@ -97,6 +102,8 @@ def evaluate_fixture(fixture_dir: Path) -> FixtureResult:
     max_findings = expected.get("max_findings")
     if max_findings is not None and not isinstance(max_findings, int):
         raise HarnessError(f"{fixture_dir.name}: max_findings must be an integer")
+    evidence_ids = [str(x) for x in expected.get("evidence_ids", [])]
+    expected_evidence_terms = [str(x) for x in expected.get("expected_evidence_terms", [])]
 
     report = scan_fixture(fixture_dir)
     findings = report.get("findings", [])
@@ -109,12 +116,17 @@ def evaluate_fixture(fixture_dir: Path) -> FixtureResult:
         required=required,
         forbidden=forbidden,
         max_findings=max_findings,
+        evidence_ids=evidence_ids,
+        expected_evidence_terms=expected_evidence_terms,
         found_ids=found_ids,
         total_findings=len(findings),
     )
     result.missing = [c for c in required if c not in found_ids]
     result.forbidden_hit = [c for c in forbidden if c in found_ids]
     result.over_budget = max_findings is not None and len(findings) > max_findings
+    evidence_findings = [f for f in findings if not required or str(f.get("check_id")) in required]
+    evidence_text = "\n".join(str(f.get("evidence", "")) for f in evidence_findings).casefold()
+    result.missing_evidence_terms = [term for term in expected_evidence_terms if term.casefold() not in evidence_text]
     return result
 
 
@@ -146,7 +158,8 @@ def render_report(results: list[FixtureResult], timestamp: dt.datetime) -> str:
         if r.description:
             lines.append(f"- Scenario: {r.description}")
         if r.war_story:
-            lines.append(f"- War story: {r.war_story}")
+            lines.append(f"- Legacy war-story note: {r.war_story}")
+        lines.append(f"- Evidence IDs: {', '.join(r.evidence_ids) if r.evidence_ids else '(none/control)'}")
         lines.append(f"- Required check IDs: {', '.join(r.required) if r.required else '(none)'}")
         if r.forbidden:
             lines.append(f"- Forbidden check IDs: {', '.join(r.forbidden)}")

@@ -1,6 +1,8 @@
 {
   "description": "Image resizing proxy that passes caller-controlled width/dpr/format straight into cf.image transformation options, so every crawler or bot can mint a new paid variant per URL. Models the Metacast LLM-bot image transformation bill.",
-  "war_story": "https://metacast.app/blog/engineering/postmortem-llm-bots-image-optimization (see references/war-story-scenario-checklist.md #4)",
+  "evidence_ids": [
+    "CFDOC-EVD-METACAST-IMAGE"
+  ],
   "required_check_ids": [
     "CFDOC-COST-MEDIA-VARIANT-EXPLOSION"
   ],

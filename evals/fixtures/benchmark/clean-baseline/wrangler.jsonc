@@ -1,0 +1,8 @@
+{
+  "name": "clean-status-worker",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 },
+  "workers_dev": false,
+  "routes": [{ "pattern": "example.com/api/status", "zone_name": "example.com" }]
+}

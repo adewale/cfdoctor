@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,10 +26,13 @@ jobs:
       - name: Validate JSON manifests
         run: |
           python3 -m json.tool package.json >/dev/null
-          find evals -name '*.json' -print0 | xargs -0 -I{} python3 -m json.tool {} >/dev/null
+          find evals research -name '*.json' -print0 | xargs -0 -I{} python3 -m json.tool {} >/dev/null
 
       - name: Compile Python helpers
-        run: python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py scripts/check_install_boundary.py
+        run: python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/check_links.py scripts/check_install_boundary.py evals/oracles/fixture_oracle.py
+
+      - name: Run offline unit tests
+        run: python3 -m unittest discover -s tests
 
       - name: Run trigger eval
         run: python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
@@ -43,5 +48,23 @@ jobs:
       - name: Check coverage matrix consistency
         run: python3 scripts/check_coverage.py
 
-      - name: Check whitespace in diff
-        run: git diff --check -- . ':(exclude)evals/results'
+      - name: Check evidence ledger and link policy
+        run: |
+          python3 scripts/check_claim_ledger.py
+          python3 scripts/check_links.py --validate-policy
+
+      - name: Validate shared benchmark with Skill Eval Harness v0.6.0
+        run: |
+          python3 -m pip install 'git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac'
+          skill-benchmark validate evals/shared-benchmark.json --strict-leakage --leakage-min-chars 1 --check-ablations
+          skill-benchmark audit-manifest evals/shared-benchmark.json --fail-on-blockers
+
+      - name: Check installable skill boundary
+        run: |
+          find skills/cloudflare-doctor -type d -name __pycache__ -prune -exec rm -rf {} +
+          python3 scripts/check_install_boundary.py
+
+      - name: Check whitespace in committed diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: git diff --check "$BASE_SHA"...HEAD

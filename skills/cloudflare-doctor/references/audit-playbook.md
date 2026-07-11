@@ -2,9 +2,9 @@
 
 ## Evidence collection
 
-Start by refreshing official documentation for the detected products. Use [`cloudflare-best-practices-docs.md`](cloudflare-best-practices-docs.md) and [`official-source-map.md`](official-source-map.md) as navigation aids, then fetch Cloudflare's live docs (`https://developers.cloudflare.com/llms.txt`, product `llms.txt`, and relevant Markdown pages). Do not rely on model memory for product behavior, best practices, limits, or pricing when live docs are available.
+Start with a cheap repo/config/IaC inventory and scanner pass so the detected products and concrete hypotheses are evidence-based. Then use [`cloudflare-best-practices-docs.md`](cloudflare-best-practices-docs.md) and [`official-source-map.md`](official-source-map.md) as navigation aids and fetch only the relevant live Cloudflare docs (`https://developers.cloudflare.com/llms.txt`, product `llms.txt`, and applicable Markdown pages). Do not rely on model memory for product behavior, best practices, limits, or pricing when live docs are available.
 
-When dashboard/account state matters, use [`sharing-cloudflare-state.md`](sharing-cloudflare-state.md) to ask the user for the smallest useful evidence package. Prefer IaC/API exports/redacted screenshots over prose, and mark missing dashboard state as not inspected.
+When dashboard/account state could discriminate a hypothesis, use [`sharing-cloudflare-state.md`](sharing-cloudflare-state.md) to ask for the smallest useful evidence package. Prefer IaC/API exports/redacted screenshots over prose, and mark missing dashboard state as not inspected.
 
 Use [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) to check for failure shapes that have caused real surprise bills on Cloudflare and adjacent serverless platforms. Treat war stories as scenario sources; still cite current Cloudflare docs for Cloudflare-specific pricing, limits, and product behavior.
 
@@ -46,13 +46,13 @@ Do not run mutating commands without explicit approval.
 
 For every audit, explicitly consider and either report or mark not applicable / not inspected:
 
-1. Workers cost model includes CPU time/duration/subrequests, not only request count.
+1. Separate direct Workers meters from amplification proxies: current Standard pricing directly meters requests and CPU, not duration or subrequests; subrequests still consume limits and can trigger separately metered downstream products. Verify Enterprise/legacy contracts.
 2. Free-to-Paid plan changes may replace hard stops/included usage with overages or different throttling; verify current product pricing/limits.
-3. D1 full scans, missing indexes, `SELECT *`, `ORDER BY RANDOM()`, offset pagination, and N+1 query patterns can multiply rows read.
+3. D1 full scans, missing indexes, `ORDER BY RANDOM()`, offset pagination, and N+1 query patterns can multiply rows read. `SELECT *` is a projection/schema-coupling smell only until query-plan and `rows_read` evidence proves scanning.
 4. Invalid/bot/unauthenticated traffic should be validated before calling Durable Objects.
 5. Durable Objects should not stay active through idle WebSockets, timers, polling, or missing hibernation/alarms where hibernation/Queues/Workflows fit.
 6. Expensive operations need idempotency/dedupe, especially Workers AI generation/embeddings and media/browser jobs.
-7. Queues need bounded retries, idempotent consumers, DLQs/poison-message handling, and backlog/DLQ monitoring.
+7. Queues need idempotent consumers and an intentional terminal-failure policy. Current defaults are three retries followed by permanent deletion unless a DLQ is configured; add DLQ/poison-message handling and backlog/DLQ monitoring where loss is unacceptable.
 8. R2 “no egress fees” is not “free”: storage, operations, Workers, logs, transforms, and lifecycle gaps can still bill.
 9. Image transformations need bounded variants and normalized cache keys.
 10. Stream preload/autoplay/buffering can increase delivered minutes.
@@ -64,9 +64,9 @@ For every audit, explicitly consider and either report or mark not applicable / 
 16. Hot retries should be bounded with exponential backoff/jitter and should not retry immediately into a degraded dependency or paid primitive.
 17. Anti-rework caching should prevent duplicate expensive work for the same logical user action: generation, embedding, image/media/browser jobs, R2 uploads, Queue replays, and webhooks.
 18. Fanout should be bounded: `Promise.all(items.map(...))`, queue fanout, batch sends, recursive workflows, crawler depth, and per-tenant broadcasts need caps/backpressure.
-19. Run summaries should include cost proxies: CPU time, subrequests, storage ops, rows read/written, DO requests/duration, queue retry/DLQ counts, AI neurons/tokens/requests, Browser Run session minutes, image transformations, Stream delivered minutes, Vectorize dimensions queried/stored, and cache hit/miss assumptions.
+19. Run summaries should include cost proxies: CPU time, subrequests, storage ops, rows read/written, DO requests/duration, queue retry/DLQ counts, Workflow steps and retained-state storage, AI neurons/tokens/requests, Browser Run session minutes, unique image transformations, Stream delivered minutes, Vectorize dimensions queried/stored, and cache hit/miss assumptions.
 20. Layered cache behavior should be explicit: where a request is cached, cache key dimensions, TTL, invalidation owner, and whether browser/CDN/Worker Cache/KV/R2/D1/AI Gateway caches can conflict or leak personalized data.
-21. Durable Object gotchas should be checked when DOs are present: duration/WebSockets/hibernation, close hygiene, `storage.list()` hot paths, alarm recursion, sharding/hotspots, ephemeral object-per-idempotency-key patterns, storage batching, fan-out to many DOs, `ctx.waitUntil()` lifecycle, and KV-vs-DO-storage fit.
+21. Durable Object gotchas should be checked when DOs are present: duration/WebSockets/hibernation, close hygiene, `storage.list()` hot paths, alarm recursion, sharding/hotspots, ephemeral object-per-idempotency-key patterns, backend-aware write coalescing/transactions, fan-out to many DOs, `ctx.waitUntil()` lifecycle, and KV-vs-DO-storage fit.
 22. Dynamic Workers/Agents SDK/Artifacts should be checked when present: sandbox egress/bindings/secrets/custom limits, unique Dynamic Worker creation, code hash/audit logs, autonomous agent max steps/cancellation/retries, browser/sandbox tool costs, Artifacts token scope, signing, rollback, and namespace separation.
 23. War-story scenario checks should be considered for matching products: recursive async work, webhook abuse, static/media DDoS bandwidth, image variant explosions, uncached object hotlinks, idle paid resources, direct origin/bucket bypass, and spend-alerts-only controls.
 24. Cloudflare-fronted third-party origins should be checked for denial-of-wallet risk: cache misses, unproxied/default origin hostnames, wildcard routes/middleware, image optimization endpoints, autoscaling/serverless origins, log ingestion, and provider spend caps.

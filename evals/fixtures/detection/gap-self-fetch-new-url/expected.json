@@ -1,6 +1,9 @@
 {
   "description": "Worker on a wildcard route that self-fetches via fetch(new URL(path, request.url)) instead of fetch(request.url), evading the literal self-fetch heuristic while creating the same loop risk.",
-  "war_story": "RetainDB runaway loop, https://serverlesshorrors.com/all/cloudflare-36k (see references/war-story-scenario-checklist.md #1 and #15)",
+  "evidence_ids": [
+    "CFDOC-EVD-RETAINDB-LOOP",
+    "CFDOC-EVD-COEY-LOOPS"
+  ],
   "required_check_ids": [
     "CFDOC-COST-ASYNC-LOOP"
   ],

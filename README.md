@@ -35,7 +35,8 @@ Interpret the output as an evidence-backed risk review: findings should include 
 - `scripts/eval_skill_trigger.py` — deterministic trigger/description eval for the skill.
 - `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
 - `scripts/check_coverage.py` — consistency check between `skills/cloudflare-doctor/references/check-coverage-matrix.md` and the scanner's check registry.
-- `scripts/check_links.py` — citation link checker (network-dependent; never gates CI unless `--strict`).
+- `scripts/check_claim_ledger.py` — validates stable evidence/source-cluster IDs, source quality, confidence dimensions, scenario/check/fixture lineage, and freshness in `research/incident-claim-ledger.json`.
+- `scripts/check_links.py` — checks the installable runtime references plus current research/docs, excluding historical generated reports; optional semantic anchors detect critical official-doc content drift.
 - `docs/` — recipes, lessons learned, and the ranked improvement plan with per-change risk analysis.
 - `evals/` — trigger cases, shared benchmark manifest, detection fixtures (war-story known-bad projects plus a clean baseline), holdout/holdback placeholders, and saved eval reports.
 - `examples/` — copy-paste usage examples.
@@ -48,7 +49,7 @@ Interpret the output as an evidence-backed risk review: findings should include 
 
 ```json
 "pi": {
-  "skills": ["./"]
+  "skills": ["./skills/cloudflare-doctor"]
 }
 ```
 
@@ -128,11 +129,14 @@ python3 -m json.tool package.json
 python3 -m json.tool evals/evals.json
 python3 -m json.tool evals/trigger-cases.json
 python3 -m json.tool evals/shared-benchmark.json
-python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
+python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/check_links.py
+python3 -m unittest discover -s tests
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
 ./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
 python3 scripts/check_coverage.py
+python3 scripts/check_claim_ledger.py
+python3 scripts/check_links.py --validate-policy
 git diff --check -- . ':(exclude)evals/results'
 ```
 
@@ -173,22 +177,28 @@ It does **not** fetch current Cloudflare docs, inspect dashboard/account state, 
 ## Validate this repo
 
 ```bash
-python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_links.py
+python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/check_links.py
+python3 -m unittest discover -s tests
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
 python3 scripts/check_coverage.py
+python3 scripts/check_claim_ledger.py
+python3 scripts/check_links.py --validate-policy
 ./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures
 ```
 
 Run `npm run update-results` when the checked-in proof reports should change.
 
-Current proof from the latest validation run (2026-06-10):
+Current proof from the latest validation run (2026-07-11):
 
 - Trigger eval: `39/39 = 100%` (`evals/results/latest.md`).
-- Detection eval: `15/15` war-story fixtures pass, including five `gap-*` fixtures that reproduce previously missed code shapes and one dead-RPC review-surface fixture (`evals/results/detection/latest.md`).
-- Coverage matrix: consistent with the 57-check scanner registry.
+- Detection eval: `19/19` fixtures pass, including valid/malformed JSONC and Queue-DLQ near-miss controls (`evals/results/detection/latest.md`).
+- Coverage matrix: consistent with the 58-check scanner registry.
+- Evidence ledger: 27 structured records cover all 23 checklist scenarios and have reciprocal fixture lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, and Cloudflare outage evidence.
+- Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass.
+- GPT-5.5 three-way value eval: 24 cases / 72 outputs comparing local, GitHub `origin/main`, and no skill. Local scored 97.22% objective / 97.57% combined, versus GitHub 60.28% / 65.23% and no skill 73.19% / 70.50%; local cut mean tokens 57.9% and elapsed time 50.3% versus GitHub (`evals/results/gpt-5.5-value/latest.md`).
 - Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).
-- Citation links: 397 checked, dead official-docs links re-pointed, war stories annotated with verified archive snapshots (`evals/results/link-check-2026-06-09.md`).
+- Current-source links: 425 checked across 26 runtime/research/docs/evidence files, 0 dead/errors; all 11 critical official-doc semantic anchors passed on 2026-07-11. Historical generated reports and one explicitly unavailable discovery-only source are excluded from current network health.
 
 ## Example audit prompts
 

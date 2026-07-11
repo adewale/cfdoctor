@@ -1,0 +1,6 @@
+{
+  "description": "Valid JSONC comments/trailing commas still produce semantic config findings.",
+  "evidence_ids": ["CFDOC-EVD-NETLIFY-104K"],
+  "required_check_ids": ["CFDOC-COST-BROAD-ROUTE"],
+  "forbidden_check_ids": ["CFDOC-CONFIG-UNPARSEABLE"]
+}

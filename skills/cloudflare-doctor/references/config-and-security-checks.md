@@ -11,7 +11,7 @@ Check every `wrangler.jsonc` (Cloudflare-recommended for new projects), `wrangle
 - Binding names are stable and environment-specific resources point to the right account/database/bucket/namespace.
 - `[env.*]` blocks preserve required bindings, vars, migrations, observability, and routes. Env drift is a common production-only bug.
 - `vars` contain only non-secret configuration. Anything named like `SECRET`, `TOKEN`, `KEY`, `PASSWORD`, `PRIVATE`, `CLIENT_SECRET`, or containing credential-shaped values belongs in Cloudflare secrets or another secret manager.
-- Durable Object bindings have corresponding `migrations` entries for new/renamed/deleted classes.
+- Durable Object bindings have corresponding `migrations` entries for new/renamed/deleted classes. For newly created namespaces, prefer `new_sqlite_classes`: as of July 9, 2026, accounts without an existing KV-backed Durable Object namespace can no longer create one with `new_classes`. Do not rewrite an already-applied historical migration; first establish account/deployment history and add the next safe migration if one is required.
 - Queue consumers define retry/dead-letter behavior appropriate to the workload and have a poison-message story.
 - Cron triggers are not accidentally too frequent or duplicated across environments.
 - Preview, workshop, demo, branch, and temporary environments are not left routed to production domains or connected to paid/production services after their intended lifetime.

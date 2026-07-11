@@ -17,41 +17,48 @@ Use this skill to audit a user's Cloudflare project like a doctor: diagnose from
 - Prefer primitive-fit fixes over local patches: KV vs D1 vs Durable Objects vs R2 vs Queues vs Workflows vs Cache is often the root problem.
 - Cost issues are findings even when the app works. Estimate the cost mechanism, not exact dollars unless the user supplied volumes and plan details.
 
+## Activation boundary
+
+Use this skill only when the request includes concrete Cloudflare project, configuration, architecture, IaC, account, or usage evidence to audit. Decide from the user request and explicitly supplied inputs before inspecting the workspace. **Hard stop:** when the task names only AWS or another non-Cloudflare platform, reply in one brief sentence that Cloudflare Doctor is not applicable; do not inspect the repo, emit scope markers, or perform that audit. If a prompt merely says a README/repo/config exists but attaches no such files, reply only that no auditable project evidence was supplied; do not search the workspace or emit `Scope inspected:`. For example, a claim that a README links to Cloudflare docs without an attached README is not an audit input. For generic DNS explanations, public status checks, product news, brand copy, or conceptual Cloudflare questions with no project evidence, do not search the workspace, read this skill's references, or emit its audit format; answer normally or route to the appropriate skill.
+
 ## Standard workflow
 
-1. Read [`references/audit-playbook.md`](references/audit-playbook.md) and [`references/recommendation-provenance.md`](references/recommendation-provenance.md) — mandatory for every audit. Route the remaining references with the table below. When in doubt whether a reference applies, read it — skipping a relevant reference risks missed findings; the routing exists to skip clearly irrelevant depth, not to economize on relevant evidence.
-
-   | Reference routing | Read when |
-   |---|---|
-   | [`sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md) | Dashboard/account state matters (the topic of step 2). |
-   | [`cloudflare-best-practices-docs.md`](references/cloudflare-best-practices-docs.md) | Fetching current docs in step 3 — it is the verified URL list. |
-   | [`product-fit-rubric.md`](references/product-fit-rubric.md) | Primitive/product choice is in question, or multiple storage/queue primitives are detected. |
-   | [`config-and-security-checks.md`](references/config-and-security-checks.md) | Wrangler config, bindings, auth surfaces, or security posture are in scope — i.e., almost every repo audit. |
-   | [`performance-and-reliability.md`](references/performance-and-reliability.md) | Hot paths, latency, retries, queues, or reliability posture are in scope. |
-   | [`cost-footguns.md`](references/cost-footguns.md) | Cost/billing is in scope, or any usage-metered product is detected. |
-   | [`war-story-scenario-checklist.md`](references/war-story-scenario-checklist.md) | Cost/abuse/billing risk is in scope, or any scenario shape from its matrix is detected (queues/crons/webhooks/DO/AI/media/public storage). |
-   | [`audit-engine-patterns.md`](references/audit-engine-patterns.md) | Only when designing/changing report or check tooling — not for routine audits. |
-   | [`check-coverage-matrix.md`](references/check-coverage-matrix.md) | Only when deciding whether the static scanner already covers a pattern. |
-   | [`official-source-map.md`](references/official-source-map.md) | Date-sensitive pricing/limits verification (used in step 6). |
-2. If dashboard/account state matters, ask for the smallest evidence package from [`references/sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md). Do not infer dashboard settings from repo files alone.
-3. Fetch current Cloudflare docs for the detected products using `https://developers.cloudflare.com/llms.txt`, product `llms.txt` indexes, and the applicable Markdown pages from the verified best-practices list. Treat local reference files as navigation aids, not authoritative current guidance. Every recommendation needs `Source basis`: official current Cloudflare docs or an accepted war story.
-4. If allowed, run the static scanner from the project root. Use the absolute path to this skill's script (the `scripts/` directory next to this `SKILL.md`):
+1. Inventory the supplied evidence first: relevant repo files, Wrangler config, bindings, IaC, routes, runtime paths, migrations, tests, and account exports. If there is no concrete Cloudflare evidence, stop at the activation boundary.
+2. If allowed, run the static scanner from the project root before reading broad guidance. Use the absolute path to this skill's script (the `scripts/` directory next to this `SKILL.md`):
    ```bash
    python3 <skill-dir>/scripts/cfdoctor_static_scan.py .
    ```
-   Treat scanner output as leads, not proof. Add `--json` for machine-readable leads with stable check IDs. When scanning this skill's own repository, add `--exclude evals/fixtures` (the fixtures are intentionally bad).
-5. If the repo is TypeScript and exposes `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, or Agents SDK classes, include the optional dead cross-boundary RPC audit path from [`references/performance-and-reliability.md`](references/performance-and-reliability.md): inventory public non-runtime methods; if the user approves third-party tooling or it is already pinned in repo tooling, run `npx @acoyfellow/deadlint . --check dead-rpc --json`; treat output as reachability leads, not proof, and ask about dynamic/cross-repo callers before recommending deletion.
-6. Inventory Cloudflare surface area: repo files, Wrangler config, bindings, IaC, package scripts, routes/domains, runtime code, migrations, tests, and any supplied account/dashboard evidence.
-7. Map products and primitives, then read the references routed by the step-1 table that match the detected products and concerns. Use [`references/official-source-map.md`](references/official-source-map.md) for source links and date-sensitive pricing/limits verification.
-8. Produce findings in the required format below. Prioritize high-impact correctness, security, reliability, and cost findings over exhaustive trivia.
+   Treat scanner output as leads, not proof. Add `--json` for machine-readable leads with stable check IDs. When scanning this skill's own repository, add `--exclude evals/fixtures` (the fixtures are intentionally bad). A zero-finding scan is affirmative precision evidence: do not manufacture hygiene findings merely because the prompt asks what is wrong. Explicit intent, tests, or compensating controls in supplied README/config evidence suppress generic route/default/hygiene suggestions unless contrary runtime evidence exists.
+3. Map detected products, primitives, hot paths, and concrete hypotheses. Read only the minimum references needed to test those hypotheses; do not read a reference solely because its product is mentioned.
 
-## Required audit output
+   | Reference routing | Read when |
+   |---|---|
+   | [`audit-playbook.md`](references/audit-playbook.md) | Broad repo/account audit, multiple product families, or the user requests the full audit. |
+   | [`recommendation-provenance.md`](references/recommendation-provenance.md) | Before publishing confirmed findings that need sourced recommendations. |
+   | [`sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md) | A specific hypothesis depends on dashboard/account state. |
+   | [`cloudflare-best-practices-docs.md`](references/cloudflare-best-practices-docs.md) | Locating official pages for an already identified hypothesis. |
+   | [`product-fit-rubric.md`](references/product-fit-rubric.md) | A primitive/product choice is materially in question. |
+   | [`config-and-security-checks.md`](references/config-and-security-checks.md) | Concrete Wrangler, binding, auth, secret, route, or IaC evidence is in scope. |
+   | [`performance-and-reliability.md`](references/performance-and-reliability.md) | A detected hot path, retry, queue, lifecycle, or reliability mechanism is in scope. |
+   | [`cost-footguns.md`](references/cost-footguns.md) | A detected path uses a mutable billing meter or cost amplification is in scope. |
+   | [`war-story-scenario-checklist.md`](references/war-story-scenario-checklist.md) | A concrete incident-shaped mechanism is detected; use it for hypotheses, never current semantics. |
+   | [`audit-engine-patterns.md`](references/audit-engine-patterns.md) | Designing/changing report or check tooling, not routine audits. |
+   | [`check-coverage-matrix.md`](references/check-coverage-matrix.md) | Deciding whether the scanner already covers a pattern. |
+   | [`official-source-map.md`](references/official-source-map.md) | Verifying date-sensitive pricing/limits for an identified finding. |
+4. Fetch only the current official Cloudflare pages needed to confirm or reject the hypotheses, using product `llms.txt` indexes and applicable Markdown pages. Treat local references as navigation aids, not current authority. Every current product/configuration recommendation needs official `Source basis`. War stories can support historical mechanisms, not current semantics, applicability, or probability.
+5. If account/dashboard state could change a hypothesis, ask for the smallest discriminating evidence package. Do not request broad account dumps or infer state from its absence in the repo.
+6. If TypeScript code exposes `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, or Agent classes, use the optional dead cross-boundary RPC path only when reachability is actually in scope. Gate third-party tools on approval/pinning and treat output as leads, not proof.
+7. Produce only evidence-backed findings. Prioritize correctness, security, reliability, and cost over exhaustive trivia.
 
-This output contract is mandatory for every Cloudflare Doctor audit response, including terse/direct prompts such as “Cloudflare Doctor this Worker …” and prompts that provide only a user-supplied scenario instead of repo files. Do not replace it with a free-form diagnosis. If the only evidence is the prompt, still emit the scaffold below: set `Scope inspected` to the user-supplied statement, set `Scope not inspected` to missing repo/account/dashboard/deploy evidence, and mark findings as suspected/needs verification when repo or dashboard evidence is absent.
+## Output modes
 
-Before finalizing, verify the answer contains these literal contract markers: `Scope inspected:`, `Scope not inspected:`, `Docs refreshed:`, `Detected products:`, `Cost proxy summary:`, `Overall risk:`, `### Severity:`, `- Evidence:`, `- Fix:`, `- Cost / trade-off:`, `- Verify:`, `- Source basis:`, `- Confidence:`, and `## Run summary with cost proxies`.
+Use **focused triage** by default for one narrow mechanism, prompt-only architecture evidence, small fixture reviews, and zero-finding results. Keep it concise. For three or fewer supplied files, read them directly: do not inventory/search the entire workspace, read the broad playbook/provenance/war-story references, or fetch a product index. Use at most one scanner run and the minimum direct official page needed for a mutable claim. Include `Scope inspected:`, `Scope not inspected:`, and `Docs refreshed:` (or why no mutable semantic required a fetch). If no finding is supported, say `No confirmed findings.` and stop after any question that would materially change that conclusion. Do not add low-severity filler, generic cost maps, or a full run summary.
 
-Start with:
+When focused triage has a confirmed finding, use every finding-card field below with the literal labels (`Severity`, `Category`, `Evidence`, `Why it matters`, `Fix`, `Cost / trade-off`, `Verify`, `Source basis`, and `Confidence`); do not fold `Source basis` into inline citations. The full audit scaffold is not required. Explicit bounded retries plus a configured DLQ and process-before-ack flow are a valid Queue near-miss: do not invent findings for optional custom backoff, a separate DLQ consumer, or permanent-error classification unless workload/account evidence makes them necessary.
+
+Use the **full audit** format only for broad repo/account audits, multiple material findings/product families, or when the user explicitly requests the complete report. Before finalizing a full audit, verify the summary and finding fields are present.
+
+Start a full audit with:
 
 ```markdown
 ## Cloudflare Doctor audit
@@ -73,7 +80,7 @@ Then group findings:
 - Fix: <smallest safe remediation; include better primitive/product if applicable>
 - Cost / trade-off: <billing meter or cost proxy affected; expected benefit; implementation effort; latency/complexity/security downside; reversibility; assumptions>
 - Verify: <command, dashboard check, load test, or config check>
-- Source basis: <official Cloudflare docs URL(s) fetched this audit and/or accepted war story URL(s)>
+- Source basis: <current official Cloudflare docs URL(s) fetched this audit; optionally add accepted war story URL(s) for historical mechanism provenance>
 - Confidence: <high|medium|low>
 ```
 
@@ -106,4 +113,4 @@ End with:
 - Local read-only commands are fine: `find`, `rg`, `python3 <skill-dir>/scripts/cfdoctor_static_scan.py .`, package manager metadata commands, and unauthenticated Cloudflare docs fetches such as `curl -fsSL https://developers.cloudflare.com/workers/llms.txt`.
 - Ask before running third-party code or network-installing tools with `npx`/package managers unless the user already approved that class of tooling. For example, `npx @acoyfellow/deadlint . --check dead-rpc --json` is read-only analysis, but still executes third-party code and should be approved or pinned in repo tooling first.
 - Ask before authenticated Cloudflare commands, even read-only ones, because they may expose account/project names or consume API rate limits.
-- Never deploy, mutate bindings, create/delete resources, purge cache, change DNS/WAF/rules, or rotate secrets unless the user explicitly asks.
+- Never deploy, mutate bindings, create/delete resources, purge cache, change DNS/WAF/rules, or rotate secrets from an audit or broad “fix it” request. Before mutation, show the exact target/current evidence, proposed change, blast radius, dry-run/plan where available, and rollback path, then obtain explicit final confirmation. A second confirmation may be omitted only when the user already supplied the precise resource/change or command and explicitly requested immediate execution.
