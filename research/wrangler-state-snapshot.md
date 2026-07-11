@@ -56,9 +56,11 @@ The wrapper therefore:
 - requires an existing pinned Wrangler executable and never invokes `npx` or a package installer;
 - defaults to refusing output inside any Git worktree;
 - creates the snapshot directory as `0700` and files as `0600`;
+- forwards only an allowlist of Wrangler/Cloudflare authentication, home/config, locale, certificate, proxy, and temporary-directory environment variables; unrelated cloud/CI credentials and Node injection options are not forwarded;
 - records no environment variables, credentials, cookies, or secret values itself;
+- disables subprocess stdin so missing authentication fails instead of prompting;
 - stores stderr only inside the private snapshot;
-- rejects non-empty output directories and symlinks in the resulting snapshot;
+- rejects non-empty output directories, removes downloaded symlinks, and marks the snapshot partial;
 - supports `--metadata-only` to avoid downloading Worker source or Pages config.
 
 Authenticated reads still require the user's explicit approval under the skill's command policy. The user must review/redact the snapshot before sharing it with a model or committing any derived fixture.
@@ -82,6 +84,8 @@ Wrangler does not provide one universal download for DNS, zone settings, WAF/rul
 - keep raw outputs private and record the Wrangler/API version and observation time;
 - never treat an unavailable field as `false`.
 
+The private mode-bit guarantees are tested on POSIX systems. Windows users must verify the snapshot directory's ACLs before capture; `chmod`-style assertions do not establish Windows confidentiality.
+
 The current Worker direct downloader rejects Workers with Assets. `init --from-dash` does not continuously synchronize dashboard changes, so each audit needs a fresh temporary snapshot. Plain vars may be present; secret values should not be, but all output still requires review.
 
 ## Live validation
@@ -92,7 +96,7 @@ On 2026-07-11, after explicit approval, the wrapper was run against existing non
 - `atlas` with Wrangler 4.94.0 exercised the complete Pages path, including deployment listing and experimental config download.
 - `keyboardia-staging` with Wrangler 4.53.0 exercised the metadata-only Worker path for a Worker with Assets.
 
-Every planned command returned zero and every manifest reported a complete snapshot. Raw snapshots stayed in a mode-`0700` temporary directory and were deleted after shape-only review. No credential, secret value, account dump, downloaded source, route, deployment/version identifier, or cache file was retained.
+Every planned command returned zero and every manifest reported a complete snapshot. A Worker snapshot now requires a valid non-empty active-version list and one successful version-view capture per discovered active version; absent version data cannot be reported as complete. Raw snapshots stayed in a mode-`0700` temporary directory and were deleted after shape-only review. No credential, secret value, account dump, downloaded source, route, deployment/version identifier, or cache file was retained.
 
 The review found two details now represented by sanitized fixtures and tests: Pages deployment JSON uses capitalized display keys (`Id`, `Environment`, `Branch`, `Source`, `Deployment`, `Status`, and `Build`), while Worker version JSON includes top-level `number`, `annotations`, and `resources` in addition to `id` and `metadata`. Wrangler also writes `.wrangler/cache` account metadata beneath the command working directory; the wrapper keeps and hashes those files inside the private snapshot, so the whole directory remains sensitive even when source download is disabled.
 

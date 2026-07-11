@@ -430,3 +430,32 @@ client without modifying projects or executing unrelated setup code.
 43. Treat the complete snapshot directory as sensitive, including command stderr, downloaded config, source, and `.wrangler/cache`.
 44. Use exact lockfile-resolved client versions in isolated tooling directories when project installs are not reproducible; disable lifecycle scripts for read-only validation setup.
 45. Delete raw authenticated evidence after extracting the smallest durable schema facts needed for tests and documentation.
+
+### The PR audit tightened the meaning of “private” and “complete”
+
+Independent security, correctness, test-quality, and claim reviews agreed that
+the Wrangler-first scope was sound, but found that two labels were stronger than
+the implementation. A Worker snapshot with a successful status command but no
+`versions` array could be marked complete without capturing active runtime
+state. A downloaded symlink was recorded as rejected but remained on disk, where
+later archive or copy tooling could follow it. Both cases show that a warning in
+a manifest is not equivalent to enforcing the claimed postcondition.
+
+The audit also exposed two defense-in-depth gaps. Nested directory privacy had
+relied on the caller's umask even though files and the root directory were
+explicitly chmodded. Wrangler inherited the complete parent environment,
+including unrelated cloud credentials and Node injection options. Setting a
+restrictive umask, recursively enforcing directory modes, forwarding a narrow
+auth/config environment, and disabling subprocess stdin made the read boundary
+match the documentation more closely.
+
+Finally, prefix-matching fake commands were too permissive: they would accept
+unexpected trailing flags even though plan review is meaningful only when tests
+lock the complete argv. Exact command fakes plus fail-closed version and active
+state tests now make safety regressions observable.
+
+46. “Complete” is a verified postcondition: a Worker snapshot needs a non-empty active-version set and a successful view of every discovered version.
+47. Rejecting a symlink means removing or quarantining it, not merely recording an error while leaving it in a shareable directory.
+48. Private output requires a restrictive creation umask and recursive directory-mode assertions, not just root/file chmods.
+49. A read-only child process should receive only the credentials and configuration it needs; unrelated parent secrets and runtime injection variables stay outside the boundary.
+50. Command-allowlist tests must assert complete argv shapes because prefix fakes silently accept dangerous flag drift.

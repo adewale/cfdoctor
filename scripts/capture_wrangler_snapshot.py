@@ -23,6 +23,36 @@ from typing import Any
 
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 VERSION_RE = re.compile(r"^[A-Za-z0-9-]{1,128}$")
+WRANGLER_ENV_ALLOWLIST = {
+    "APPDATA",
+    "CLOUDFLARE_ACCOUNT_ID",
+    "CLOUDFLARE_API_KEY",
+    "CLOUDFLARE_API_TOKEN",
+    "CLOUDFLARE_EMAIL",
+    "COMSPEC",
+    "HOME",
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "LANG",
+    "LC_ALL",
+    "LOCALAPPDATA",
+    "LOGNAME",
+    "NO_PROXY",
+    "PATH",
+    "PATHEXT",
+    "SSL_CERT_DIR",
+    "SSL_CERT_FILE",
+    "SYSTEMROOT",
+    "TEMP",
+    "TMP",
+    "TMPDIR",
+    "USER",
+    "WRANGLER_SEND_METRICS",
+    "XDG_CONFIG_HOME",
+    "http_proxy",
+    "https_proxy",
+    "no_proxy",
+}
 
 
 def utc_now() -> str:
@@ -85,6 +115,14 @@ def write_private(path: Path, content: str) -> None:
     path.chmod(0o600)
 
 
+def wrangler_environment() -> dict[str, str]:
+    env = {key: value for key, value in os.environ.items() if key in WRANGLER_ENV_ALLOWLIST}
+    env.setdefault("PATH", os.defpath)
+    env["CI"] = "1"
+    env["NO_COLOR"] = "1"
+    return env
+
+
 def run_command(
     *,
     label: str,
@@ -96,7 +134,15 @@ def run_command(
 ) -> tuple[dict[str, Any], Any | None]:
     started = utc_now()
     try:
-        proc = subprocess.run(argv, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+        proc = subprocess.run(
+            argv,
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            stdin=subprocess.DEVNULL,
+            env=wrangler_environment(),
+        )
     except (OSError, subprocess.TimeoutExpired) as exc:
         write_private(output.with_suffix(output.suffix + ".error.txt"), f"{type(exc).__name__}\n")
         return {
@@ -138,19 +184,52 @@ def collect_files(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
     files: list[dict[str, Any]] = []
     errors: list[str] = []
     for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        if path.is_symlink():
+            try:
+                path.unlink()
+                errors.append(f"symlink-removed:{relative}")
+            except OSError:
+                errors.append(f"symlink-removal-failed:{relative}")
+            continue
         if path.name == "manifest.json":
             continue
-        if path.is_symlink():
-            errors.append(f"symlink-rejected:{path.relative_to(root).as_posix()}")
-            continue
-        if path.is_file():
+        if path.is_dir():
+            path.chmod(0o700)
+        elif path.is_file():
             path.chmod(0o600)
             files.append({
-                "path": path.relative_to(root).as_posix(),
+                "path": relative,
                 "bytes": path.stat().st_size,
                 "sha256": sha256(path),
             })
     return files, errors
+
+
+def finish_snapshot(
+    args: argparse.Namespace,
+    output: Path,
+    commands: list[dict[str, Any]],
+    failures: list[str],
+) -> int:
+    files, file_errors = collect_files(output)
+    failures.extend(file_errors)
+    manifest = {
+        "schema_version": 1,
+        "created_at": utc_now(),
+        "kind": args.kind,
+        "name": args.name,
+        "authenticated_read_approved": True,
+        "metadata_only": args.metadata_only,
+        "success": not failures,
+        "failures": failures,
+        "commands": commands,
+        "files": files,
+    }
+    write_private(output / "manifest.json", json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    print(f"snapshot: {output}")
+    print(f"status: {'complete' if not failures else 'partial'}; review REVIEW_BEFORE_SHARING.txt before sharing")
+    return 0 if not failures else 1
 
 
 def capture(args: argparse.Namespace) -> int:
@@ -170,6 +249,7 @@ def capture(args: argparse.Namespace) -> int:
         print("error: pass --approve-authenticated-read after reviewing --plan", file=sys.stderr)
         return 2
 
+    os.umask(0o077)
     output = args.output_dir.resolve()
     if output.exists() and not output.is_dir():
         print(f"error: output path is not a directory: {output}", file=sys.stderr)
@@ -202,6 +282,7 @@ def capture(args: argparse.Namespace) -> int:
     commands.append(version_record)
     if version_record.get("returncode") != 0:
         failures.append("wrangler-version")
+        return finish_snapshot(args, output, commands, failures)
 
     suffix = global_args(args.profile)
     if args.kind == "worker":
@@ -225,12 +306,19 @@ def capture(args: argparse.Namespace) -> int:
             commands.append(record)
             if record.get("returncode") != 0 or record.get("error"):
                 failures.append(label)
-        versions = status.get("versions", []) if isinstance(status, dict) else []
+        versions = status.get("versions") if isinstance(status, dict) else None
+        if not status_record.get("error") and (not isinstance(versions, list) or not versions):
+            failures.append("active-versions-missing")
+        seen_version_ids: set[str] = set()
         for item in versions if isinstance(versions, list) else []:
             version_id = item.get("version_id") if isinstance(item, dict) else None
             if not isinstance(version_id, str) or not VERSION_RE.fullmatch(version_id):
                 failures.append("invalid-active-version-id")
                 continue
+            if version_id in seen_version_ids:
+                failures.append("duplicate-active-version-id")
+                continue
+            seen_version_ids.add(version_id)
             record, _ = run_command(
                 label=f"version-view:{version_id}",
                 argv=[wrangler, "versions", "view", version_id, "--name", args.name, "--json", *suffix],
@@ -280,24 +368,7 @@ def capture(args: argparse.Namespace) -> int:
             if record.get("returncode") != 0 or record.get("error"):
                 failures.append("pages-download-config")
 
-    files, file_errors = collect_files(output)
-    failures.extend(file_errors)
-    manifest = {
-        "schema_version": 1,
-        "created_at": utc_now(),
-        "kind": args.kind,
-        "name": args.name,
-        "authenticated_read_approved": True,
-        "metadata_only": args.metadata_only,
-        "success": not failures,
-        "failures": failures,
-        "commands": commands,
-        "files": files,
-    }
-    write_private(output / "manifest.json", json.dumps(manifest, indent=2, sort_keys=True) + "\n")
-    print(f"snapshot: {output}")
-    print(f"status: {'complete' if not failures else 'partial'}; review REVIEW_BEFORE_SHARING.txt before sharing")
-    return 0 if not failures else 1
+    return finish_snapshot(args, output, commands, failures)
 
 
 def main(argv: list[str] | None = None) -> int:

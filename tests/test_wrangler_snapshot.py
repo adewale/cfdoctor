@@ -16,8 +16,18 @@ FIXTURES = ROOT / "evals/fixtures/wrangler-snapshot"
 
 
 class WranglerSnapshotTests(unittest.TestCase):
-    def make_fake_wrangler(self, root: Path) -> Path:
+    def make_fake_wrangler(
+        self,
+        root: Path,
+        *,
+        fail_init: bool = False,
+        fail_version: bool = False,
+        status_json: str | None = None,
+        create_symlink: bool = False,
+        require_api_token: bool = False,
+    ) -> Path:
         fake = root / "wrangler"
+        status_payload = status_json or (FIXTURES / "worker-deployments-status.json").read_text()
         fake.write_text(
             textwrap.dedent(
                 f"""\
@@ -27,42 +37,55 @@ class WranglerSnapshotTests(unittest.TestCase):
                 import sys
                 from pathlib import Path
 
-                args = sys.argv[1:]
+                raw_args = sys.argv[1:]
+                if "AWS_SECRET_ACCESS_KEY" in os.environ or "NODE_OPTIONS" in os.environ:
+                    print("unrelated parent environment leaked", file=sys.stderr)
+                    raise SystemExit(12)
+                if {require_api_token!r} and os.environ.get("CLOUDFLARE_API_TOKEN") != "fixture-token":
+                    print("required Cloudflare authentication missing", file=sys.stderr)
+                    raise SystemExit(13)
+                profile = []
+                if len(raw_args) >= 2 and raw_args[-2] == "--profile":
+                    profile = raw_args[-2:]
+                args = raw_args[:-2] if profile else raw_args
                 fixture_dir = Path({str(FIXTURES)!r})
                 if args == ["--version"]:
+                    if {fail_version!r}:
+                        print("not wrangler", file=sys.stderr)
+                        raise SystemExit(8)
                     print("4.30.0")
-                elif args[:2] == ["deployments", "status"]:
-                    print((fixture_dir / "worker-deployments-status.json").read_text(), end="")
-                elif args[:2] == ["deployments", "list"]:
+                elif args == ["deployments", "status", "--name", "fixture-project", "--json"]:
+                    print({status_payload!r}, end="")
+                elif args == ["deployments", "list", "--name", "fixture-project", "--json"]:
                     print("[]")
-                elif args[:2] == ["versions", "list"]:
+                elif args == ["versions", "list", "--name", "fixture-project", "--json"]:
                     print("[]")
-                elif args[:2] == ["versions", "view"]:
+                elif len(args) == 6 and args[:2] == ["versions", "view"] and args[3:] == ["--name", "fixture-project", "--json"]:
                     data = json.loads((fixture_dir / "worker-version-view.json").read_text())
                     data["id"] = args[2]
                     print(json.dumps(data))
-                elif args[:2] == ["secret", "list"]:
+                elif args == ["secret", "list", "--name", "fixture-project", "--format", "json"]:
                     print('[{{"name":"API_TOKEN","type":"secret_text"}}]')
-                elif args[:2] == ["init", "--from-dash"]:
-                    if os.environ.get("FAKE_FAIL_INIT"):
+                elif args == ["init", "--from-dash", "fixture-project", "--no-delegate-c3"]:
+                    if {fail_init!r}:
                         print("assets download unsupported", file=sys.stderr)
                         raise SystemExit(7)
-                    name = args[2]
-                    project = Path.cwd() / name
+                    project = Path.cwd() / "fixture-project"
                     (project / "src").mkdir(parents=True)
-                    (project / "wrangler.jsonc").write_text(json.dumps({{"name": name, "workers_dev": False, "routes": [{{"pattern": "fixture.example/*"}}]}}))
+                    (project / "wrangler.jsonc").write_text(json.dumps({{"name": "fixture-project", "workers_dev": False, "routes": [{{"pattern": "fixture.example/*"}}]}}))
                     (project / "src/index.js").write_text('export default {{ fetch() {{ return new Response("ok") }} }}')
-                    print(f"downloaded {{name}}")
-                elif args[:3] == ["pages", "deployment", "list"]:
+                    if {create_symlink!r}:
+                        (project / "external-link").symlink_to("/etc/passwd")
+                    print("downloaded fixture-project")
+                elif args == ["pages", "deployment", "list", "--project-name", "fixture-project", "--json"]:
                     print((fixture_dir / "pages-deployments.json").read_text(), end="")
-                elif args[:3] == ["pages", "secret", "list"]:
+                elif args == ["pages", "secret", "list", "--project-name", "fixture-project"]:
                     print("API_TOKEN (secret_text)")
-                elif args[:3] == ["pages", "download", "config"]:
-                    name = args[3]
-                    (Path.cwd() / "wrangler.jsonc").write_text(json.dumps({{"name": name, "pages_build_output_dir": "dist"}}))
-                    print(f"downloaded pages config {{name}}")
+                elif args == ["pages", "download", "config", "fixture-project", "--force"]:
+                    (Path.cwd() / "wrangler.jsonc").write_text(json.dumps({{"name": "fixture-project", "pages_build_output_dir": "dist"}}))
+                    print("downloaded pages config fixture-project")
                 else:
-                    print("unsupported fake command: " + repr(args), file=sys.stderr)
+                    print("unsupported fake command: " + repr(raw_args), file=sys.stderr)
                     raise SystemExit(9)
                 """
             ),
@@ -141,30 +164,110 @@ class WranglerSnapshotTests(unittest.TestCase):
                 self.assertTrue(forbidden.isdisjoint(entry["argv"][1:3]), entry["argv"])
             self.assertEqual(0o700, stat.S_IMODE(output.stat().st_mode))
             for path in output.rglob("*"):
-                if path.is_file():
+                if path.is_dir():
+                    self.assertEqual(0o700, stat.S_IMODE(path.stat().st_mode), path)
+                elif path.is_file():
                     self.assertEqual(0o600, stat.S_IMODE(path.stat().st_mode), path)
 
     def test_failed_config_download_keeps_partial_metadata_and_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            fake = self.make_fake_wrangler(root)
+            fake = self.make_fake_wrangler(root, fail_init=True)
             output = root / "snapshot"
-            env = dict(os.environ)
-            env["FAKE_FAIL_INIT"] = "1"
+            proc = self.run_capture(fake, output, "--kind", "worker", "--approve-authenticated-read")
+            self.assertEqual(1, proc.returncode)
+            manifest = json.loads((output / "manifest.json").read_text())
+            self.assertFalse(manifest["success"])
+            self.assertIn("init-from-dash", manifest["failures"])
+            failed = next(command for command in manifest["commands"] if command["label"] == "init-from-dash")
+            self.assertEqual(7, failed["returncode"])
+            self.assertEqual("wrangler-command-failed", failed["error"])
+            self.assertIsNotNone(failed["output_sha256"])
+            self.assertTrue((output / "worker/deployments-status.json").is_file())
+            self.assertTrue((output / "worker/init-from-dash.stdout.txt.stderr.txt").is_file())
+
+    def test_missing_active_versions_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake = self.make_fake_wrangler(root, status_json="{}")
+            output = root / "snapshot"
             proc = self.run_capture(
                 fake,
                 output,
                 "--kind",
                 "worker",
+                "--metadata-only",
                 "--approve-authenticated-read",
-                env=env,
             )
             self.assertEqual(1, proc.returncode)
             manifest = json.loads((output / "manifest.json").read_text())
-            self.assertFalse(manifest["success"])
-            self.assertIn("init-from-dash", manifest["failures"])
-            self.assertTrue((output / "worker/deployments-status.json").is_file())
-            self.assertTrue((output / "worker/init-from-dash.stdout.txt.stderr.txt").is_file())
+            self.assertIn("active-versions-missing", manifest["failures"])
+            self.assertFalse(any(command["label"].startswith("version-view:") for command in manifest["commands"]))
+
+    def test_failed_version_check_stops_before_authenticated_reads(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake = self.make_fake_wrangler(root, fail_version=True)
+            output = root / "snapshot"
+            proc = self.run_capture(fake, output, "--kind", "worker", "--approve-authenticated-read")
+            self.assertEqual(1, proc.returncode)
+            manifest = json.loads((output / "manifest.json").read_text())
+            self.assertEqual(["wrangler-version"], [command["label"] for command in manifest["commands"]])
+            self.assertEqual(["wrangler-version"], manifest["failures"])
+
+    def test_downloaded_symlink_is_removed_and_snapshot_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake = self.make_fake_wrangler(root, create_symlink=True)
+            output = root / "snapshot"
+            proc = self.run_capture(fake, output, "--kind", "worker", "--approve-authenticated-read")
+            self.assertEqual(1, proc.returncode)
+            manifest = json.loads((output / "manifest.json").read_text())
+            self.assertIn("symlink-removed:download/fixture-project/external-link", manifest["failures"])
+            link = output / "download/fixture-project/external-link"
+            self.assertFalse(link.exists())
+            self.assertFalse(link.is_symlink())
+
+    def test_unrelated_parent_credentials_and_node_options_are_not_forwarded(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake = self.make_fake_wrangler(root, require_api_token=True)
+            output = root / "snapshot"
+            env = dict(os.environ)
+            env["AWS_SECRET_ACCESS_KEY"] = "must-not-reach-wrangler"
+            env["NODE_OPTIONS"] = "--trace-warnings"
+            env["CLOUDFLARE_API_TOKEN"] = "fixture-token"
+            proc = self.run_capture(
+                fake,
+                output,
+                "--kind",
+                "worker",
+                "--metadata-only",
+                "--approve-authenticated-read",
+                env=env,
+            )
+            self.assertEqual(0, proc.returncode, proc.stderr)
+
+    def test_profile_is_forwarded_to_every_authenticated_command(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake = self.make_fake_wrangler(root)
+            output = root / "snapshot"
+            proc = self.run_capture(
+                fake,
+                output,
+                "--kind",
+                "worker",
+                "--metadata-only",
+                "--profile",
+                "audit",
+                "--approve-authenticated-read",
+            )
+            self.assertEqual(0, proc.returncode, proc.stderr)
+            manifest = json.loads((output / "manifest.json").read_text())
+            for command in manifest["commands"]:
+                if command["label"] != "wrangler-version":
+                    self.assertEqual(["--profile", "audit"], command["argv"][-2:])
 
     def test_worker_metadata_only_skips_source_download(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
