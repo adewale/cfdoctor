@@ -380,7 +380,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--profile", help="Wrangler authentication profile")
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--metadata-only", action="store_true", help="Skip Worker source/config or Pages config download")
-    parser.add_argument("--plan", action="store_true", help="Print the exact static command plan without authenticating or writing")
+    parser.add_argument("--plan", action="store_true", help="Print static command shapes without authenticating or writing")
     parser.add_argument("--approve-authenticated-read", action="store_true", help="Confirm the reviewed authenticated read plan")
     parser.add_argument("--allow-repo-output", action="store_true", help="Allow private snapshot output inside a Git worktree")
     args = parser.parse_args(argv)

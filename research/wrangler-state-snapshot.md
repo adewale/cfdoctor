@@ -70,10 +70,10 @@ Authenticated reads still require the user's explicit approval under the skill's
 A Worker snapshot gives three useful state layers without inventing a new abstraction:
 
 1. **Repository intent** — the checked-in Wrangler configuration and source.
-2. **Downloaded dashboard approximation** — `init --from-dash` or Pages `download config`.
+2. **Downloaded dashboard approximation** — `init --from-dash`.
 3. **Actually active versions** — deployment status plus version-specific runtime metadata.
 
-Diff these layers rather than assuming any one is complete. A downloaded config is an approximation, and the active deployment can contain multiple versions.
+For Pages, compare checked-in intent, experimental `pages download config` output, and the deployment list. Diff the relevant layers rather than assuming any one is complete. Downloaded config is an approximation, and an active Worker deployment can contain multiple versions.
 
 ## Known gaps
 

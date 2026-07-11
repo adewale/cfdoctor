@@ -22,7 +22,7 @@ For Worker or Pages deployment state, prefer a fresh private Wrangler snapshot o
 - Workers: `deployments status/list --json`, `versions list/view --json`, `secret list`, and `init --from-dash`.
 - Pages: `pages deployment list --json`, `pages secret list`, and experimental `pages download config`.
 
-Compare checked-in intent, the downloaded dashboard approximation, and every active deployed version. Do not assume the latest version is the only version receiving traffic. The snapshot may contain deployed source, plain vars, routes, resource names, and account metadata, so keep it outside Git and review/redact it before sharing. Wrangler does not replace targeted DNS/WAF/Access/cache/analytics/billing evidence when those products are the actual hypothesis.
+For Workers, compare checked-in intent, the downloaded dashboard approximation, and every active deployed version; do not assume the latest version is the only version receiving traffic. For Pages, compare checked-in intent, downloaded config, and the deployment list. The snapshot may contain deployed source, plain vars, routes, resource names, and account metadata, so keep it outside Git and review/redact it before sharing. Wrangler does not replace targeted DNS/WAF/Access/cache/analytics/billing evidence when those products are the actual hypothesis.
 
 ## Redaction and safety rules
 
