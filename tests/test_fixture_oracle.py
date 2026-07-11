@@ -35,10 +35,14 @@ The README claims Cache Reserve is disabled, but account state was not inspected
         proc = self.run_oracle("round3-fixture-dashboard-claim", quoted)
         self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
 
-        asserted = "Cache Reserve is definitely disabled.\n" + quoted
-        proc = self.run_oracle("round3-fixture-dashboard-claim", asserted)
-        self.assertEqual(1, proc.returncode)
-        self.assertIn("forbidden pattern", proc.stdout)
+        for assertion in (
+            "Cache Reserve is definitely disabled.\n",
+            "**Cache Reserve is definitely disabled**\n",
+            "Finding: Cache Reserve is disabled.\n",
+        ):
+            proc = self.run_oracle("round3-fixture-dashboard-claim", assertion + quoted)
+            self.assertEqual(1, proc.returncode)
+            self.assertIn("forbidden pattern", proc.stdout)
 
     def test_concise_clean_no_finding_triage_can_pass(self) -> None:
         text = """## Cloudflare Doctor triage

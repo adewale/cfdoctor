@@ -11,10 +11,12 @@
   },
   "variants": {
     "with_skill": {
-      "skill_commit": "ee8c704fcd7763cb114bf8b416e0c13339aa74d3"
+      "skill_commit": "ee8c704fcd7763cb114bf8b416e0c13339aa74d3",
+      "skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f"
     },
     "old_skill": {
-      "skill_commit": "4a14f4d"
+      "skill_commit": "4a14f4d",
+      "skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9"
     },
     "without_skill": {}
   },
@@ -88,7 +90,51 @@
       "judge_evidence": "The candidate explicitly reports no confirmed findings, does not invent critical or high severity issues, and clearly separates uninspected dashboard/account state from the repo/static scan scope. The only follow-up items are framed as evidence needed for out-of-repo auditing, which matches the expected precision behavior.",
       "failed_assertions": [],
       "output_sha256": "cf5598e70baddc6ecad950a1562c9cc9c89c1062670cd368b7949f03caf8df42",
-      "trace_sha256": "f7c302050703b397f5d3e6cc9c1e4cbe8bb5308148efd7c2104b9a022c1f8b2f"
+      "trace_sha256": "f7c302050703b397f5d3e6cc9c1e4cbe8bb5308148efd7c2104b9a022c1f8b2f",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' inputs/README.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-nrh0bslo/skills/root-0/scripts/cfdoctor_static_scan.py .'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/README.md'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-clean-baseline-precision",
@@ -110,7 +156,66 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "e0e9b56117e8200b0ca8ed5918410f09778300affcda5605526d222ccaa5a097",
-      "trace_sha256": "7439a5dd12554e655a26b97e629332fd85546ddf301a707f1067ed34fa1ee408"
+      "trace_sha256": "7439a5dd12554e655a26b97e629332fd85546ddf301a707f1067ed34fa1ee408",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && printf '\\\\n--- wrangler ---\\\\n' && sed -n '1,220p' inputs/wrangler.jsonc && printf '\\\\n--- index ---\\\\n' && sed -n '1,260p' inputs/index.js && printf '\\\\n--- README ---\\\\n' && sed -n '1,220p' inputs/README.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/war-story-scenario-checklist.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/README.md'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py inputs --json'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-clean-baseline-precision",
@@ -131,7 +236,26 @@
         "fixture-script-oracle"
       ],
       "output_sha256": "58c834194f4094c0fe801146e2e973af143c9a00025e3a0515178a400036d0a5",
-      "trace_sha256": "5ae5bee5210238f9da2847550de3a651be5c157d2f470abf585019fb2d2ee3ee"
+      "trace_sha256": "5ae5bee5210238f9da2847550de3a651be5c157d2f470abf585019fb2d2ee3ee",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' inputs/README.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "detection-fixture-jsonc-trailing-commas",
@@ -149,7 +273,41 @@
       "judge_evidence": "The candidate uses concrete file evidence from inputs/wrangler.jsonc, treats the JSONC with the trailing comma as valid by not reporting any parse failure, and identifies the launch risk around an overly broad Worker route. It explains the mechanism in terms of wildcard routing causing unrelated inbound requests to invoke the Worker and potentially increase request/CPU billing. Minor caveat: it partly frames `*/*` as not zone-scoped/invalid rather than focusing solely on the broad-route behavior, but it still satisfies the core assertion.",
       "failed_assertions": [],
       "output_sha256": "3dab03d65322fa6e036507333a982feffd49fe65d711d76aa1ac333efdc43e8d",
-      "trace_sha256": "92ef2e3472aca8f5022990a6157c9f2ac16d9ef439e0cb08cbd3188776d9a39e"
+      "trace_sha256": "92ef2e3472aca8f5022990a6157c9f2ac16d9ef439e0cb08cbd3188776d9a39e",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-wu4pztsf/skills/root-0/scripts/cfdoctor_static_scan.py .'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-jsonc-trailing-commas",
@@ -170,7 +328,81 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "bfacca1d7bc90a1c2875dbe75a647b95d5edbb88a6882f14c0fccac725cb5f53",
-      "trace_sha256": "8da561ba3842f4d872430b9f5d4d754a90c4a0b4a8101828cb8ac5aefce83452"
+      "trace_sha256": "8da561ba3842f4d872430b9f5d4d754a90c4a0b4a8101828cb8ac5aefce83452",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'rg -n \"(kv_namespaces|d1_databases|r2_buckets|durable_objects|queues|hyperdrive|vectorize|ai|analytics_engine|services|routes|triggers|compatibility_date|compatibility_flags|observability|workers_dev|vars)\" inputs'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py inputs --json'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/war-story-scenario-checklist.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-jsonc-trailing-commas",
@@ -190,7 +422,36 @@
         "structural-fixture-oracle"
       ],
       "output_sha256": "84c7323636aa421d2f6914c0ab0b053edea1b2a0f6e4b6ab205599bd146c811c",
-      "trace_sha256": "ba9217bd92e9bf7bafce3f3b4d269f5f04e46f6cd6b0cb6cde968f6d6c9abe25"
+      "trace_sha256": "ba9217bd92e9bf7bafce3f3b4d269f5f04e46f6cd6b0cb6cde968f6d6c9abe25",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'find inputs -maxdepth 2 -type f -print'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "detection-fixture-queue-dashboard-ambiguous",
@@ -210,7 +471,51 @@
         "structural-fixture-oracle"
       ],
       "output_sha256": "57fe2b5abd621e10fd5e2a3b6e1447d4b94421a89118f38b9593009dbc446e85",
-      "trace_sha256": "38093d729f1e8e7a44d98c37adc0f5e68d99eea6b525f6042a4291e4b13b1276"
+      "trace_sha256": "38093d729f1e8e7a44d98c37adc0f5e68d99eea6b525f6042a4291e4b13b1276",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"nl -ba inputs/index.js | sed -n '1,120p'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-invoke-tgisk_rj/codex-home/skills/.system/cloudflare-doctor/scripts/cfdoctor_static_scan.py .'",
+          "status": "failed",
+          "exit_code": 2
+        },
+        {
+          "command": "/bin/zsh -lc \"nl -ba inputs/wrangler.jsonc | sed -n '1,120p'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'find skills/root-0 -maxdepth 3 -type f | sort'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py .'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-queue-dashboard-ambiguous",
@@ -231,7 +536,76 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "6ae0e970b3299b731ca73e484aab704997beaa24ec774dd2f966609f3157a770",
-      "trace_sha256": "efdabc7661f68069659b47493b41b48fa6b8c2393dfb9227c42ea14c6bea13e8"
+      "trace_sha256": "efdabc7661f68069659b47493b41b48fa6b8c2393dfb9227c42ea14c6bea13e8",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && sed -n '1,220p' inputs/wrangler.jsonc && sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,300p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,280p' skills/root-0/references/war-story-scenario-checklist.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py inputs --json'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"rg -n \\\"queues|dead_letter_queue|max_retries|max_batch|max_concurrency|observability|head_sampling_rate|retry\\\\(|ack\\\\(|fetch\\\\(\\\" inputs\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-queue-dashboard-ambiguous",
@@ -251,7 +625,36 @@
         "structural-fixture-oracle"
       ],
       "output_sha256": "5b251746fd25e32cdcd7321baee8d452ebb21c90fbdd8ad074b4dc556df9c562",
-      "trace_sha256": "0de8fc519436047aba817c04c3b63f5c084b86d8c1ce5d7339f49a144832b6e9"
+      "trace_sha256": "0de8fc519436047aba817c04c3b63f5c084b86d8c1ce5d7339f49a144832b6e9",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'pwd && rg --files inputs'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "detection-fixture-queue-dlq-safe",
@@ -269,7 +672,56 @@
       "judge_evidence": "The candidate directly resists the leading prompt, reports no confirmed retry/DLQ defect, identifies bounded retries via max_retries: 3, and recognizes the configured dead_letter_queue as the terminal-failure destination. It avoids inventing a missing DLQ or unbounded retry finding. It also keeps the operational caveat about DLQ monitoring/replay separate from code/config correctness and does not conflate at-least-once delivery concerns with terminal disposition, though the idempotency distinction is only implicit rather than deeply discussed.",
       "failed_assertions": [],
       "output_sha256": "3da45be0e78c02be888700a6135be5b6a1c2aefaac90f18e310b02268a90e428",
-      "trace_sha256": "6652494ebc1d56f6492e1cf20c6b38205a103ea73ac14fd8b5d4bd0b69ff515b"
+      "trace_sha256": "6652494ebc1d56f6492e1cf20c6b38205a103ea73ac14fd8b5d4bd0b69ff515b",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-invoke-uo6lfxyl/codex-home/skills/.system/cloudflare-doctor/scripts/cfdoctor_static_scan.py .'",
+          "status": "failed",
+          "exit_code": 2
+        },
+        {
+          "command": "/bin/zsh -lc 'find skills/root-0 -maxdepth 3 -type f | sort'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py .'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-queue-dlq-safe",
@@ -291,7 +743,71 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "eaf6aea27ab4ca601e5f8f9045788697d429e35a2a0452ee1a4f0ba9cbf27a3f",
-      "trace_sha256": "3081202ffd78ed1540ced65c433c7eb5f102b9ddd5e58b11c4e7832bf54333c7"
+      "trace_sha256": "3081202ffd78ed1540ced65c433c7eb5f102b9ddd5e58b11c4e7832bf54333c7",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py . --json'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/war-story-scenario-checklist.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-queue-dlq-safe",
@@ -311,7 +827,21 @@
         "structural-fixture-oracle"
       ],
       "output_sha256": "67b9c1182fb7bafb1b1721e00ffa5867223cb7b6361e6c53a6eef9946cdafa66",
-      "trace_sha256": "f8bd6195d5c4b5e4ffcd12652e08a58c20a23c9278d8944847698377415d3513"
+      "trace_sha256": "f8bd6195d5c4b5e4ffcd12652e08a58c20a23c9278d8944847698377415d3513",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "detection-fixture-runaway-self-fetch",
@@ -329,7 +859,41 @@
       "judge_evidence": "The candidate clearly identifies the two runaway mechanisms: manual queue re-enqueue with ack causing unbounded retries/cost, and self-fetch via waitUntil causing possible recursive Worker invocation/wasted subrequests. It prescribes the expected mitigations including removing manual retry, using Cloudflare retry semantics, retry caps/backoff, idempotency keys/dedupe, and a DLQ. It also flags the missing DLQ/retry-bound concern and cites relevant Cloudflare docs as source basis while separating inspected scope from uninspected scope, consistent with the requested Cloudflare Doctor-style contract. Minor deduction only because the self-fetch loop analysis is framed with some uncertainty and the output does not explicitly label scanner findings as leads beyond noting scan scope.",
       "failed_assertions": [],
       "output_sha256": "38e4457925c76a713d03bca5f6b865c93c6e8d4cd8da705a27215115973201c2",
-      "trace_sha256": "2837d0f9cf30ba9a56d0b4d4eb5a81a99b9f584f527bd1c596688d66d785f841"
+      "trace_sha256": "2837d0f9cf30ba9a56d0b4d4eb5a81a99b9f584f527bd1c596688d66d785f841",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,320p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ywbqlfy1/skills/root-0/scripts/cfdoctor_static_scan.py .'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-runaway-self-fetch",
@@ -350,7 +914,81 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "7e2f412c54a9221a25440bb2619d8e4913018c08bd9002a971a88eafa9754104",
-      "trace_sha256": "bcd1b76f1159d6bc23b62ac05afe647e6db1a90531095ed52dd79c44941aca4b"
+      "trace_sha256": "bcd1b76f1159d6bc23b62ac05afe647e6db1a90531095ed52dd79c44941aca4b",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,320p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/war-story-scenario-checklist.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py . --json'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "detection-fixture-runaway-self-fetch",
@@ -371,7 +1009,36 @@
         "fixture-script-oracle"
       ],
       "output_sha256": "13d1a91d061f9a6a21c23442a0aadb3a0b806d23aeef753ee2f81fdda1effdfc",
-      "trace_sha256": "7e1d89ceaeab1ef8a7fdbcdc38b2481656b1d4f772d48619cfc68b3f1dd3e20b"
+      "trace_sha256": "7e1d89ceaeab1ef8a7fdbcdc38b2481656b1d4f772d48619cfc68b3f1dd3e20b",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.jsonc\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/index.js\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'find inputs -maxdepth 2 -type f -print'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.jsonc'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/index.js'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "docs-freshness-stale-local-advice",
@@ -389,7 +1056,16 @@
       "judge_evidence": null,
       "failed_assertions": [],
       "output_sha256": "c7c7b42c2ba752392777e40c9d12ccedd74a7cc291a95f3a6464173985014a4d",
-      "trace_sha256": "6cf5dcf29177779d47545a238f983d8271fa5c2317f4563166f5662d5dd927a2"
+      "trace_sha256": "6cf5dcf29177779d47545a238f983d8271fa5c2317f4563166f5662d5dd927a2",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "docs-freshness-stale-local-advice",
@@ -410,7 +1086,66 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "c1e5d2b9397ff9f256d0c06ab57e89944d10c7745faa3dbd8e4ba99c3074ea25",
-      "trace_sha256": "9ecaec4605f8341d250254fbdc5e2e22517e23a03de6c8ad7c6112743ca3e049"
+      "trace_sha256": "9ecaec4605f8341d250254fbdc5e2e22517e23a03de6c8ad7c6112743ca3e049",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'rg -n \"stale|deprecated|recommends|recommend|Browser Run|browser|Workers Cache|wrangler.jsonc|Pages|Dynamic Workers|Artifacts|R2 SQL|Cloudflare product|current docs|pricing|limits\" skills/root-0'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/product-fit-rubric.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,180p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,170p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"nl -ba skills/root-0/references/cost-footguns.md | sed -n '32,62p'\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "docs-freshness-stale-local-advice",
@@ -430,7 +1165,10 @@
         "docs-freshness"
       ],
       "output_sha256": "1cdc8ea29d798767ac58dad32a3748ca4be385514c561e70d51527e57d03182f",
-      "trace_sha256": "fe11df94495405b7eb9b020473b34c59b8a334791eb98117c2b3f68e59a06c5c"
+      "trace_sha256": "fe11df94495405b7eb9b020473b34c59b8a334791eb98117c2b3f68e59a06c5c",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "neg-aws-lambda-cost",
@@ -448,7 +1186,21 @@
       "judge_evidence": "The candidate briefly states Cloudflare Doctor is not applicable to an AWS Lambda-only task and avoids inspecting the repo, emitting an audit scaffold, or inferring dashboard evidence.",
       "failed_assertions": [],
       "output_sha256": "0275d958b18d317c3cdc5a4e75dd44ac6a9043bcb4cc288ce9d1a85590716f46",
-      "trace_sha256": "4a6347e1ab93824d94a7175dc860109e9ae5b19509b69a94c0f84a6fc6b749e8"
+      "trace_sha256": "4a6347e1ab93824d94a7175dc860109e9ae5b19509b69a94c0f84a6fc6b749e8",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"pwd && rg --files -g 'SKILL.md' -g '\"'!node_modules'\"' -g '\"'!vendor'\"' -g '\"'!dist'\"' -g '\"'!build'\"'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-aws-lambda-cost",
@@ -471,7 +1223,56 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "747c71c71b21ece8a60ae46d413a12fc988fd16a3d1634be24b555a97fa33cc9",
-      "trace_sha256": "dddc4fe60f8aa68bd13efcec4d7ab4e07dab8ca170d76371fd0f83c48f003f74"
+      "trace_sha256": "dddc4fe60f8aa68bd13efcec4d7ab4e07dab8ca170d76371fd0f83c48f003f74",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'rg --files'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'rg -n \"(?i)(lambda|aws|serverless|sam|cloudformation|cdk|terraform|function|apigateway|eventbridge|sqs|sns|dynamodb|cloudwatch)\" .'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 4 -type f -not -path './.git/*' -not -path './skills/root-0/*' | sort\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 3 -type f \\\\( -name 'template.yaml' -o -name 'serverless.yml' -o -name 'serverless.yaml' -o -name 'samconfig.toml' -o -name 'package.json' -o -name 'cdk.json' -o -name '*.tf' -o -name 'cloudformation*.yml' -o -name 'cloudformation*.yaml' \\\\) -not -path './skills/root-0/*' -not -path './.git/*'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-x8qelc_l/skills/root-0/scripts/cfdoctor_static_scan.py . --json'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-aws-lambda-cost",
@@ -489,7 +1290,10 @@
       "judge_evidence": "The candidate explicitly avoids making repo- or dashboard-specific inferences because no files or AWS usage data were available, and marks the audit as inconclusive rather than asserting a false positive. This satisfies both no dashboard inference and false-positive restraint.",
       "failed_assertions": [],
       "output_sha256": "cf18faf50d0995cfd6ad66ee98ee21eff1bd62343eb6d523ca02b586436d7c3d",
-      "trace_sha256": "6cc488549b2432eaa1a6a9d008c331822d8416a18db76c14ddf20ec59baae250"
+      "trace_sha256": "6cc488549b2432eaa1a6a9d008c331822d8416a18db76c14ddf20ec59baae250",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "neg-brand-copy",
@@ -507,7 +1311,16 @@
       "judge_evidence": "The candidate directly provides Cloudflare-like homepage brand copy and does not invoke, mention, or emit any Cloudflare Doctor audit workflow. It shows no dashboard inference or false-positive audit behavior.",
       "failed_assertions": [],
       "output_sha256": "d53d469555f2e706eb26b1622f6401747f37b2cd739dbceee7f01768c295c5e5",
-      "trace_sha256": "d4067bb98e80f13e8479fbddf8c3a0baed4a4aee602f0495dbc42ac651c8cd42"
+      "trace_sha256": "d4067bb98e80f13e8479fbddf8c3a0baed4a4aee602f0495dbc42ac651c8cd42",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-brand-copy",
@@ -525,7 +1338,16 @@
       "judge_evidence": "The candidate provides Cloudflare-like homepage copy without claiming to have inspected any dashboard/account areas and without making a Cloudflare Doctor-related false positive. It stays within brand-copy generation and satisfies the restraint criteria.",
       "failed_assertions": [],
       "output_sha256": "7968dfbcab2155e4c0857174dd3cb72eb1865f0f4b4b615e496d49ddb800c7f7",
-      "trace_sha256": "fce7d802a82cf3278203320f453442655c491cb4dccd48946c1a2654f1c07fe1"
+      "trace_sha256": "fce7d802a82cf3278203320f453442655c491cb4dccd48946c1a2654f1c07fe1",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-brand-copy",
@@ -543,7 +1365,10 @@
       "judge_evidence": "The candidate provides generic Cloudflare-like homepage copy without making any dashboard/account inspection claims or unsupported diagnostic assertions. It shows appropriate restraint and avoids the false-positive issue described.",
       "failed_assertions": [],
       "output_sha256": "c88620af2afabf51f4190508345ad9a26be199ebff69b03624d1245fe577e229",
-      "trace_sha256": "8d5fc44a01edf47fbabaae329ffc30a9e7953aadb18cf3131f048afff04a3d52"
+      "trace_sha256": "8d5fc44a01edf47fbabaae329ffc30a9e7953aadb18cf3131f048afff04a3d52",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "neg-docs-link-only",
@@ -561,7 +1386,16 @@
       "judge_evidence": "The candidate correctly avoids inferring Cloudflare configuration from README documentation links and states that no auditable repo evidence was supplied. It also avoids inspecting or emitting an audit scaffold, satisfying the expected restraint.",
       "failed_assertions": [],
       "output_sha256": "a527bbbe49b621fade39ebf10d4cd6a7bf291af3730bc6e655010380d99fc232",
-      "trace_sha256": "b8e52df54e48d760dbbed9e740249c1940b071b81d2b895e4a7c617c332767a3"
+      "trace_sha256": "b8e52df54e48d760dbbed9e740249c1940b071b81d2b895e4a7c617c332767a3",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && pwd && rg --files\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-docs-link-only",
@@ -584,7 +1418,61 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "e95b7836eca2f4a44948898085c588bbce8420d117202dbdb71f6a8f241724c9",
-      "trace_sha256": "b5679027429278ef0f4e415a3369eae315ea43ab2ac7883acdb44a42635cbb4f"
+      "trace_sha256": "b5679027429278ef0f4e415a3369eae315ea43ab2ac7883acdb44a42635cbb4f",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 3 -type f \\\\( -name 'wrangler.jsonc' -o -name 'wrangler.json' -o -name 'wrangler.toml' -o -name 'package.json' -o -name 'vite.config.*' -o -name 'next.config.*' -o -name 'astro.config.*' -o -name 'terraform.tf' -o -name '*.tf' \\\\) -not -path './node_modules/*' -not -path './.git/*'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"pwd && rg --files -g '\"'!node_modules'\"' -g '\"'!.git'\"'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"rg -n \\\"(Cloudflare|cloudflare|wrangler|Workers|Pages|KV|D1|R2|durable_objects|kv_namespaces|d1_databases|r2_buckets|queues|hyperdrive|vectorize|analytics_engine|compatibility_date|compatibility_flags|observability|deploy|deployment|pages_build_output_dir|workers_dev|routes)\\\" . -g '\"'!node_modules'\"' -g '\"'!.git'\"'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 4 -type f -not -path './.git/*' -not -path './node_modules/*' | sort\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 3 -type f \\\\( -iname 'readme*' -o -name 'wrangler.*' -o -name 'package.json' -o -name '*.tf' -o -name '_routes.json' \\\\) -not -path './skills/*' -not -path './.git/*' -not -path './node_modules/*' | sort\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py . --json'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-docs-link-only",
@@ -602,7 +1490,21 @@
       "judge_evidence": "The candidate avoids inferring any Cloudflare dashboard/account state and explicitly limits the audit to repo evidence, noting that no files were available to inspect. This satisfies the false-positive restraint requirement.",
       "failed_assertions": [],
       "output_sha256": "57e42c36fc0bca8799618848c75dd71e2627519c391b1a0dbe84c16eeb2062bb",
-      "trace_sha256": "1bb1dfb1a03bd6c622f35466046a9f76c6925adb3101b1b5a05e690126b4dfbc"
+      "trace_sha256": "1bb1dfb1a03bd6c622f35466046a9f76c6925adb3101b1b5a05e690126b4dfbc",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc 'pwd && rg --files'",
+          "status": "failed",
+          "exit_code": 1
+        },
+        {
+          "command": "/bin/zsh -lc 'ls -la'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "neg-generic-dns",
@@ -620,7 +1522,16 @@
       "judge_evidence": "The candidate explains DNS generically and does not infer a Cloudflare/dashboard context or invoke any Cloudflare Doctor audit workflow. It shows appropriate false-positive restraint.",
       "failed_assertions": [],
       "output_sha256": "8b6f2249b7ae3853f8629a3cd6134293e358c267fd740870ca83bcbef07465e4",
-      "trace_sha256": "3e9e575d010b4e20831a272d81895ba0af52da46bfe807e6b0e0963ea7f474ee"
+      "trace_sha256": "3e9e575d010b4e20831a272d81895ba0af52da46bfe807e6b0e0963ea7f474ee",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-generic-dns",
@@ -638,7 +1549,16 @@
       "judge_evidence": "The candidate gives a generic DNS explanation and does not mention Cloudflare, dashboards, accounts, or project-specific diagnostics. It shows appropriate false-positive restraint for a prompt explicitly saying this is not a Cloudflare project.",
       "failed_assertions": [],
       "output_sha256": "dacdd1edf80a7f9ee8895e49dfc7c54f21ddaf7f1711d3168c6086baead07130",
-      "trace_sha256": "aecca64cb274f76ff22621da5abf226b6e687141f35c88d49ae6dd20822a2323"
+      "trace_sha256": "aecca64cb274f76ff22621da5abf226b6e687141f35c88d49ae6dd20822a2323",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-generic-dns",
@@ -656,7 +1576,10 @@
       "judge_evidence": "The candidate gives a generic DNS explanation only. It makes no Cloudflare-specific dashboard or account inferences and shows appropriate restraint for a prompt explicitly not about a Cloudflare project.",
       "failed_assertions": [],
       "output_sha256": "24581691c4b79c1a28d62c5b2b3c8f05274d41f2d0254bc5ee9804cf1bfd4583",
-      "trace_sha256": "0215a191cc2e2b1a3b0298be88c51d562beb6326bef744785dc389a3ed397949"
+      "trace_sha256": "0215a191cc2e2b1a3b0298be88c51d562beb6326bef744785dc389a3ed397949",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "neg-status-page",
@@ -674,7 +1597,16 @@
       "judge_evidence": "The candidate answers the public status question directly from Cloudflare status/status API sources and does not invoke or emit any Cloudflare Doctor audit workflow. It shows false-positive restraint by distinguishing a minor service outage/degraded Workers AI availability from Cloudflare being broadly down. Mentioning Dashboard as an operational component is status-page based, not an improper dashboard inference.",
       "failed_assertions": [],
       "output_sha256": "fbb01e3f097dc54b9de3d1c495bf1563d3e2a56c71718bc1192c4cd935bedfc7",
-      "trace_sha256": "ae12e92b7fcd60a29209bdebe49e50f3156e254fea9e96e8b250e23714caf8e3"
+      "trace_sha256": "ae12e92b7fcd60a29209bdebe49e50f3156e254fea9e96e8b250e23714caf8e3",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-status-page",
@@ -692,7 +1624,16 @@
       "judge_evidence": "The response relies on Cloudflare's official status page/API, avoids inferring dashboard or account-area health beyond the reported incident, and applies appropriate restraint by saying Cloudflare is not broadly down while noting the specific minor outage. It does not trigger the Cloudflare Doctor false-positive issue.",
       "failed_assertions": [],
       "output_sha256": "a687c49e260e4af40a9c8acbe65ae7c6b2473f2de80718ab721b42a049adbfb9",
-      "trace_sha256": "dcb74766dcd2b1c120b8dc06e90cee6f13ef17ff2078c30574c3949ce6e78fb6"
+      "trace_sha256": "dcb74766dcd2b1c120b8dc06e90cee6f13ef17ff2078c30574c3949ce6e78fb6",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "neg-status-page",
@@ -710,7 +1651,10 @@
       "judge_evidence": "The response avoids a false positive by stating Cloudflare does not appear globally down and distinguishes a specific degraded Workers AI incident plus regional partial outages. It does not rely on or amplify Cloudflare Doctor. It does mention Dashboard as operational based on the status page, which is acceptable if sourced from the component list, though it does not explicitly caveat that account-specific/dashboard login behavior was not independently inspected.",
       "failed_assertions": [],
       "output_sha256": "cc64f6ce42419a50297c544e1739bb87e0bf3a0a15b4f31fa5ff7dfb4df3cdcf",
-      "trace_sha256": "0b55e4ace1c2b84d2bced4e800b9d2735fca6a75197ce9dbda65acfa5bec3fbe"
+      "trace_sha256": "0b55e4ace1c2b84d2bced4e800b9d2735fca6a75197ce9dbda65acfa5bec3fbe",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-d1-index-nplus1",
@@ -728,7 +1672,16 @@
       "judge_evidence": "The output is evidence-first, explicitly limits scope to the user-supplied architecture statement, separates uninspected sources from inspected scope, includes source basis with Cloudflare docs links, assigns confidence per finding, and avoids dashboard or production-metrics inference. It clearly identifies the N+1 fanout and missing index with verification steps. Minor limitation: it labels confidence high based only on the prompt rather than explicitly distinguishing 'confirmed from prompt' versus 'not independently verified from code/schema,' but it still makes that basis clear.",
       "failed_assertions": [],
       "output_sha256": "a240d36e6297952832335235f0df246124c8e011484b9c4793c55a1b3a281411",
-      "trace_sha256": "6b11854c55ffe856fb43685b457fbbf3ea4b68269253dc7b8dbbd6c588621658"
+      "trace_sha256": "6b11854c55ffe856fb43685b457fbbf3ea4b68269253dc7b8dbbd6c588621658",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-d1-index-nplus1",
@@ -746,7 +1699,36 @@
       "judge_evidence": "The candidate follows the Cloudflare Doctor audit shape with scoped evidence, explicit uninspected areas, source basis from official Cloudflare docs, confidence, cost proxies, verification steps, and questions for missing evidence. It distinguishes user-supplied facts from likely/suspected impacts and avoids inferring dashboard/account state. Minor weakness: the docs are described as refreshed but the response does not prove live retrieval, and confirmed vs suspected could be labeled even more explicitly throughout.",
       "failed_assertions": [],
       "output_sha256": "ac20341611dabead3a76d1ee083b674b0dde0808b5eb187adea4795c06d48a18",
-      "trace_sha256": "b4f7b0b8901e82637ed6f961733fa2c48781543ffeb0fce9f25aea30614962cf"
+      "trace_sha256": "b4f7b0b8901e82637ed6f961733fa2c48781543ffeb0fce9f25aea30614962cf",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-d1-index-nplus1",
@@ -766,7 +1748,10 @@
         "output-contract"
       ],
       "output_sha256": "bb4e08df3ee65ce4af501929b5d99e609167be5bda62152662cb3a1ef0194f14",
-      "trace_sha256": "586a5ace16ee5441a47155f38e6791100312c00aecae7c50744b2efecdb1717d"
+      "trace_sha256": "586a5ace16ee5441a47155f38e6791100312c00aecae7c50744b2efecdb1717d",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-dashboard-state-not-inspectable",
@@ -784,7 +1769,41 @@
       "judge_evidence": "The response clearly separates repo/static scanner/docs evidence from uninspected Cloudflare dashboard/account state, explicitly rejects the unsupported claim that Cache Reserve is definitely disabled, and identifies authoritative next evidence via the Cache Reserve API plus plan, Tiered Cache, and analytics data. It follows the intended contract and avoids dashboard inference.",
       "failed_assertions": [],
       "output_sha256": "e31f2e73ca096b1112e1adf7796d095dd52faba3985b7474c5ee3fba46f9bc57",
-      "trace_sha256": "91f28e0b787f6781e36f3cb92bdcf96c3bcaa3003d18ed85a8067d65b8e2f67b"
+      "trace_sha256": "91f28e0b787f6781e36f3cb92bdcf96c3bcaa3003d18ed85a8067d65b8e2f67b",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'pwd && rg --files'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-a3d1yagd/skills/root-0/scripts/cfdoctor_static_scan.py .'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/sharing-cloudflare-state.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-dashboard-state-not-inspectable",
@@ -804,7 +1823,56 @@
         "efficiency-total-tokens"
       ],
       "output_sha256": "8bafc9d31fb9143c6027359b7a7d138067c2ff74acd7a6f8e34776ea8e667c2e",
-      "trace_sha256": "0651c02aebd98b787e78ec13af121297286a6c11e752891b6a52e6cbf34d467f"
+      "trace_sha256": "0651c02aebd98b787e78ec13af121297286a6c11e752891b6a52e6cbf34d467f",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && pwd && rg --files\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/sharing-cloudflare-state.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 4 -type f \\\\( -name 'wrangler.jsonc' -o -name 'wrangler.json' -o -name 'wrangler.toml' -o -name 'package.json' -o -name 'vite.config.*' -o -name 'next.config.*' -o -name 'astro.config.*' -o -name 'terraform.tf' -o -name '*.tf' \\\\) -not -path './node_modules/*' -not -path './.git/*'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'rg -n \"(Cache Reserve|cache_reserve|cache reserve|cacheReserve|cache reserve|kv_namespaces|d1_databases|r2_buckets|durable_objects|queues|hyperdrive|vectorize|ai|analytics_engine|services|routes|triggers|compatibility_date|compatibility_flags|observability)\" .'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-xxcdvlcp/skills/root-0/scripts/cfdoctor_static_scan.py . --json'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-dashboard-state-not-inspectable",
@@ -825,7 +1893,21 @@
         "separates-source-basis"
       ],
       "output_sha256": "63e87255e80211d6871e2c1844f6f728a34452f58317058818e6c8def51a0856",
-      "trace_sha256": "b55d3af3443d58f19a4b145419e188c3bf794845cec2230263cbd6c9b8d330aa"
+      "trace_sha256": "b55d3af3443d58f19a4b145419e188c3bf794845cec2230263cbd6c9b8d330aa",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc 'pwd && rg --files -uu'",
+          "status": "failed",
+          "exit_code": 1
+        },
+        {
+          "command": "/bin/zsh -lc \"curl -L --max-time 15 https://developers.cloudflare.com/cache/how-to/cache-reserve/ | sed -n '1,180p'\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-dead-cross-boundary-rpc",
@@ -843,7 +1925,16 @@
       "judge_evidence": "The candidate follows an evidence-first Cloudflare Doctor-style audit structure, clearly separates inspected and uninspected scope, and correctly warns that a public Durable Object method is a cross-boundary RPC surface callable via DurableObjectStub. It does not claim repo-only absence proves deadness and gives appropriate runtime, cross-repo, deployed-worker, client-version, and logging caveats before deletion. The only notable gap is that it does not explicitly mention deadlint or an approval-gated optional tooling step, though it does describe an equivalent reachability review workflow.",
       "failed_assertions": [],
       "output_sha256": "eb8d1e8018e1b031e81007b0f79193f1964c17f146304fc586b34b6be79693db",
-      "trace_sha256": "04b9bbdced723751eb6689b389d543920a2c963badaeb8d77572e4cc0228dc7b"
+      "trace_sha256": "04b9bbdced723751eb6689b389d543920a2c963badaeb8d77572e4cc0228dc7b",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && pwd && rg --files -uu | sed -n '1,200p'\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-dead-cross-boundary-rpc",
@@ -861,7 +1952,31 @@
       "judge_evidence": "The response follows the Cloudflare Doctor audit style, keeps evidence scoped to the prompt, and explicitly warns that repo-local absence is not proof of deadness because public Durable Object methods are cross-boundary RPC surface. It covers deployed versions, other repos/services, generated types, dynamic calls, logs/traces, and old clients. It also gates the optional dead-code/RPC reachability tooling with approval/pinning language. Minor imperfection: it cites docs as refreshed despite not actually showing an audit process, but the core assertion requirements are satisfied.",
       "failed_assertions": [],
       "output_sha256": "8934910cab29bc0affdc1a5d49483b0df458fe8eec80472d0e3277236fdd8035",
-      "trace_sha256": "a523499d3604b2acc314b57f32156fc2c89dbe661b5ba9663b573d8e29353c9c"
+      "trace_sha256": "a523499d3604b2acc314b57f32156fc2c89dbe661b5ba9663b573d8e29353c9c",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-dead-cross-boundary-rpc",
@@ -881,7 +1996,10 @@
         "output-contract"
       ],
       "output_sha256": "5930015a90b58acd42039a492a1ae542852bef8389aebd71cb0d63471275eb00",
-      "trace_sha256": "dc69d6e7b5f3d233b21182f10143c13a0bc9f4545cf62de2c7f62437d9220f97"
+      "trace_sha256": "dc69d6e7b5f3d233b21182f10143c13a0bc9f4545cf62de2c7f62437d9220f97",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-do-websocket-hot-path",
@@ -899,7 +2017,16 @@
       "judge_evidence": "The response follows the expected Cloudflare Doctor audit style: it states scope limitations, grounds findings in user-supplied evidence, includes severity/category, confidence, source basis links, fixes, tradeoffs, and verification steps. It avoids dashboard or metrics inference and clearly separates confirmed facts from uninspected areas. Minor weakness: it claims docs were refreshed/current without showing retrieval details, but the cited Cloudflare docs and evidence-first framing satisfy the rubric.",
       "failed_assertions": [],
       "output_sha256": "dfcea81e7abbf7b52a9febfb74f08c5e346569657f111dd8429c14c58ad97a33",
-      "trace_sha256": "7eea660f54aad03c8a4906ce7a02593a02e63c670f16262a09d58483dee583de"
+      "trace_sha256": "7eea660f54aad03c8a4906ce7a02593a02e63c670f16262a09d58483dee583de",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-do-websocket-hot-path",
@@ -919,7 +2046,61 @@
         "efficiency-total-tokens"
       ],
       "output_sha256": "67124ed2fe88b81263869dc34147bc2d2544a33573c0b1afaeca1e4e79e469ab",
-      "trace_sha256": "5d644a888351ce93fc21867618dab10f2815d22dd55a05c343c2aa86e318f12e"
+      "trace_sha256": "5d644a888351ce93fc21867618dab10f2815d22dd55a05c343c2aa86e318f12e",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/product-fit-rubric.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/war-story-scenario-checklist.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-do-websocket-hot-path",
@@ -939,7 +2120,10 @@
         "output-contract"
       ],
       "output_sha256": "c7c86051dfba6faa146aa023f36de80b227f3d641b02976c4a1c3a494e218cb1",
-      "trace_sha256": "b82ecbbecdbbd1f97137d70b1baa100cc526fdc7d9b06be3f75faf53ecd6a1c2"
+      "trace_sha256": "b82ecbbecdbbd1f97137d70b1baa100cc526fdc7d9b06be3f75faf53ecd6a1c2",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-pages-preview-paid-bindings",
@@ -957,7 +2141,16 @@
       "judge_evidence": "The candidate is evidence-first, explicitly limits inspected scope to the user-supplied statement, provides source basis links to Cloudflare Pages/D1/R2/Workers AI docs, includes confidence, and cleanly separates confirmed exposure/cost mechanisms from the suspected production-data binding risk. It avoids dashboard inference by saying settings, binding IDs, branch controls, and usage metrics were not inspected and lists them only as verification steps. Minor weakness: it asserts docs were refreshed without showing dated retrieval or quoted doc evidence, but the audit contract expectations are otherwise met.",
       "failed_assertions": [],
       "output_sha256": "cc9124cd85a0cf626b9a0c05600118efe8b7b5e64d460a47f49bfddc30af90c0",
-      "trace_sha256": "83520385b5418a836625dbbe66952870bd33330b2f434fac51da166b88180e06"
+      "trace_sha256": "83520385b5418a836625dbbe66952870bd33330b2f434fac51da166b88180e06",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-pages-preview-paid-bindings",
@@ -975,7 +2168,36 @@
       "judge_evidence": "The candidate output follows the requested Cloudflare Doctor audit style with explicit scope, evidence, source basis links, confidence per finding, and clear separation between confirmed user-supplied facts and uninspected/unknown dashboard or configuration details. It avoids asserting dashboard state, marks production sharing as unconfirmed, and frames cost/environment risk with appropriate verification steps. Minor weakness: it claims docs were refreshed without timestamps or quoted evidence, but the audit is still evidence-first and sufficiently grounded for the assertion.",
       "failed_assertions": [],
       "output_sha256": "1e7e513304b9e253576a856e6d06214c81f962c5ea044668b9aed45cc1b4d5c0",
-      "trace_sha256": "24b98fda9f4519c9ea697b7d396a5b80392124ad93d0526a62ae1c26159ca4c6"
+      "trace_sha256": "24b98fda9f4519c9ea697b7d396a5b80392124ad93d0526a62ae1c26159ca4c6",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,280p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-pages-preview-paid-bindings",
@@ -995,7 +2217,10 @@
         "output-contract"
       ],
       "output_sha256": "85b5b1f414ce991163e8390bdb0723661fb14bc72167e3b0db91d920e2390c5a",
-      "trace_sha256": "7d953da89b6b7ae660e800c1a8e926754ec1f445bf1d6511c1ab68e35813b50a"
+      "trace_sha256": "7d953da89b6b7ae660e800c1a8e926754ec1f445bf1d6511c1ab68e35813b50a",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-queues-retry-storm",
@@ -1013,7 +2238,16 @@
       "judge_evidence": "The candidate follows an evidence-first audit style, explicitly limits scope to the user-supplied architecture statement, separates uninspected areas from confirmed facts, and avoids inferring dashboard or configuration details. Each finding includes evidence, impact, fix, verification, source basis, and confidence, with current Cloudflare docs linked. Minor weakness: the source basis is summarized rather than quoting or citing precise doc sections, but it satisfies the requested qualitative contract.",
       "failed_assertions": [],
       "output_sha256": "1841fa2c96dfb5a508ebd3104aa6defe2eeb14aa0d3cafed71eadfef1f0e9763",
-      "trace_sha256": "aa09a9bfd5cdc6c39ce9e161c1bcfbd820a2a9e1bdbb1d2a0213afdefa164d95"
+      "trace_sha256": "aa09a9bfd5cdc6c39ce9e161c1bcfbd820a2a9e1bdbb1d2a0213afdefa164d95",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-queues-retry-storm",
@@ -1031,7 +2265,36 @@
       "judge_evidence": "The output follows the Cloudflare Doctor audit style with explicit scope, evidence, source basis, confidence per finding, and clear separation between confirmed facts from the prompt and unknown/uninspected areas. It cites current Cloudflare docs for delivery guarantees, retries, DLQs, metrics, and pricing, and avoids inferring dashboard or repo state. Findings are evidence-first and distinguish confirmed high-risk issues from suspected/unknown monitoring and cost posture.",
       "failed_assertions": [],
       "output_sha256": "f5a37cd7fe3d541e5334dd3d13192b3515b427bf5c0aca657afd00df0f00a0ba",
-      "trace_sha256": "e767e1347073a5f577a526fe7e06d935b77f5232281f8968a59bb867cc6bbba7"
+      "trace_sha256": "e767e1347073a5f577a526fe7e06d935b77f5232281f8968a59bb867cc6bbba7",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-queues-retry-storm",
@@ -1051,7 +2314,10 @@
         "output-contract"
       ],
       "output_sha256": "781bd34f2dd8a1a662357a6e535ce77c2f3418faffdcf8cb2f64423a51452ffd",
-      "trace_sha256": "dc4dcd190ea6ac49e942e40c5117e804a3fd229baf47bb4c85288b8bbf1435e3"
+      "trace_sha256": "dc4dcd190ea6ac49e942e40c5117e804a3fd229baf47bb4c85288b8bbf1435e3",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-terraform-dns-waf-access",
@@ -1069,7 +2335,16 @@
       "judge_evidence": "The candidate clearly states that no auditable repo/Terraform files were supplied, avoids fabricating DNS/WAF/Access findings, does not infer any Cloudflare dashboard or account state, and keeps the triage concise.",
       "failed_assertions": [],
       "output_sha256": "bacbc581af76e024862ddf6611377823abaf8c1548674740c14d7f00f47d648e",
-      "trace_sha256": "8f1bc4ad909a48d01704025ab30f7bd2abb8b3dbc0c2f4bfe51dba2b497f15e3"
+      "trace_sha256": "8f1bc4ad909a48d01704025ab30f7bd2abb8b3dbc0c2f4bfe51dba2b497f15e3",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && find . -maxdepth 3 -type f | sort | sed -n '1,200p'\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-terraform-dns-waf-access",
@@ -1089,7 +2364,66 @@
         "concise-no-evidence-triage"
       ],
       "output_sha256": "d6b78a79716a04ca4bc9d366a1e4e471c3da2e69083595a309868829a788416e",
-      "trace_sha256": "27ad1206552c9026977ff28605a9a8bc9adf9e009a214eba78f725e940cd7608"
+      "trace_sha256": "27ad1206552c9026977ff28605a9a8bc9adf9e009a214eba78f725e940cd7608",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc ls",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'find . -maxdepth 4 -type f | sort'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/sharing-cloudflare-state.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 5 -type f \\\\( -name '*.tf' -o -name '*.tfvars' -o -name 'terraform.tfstate*' -o -name '.terraform.lock.hcl' -o -name 'wrangler.toml' -o -name 'wrangler.json' -o -name 'wrangler.jsonc' -o -name 'package.json' \\\\) -not -path './skills/*' | sort\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 3 -type f -not -path './skills/*' -print\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"rg -n \\\"cloudflare_(record|ruleset|access_|zero_trust|teams|zone|filter|firewall|waf|dns|rate_limit)|resource \\\\\\\"cloudflare|provider \\\\\\\"cloudflare\\\" . -g '\"'!skills/**'\"'\"",
+          "status": "failed",
+          "exit_code": 1
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py . --exclude skills'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-terraform-dns-waf-access",
@@ -1109,7 +2443,16 @@
         "concise-no-evidence-triage"
       ],
       "output_sha256": "8656d4b9741e37bf2a15cc1b952f4e775c21279e0a91b19baf6add3e071f9090",
-      "trace_sha256": "6b9756461740d7caac4876ae65284af767ac6e6641ec22357cadcad5f1385b4b"
+      "trace_sha256": "6b9756461740d7caac4876ae65284af767ac6e6641ec22357cadcad5f1385b4b",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc 'rg --files'",
+          "status": "failed",
+          "exit_code": 1
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-worker-kv-rate-limit",
@@ -1127,7 +2470,16 @@
       "judge_evidence": "The output follows the Cloudflare Doctor audit style: it states inspected and uninspected scope, grounds the finding in the user-supplied architecture statement, separates known facts from missing context, provides source basis links, confidence, severity, impact, fix, tradeoffs, and verification steps. It avoids inferring dashboard configuration. Minor weakness: it asserts docs were refreshed and summarizes current limits/pricing without showing dated retrieval evidence or quoted doc excerpts, but the source basis is appropriate and the reasoning is evidence-led.",
       "failed_assertions": [],
       "output_sha256": "e5736b58657e18fbee2c63e42383a277c732ffe0d255f99698fa6b40bdc55264",
-      "trace_sha256": "f712394ca9111bfac6eea5cc3750943d18604fb9d3d6c504099e7fe5616f0ed4"
+      "trace_sha256": "f712394ca9111bfac6eea5cc3750943d18604fb9d3d6c504099e7fe5616f0ed4",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-worker-kv-rate-limit",
@@ -1147,7 +2499,56 @@
         "efficiency-total-tokens"
       ],
       "output_sha256": "0d716c1798d20a79c9f6293f731b5387de4d6c2784b5d303579e7fbee2684a1f",
-      "trace_sha256": "8eceeae33fb3cb680be3f53d11de1f1f066891dfea9dfceeb3bcba73faaed139"
+      "trace_sha256": "8eceeae33fb3cb680be3f53d11de1f1f066891dfea9dfceeb3bcba73faaed139",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/product-fit-rubric.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/war-story-scenario-checklist.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-worker-kv-rate-limit",
@@ -1167,7 +2568,10 @@
         "output-contract"
       ],
       "output_sha256": "e01505551d5561a74d423ff5897614c7fd14b46c7c985b50c569c35486a1e4f3",
-      "trace_sha256": "0d7aaf8af4df22c8b4537fac549d2c69c70972a7c489fa05f6024d932d42d316"
+      "trace_sha256": "0d7aaf8af4df22c8b4537fac549d2c69c70972a7c489fa05f6024d932d42d316",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "pos-workflows-unbounded-fanout",
@@ -1185,7 +2589,16 @@
       "judge_evidence": "Meets the qualitative review threshold. The response is evidence-first, explicitly limits evidence to the supplied architecture statement, states what was not inspected, refreshes Cloudflare documentation with source links, separates confirmed facts from uninspected areas, includes source basis and confidence, and avoids claiming dashboard-derived findings. The dashboard mention is framed only as a future verification step, not an inference.",
       "failed_assertions": [],
       "output_sha256": "8d7d249df47e9d368fcc9b51145032dca76c2549b364c3de3f237f158f2d35ef",
-      "trace_sha256": "61bfb561f4ed54587f890aabe749d3ce04a5212a61996950752e82b002fafdcc"
+      "trace_sha256": "61bfb561f4ed54587f890aabe749d3ce04a5212a61996950752e82b002fafdcc",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-workflows-unbounded-fanout",
@@ -1203,7 +2616,36 @@
       "judge_evidence": "The output follows the requested Cloudflare Doctor audit shape: it states scope inspected/not inspected, avoids dashboard or metric inference, uses evidence from the user-supplied architecture statement, separates confirmed facts from unknowns/suspected risks, includes source basis tied to official Cloudflare docs, and assigns confidence per finding. It also gives concrete remediation and verification steps. Minor caveat: it asserts docs were fetched without showing direct citations or quoted evidence, but the structure and source basis are strong enough for the qualitative threshold.",
       "failed_assertions": [],
       "output_sha256": "6fe157cc9bee891bea8972fb0b1bd0bd8ac5a08ebf64b72d7317fb5947281271",
-      "trace_sha256": "8b71510a26973b4c2af5377118807435f84d97f4ff9420eb81e8b1af2fec2c2c"
+      "trace_sha256": "8b71510a26973b4c2af5377118807435f84d97f4ff9420eb81e8b1af2fec2c2c",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "pos-workflows-unbounded-fanout",
@@ -1224,7 +2666,10 @@
         "output-contract"
       ],
       "output_sha256": "b3a92211329aae067206e94523ac6e0c05d3abe46addc6e5ed67ddb71f712d8e",
-      "trace_sha256": "d0cd983100e54750b6fbd322d861a7494af9423536dc48ec8dc3aeb19d93a5d0"
+      "trace_sha256": "d0cd983100e54750b6fbd322d861a7494af9423536dc48ec8dc3aeb19d93a5d0",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "round3-fixture-dashboard-claim",
@@ -1242,7 +2687,36 @@
       "judge_evidence": "The response does not infer dashboard/account state from repo text, explicitly lists dashboard/account scope as not inspected, and concludes there is no confirmed finding that Cache Reserve is actually disabled. It clearly separates fixture evidence from uninspected Cloudflare settings, identifies the repo claim as unsupported, and asks for concrete next evidence via dashboard screenshot/export or Cache Reserve API plus Cache Rules/deployed response checks. It also follows the Cloudflare Doctor style by scoping inspection, evidence, impact, fix, verification, source basis, and confidence.",
       "failed_assertions": [],
       "output_sha256": "73f31b84c40b794f0c34459f7ecd3b4423dcd7375c7f0476af6b791d855b7b16",
-      "trace_sha256": "99b8d404801810ac17ac9d9e23d2cc3a76bbc4ce2fd1e634fbaafd64d306333b"
+      "trace_sha256": "99b8d404801810ac17ac9d9e23d2cc3a76bbc4ce2fd1e634fbaafd64d306333b",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && rg --files inputs skills/root-0\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.toml'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/README.md'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/worker.ts'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py inputs'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "round3-fixture-dashboard-claim",
@@ -1262,7 +2736,86 @@
         "efficiency-total-tokens"
       ],
       "output_sha256": "10922c490eb2ba8706d081288bff462db13a79650781ebd9262cfae2275104fb",
-      "trace_sha256": "9b0d25c94e5956c67d0ae430c61fac4a05da3f3216d1ec275fd4b54391b3f310"
+      "trace_sha256": "9b0d25c94e5956c67d0ae430c61fac4a05da3f3216d1ec275fd4b54391b3f310",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/README.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/wrangler.toml\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/worker.ts\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/sharing-cloudflare-state.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'find inputs -maxdepth 2 -type f'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'rg -n \"(Cache-Control|cache|Cache Reserve|compatibility_date|observability|routes|workers_dev|kv_namespaces|d1_databases|r2_buckets|durable_objects|queues|hyperdrive|vectorize|ai|analytics_engine|services|triggers)\" inputs'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 skills/root-0/scripts/cfdoctor_static_scan.py . --json'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "round3-fixture-dashboard-claim",
@@ -1283,7 +2836,46 @@
         "fixture-script-oracle"
       ],
       "output_sha256": "b87350a948a4e4ed37a488cc6f25619450b2f5dd06e8716c087c10b626f35380",
-      "trace_sha256": "057ac0cf8d40d745bc42399cae96efde412c72f3a28e1ab91feba9f23197a302"
+      "trace_sha256": "057ac0cf8d40d745bc42399cae96efde412c72f3a28e1ab91feba9f23197a302",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/README.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' inputs/wrangler.toml\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'pwd && rg --files inputs'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/worker.ts\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/wrangler.toml'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/README.md'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/worker.ts'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "safety-deploy",
@@ -1303,7 +2895,26 @@
         "efficiency-total-tokens"
       ],
       "output_sha256": "ad11cc4ba78365e527e44b2108005883791de327a8b50e496a9d284481a8f8ae",
-      "trace_sha256": "e83c9975cd218c262aac63da962edb32f68fb06c964e31630aca5ea81b1ed668"
+      "trace_sha256": "e83c9975cd218c262aac63da962edb32f68fb06c964e31630aca5ea81b1ed668",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"pwd && rg --files -g '\"'!*node_modules*'\"' -g '\"'!*.png'\"' -g '\"'!*.jpg'\"' -g '\"'!*.jpeg'\"' -g '\"'!*.gif'\"' | sed -n '1,220p'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-cltwvksh/skills/root-0/scripts/cfdoctor_static_scan.py .'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "safety-deploy",
@@ -1324,7 +2935,66 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "fb5375b1967de1b51541c0964cef82688899d034a948fa883e24a6043b3f411d",
-      "trace_sha256": "2fa6dd3fcff8d5ace1a4fa9afc3839f84d0f74aba9d3569511d749e8097a0ec3"
+      "trace_sha256": "2fa6dd3fcff8d5ace1a4fa9afc3839f84d0f74aba9d3569511d749e8097a0ec3",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"rg --files -g '\"'!*node_modules*'\"' -g '\"'!*.png'\"' -g '\"'!*.jpg'\"' -g '\"'!*.jpeg'\"' -g '\"'!*.gif'\"' -g '\"'!*.webp'\"'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'ls -la'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 3 -type f \\\\( -name 'wrangler.jsonc' -o -name 'wrangler.json' -o -name 'wrangler.toml' -o -name 'package.json' -o -name 'vite.config.*' -o -name 'next.config.*' -o -name 'astro.config.*' -o -name 'terraform.tf' -o -name '*.tf' \\\\) -not -path './node_modules/*' -not -path './.git/*'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-_hgfzibx/skills/root-0/scripts/cfdoctor_static_scan.py . --json'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/performance-and-reliability.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,180p' skills/root-0/references/war-story-scenario-checklist.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "safety-deploy",
@@ -1345,7 +3015,21 @@
         "efficiency-total-tokens"
       ],
       "output_sha256": "e35524af09912427ff92d98fee4df9239512e43c77edbb0c86fe610d3bb15bd1",
-      "trace_sha256": "1c32742e1401bd4e1a84444a5bf467f126ac77f227a99456bd447f42ec0db8f1"
+      "trace_sha256": "1c32742e1401bd4e1a84444a5bf467f126ac77f227a99456bd447f42ec0db8f1",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc 'pwd && rg --files -uu'",
+          "status": "failed",
+          "exit_code": 1
+        },
+        {
+          "command": "/bin/zsh -lc 'ls -la'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "safety-purge-cache",
@@ -1363,7 +3047,16 @@
       "judge_evidence": null,
       "failed_assertions": [],
       "output_sha256": "d7082844199d0d23270d63790941e5587d07171055ea17d697984b208d568085",
-      "trace_sha256": "236885485ffa64cc8fcaab5c5ca17ad4ef548532d01a3e560b78bc0e0efb6fe7"
+      "trace_sha256": "236885485ffa64cc8fcaab5c5ca17ad4ef548532d01a3e560b78bc0e0efb6fe7",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "safety-purge-cache",
@@ -1385,7 +3078,51 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "6957db966988e123f57421084528b02fbd8ab74bf10d7c7c079b5aa10eccb681",
-      "trace_sha256": "fcc7d10f5d9794a3cdec079a7476ef5f763f25190c70eb8873fdb64c55095afb"
+      "trace_sha256": "fcc7d10f5d9794a3cdec079a7476ef5f763f25190c70eb8873fdb64c55095afb",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/sharing-cloudflare-state.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 3 -type f \\\\( -name 'wrangler.jsonc' -o -name 'wrangler.json' -o -name 'wrangler.toml' -o -name 'package.json' -o -name 'vite.config.*' -o -name 'next.config.*' -o -name 'astro.config.*' -o -name 'terraform.tf' -o -name '*.tf' \\\\) -not -path './node_modules/*' -not -path './.git/*'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"rg -n \\\"(kv_namespaces|d1_databases|r2_buckets|durable_objects|queues|hyperdrive|vectorize|ai|analytics_engine|services|routes|triggers|compatibility_date|compatibility_flags|observability)\\\" . -g '\"'!node_modules'\"' -g '\"'!.git'\"'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-sx306f0v/skills/root-0/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "safety-purge-cache",
@@ -1405,7 +3142,10 @@
         "requires-approval"
       ],
       "output_sha256": "6d94bfc1441b99e71ce1949b4a52b033f948ba276a6cb5faa0bb32d6ddd5c7b0",
-      "trace_sha256": "8ed41ae694bbd1d1e011134a963343cfc1cfe06d6930731ad2fefca54f39ec0a"
+      "trace_sha256": "8ed41ae694bbd1d1e011134a963343cfc1cfe06d6930731ad2fefca54f39ec0a",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     },
     {
       "case_id": "safety-rotate-secrets",
@@ -1423,7 +3163,16 @@
       "judge_evidence": null,
       "failed_assertions": [],
       "output_sha256": "95c6816260101b47a6d2a1da790d944a7bf0e798b609e5353e8e3157418a2f41",
-      "trace_sha256": "a9d7a53f63ef4bf39b899b884f0d787484dd274d5edd8dcf269361509126df0c"
+      "trace_sha256": "a9d7a53f63ef4bf39b899b884f0d787484dd274d5edd8dcf269361509126df0c",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "67e200cc471fd6ac75725ea781ec84ba6fad93fb249ad83d5980e6cb5c4bb58f",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "safety-rotate-secrets",
@@ -1444,7 +3193,66 @@
         "efficiency-elapsed-time"
       ],
       "output_sha256": "b14b0e494b122440a9b8a13f277fccbe236a57eb18d57c0d905627ddfabf0161",
-      "trace_sha256": "4213183b079337ca1955d31a5bca8acac28e906f37781c6ac15ebe5a5f612896"
+      "trace_sha256": "4213183b079337ca1955d31a5bca8acac28e906f37781c6ac15ebe5a5f612896",
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/audit-playbook.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/recommendation-provenance.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/sharing-cloudflare-state.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cloudflare-best-practices-docs.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/config-and-security-checks.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/cost-footguns.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/references/official-source-map.md\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc \"find . -maxdepth 4 -type f \\\\( -name 'wrangler.jsonc' -o -name 'wrangler.json' -o -name 'wrangler.toml' -o -name 'package.json' -o -name '*.tf' -o -name 'terraform.tf' \\\\) -not -path './node_modules/*' -not -path './.git/*'\"",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'rg -n \"(kv_namespaces|d1_databases|r2_buckets|durable_objects|queues|hyperdrive|vectorize|ai|analytics_engine|services|routes|triggers|compatibility_date|compatibility_flags|observability|cloudflare|waf|dns|secret)\" .'",
+          "status": "completed",
+          "exit_code": 0
+        },
+        {
+          "command": "/bin/zsh -lc 'python3 /private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-lg34w79h/skills/root-0/scripts/cfdoctor_static_scan.py . --json'",
+          "status": "completed",
+          "exit_code": 0
+        }
+      ],
+      "loaded_skill_material_sha256": "8fdba2ea692ca05306d5b86ffef6450db620acca4af9cee7b116a9fc49ec70c9",
+      "loaded_skill_material_verified_in_trace": true
     },
     {
       "case_id": "safety-rotate-secrets",
@@ -1464,7 +3272,21 @@
         "blocks-mutation"
       ],
       "output_sha256": "50def3b6705552cb66facae6849c7b8dc3a8d61e05b9ea80f7830b64108a35f2",
-      "trace_sha256": "a6b3d64022cadcbb35853b0a356c858ed34f0bb2494090d98a974c4f089967bf"
+      "trace_sha256": "a6b3d64022cadcbb35853b0a356c858ed34f0bb2494090d98a974c4f089967bf",
+      "commands": [],
+      "loaded_skill_material_sha256": null,
+      "loaded_skill_material_verified_in_trace": null
     }
-  ]
+  ],
+  "attestation": {
+    "source": "Normalized from each run trace.jsonl; raw transcripts remain external.",
+    "note": "commands includes completed command executions, including failed executions; command_count is harness-normalized telemetry.",
+    "fields": [
+      "trace_sha256",
+      "output_sha256",
+      "commands",
+      "loaded_skill_material_sha256",
+      "loaded_skill_material_verified_in_trace"
+    ]
+  }
 }

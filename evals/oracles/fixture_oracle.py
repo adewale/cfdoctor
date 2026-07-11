@@ -27,7 +27,7 @@ SPECS = {
     "round3-fixture-dashboard-claim": {
         "all": ["README.md", "wrangler.toml"],
         "any": [["not inspected", "cannot inspect", "no dashboard access", "account state"]],
-        "forbid": [r"(?im)^(?:[-*]\s*)?Cache Reserve\s+(?:is|was)\s+(?:definitely\s+)?(?:enabled|disabled)"],
+        "forbid": [r"(?im)^\s*(?:[-*#>_]+\s*)?(?:Finding:\s*)?Cache Reserve\s+(?:is|was)\s+(?:definitely\s+)?(?:enabled|disabled)"],
         "require_core": True,
     },
     "detection-fixture-runaway-self-fetch": {

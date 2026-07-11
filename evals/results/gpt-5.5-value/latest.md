@@ -77,7 +77,7 @@ The fixture now performs work before `ack()`, retries failures with a delay, set
 
 ### Standalone non-Cloudflare activation
 
-The local skill now has a hard activation boundary: AWS-only tasks do not trigger project-evidence inspection, the Cloudflare scanner, or a Cloudflare audit. On the AWS case, local used 36,881 tokens versus GitHub's 106,591 and passed all efficiency checks. The harness read the staged `SKILL.md`, but the answer did not run the Cloudflare scanner, inspect project evidence, or emit an audit scaffold. No skill remained cheapest at 11,348 tokens.
+The local skill now has a hard activation boundary: AWS-only tasks do not trigger the Cloudflare scanner or a Cloudflare audit. On the AWS case, local used 36,881 tokens versus GitHub's 106,591 and passed all efficiency checks. Harness discovery located and read the staged `SKILL.md`; no project files were supplied, and the answer did not run the scanner or emit an audit scaffold. No skill remained cheapest at 11,348 tokens.
 
 ### Valid JSONC path and structural oracle
 
@@ -105,7 +105,7 @@ JSONC fixture inputs now preserve `main: index.js`. Local produced a complete ev
 
 ## Reproduction artifacts
 
-A durable machine-readable aggregate with per-case scores, judge evidence, telemetry, failed assertions, and transcript/output hashes is committed at `evals/results/gpt-5.5-value/summary.json`. Raw transcripts remain outside the repository:
+A durable machine-readable aggregate with per-case scores, judge evidence, telemetry, normalized command traces, verified loaded-skill material hashes, failed assertions, and transcript/output hashes is committed at `evals/results/gpt-5.5-value/summary.json`. Raw transcripts remain outside the repository:
 
 - Runs: `/tmp/cfdoctor-gpt55-3way-runs`
 - Judge rows: `/tmp/cfdoctor-gpt55-3way-judge.jsonl`
