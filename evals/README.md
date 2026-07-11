@@ -53,7 +53,7 @@ intentionally bad fixtures: `./skills/cloudflare-doctor/scripts/cfdoctor_static_
 
 ## Paired model value eval
 
-The latest GPT-5.5 three-way round (`with_skill` local, `old_skill` from GitHub `origin/main`, and `without_skill`) is summarized in [`results/gpt-5.5-value/latest.md`](results/gpt-5.5-value/latest.md). It grades diagnostic lift, precision, token/latency overhead, and the requested clean/DLQ/no-trigger fixes. Raw model transcripts stay outside the repository; the checked-in report records the protocol, metrics, limitations, and artifact paths.
+The latest GPT-5.5 three-way round (`with_skill` local, `old_skill` from current GitHub `origin/main`, and `without_skill`) is summarized in [`results/gpt-5.5-value/latest.md`](results/gpt-5.5-value/latest.md). It grades diagnostic lift, precision, token/latency overhead, clean/DLQ/no-trigger controls, and four Wrangler snapshot behaviors: multi-version Worker reconciliation, Pages/Worker evidence separation, approval-gated collection plans, and Static Assets metadata-only mode. Raw model transcripts stay outside the repository; the checked-in report records the protocol, legacy/new-feature slices, metrics, limitations, and artifact paths.
 
 Qualitative assertions now use an explicit `0.85` threshold instead of the fake-red implicit `1.0`. Every tune answer case also has token and elapsed-time assertions. Keep the multi-dimensional objective/qualitative/efficiency view rather than collapsing value to one pass number.
 

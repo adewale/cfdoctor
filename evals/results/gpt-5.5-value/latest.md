@@ -1,4 +1,4 @@
-# GPT-5.5 current-PR three-way value, precision, and efficiency eval
+# GPT-5.5 expanded PR three-way value, precision, and efficiency eval
 
 Run date: 2026-07-11
 
@@ -10,11 +10,11 @@ Harness: Skill Eval Harness v0.6.0, commit `abd8d7d57aae788658bc293abac1dab80dfb
 
 ## Compared variants
 
-- **PR skill (`with_skill`)**: commit `1e654f4bb9b2f17f6b5ffb947782c04f703bdf3a`.
-- **Current main (`old_skill`)**: `origin/main` at `4468533281e15a6c14c039a9cc4b186056b250ce`, materialized in a detached worktree.
-- **No skill (`without_skill`)**: the 24 pinned no-skill answer outputs from the prior final5 round. Reuse is valid because `evals/shared-benchmark.json` remains byte-identical (`d387778882a14479ea79208230d90d2b2129bdd47b0366ddcab714faecd16749`) and no-skill has no skill tree. All 20 no-skill qualitative judgments were rerun.
+- **PR skill (`with_skill`)**: commit `8a5aab572e065c120cd01571408785466251f157`.
+- **Current main (`old_skill`)**: `origin/main` at `4468533281e15a6c14c039a9cc4b186056b250ce`.
+- **No skill (`without_skill`)**: GPT-5.5 without cfdoctor instructions/references.
 
-The run contains 24 visible answer cases and 72 graded outputs. All 24 PR and 24 current-main answers were generated fresh. All 60 qualitative judgments were generated fresh. Four trigger-only cases remain in the deterministic trigger suite. Hidden holdout/holdback prompts were unavailable.
+The expanded round contains 28 visible answer cases and 84 graded outputs. All 28 PR answers were generated fresh from one skill revision. The 24 unchanged legacy current-main/no-skill outputs remained pinned to the same revisions and byte-identical case inputs; four new outputs per baseline were generated fresh. All 72 qualitative judgments were fresh. Four trigger-only cases remain in the deterministic suite. Hidden holdout/holdback prompts were unavailable.
 
 Deterministic grading used `--allow-scripts --strict`; qualitative assertions used the declared `0.85` threshold. Dollar cost was unavailable, so tokens, elapsed time, and commands remain the cost proxies.
 
@@ -22,81 +22,101 @@ Deterministic grading used `--allow-scripts --strict`; qualitative assertions us
 
 | Metric | PR skill | Current main | No skill |
 |---|---:|---:|---:|
-| Objective pass rate | **88.61%** | **93.12%** | 73.19% |
-| Combined pass rate | **89.75%** | **94.31%** | 68.13% |
-| Process pass rate | 80.00% | **100.00%** | **100.00%** |
-| Efficiency pass rate | 95.83% | **100.00%** | 97.92% |
-| GPT-5.5 judge mean | 0.9455 | **0.9525** | 0.7100 |
-| Judge passes at 0.85 | 19/20 | **20/20** | 9/20 |
-| Mean tokens/run | 65,271 | 48,480 | **25,818** |
-| Median tokens/run | 48,377 | 40,930 | **17,330.5** |
-| Mean elapsed/run | 35.8 s | 31.1 s | **26.9 s** |
-| Mean commands/run | 3.04 | 2.50 | **1.25** |
+| Objective pass rate | **93.93%** | 89.18% | 72.16% |
+| Combined pass rate | **94.73%** | 90.40% | 67.70% |
+| Process pass rate | **100.00%** | **100.00%** | **100.00%** |
+| Efficiency pass rate | **98.21%** | 92.86% | **98.21%** |
+| GPT-5.5 judge mean | **0.9550** | 0.9417 | 0.7142 |
+| Judge passes at 0.85 | **24/24** | 23/24 | 11/24 |
+| Mean tokens/run | 50,375 | 50,122 | **24,605** |
+| Median tokens/run | 42,663.5 | **43,000** | **17,244.5** |
+| Mean elapsed/run | **32.4 s** | 32.7 s | **25.4 s** |
+| Mean commands/run | 2.71 | 2.57 | **1.21** |
 | Missing outputs / execution errors | 0 / 0 | 0 / 0 | 0 / 0 |
 
 ## PR versus current main
 
-The PR did **not** improve the model-based point estimates in this one-run round:
+- Objective: **+4.75 percentage points**.
+- Combined: **+4.33 points**.
+- Efficiency: **+5.36 points**.
+- Judge score: **+0.0133**, with 24/24 rather than 23/24 passes.
+- Mean tokens: **0.5% higher**.
+- Mean elapsed time: **0.9% lower**.
+- Mean commands: **5.6% higher**.
 
-- Objective: **-4.51 percentage points**.
-- Combined: **-4.55 points**.
-- Process: **-20.00 points**.
-- Efficiency: **-4.17 points**.
-- Judge score: **-0.0070**, with 19/20 rather than 20/20 passes.
-- Mean tokens: **34.6% higher**.
-- Mean elapsed time: **15.2% higher**.
-- Mean commands: **21.7% higher**.
-
-The paired objective difference was not significant in the seeded 4,096-sample sign-flip test (`mean delta = -0.045139`, `p = 0.184281`). With one answer per case, this is a regression signal, not proof that the small reference change caused a stable regression.
-
-Case-level objective differences versus main occurred in six cases:
-
-- Lower: JSONC trailing-commas fixture (`-0.333`), runaway self-fetch fixture (`-0.167`), stale-doc advice (`-0.333`), and docs-link-only near miss (`-0.500`).
-- Higher: Terraform DNS/WAF/Access (`+0.250`).
-- Equal objective but lower combined: dead cross-boundary RPC because the PR answer missed the output contract and scored `0.78` with the judge.
-
-The docs-link-only answer inspected the staged skill scanner despite the hard no-evidence boundary and exceeded its 40,000-token budget (41,888 tokens). This caused the only process failure. The dead-RPC answer was the only PR judge failure.
+The paired objective difference was not significant in the seeded 4,096-sample sign-flip test (`mean delta = +0.047534`, `p = 0.300464`). This round supports equivalence on legacy behavior plus targeted new-functionality lift; it does not establish a universal quality improvement.
 
 ## PR versus no skill
 
-The PR retained material diagnostic lift over no skill:
+- Objective: **+21.77 percentage points**.
+- Combined: **+27.02 points**.
+- Judge score: **+0.2408**, with 24/24 versus 11/24 passes.
+- Paired objective lift remained significant (`mean delta = +0.217687`, `p = 0.000244`).
 
-- Objective: **+15.42 percentage points**.
-- Combined: **+21.62 points**.
-- Judge score: **+0.2355**, with 19/20 versus 9/20 passes.
-- Paired objective lift remained significant in the seeded sampled sign-flip test (`mean delta = +0.154167`, `p = 0.004882`).
+The cost of that lift was about **2.05×** mean tokens, **1.27×** mean elapsed time, and **2.24×** mean commands versus no skill.
 
-The cost of that lift was **2.53×** mean tokens, **1.33×** mean elapsed time, and **2.43×** mean commands versus no skill.
+## New Wrangler snapshot coverage
 
-## Interpretation
+Four cases now directly test the PR functionality:
 
-This PR primarily adds a read-only Wrangler snapshot tool, tests, and documentation; those components sit outside the answer-model benchmark. Its installable-skill change is limited to Worker/Pages deployed-state sharing guidance. The eval therefore acts as a regression/equivalence check, not direct coverage of the new CLI.
+1. fixture-backed reconciliation of two traffic-bearing Worker versions when only one version view is supplied;
+2. fixture-backed separation of Pages deployment evidence from Worker version/config evidence;
+3. an approval-gated Worker snapshot command plan; and
+4. Static Assets metadata-only collection without source/config download.
 
-The correct conclusion is mixed:
+| New four-case slice | PR skill | Current main | No skill |
+|---|---:|---:|---:|
+| Objective | **100.00%** | 65.48% | 65.95% |
+| Combined | **100.00%** | 66.96% | 60.12% |
+| Efficiency | **100.00%** | 50.00% | **100.00%** |
+| Judge mean | **0.9400** | 0.8775 | 0.7650 |
+| Judge passes | **4/4** | 3/4 | 1/4 |
 
-- The PR remains substantially better than no skill on objective and judged diagnostic quality.
-- It does not beat current main in this single-sample round, and its point estimates are worse on quality and overhead.
-- The local-versus-main objective difference is not statistically significant under the sampled paired test.
-- A repeated run or targeted rerun of the divergent cases is needed before attributing the difference to the new reference material.
+The four-case slice is intentionally small and should be treated as a targeted regression guard, not a significance claim.
+
+## Legacy regression analysis
+
+The earlier 24-case PR round had scored 88.61% objective versus main's 93.12%. Trace analysis found no causal link to the new reference:
+
+- PR and main `SKILL.md` were byte-identical.
+- None of the six divergent cases loaded the changed Wrangler/account-state reference.
+- The largest difference came from autonomous trajectory variance: one PR run searched the entire skill tree and consumed 364,334 tokens where main stopped after `SKILL.md` at 25,019 tokens.
+- Another PR run violated the no-evidence boundary by inspecting the scanner; its paired main run stopped early.
+
+After adding direct coverage and rerunning all PR answers from one tuned skill revision, the legacy 24-case slice was effectively unchanged:
+
+| Legacy 24-case slice | PR skill | Current main | No skill |
+|---|---:|---:|---:|
+| Objective | 92.92% | **93.12%** | 73.19% |
+| Combined | 93.85% | **94.31%** | 68.97% |
+| Efficiency | 97.92% | **100.00%** | 97.92% |
+| Judge mean | **0.9580** | 0.9545 | 0.7040 |
+| Judge passes | **20/20** | **20/20** | 10/20 |
+
+The legacy paired objective delta was `-0.21` points with sampled `p=1.0`. The prior apparent regression did not reproduce.
+
+The implementation change that improved the new slice was architectural rather than keyword tuning: Wrangler guidance moved out of the broad account-sharing document into a short dedicated reference, with direct routing for supplied snapshots/deployed-state collection. The reference makes approval, project-pinned tooling, active-version fanout, snapshot sensitivity, Pages/Worker separation, and Static Assets metadata-only behavior explicit.
+
+Detailed evidence is in [`../../../research/gpt55-pr12-regression-analysis.md`](../../../research/gpt55-pr12-regression-analysis.md).
 
 ## Limitations
 
 - One answer per case is insufficient for pass@k or flakiness claims.
-- GPT-5.5 judged GPT-5.5; there is no human or second-model alignment sample in this round.
-- No-skill answer outputs were reused from the prior pinned round; their 20 judgments were fresh.
+- GPT-5.5 judged GPT-5.5; there is no human or second-model alignment sample.
+- The 24 unchanged current-main/no-skill outputs were reused from the immediately preceding same-day round; their judgments and all four new-case outputs were fresh.
 - Hidden holdout and holdback prompts were unavailable.
 - Efficiency thresholds are visible tune-set budgets, not universal guarantees.
 - Dollar-cost telemetry was unavailable.
 
 ## Reproduction artifacts
 
-The durable machine-readable aggregate at [`summary.json`](summary.json) contains all 72 per-case rows, objective/process/efficiency results, fresh judge evidence, normalized telemetry, failed assertions, command traces, skill material hashes, and output/trace hashes. Raw model artifacts remain outside Git:
+The durable machine-readable aggregate at [`summary.json`](summary.json) contains all 84 per-case rows, objective/process/efficiency results, fresh judge evidence, normalized telemetry, failed assertions, command traces, skill material hashes, and output/trace hashes. Raw model artifacts remain outside Git:
 
-- Runs: `/tmp/cfdoctor-pr12-gpt55/runs`
-- PR judges: `/tmp/cfdoctor-pr12-gpt55/local-judge.jsonl`
-- Current-main judges: `/tmp/cfdoctor-pr12-gpt55/main-judge.jsonl`
-- No-skill judges: `/tmp/cfdoctor-pr12-gpt55/none-judge.jsonl`
-- PR benchmark: `/tmp/cfdoctor-pr12-gpt55/local-final.json`
-- Current-main benchmark: `/tmp/cfdoctor-pr12-gpt55/main-final.json`
-- No-skill benchmark: `/tmp/cfdoctor-pr12-gpt55/none-final.json`
+- Runs: `/tmp/cfdoctor-pr12-expanded-gpt55/runs`
+- PR judges: `/tmp/cfdoctor-pr12-expanded-gpt55/local-judge.jsonl`
+- Current-main judges: `/tmp/cfdoctor-pr12-expanded-gpt55/main-judge.jsonl`
+- No-skill judges: `/tmp/cfdoctor-pr12-expanded-gpt55/none-judge.jsonl`
+- PR benchmark: `/tmp/cfdoctor-pr12-expanded-gpt55/local-final.json`
+- Current-main benchmark: `/tmp/cfdoctor-pr12-expanded-gpt55/main-final.json`
+- No-skill benchmark: `/tmp/cfdoctor-pr12-expanded-gpt55/none-final.json`
 - Current-main worktree: `/tmp/cfdoctor-pr12-gpt55/main-baseline`
