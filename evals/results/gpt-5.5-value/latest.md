@@ -31,7 +31,7 @@ Deterministic grading used `--allow-scripts --strict`; qualitative assertions us
 | Mean tokens/run | 50,375 | 49,243 | **24,605** |
 | Median tokens/run | 42,663.5 | **42,469.5** | **17,244.5** |
 | Mean elapsed/run | **32.4 s** | **32.4 s** | **25.4 s** |
-| Mean commands/run | 2.71 | 2.57 | **1.21** |
+| Mean harness-normalized commands/run | 2.71 | 2.57 | **1.21** |
 | Missing outputs / execution errors | 0 / 0 | 0 / 0 | 0 / 0 |
 
 ## PR versus current main
@@ -42,7 +42,7 @@ Deterministic grading used `--allow-scripts --strict`; qualitative assertions us
 - Judge score: **+0.0158**, with 24/24 rather than 23/24 passes.
 - Mean tokens: **2.3% higher**.
 - Mean elapsed time: effectively equal (**0.01% lower**).
-- Mean commands: **5.6% higher**.
+- Mean harness-normalized commands: **5.6% higher**.
 
 The paired objective difference was not significant in the seeded 4,096-sample sign-flip test (`mean delta = +0.048214`, `p = 0.234562`). This round supports equivalence on legacy behavior plus targeted new-functionality lift; it does not establish a universal quality improvement.
 
@@ -53,7 +53,7 @@ The paired objective difference was not significant in the seeded 4,096-sample s
 - Judge score: **+0.2367**, with 24/24 versus 11/24 passes.
 - Paired objective lift remained significant (`mean delta = +0.205159`, `p = 0.000244`).
 
-The cost of that lift was about **2.05×** mean tokens, **1.27×** mean elapsed time, and **2.24×** mean commands versus no skill.
+The cost of that lift was about **2.05×** mean tokens, **1.27×** mean elapsed time, and **2.24×** mean harness-normalized commands versus no skill.
 
 ## New Wrangler snapshot coverage
 

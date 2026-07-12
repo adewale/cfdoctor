@@ -1,6 +1,7 @@
 {
   "answer_model": "openai-codex/gpt-5.5",
   "attestation": {
+    "command_count_semantics": "mean_command_count is harness-normalized telemetry and may exclude failed attempts; rows[].commands inventories every completed command-execution trace item, including failed attempts.",
     "fields": [
       "trace_sha256",
       "output_sha256",
@@ -12,6 +13,7 @@
     "source": "Normalized from each run trace.jsonl and harness benchmark/judge outputs; raw transcripts remain external."
   },
   "evaluation_manifest_sha256": "056812c838d442b0ae01883e692c141da088b3d103df5181282af3b50152b7f3",
+  "evaluation_manifest_sha256_source": "evals/shared-benchmark.json",
   "harness": {
     "commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
     "version": "0.6.0"
@@ -36,6 +38,7 @@
     "seed": 0,
     "significant_at_0_05": true
   },
+  "prepared_manifest_sha256": "70ef9fda132a9450666c90bd3b7cf4ff5a3cc0c134d3ccbe034ddc487647fe93",
   "protocol": {
     "fresh_answer_outputs": {
       "old_skill": 4,
