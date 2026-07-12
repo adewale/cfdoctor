@@ -65,9 +65,9 @@ After the dedicated reference and tighter routing, the final fresh local slice s
 
 | Variant | Objective | Combined | Efficiency | Judge passes |
 |---|---:|---:|---:|---:|
-| PR skill | **100.00%** | **100.00%** | **100.00%** | **4/4** |
-| Current main | 65.48% | 66.96% | 50.00% | 3/4 |
-| No skill | 65.95% | 60.12% | 100.00% | 1/4 |
+| PR skill | **95.00%** | **95.45%** | **100.00%** | **4/4** |
+| Current main | 60.00% | 61.95% | 75.00% | 3/4 |
+| No skill | 69.72% | 64.45% | 100.00% | 1/4 |
 
 The four-case slice is too small for a significance claim; it is a targeted regression guard, not a broad quality estimate.
 
@@ -76,9 +76,9 @@ The four-case slice is too small for a significance claim; it is a targeted regr
 A fresh PR run across all 28 visible answer cases, combined with current-main/no-skill outputs for identical case inputs and fresh judgments, showed:
 
 - Legacy 24-case objective: PR `92.92%`, main `93.12%` (`-0.21` points; sampled paired `p=1.0`). The prior apparent legacy regression did not reproduce.
-- New four-case objective: PR `100%`, main `65.48%`, no skill `65.95%`.
-- Full 28-case objective: PR `93.93%`, main `89.18%`, no skill `72.16%`.
-- Full PR-versus-main difference: `+4.75` points, not significant (`p=0.300464`).
-- Full PR-versus-no-skill difference: `+21.77` points, significant (`p=0.000244`).
+- New four-case objective: PR `95.00%`, main `60.00%`, no skill `69.72%`.
+- Full 28-case objective: PR `93.21%`, main `88.39%`, no skill `72.70%`.
+- Full PR-versus-main difference: `+4.82` points, not significant (`p=0.234562`).
+- Full PR-versus-no-skill difference: `+20.52` points, significant (`p=0.000244`).
 
 The correct conclusion is not that the new reference universally improves GPT-5.5. It is that the earlier negative point estimate was stochastic, legacy behavior is effectively unchanged in this single rerun, and the added functionality now has direct fixture-backed model coverage where the PR materially outperforms both baselines.

@@ -69,22 +69,26 @@ SPECS = {
         "require_core": True,
     },
     "wrangler-snapshot-worker-reconciliation": {
-        "all": ["worker-deployments-status.json", "worker-version-view.json"],
-        "any": [
-            ["two active", "2 active", "25%", "25 percent"],
-            ["second active version", "other active version", "20000000-0000-0000-0000-000000000000"],
-            ["not supplied", "missing", "not inspected", "cannot reconcile"],
+        "patterns": [
+            r"(?is)(?:two|2).{0,80}(?:active|traffic-bearing).{0,80}versions?",
+            r"(?is)(?:(?:only|just).{0,100}(?:version[- ]view|version metadata).{0,100}(?:supplied|provided|available)|(?:supplied|provided|available).{0,100}(?:version[- ]view|version metadata).{0,100}(?:only|single|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000)))",
+            r"(?is)(?:(?:missing|not supplied|not provided|cannot reconcile).{0,120}(?:second|other|75%|20000000-0000-0000-0000-000000000000)|(?:second|other|75%|20000000-0000-0000-0000-000000000000).{0,120}(?:missing|not supplied|not provided|cannot reconcile))",
+            r"(?is)(?:(?:supplied|provided|available).{0,100}(?:version[- ]view|version metadata).{0,120}(?:only|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000))|(?:only|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000)).{0,100}(?:version[- ]view|version metadata).{0,100}(?:supplied|provided|available))",
         ],
-        "forbid": [r"(?i)(?:only|sole) active version (?:is|was) 10000000-0000-0000-0000-000000000000"],
+        "forbid": [
+            r"(?i)(?:only|sole) active version (?:is|was) 10000000-0000-0000-0000-000000000000",
+            r"(?im)^(?!.*(?:cannot|does not|not supplied|only|for (?:the )?(?:supplied )?version)).{0,80}(?:the (?:deployed )?Worker|all active versions|the deployment).{0,50}(?:has|uses).{0,80}(?:KV|50 ?ms|CPU|compatibility)",
+        ],
     },
     "wrangler-snapshot-pages-reconciliation": {
-        "all": ["pages-deployments.json"],
-        "any": [
-            ["Pages", "Pages deployment"],
-            ["deployment list", "deployment history", "Production"],
-            ["config not supplied", "repository intent", "not inspected", "cannot determine"],
+        "patterns": [
+            r"(?is)Pages.{0,100}(?:deployment row|deployment list|deployment record|deployment output)",
+            r"(?is)(?:cannot|does not|not supplied|not inspected|insufficient).{0,120}(?:prove|show|determine|support|evidence).{0,800}(?:binding|runtime|active version|config|repository intent)",
         ],
-        "forbid": [r"(?i)confirmed (?:Worker )?(?:CPU limit|binding|active version)"],
+        "forbid": [
+            r"(?i)confirmed (?:Worker )?(?:CPU limit|binding|active version)",
+            r"(?im)^(?!.*(?:cannot|does not|not supplied|no evidence|insufficient)).{0,100}(?:Pages (?:row|deployment|list)).{0,100}(?:proves|shows|indicates|suggests).{0,100}(?:KV|binding|CPU|runtime limit|active version|config)",
+        ],
     },
 }
 
@@ -129,6 +133,10 @@ def main() -> int:
         checks += 1
         if not any(contains(text, needle) for needle in group):
             failures.append("missing one of: " + ", ".join(repr(x) for x in group))
+    for pattern in spec.get("patterns", []):
+        checks += 1
+        if not re.search(pattern, text):
+            failures.append(f"required pattern absent: {pattern}")
     for pattern in spec.get("forbid", []):
         checks += 1
         if re.search(pattern, text):

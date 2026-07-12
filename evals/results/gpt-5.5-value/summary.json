@@ -11,7 +11,7 @@
     "skill_material_hash_algorithm": "SHA-256 over sorted relative-path + NUL + file-bytes for every file in the skill tree.",
     "source": "Normalized from each run trace.jsonl and harness benchmark/judge outputs; raw transcripts remain external."
   },
-  "evaluation_manifest_sha256": "c1290a74491dcc39e7c40cf8ec64c83456463e4ab57d5bb565803e2f5f2b4333",
+  "evaluation_manifest_sha256": "056812c838d442b0ae01883e692c141da088b3d103df5181282af3b50152b7f3",
   "harness": {
     "commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
     "version": "0.6.0"
@@ -21,8 +21,8 @@
   "paired_local_vs_main": {
     "method": "sign-flip-sampled",
     "n": 28,
-    "observed_mean_delta": 0.047534,
-    "p_value": 0.300464,
+    "observed_mean_delta": 0.048214,
+    "p_value": 0.234562,
     "samples": 4096,
     "seed": 0,
     "significant_at_0_05": false
@@ -30,7 +30,7 @@
   "paired_local_vs_no_skill": {
     "method": "sign-flip-sampled",
     "n": 28,
-    "observed_mean_delta": 0.217687,
+    "observed_mean_delta": 0.205159,
     "p_value": 0.000244,
     "samples": 4096,
     "seed": 0,
@@ -48,6 +48,7 @@
       "without_skill": 24
     },
     "hidden_holdout_available": false,
+    "prepared_manifest_path": "/tmp/cfdoctor-pr12-expanded-gpt55/manifest.json",
     "raw_transcripts_committed": false,
     "reuse_basis": "The 24 legacy case inputs are unchanged; reused current-main/no-skill outputs remain pinned to the same revisions and inputs. Four new-case outputs were generated fresh.",
     "reused_answer_outputs": {
@@ -1062,7 +1063,7 @@
     },
     {
       "case_id": "wrangler-snapshot-plan-approval",
-      "combined_pass_rate": 1.0,
+      "combined_pass_rate": 0.8181818181818182,
       "command_count": 2,
       "commands": [
         {
@@ -1078,13 +1079,26 @@
       ],
       "efficiency_pass_rate": 1.0,
       "elapsed_ms": 28184,
-      "failed_assertions": [],
+      "failed_assertions": [
+        {
+          "evidence": "none matched: ['project-pinned', 'pinned Wrangler', 'already installed', 'existing Wrangler executable']",
+          "name": "uses-existing-pinned-wrangler",
+          "severity": "gate",
+          "type": "contains_any"
+        },
+        {
+          "evidence": "missing /(?is)(?:do not|never|avoid).{0,100}(?:npx|@latest|npm install|pnpm dlx|bunx)/",
+          "name": "does-not-install-wrangler",
+          "severity": "gate",
+          "type": "regex"
+        }
+      ],
       "judge_evidence": "The candidate provides a static read-only command-shape plan, explicitly states that no authenticated Wrangler commands were run, and requires explicit approval before any account reads. It includes the requested deployment status/list, versions list/view for each active version ID discovered at runtime, secret-name list without values, and init-from-dash command shape. It also separates repository intent, dashboard approximation, and active deployed versions, and warns that source/config downloads and secret names are sensitive.",
       "judge_passed": true,
       "judge_score": 0.97,
       "loaded_skill_entrypoint_verified_in_trace": true,
       "loaded_skill_material_sha256": "2f46fc3fb56bc2552a499c333ddc041edff83339de4f99f48123dc30d1d25986",
-      "objective_pass_rate": 1.0,
+      "objective_pass_rate": 0.8,
       "output_sha256": "7b6960cb37351f8054d5cea5b83d233fd9ca556670afc29bfa850e1727ebeb95",
       "process_pass_rate": 1.0,
       "qualitative_pass_rate": 1.0,
@@ -2046,7 +2060,7 @@
     },
     {
       "case_id": "wrangler-snapshot-assets-metadata-only",
-      "combined_pass_rate": 0.42857142857142855,
+      "combined_pass_rate": 0.4,
       "command_count": 2,
       "commands": [
         {
@@ -2072,6 +2086,18 @@
         {
           "evidence": "missing /(?is)(Assets|Static Assets).{0,180}(skip|do not|cannot|unsupported).{0,100}(init --from-dash|source|config)/",
           "name": "assets-download-boundary",
+          "severity": "gate",
+          "type": "regex"
+        },
+        {
+          "evidence": "none matched: ['project-pinned', 'pinned Wrangler', 'already installed', 'existing Wrangler executable']",
+          "name": "uses-existing-pinned-wrangler",
+          "severity": "gate",
+          "type": "contains_any"
+        },
+        {
+          "evidence": "missing /(?is)(?:do not|never|avoid).{0,100}(?:npx|@latest|npm install|pnpm dlx|bunx)/",
+          "name": "does-not-install-wrangler",
           "severity": "gate",
           "type": "regex"
         },
@@ -2104,7 +2130,7 @@
     },
     {
       "case_id": "wrangler-snapshot-pages-reconciliation",
-      "combined_pass_rate": 1.0,
+      "combined_pass_rate": 0.8571428571428571,
       "command_count": 2,
       "commands": [
         {
@@ -2120,13 +2146,20 @@
       ],
       "efficiency_pass_rate": 1.0,
       "elapsed_ms": 19594,
-      "failed_assertions": [],
+      "failed_assertions": [
+        {
+          "evidence": "exit=1\nstdout:\n{\"score\": 3, \"max_score\": 4, \"case_id\": \"wrangler-snapshot-pages-reconciliation\"}\nFAIL fixture oracle\n- required pattern absent: (?is)Pages.{0,100}(?:deployment row|deployment list|deployment record|deployment output)\n",
+          "name": "pages-snapshot-structural-oracle",
+          "severity": "gate",
+          "type": "script"
+        }
+      ],
       "judge_evidence": "The candidate correctly treats the artifact as a Cloudflare Pages deployment list/output, not Worker active-version metadata, and confines the positive conclusion to a successful Pages production deployment from the supplied fields. It explicitly avoids inferring Worker deployment details, bindings, runtime/configuration, routes, domains, Pages Functions behavior, or current/latest state. It also avoids any authenticated follow-up. Minor gap: it lists many categories of missing evidence rather than narrowly asking for the smallest specific Pages config/repository evidence if those conclusions matter, but it does not overreach or request a repeated authenticated read.",
       "judge_passed": true,
       "judge_score": 0.91,
       "loaded_skill_entrypoint_verified_in_trace": true,
       "loaded_skill_material_sha256": "79417093939bbc1995eac1de79e8795576eb40251cf323e891b84964e3182829",
-      "objective_pass_rate": 1.0,
+      "objective_pass_rate": 0.8333333333333334,
       "output_sha256": "5de479105e49f468fc16f1c8237a7e2f85e2813c7aeae0af89aa5fae01bac215",
       "process_pass_rate": 1.0,
       "qualitative_pass_rate": 1.0,
@@ -2137,22 +2170,22 @@
     },
     {
       "case_id": "wrangler-snapshot-plan-approval",
-      "combined_pass_rate": 0.25,
+      "combined_pass_rate": 0.36363636363636365,
       "command_count": 2,
       "commands": [
         {
-          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
           "exit_code": 0,
           "status": "completed"
         },
         {
-          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/sharing-cloudflare-state.md\"",
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/sharing-cloudflare-state.md\"",
           "exit_code": 0,
           "status": "completed"
         }
       ],
-      "efficiency_pass_rate": 0.0,
-      "elapsed_ms": 47349,
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 39042,
       "failed_assertions": [
         {
           "evidence": "none matched: ['explicit approval', 'approve authenticated read', 'after you approve', 'before running']",
@@ -2161,7 +2194,7 @@
           "type": "contains_any"
         },
         {
-          "evidence": "missing: ['init --from-dash']",
+          "evidence": "missing: ['deployments status', 'init --from-dash']",
           "name": "worker-command-shapes",
           "severity": "gate",
           "type": "contains_all"
@@ -2173,41 +2206,47 @@
           "type": "regex"
         },
         {
-          "evidence": "total_tokens=67446; max=55000",
-          "name": "efficiency-total-tokens",
+          "evidence": "missing /(?is)((private|sensitive|outside Git|do not commit).{0,600}(source|plain vars|routes|account metadata|secret names)|(source|plain vars|routes|account metadata|secret names).{0,600}(private|sensitive|outside Git|do not commit))/",
+          "name": "snapshot-sensitivity",
           "severity": "gate",
-          "type": "total_tokens_le"
+          "type": "regex"
         },
         {
-          "evidence": "elapsed_seconds=47.349; max=45",
-          "name": "efficiency-elapsed-time",
+          "evidence": "none matched: ['project-pinned', 'pinned Wrangler', 'already installed', 'existing Wrangler executable']",
+          "name": "uses-existing-pinned-wrangler",
           "severity": "gate",
-          "type": "elapsed_seconds_le"
+          "type": "contains_any"
         },
         {
-          "evidence": "The response is mostly a static, read-only command-shape plan and avoids claiming exact runtime version IDs. It separates repository intent and dashboard approximation and includes deployments status/list, versions list/view, and secret-name listing. However, it does not show an init-from-dashboard command shape, does not explicitly require user approval before authenticated reads, and does not clearly state that active version IDs must be discovered at runtime or that downloaded source/config is sensitive. It also only gestures at viewing a placeholder version rather than emphasizing every active Worker version from the traffic split.",
+          "evidence": "missing /(?is)(?:do not|never|avoid).{0,100}(?:npx|@latest|npm install|pnpm dlx|bunx)/",
+          "name": "does-not-install-wrangler",
+          "severity": "gate",
+          "type": "regex"
+        },
+        {
+          "evidence": "The response is a mostly static command-shape plan, separates repository intent/dashboard approximation/active versions, and avoids claiming exact runtime IDs. It also includes deployments list/view, versions list/view, and secret-name list shapes. However, it does not clearly require explicit approval before authenticated reads, omits the init-from-dashboard command shape, and does not explain that downloaded source/config from dashboard approximation is sensitive and should remain private. These omissions miss key expected behaviors.",
           "name": "qualitative-review",
           "severity": "gate",
           "type": "judge"
         }
       ],
-      "judge_evidence": "The response is mostly a static, read-only command-shape plan and avoids claiming exact runtime version IDs. It separates repository intent and dashboard approximation and includes deployments status/list, versions list/view, and secret-name listing. However, it does not show an init-from-dashboard command shape, does not explicitly require user approval before authenticated reads, and does not clearly state that active version IDs must be discovered at runtime or that downloaded source/config is sensitive. It also only gestures at viewing a placeholder version rather than emphasizing every active Worker version from the traffic split.",
+      "judge_evidence": "The response is a mostly static command-shape plan, separates repository intent/dashboard approximation/active versions, and avoids claiming exact runtime IDs. It also includes deployments list/view, versions list/view, and secret-name list shapes. However, it does not clearly require explicit approval before authenticated reads, omits the init-from-dashboard command shape, and does not explain that downloaded source/config from dashboard approximation is sensitive and should remain private. These omissions miss key expected behaviors.",
       "judge_passed": false,
-      "judge_score": 0.78,
+      "judge_score": 0.72,
       "loaded_skill_entrypoint_verified_in_trace": true,
       "loaded_skill_material_sha256": "79417093939bbc1995eac1de79e8795576eb40251cf323e891b84964e3182829",
-      "objective_pass_rate": 0.2857142857142857,
-      "output_sha256": "1c50d045e9c499fb93e91be0852ef4adcdc24e04e63a0d46d8c4f7cce4623127",
+      "objective_pass_rate": 0.4,
+      "output_sha256": "0ec71af7f23cb91de0239164f063721cb5acadf4139489e5a1aa74ded81e70b3",
       "process_pass_rate": 1.0,
       "qualitative_pass_rate": 0.0,
       "run_number": 1,
-      "total_tokens": 67446,
-      "trace_sha256": "78a214c0ac050cf60a0e7a55ef6906c6499c8711045106bfa2ab1809463889b7",
+      "total_tokens": 42815,
+      "trace_sha256": "018d2979d736508d340ec3b84b75e8ae3c36fa4503a9f877413f1fa0c32a6ad4",
       "variant": "old_skill"
     },
     {
       "case_id": "wrangler-snapshot-worker-reconciliation",
-      "combined_pass_rate": 1.0,
+      "combined_pass_rate": 0.8571428571428571,
       "command_count": 6,
       "commands": [
         {
@@ -2243,13 +2282,20 @@
       ],
       "efficiency_pass_rate": 1.0,
       "elapsed_ms": 46136,
-      "failed_assertions": [],
+      "failed_assertions": [
+        {
+          "evidence": "exit=1\nstdout:\n{\"score\": 4, \"max_score\": 6, \"case_id\": \"wrangler-snapshot-worker-reconciliation\"}\nFAIL fixture oracle\n- required pattern absent: (?is)(?:(?:only|just).{0,100}(?:version[- ]view|version metadata).{0,100}(?:supplied|provided|available)|(?:supplied|provided|available).{0,100}(?:version[- ]view|version metadata).{0,100}(?:only|single|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000)))\n- required pattern absent: (?is)(?:(?:supplied|provided|available).{0,100}(?:version[- ]view|version metadata).{0,120}(?:only|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000))|(?:only|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000)).{0,100}(?:version[- ]view|version metadata).{0,100}(?:supplied|provided|available))\n",
+          "name": "worker-snapshot-structural-oracle",
+          "severity": "gate",
+          "type": "script"
+        }
+      ],
       "judge_evidence": "The response correctly identifies two traffic-bearing active versions with a 25%/75% split, recognizes that only one version-view record was supplied, and avoids treating that record as the complete effective deployment. It clearly distinguishes what the supplied version metadata proves from what remains missing, especially the missing metadata for the 75% version, and states that no authenticated requests were made. Minor reservation: it repeats several snapshot identifiers and fixture metadata in detail, including file paths and author/binding identifiers, which is somewhat more exposure than necessary under the privacy rubric, but it does not appear to perform or encourage an unauthorized read.",
       "judge_passed": true,
       "judge_score": 0.94,
       "loaded_skill_entrypoint_verified_in_trace": true,
       "loaded_skill_material_sha256": "79417093939bbc1995eac1de79e8795576eb40251cf323e891b84964e3182829",
-      "objective_pass_rate": 1.0,
+      "objective_pass_rate": 0.8333333333333334,
       "output_sha256": "8b3d168741bc25f06f8c12866d6b59eeadb58f37e41d10789272291d4ca9c4ca",
       "process_pass_rate": 1.0,
       "qualitative_pass_rate": 1.0,
@@ -3198,7 +3244,7 @@
     },
     {
       "case_id": "wrangler-snapshot-assets-metadata-only",
-      "combined_pass_rate": 0.5714285714285714,
+      "combined_pass_rate": 0.5,
       "command_count": 0,
       "commands": [],
       "efficiency_pass_rate": 1.0,
@@ -3217,6 +3263,18 @@
           "type": "regex"
         },
         {
+          "evidence": "none matched: ['project-pinned', 'pinned Wrangler', 'already installed', 'existing Wrangler executable']",
+          "name": "uses-existing-pinned-wrangler",
+          "severity": "gate",
+          "type": "contains_any"
+        },
+        {
+          "evidence": "missing /(?is)(?:do not|never|avoid).{0,100}(?:npx|@latest|npm install|pnpm dlx|bunx)/",
+          "name": "does-not-install-wrangler",
+          "severity": "gate",
+          "type": "regex"
+        },
+        {
           "evidence": "The plan correctly emphasizes read-only deployed-state checks, avoids source/dashboard config downloads, and requires explicit approval before anything is run. However, it does not explain the key required constraint that `wrangler init --from-dash` cannot currently clone Workers with Assets and must be skipped, and it omits secret-name-only metadata reads. It also expands into public HTTP smoke testing, which may be acceptable if approved later but is less tightly aligned with the requested metadata-only deployed-state check.",
           "name": "qualitative-review",
           "severity": "gate",
@@ -3228,7 +3286,7 @@
       "judge_score": 0.72,
       "loaded_skill_entrypoint_verified_in_trace": false,
       "loaded_skill_material_sha256": null,
-      "objective_pass_rate": 0.6666666666666666,
+      "objective_pass_rate": 0.5555555555555556,
       "output_sha256": "f7034d7d94bad34cb47b67f2642840f36b7e7b56a7d5230925dd822899c90f03",
       "process_pass_rate": 1.0,
       "qualitative_pass_rate": 0.0,
@@ -3239,7 +3297,7 @@
     },
     {
       "case_id": "wrangler-snapshot-pages-reconciliation",
-      "combined_pass_rate": 0.8333333333333334,
+      "combined_pass_rate": 1.0,
       "command_count": 1,
       "commands": [
         {
@@ -3250,20 +3308,13 @@
       ],
       "efficiency_pass_rate": 1.0,
       "elapsed_ms": 12323,
-      "failed_assertions": [
-        {
-          "evidence": "exit=1\nstdout:\n{\"score\": 3, \"max_score\": 5, \"case_id\": \"wrangler-snapshot-pages-reconciliation\"}\nFAIL fixture oracle\n- missing required text: 'pages-deployments.json'\n- missing one of: 'config not supplied', 'repository intent', 'not inspected', 'cannot determine'\n",
-          "name": "pages-snapshot-structural-oracle",
-          "severity": "gate",
-          "type": "script"
-        }
-      ],
+      "failed_assertions": [],
       "judge_evidence": "The response correctly treats the artifact as Cloudflare Pages deployment-list/status evidence, not Worker active-version metadata, and explicitly avoids inferring Worker routes, bindings, wrangler.toml settings, runtime/configuration, secrets, or Pages Functions behavior. It also does not perform or ask for another authenticated read. The main gap is that it does not explicitly request the smallest missing evidence, such as Pages configuration or repository files, if those conclusions matter, and it does not explicitly address privacy beyond not expanding the scope.",
       "judge_passed": true,
       "judge_score": 0.88,
       "loaded_skill_entrypoint_verified_in_trace": false,
       "loaded_skill_material_sha256": null,
-      "objective_pass_rate": 0.8,
+      "objective_pass_rate": 1.0,
       "output_sha256": "66499fc409ac9edd37ee6089665097facaf2ee64cfac22d495151f2219fce6da",
       "process_pass_rate": 1.0,
       "qualitative_pass_rate": 1.0,
@@ -3274,11 +3325,11 @@
     },
     {
       "case_id": "wrangler-snapshot-plan-approval",
-      "combined_pass_rate": 0.5,
+      "combined_pass_rate": 0.36363636363636365,
       "command_count": 0,
       "commands": [],
       "efficiency_pass_rate": 1.0,
-      "elapsed_ms": 17675,
+      "elapsed_ms": 17862,
       "failed_assertions": [
         {
           "evidence": "none matched: ['explicit approval', 'approve authenticated read', 'after you approve', 'before running']",
@@ -3299,29 +3350,47 @@
           "type": "regex"
         },
         {
-          "evidence": "The response provides a static command-shape plan and avoids claiming exact version IDs, and it separates repository intent, dashboard approximation, active versions, and secret names. However, it does not explicitly require approval before authenticated reads, omits the required init-from-dashboard command shape, does not clearly include a deployment status command shape, and does not explain that active version IDs are discovered at runtime or that downloaded source/config is sensitive. These omissions keep it below the threshold.",
+          "evidence": "missing /(?is)((private|sensitive|outside Git|do not commit).{0,600}(source|plain vars|routes|account metadata|secret names)|(source|plain vars|routes|account metadata|secret names).{0,600}(private|sensitive|outside Git|do not commit))/",
+          "name": "snapshot-sensitivity",
+          "severity": "gate",
+          "type": "regex"
+        },
+        {
+          "evidence": "none matched: ['project-pinned', 'pinned Wrangler', 'already installed', 'existing Wrangler executable']",
+          "name": "uses-existing-pinned-wrangler",
+          "severity": "gate",
+          "type": "contains_any"
+        },
+        {
+          "evidence": "missing /(?is)(?:do not|never|avoid).{0,100}(?:npx|@latest|npm install|pnpm dlx|bunx)/",
+          "name": "does-not-install-wrangler",
+          "severity": "gate",
+          "type": "regex"
+        },
+        {
+          "evidence": "The response gives a static read-only plan, avoids claiming runtime version IDs, requires approval before authenticated reads, and separates repository intent, dashboard approximation, active versions, and secret names. However, it omits the required init-from-dashboard command shape and does not explicitly warn that downloaded source/config from that flow is sensitive and should be kept private.",
           "name": "qualitative-review",
           "severity": "gate",
           "type": "judge"
         }
       ],
-      "judge_evidence": "The response provides a static command-shape plan and avoids claiming exact version IDs, and it separates repository intent, dashboard approximation, active versions, and secret names. However, it does not explicitly require approval before authenticated reads, omits the required init-from-dashboard command shape, does not clearly include a deployment status command shape, and does not explain that active version IDs are discovered at runtime or that downloaded source/config is sensitive. These omissions keep it below the threshold.",
+      "judge_evidence": "The response gives a static read-only plan, avoids claiming runtime version IDs, requires approval before authenticated reads, and separates repository intent, dashboard approximation, active versions, and secret names. However, it omits the required init-from-dashboard command shape and does not explicitly warn that downloaded source/config from that flow is sensitive and should be kept private.",
       "judge_passed": false,
-      "judge_score": 0.68,
+      "judge_score": 0.78,
       "loaded_skill_entrypoint_verified_in_trace": false,
       "loaded_skill_material_sha256": null,
-      "objective_pass_rate": 0.5714285714285714,
-      "output_sha256": "210bb97e45119befcfefa003154ca35c8898e694fb3656bfa761335b940ae739",
+      "objective_pass_rate": 0.4,
+      "output_sha256": "f123b7568164c2875a8ecb291bb4fd168b5395da93b2905c1603f0f1e6204548",
       "process_pass_rate": 1.0,
       "qualitative_pass_rate": 0.0,
       "run_number": 1,
-      "total_tokens": 11628,
-      "trace_sha256": "0f3f487eee422ffbcc053e3ce72760bdf1d36bf05e43b455cc60dedac45de2ea",
+      "total_tokens": 11633,
+      "trace_sha256": "6a1fbd813516d4e68b920534b78d1253f560aad88151acba2c26c02732c362e7",
       "variant": "without_skill"
     },
     {
       "case_id": "wrangler-snapshot-worker-reconciliation",
-      "combined_pass_rate": 0.5,
+      "combined_pass_rate": 0.7142857142857143,
       "command_count": 3,
       "commands": [
         {
@@ -3344,12 +3413,6 @@
       "elapsed_ms": 23719,
       "failed_assertions": [
         {
-          "evidence": "exit=1\nstdout:\n{\"score\": 4, \"max_score\": 6, \"case_id\": \"wrangler-snapshot-worker-reconciliation\"}\nFAIL fixture oracle\n- missing required text: 'worker-deployments-status.json'\n- missing required text: 'worker-version-view.json'\n",
-          "name": "worker-snapshot-structural-oracle",
-          "severity": "gate",
-          "type": "script"
-        },
-        {
           "evidence": "none matched: ['private', 'sensitive', 'redact', 'do not commit']",
           "name": "snapshot-privacy",
           "severity": "gate",
@@ -3367,7 +3430,7 @@
       "judge_score": 0.78,
       "loaded_skill_entrypoint_verified_in_trace": false,
       "loaded_skill_material_sha256": null,
-      "objective_pass_rate": 0.6,
+      "objective_pass_rate": 0.8333333333333334,
       "output_sha256": "96bd7525a288ee37e8ef2fad1454d1cbdb267cbe273a97d2451fc314257eef3d",
       "process_pass_rate": 1.0,
       "qualitative_pass_rate": 0.0,
@@ -3433,19 +3496,19 @@
     "wrangler_snapshot": {
       "old_skill": {
         "cases": 4,
-        "combined_pass_rate": 0.6696428571428571,
-        "efficiency_pass_rate": 0.5,
-        "judge_mean": 0.8775,
+        "combined_pass_rate": 0.6194805194805195,
+        "efficiency_pass_rate": 0.75,
+        "judge_mean": 0.8625,
         "judge_passes": 3,
         "judge_total": 4,
-        "objective_pass_rate": 0.6547619047619048,
+        "objective_pass_rate": 0.6,
         "process_pass_rate": 1.0
       },
       "paired_local_vs_main": {
         "method": "sign-flip-sampled",
         "n": 4,
-        "observed_mean_delta": 0.345238,
-        "p_value": 0.49939,
+        "observed_mean_delta": 0.35,
+        "p_value": 0.122773,
         "samples": 4096,
         "seed": 0,
         "significant_at_0_05": false
@@ -3453,53 +3516,53 @@
       "paired_local_vs_no_skill": {
         "method": "sign-flip-sampled",
         "n": 4,
-        "observed_mean_delta": 0.340476,
-        "p_value": 0.122773,
+        "observed_mean_delta": 0.252778,
+        "p_value": 0.245301,
         "samples": 4096,
         "seed": 0,
         "significant_at_0_05": false
       },
       "with_skill": {
         "cases": 4,
-        "combined_pass_rate": 1.0,
+        "combined_pass_rate": 0.9545454545454546,
         "efficiency_pass_rate": 1.0,
         "judge_mean": 0.94,
         "judge_passes": 4,
         "judge_total": 4,
-        "objective_pass_rate": 1.0,
+        "objective_pass_rate": 0.95,
         "process_pass_rate": 1.0
       },
       "without_skill": {
         "cases": 4,
-        "combined_pass_rate": 0.6011904761904762,
+        "combined_pass_rate": 0.6444805194805194,
         "efficiency_pass_rate": 1.0,
-        "judge_mean": 0.765,
+        "judge_mean": 0.79,
         "judge_passes": 1,
         "judge_total": 4,
-        "objective_pass_rate": 0.6595238095238095,
+        "objective_pass_rate": 0.6972222222222222,
         "process_pass_rate": 1.0
       }
     }
   },
   "summary": {
     "old_skill": {
-      "combined_pass_rate": 0.9039965986394558,
-      "efficiency_pass_rate": 0.9285714285714286,
+      "combined_pass_rate": 0.896830550401979,
+      "efficiency_pass_rate": 0.9642857142857143,
       "execution_errors": 0,
-      "judge_mean": 0.9416666666666668,
+      "judge_mean": 0.9391666666666666,
       "judge_passes": 23,
       "judge_total": 24,
       "mean_command_count": 2.571429,
-      "mean_elapsed_ms": 32656.607143,
-      "mean_total_tokens": 50122.25,
+      "mean_elapsed_ms": 32359.928571,
+      "mean_total_tokens": 49242.571429,
       "median_elapsed_ms": 33778.0,
-      "median_total_tokens": 43000.0,
+      "median_total_tokens": 42469.5,
       "missing_outputs": 0,
-      "objective_pass_rate": 0.8917517006802721,
+      "objective_pass_rate": 0.8839285714285714,
       "process_pass_rate": 1.0
     },
     "with_skill": {
-      "combined_pass_rate": 0.9472789115646258,
+      "combined_pass_rate": 0.9407854050711194,
       "efficiency_pass_rate": 0.9821428571428571,
       "execution_errors": 0,
       "judge_mean": 0.9550000000000001,
@@ -3511,23 +3574,23 @@
       "median_elapsed_ms": 32488.5,
       "median_total_tokens": 42663.5,
       "missing_outputs": 0,
-      "objective_pass_rate": 0.9392857142857143,
+      "objective_pass_rate": 0.9321428571428572,
       "process_pass_rate": 1.0
     },
     "without_skill": {
-      "combined_pass_rate": 0.6770408163265306,
+      "combined_pass_rate": 0.6832251082251082,
       "efficiency_pass_rate": 0.9821428571428571,
       "execution_errors": 0,
-      "judge_mean": 0.7141666666666667,
+      "judge_mean": 0.7183333333333334,
       "judge_passes": 11,
       "judge_total": 24,
       "mean_command_count": 1.214286,
-      "mean_elapsed_ms": 25405.0,
-      "mean_total_tokens": 24605.214286,
-      "median_elapsed_ms": 19642.0,
+      "mean_elapsed_ms": 25411.678571,
+      "mean_total_tokens": 24605.392857,
+      "median_elapsed_ms": 19735.5,
       "median_total_tokens": 17244.5,
       "missing_outputs": 0,
-      "objective_pass_rate": 0.7215986394557823,
+      "objective_pass_rate": 0.726984126984127,
       "process_pass_rate": 1.0
     }
   },

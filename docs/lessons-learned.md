@@ -497,8 +497,8 @@ not causal evidence against the new guidance.
 More importantly, the benchmark had no Wrangler snapshot cases. Adding four
 focused cases changed the question from “did unrelated legacy answers vary?” to
 “does the model safely reconcile and collect this new evidence?” A dedicated,
-short routed reference then improved that four-case slice from 68.21% to 100%
-objective, while the fresh 24-case legacy slice stayed within 0.21 points of
+short routed reference then improved that four-case slice from 68.21% to 95%
+objective under strengthened semantic oracles, while the fresh 24-case legacy slice stayed within 0.21 points of
 main. The targeted slice is small, but it now guards the actual product behavior.
 
 56. Add eval cases for a feature before using aggregate model scores to judge that feature's value.

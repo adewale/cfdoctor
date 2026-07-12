@@ -184,6 +184,16 @@ The only active version is 10000000-0000-0000-0000-000000000000.
         self.assertEqual(1, proc.returncode)
         self.assertIn("forbidden pattern", proc.stdout)
 
+        keyword_stuffing = "two active versions; 25%; second version missing; worker-version-view.json"
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", keyword_stuffing)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("required pattern absent", proc.stdout)
+
+        globalized = complete + "\nThe deployed Worker has a 50 ms CPU limit and uses KV.\n"
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", globalized)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
     def test_pages_snapshot_does_not_prove_worker_runtime_state(self) -> None:
         calibrated = """I inspected pages-deployments.json as a Pages deployment list.
 It shows a Production deployment history, but repository intent and downloaded config were not supplied.
@@ -194,6 +204,16 @@ I therefore cannot determine Worker-style bindings, runtime limits, or active ve
 
         overclaim = calibrated + "\nConfirmed Worker CPU limit is 50 ms.\n"
         proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", overclaim)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
+        keyword_stuffing = "pages-deployments.json Pages deployment Production config not supplied"
+        proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", keyword_stuffing)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("required pattern absent", proc.stdout)
+
+        soft_overclaim = calibrated + "\nThe Pages deployment row suggests a KV binding is active.\n"
+        proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", soft_overclaim)
         self.assertEqual(1, proc.returncode)
         self.assertIn("forbidden pattern", proc.stdout)
 

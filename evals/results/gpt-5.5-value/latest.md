@@ -22,36 +22,36 @@ Deterministic grading used `--allow-scripts --strict`; qualitative assertions us
 
 | Metric | PR skill | Current main | No skill |
 |---|---:|---:|---:|
-| Objective pass rate | **93.93%** | 89.18% | 72.16% |
-| Combined pass rate | **94.73%** | 90.40% | 67.70% |
+| Objective pass rate | **93.21%** | 88.39% | 72.70% |
+| Combined pass rate | **94.08%** | 89.68% | 68.32% |
 | Process pass rate | **100.00%** | **100.00%** | **100.00%** |
-| Efficiency pass rate | **98.21%** | 92.86% | **98.21%** |
-| GPT-5.5 judge mean | **0.9550** | 0.9417 | 0.7142 |
+| Efficiency pass rate | **98.21%** | 96.43% | **98.21%** |
+| GPT-5.5 judge mean | **0.9550** | 0.9392 | 0.7183 |
 | Judge passes at 0.85 | **24/24** | 23/24 | 11/24 |
-| Mean tokens/run | 50,375 | 50,122 | **24,605** |
-| Median tokens/run | 42,663.5 | **43,000** | **17,244.5** |
-| Mean elapsed/run | **32.4 s** | 32.7 s | **25.4 s** |
+| Mean tokens/run | 50,375 | 49,243 | **24,605** |
+| Median tokens/run | 42,663.5 | **42,469.5** | **17,244.5** |
+| Mean elapsed/run | **32.4 s** | **32.4 s** | **25.4 s** |
 | Mean commands/run | 2.71 | 2.57 | **1.21** |
 | Missing outputs / execution errors | 0 / 0 | 0 / 0 | 0 / 0 |
 
 ## PR versus current main
 
-- Objective: **+4.75 percentage points**.
-- Combined: **+4.33 points**.
-- Efficiency: **+5.36 points**.
-- Judge score: **+0.0133**, with 24/24 rather than 23/24 passes.
-- Mean tokens: **0.5% higher**.
-- Mean elapsed time: **0.9% lower**.
+- Objective: **+4.82 percentage points**.
+- Combined: **+4.40 points**.
+- Efficiency: **+1.79 points**.
+- Judge score: **+0.0158**, with 24/24 rather than 23/24 passes.
+- Mean tokens: **2.3% higher**.
+- Mean elapsed time: effectively equal (**0.01% lower**).
 - Mean commands: **5.6% higher**.
 
-The paired objective difference was not significant in the seeded 4,096-sample sign-flip test (`mean delta = +0.047534`, `p = 0.300464`). This round supports equivalence on legacy behavior plus targeted new-functionality lift; it does not establish a universal quality improvement.
+The paired objective difference was not significant in the seeded 4,096-sample sign-flip test (`mean delta = +0.048214`, `p = 0.234562`). This round supports equivalence on legacy behavior plus targeted new-functionality lift; it does not establish a universal quality improvement.
 
 ## PR versus no skill
 
-- Objective: **+21.77 percentage points**.
-- Combined: **+27.02 points**.
-- Judge score: **+0.2408**, with 24/24 versus 11/24 passes.
-- Paired objective lift remained significant (`mean delta = +0.217687`, `p = 0.000244`).
+- Objective: **+20.52 percentage points**.
+- Combined: **+25.76 points**.
+- Judge score: **+0.2367**, with 24/24 versus 11/24 passes.
+- Paired objective lift remained significant (`mean delta = +0.205159`, `p = 0.000244`).
 
 The cost of that lift was about **2.05×** mean tokens, **1.27×** mean elapsed time, and **2.24×** mean commands versus no skill.
 
@@ -66,10 +66,10 @@ Four cases now directly test the PR functionality:
 
 | New four-case slice | PR skill | Current main | No skill |
 |---|---:|---:|---:|
-| Objective | **100.00%** | 65.48% | 65.95% |
-| Combined | **100.00%** | 66.96% | 60.12% |
-| Efficiency | **100.00%** | 50.00% | **100.00%** |
-| Judge mean | **0.9400** | 0.8775 | 0.7650 |
+| Objective | **95.00%** | 60.00% | 69.72% |
+| Combined | **95.45%** | 61.95% | 64.45% |
+| Efficiency | **100.00%** | 75.00% | **100.00%** |
+| Judge mean | **0.9400** | 0.8625 | 0.7900 |
 | Judge passes | **4/4** | 3/4 | 1/4 |
 
 The four-case slice is intentionally small and should be treated as a targeted regression guard, not a significance claim.
