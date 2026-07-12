@@ -1,6 +1,6 @@
 {
   "name": "cfdoctor",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "license": "MIT",
   "description": "Cloudflare Doctor skill and read-only scanner for auditing Cloudflare projects.",

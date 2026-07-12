@@ -4,6 +4,10 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
+_No unreleased changes._
+
+## 0.3.0 — 2026-07-12
+
 - Replaced the broad account-collector design with a Wrangler-first deployed-state snapshot workflow: explicitly approved read-only plans, private output outside Git, metadata-only-by-default deployment/active-version/secret-name capture, separately opted-in Worker source/config and Pages config download, binding/runtime limits, command/file hashes, offline fake-Wrangler tests, and approved private live validation across Wrangler 4.53.0, 4.71.0, and 4.94.0. Raw snapshots were deleted after shape-only review. No runtime package installation, credential storage, or Cloudflare mutation is introduced.
 - Reviewed all 86 accessible `adewale/*` default branches and parsed all 334 `wrangler.jsonc` files. Separated 24 deployable configs from 60 maintained examples, 20 intentional fixtures, and 230 generated corpus copies; the resulting changes make metadata-only capture the default, exclude `corpus-cache`, recognize modern Wrangler product families, and document environment/multi-config/Service Binding scope boundaries.
 - Hardened and repeated the four GPT-5.5 Wrangler cases against a clean current skill tree: semantic approval/no-install/Static Assets oracles, a direct forbidden-package-runner script oracle, identifier-minimization checks, and a no-browse planning rule. Three fresh samples per case scored 94.52% objective / 95.08% combined with 12/12 judge passes, a 0.9608 judge mean, and 100% process/efficiency passes. No sample recommended a package runner or repeated the prior documentation-search outlier.
@@ -23,11 +27,25 @@ All notable changes to Cloudflare Doctor are tracked here.
   - Updated `cost-footguns.md`, `performance-and-reliability.md` (layered cache map + caching-behavior checks), `product-fit-rubric.md`, `config-and-security-checks.md`, and the source maps (`official-source-map.md`, `cloudflare-best-practices-docs.md`, `recommendation-provenance.md`).
   - Added war-story scenario #23 and scanner lead `CFDOC-COST-WORKERS-CACHE-BILLING` (fires on Wrangler `cache.enabled` / `exports[*].cache.enabled`), with a matrix row and a `workers-cache-auth-bypass` detection fixture. The full suite is now `25/25` detection fixtures and scanner `0.3.5` after the additional hardening above.
 
-## 0.2.2 — 2026-06-14
+Release: https://github.com/adewale/cfdoctor/releases/tag/v0.3.0
+
+## 0.2.2 — 2026-06-15
 
 - Moved the runtime skill from the repository root to `skills/cloudflare-doctor/`.
 - Kept only `SKILL.md`, runtime references, and the static scanner inside the installable skill boundary.
+- Added install-boundary validation and CI so repository-only eval, research, fixture, and documentation files cannot leak into the installable skill.
+- Upgraded the shared eval integration to Skill Eval Harness v0.4.0 and added case taxonomy fields.
 - Updated Pi/package metadata, install commands, eval manifest paths, and CI checks for the narrow installable directory.
+
+Release: https://github.com/adewale/cfdoctor/releases/tag/v0.2.2
+
+## 0.2.1 — 2026-06-11
+
+- Added Agent Skills compatibility metadata for Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
+- Documented per-agent installation and usage paths.
+- Added `package.json` `skill` and `pi.skills` metadata for Git-installed packages.
+
+Release: https://github.com/adewale/cfdoctor/releases/tag/v0.2.1
 
 ## 0.2.0 — 2026-06-11
 
