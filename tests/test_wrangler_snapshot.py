@@ -137,7 +137,9 @@ class WranglerSnapshotTests(unittest.TestCase):
             proc = self.run_capture(fake, output, "--kind", "worker", "--plan")
             self.assertEqual(0, proc.returncode, proc.stderr)
             plan = json.loads(proc.stdout)
+            self.assertTrue(plan["metadata_only"])
             self.assertIn([str(fake.resolve()), "deployments", "status", "--name", "fixture-project", "--json"], plan["commands"])
+            self.assertNotIn([str(fake.resolve()), "init", "--from-dash", "fixture-project", "--no-delegate-c3"], plan["commands"])
             self.assertFalse(output.exists())
 
     def test_capture_requires_explicit_authenticated_read_approval(self) -> None:
@@ -155,10 +157,18 @@ class WranglerSnapshotTests(unittest.TestCase):
             root = Path(tmp)
             fake = self.make_fake_wrangler(root)
             output = root / "snapshot"
-            proc = self.run_capture(fake, output, "--kind", "worker", "--approve-authenticated-read")
+            proc = self.run_capture(
+                fake,
+                output,
+                "--kind",
+                "worker",
+                "--include-source-config",
+                "--approve-authenticated-read",
+            )
             self.assertEqual(0, proc.returncode, proc.stderr)
             manifest = json.loads((output / "manifest.json").read_text())
             self.assertTrue(manifest["success"])
+            self.assertFalse(manifest["metadata_only"])
             labels = [entry["label"] for entry in manifest["commands"]]
             self.assertEqual(2, sum(label.startswith("version-view:") for label in labels))
             self.assertIn("init-from-dash", labels)
@@ -185,7 +195,14 @@ class WranglerSnapshotTests(unittest.TestCase):
             root = Path(tmp)
             fake = self.make_fake_wrangler(root, fail_init=True)
             output = root / "snapshot"
-            proc = self.run_capture(fake, output, "--kind", "worker", "--approve-authenticated-read")
+            proc = self.run_capture(
+                fake,
+                output,
+                "--kind",
+                "worker",
+                "--include-source-config",
+                "--approve-authenticated-read",
+            )
             self.assertEqual(1, proc.returncode)
             manifest = json.loads((output / "manifest.json").read_text())
             self.assertFalse(manifest["success"])
@@ -231,7 +248,14 @@ class WranglerSnapshotTests(unittest.TestCase):
             root = Path(tmp)
             fake = self.make_fake_wrangler(root, create_symlink=True)
             output = root / "snapshot"
-            proc = self.run_capture(fake, output, "--kind", "worker", "--approve-authenticated-read")
+            proc = self.run_capture(
+                fake,
+                output,
+                "--kind",
+                "worker",
+                "--include-source-config",
+                "--approve-authenticated-read",
+            )
             self.assertEqual(1, proc.returncode)
             manifest = json.loads((output / "manifest.json").read_text())
             self.assertIn("symlink-removed:download/fixture-project/external-link", manifest["failures"])
@@ -244,7 +268,14 @@ class WranglerSnapshotTests(unittest.TestCase):
             root = Path(tmp)
             fake = self.make_fake_wrangler(root, create_nested_manifest=True)
             output = root / "snapshot"
-            proc = self.run_capture(fake, output, "--kind", "worker", "--approve-authenticated-read")
+            proc = self.run_capture(
+                fake,
+                output,
+                "--kind",
+                "worker",
+                "--include-source-config",
+                "--approve-authenticated-read",
+            )
             self.assertEqual(0, proc.returncode, proc.stderr)
             manifest = json.loads((output / "manifest.json").read_text())
             relative = "download/fixture-project/manifest.json"
@@ -308,7 +339,7 @@ class WranglerSnapshotTests(unittest.TestCase):
                 if command["label"] != "wrangler-version":
                     self.assertEqual(["--profile", "audit"], command["argv"][-2:])
 
-    def test_worker_metadata_only_skips_source_download(self) -> None:
+    def test_worker_defaults_to_metadata_only_and_skips_source_download(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             fake = self.make_fake_wrangler(root)
@@ -318,11 +349,11 @@ class WranglerSnapshotTests(unittest.TestCase):
                 output,
                 "--kind",
                 "worker",
-                "--metadata-only",
                 "--approve-authenticated-read",
             )
             self.assertEqual(0, proc.returncode, proc.stderr)
             manifest = json.loads((output / "manifest.json").read_text())
+            self.assertTrue(manifest["metadata_only"])
             self.assertNotIn("init-from-dash", [entry["label"] for entry in manifest["commands"]])
             self.assertFalse((output / "download").exists())
 
@@ -331,7 +362,14 @@ class WranglerSnapshotTests(unittest.TestCase):
             root = Path(tmp)
             fake = self.make_fake_wrangler(root)
             output = root / "snapshot"
-            proc = self.run_capture(fake, output, "--kind", "pages", "--approve-authenticated-read")
+            proc = self.run_capture(
+                fake,
+                output,
+                "--kind",
+                "pages",
+                "--include-source-config",
+                "--approve-authenticated-read",
+            )
             self.assertEqual(0, proc.returncode, proc.stderr)
             manifest = json.loads((output / "manifest.json").read_text())
             self.assertTrue(manifest["success"])

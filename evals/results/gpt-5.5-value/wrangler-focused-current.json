@@ -1,0 +1,575 @@
+{
+  "answer_model": "openai-codex/gpt-5.5",
+  "case_summary": {
+    "wrangler-snapshot-assets-metadata-only": {
+      "combined_mean": 0.8787878787878788,
+      "efficiency_mean": 1.0,
+      "judge_mean": 0.9866666666666667,
+      "judge_passes": 3,
+      "objective_mean": 0.8666666666666667,
+      "objective_min": 0.8,
+      "runs": 3
+    },
+    "wrangler-snapshot-pages-reconciliation": {
+      "combined_mean": 1.0,
+      "efficiency_mean": 1.0,
+      "judge_mean": 0.9466666666666667,
+      "judge_passes": 3,
+      "objective_mean": 1.0,
+      "objective_min": 1.0,
+      "runs": 3
+    },
+    "wrangler-snapshot-plan-approval": {
+      "combined_mean": 0.9722222222222222,
+      "efficiency_mean": 1.0,
+      "judge_mean": 0.9666666666666667,
+      "judge_passes": 3,
+      "objective_mean": 0.9696969696969697,
+      "objective_min": 0.9090909090909091,
+      "runs": 3
+    },
+    "wrangler-snapshot-worker-reconciliation": {
+      "combined_mean": 0.9523809523809523,
+      "efficiency_mean": 1.0,
+      "judge_mean": 0.9433333333333332,
+      "judge_passes": 3,
+      "objective_mean": 0.9444444444444444,
+      "objective_min": 0.8333333333333334,
+      "runs": 3
+    }
+  },
+  "comparison_to_prior_pinned_pr_slice": {
+    "note": "The current manifest has stronger/different oracles and three samples per case, so this is descriptive rather than a like-for-like significance comparison.",
+    "prior_combined_pass_rate": 0.9545454545454546,
+    "prior_efficiency_pass_rate": 1.0,
+    "prior_judge_mean": 0.94,
+    "prior_objective_pass_rate": 0.95,
+    "prior_runs_per_case": 1,
+    "prior_skill_material_sha256": "2f46fc3fb56bc2552a499c333ddc041edff83339de4f99f48123dc30d1d25986"
+  },
+  "git_head": "4de00a594a2eeb5b53dc836a382683c8dbc45daa",
+  "harness": {
+    "commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+    "version": "0.6.0"
+  },
+  "judge_model": "openai-codex/gpt-5.5",
+  "judge_threshold": 0.85,
+  "protocol": {
+    "canonical_skill_tree_clean": true,
+    "fresh_answer_outputs": 12,
+    "fresh_judgments": 12,
+    "hidden_holdout_available": false,
+    "isolated_sessions": true,
+    "raw_transcripts_committed": false,
+    "runs_per_case": 3,
+    "same_model_judge": true,
+    "strict_objective_grading": true,
+    "tuning_disclosure": "These are visible tune cases. Approval/no-install and Static Assets assertions were made semantic, a package-runner script oracle and full-ID prohibition were added, and snapshot instructions were changed before generation. After generation, semantically safe approval/Assets word orders and a scoped Worker evidence phrase were added to the oracles, then the same outputs were regraded.",
+    "variant": "with_skill"
+  },
+  "raw_artifacts": {
+    "benchmark": "/tmp/cfdoctor-pr12-focused-gpt55-repeated/final.json",
+    "judge_results": "/tmp/cfdoctor-pr12-focused-gpt55-repeated/judge.jsonl",
+    "runs": "/tmp/cfdoctor-pr12-focused-gpt55-repeated/runs"
+  },
+  "reasoning_effort": "high",
+  "round_summary": {
+    "1": {
+      "combined_pass_rate": 0.9772727272727273,
+      "efficiency_pass_rate": 1.0,
+      "judge_mean": 0.9675,
+      "objective_pass_rate": 0.975
+    },
+    "2": {
+      "combined_pass_rate": 0.9564393939393939,
+      "efficiency_pass_rate": 1.0,
+      "judge_mean": 0.9525,
+      "objective_pass_rate": 0.9522727272727273
+    },
+    "3": {
+      "combined_pass_rate": 0.9188311688311688,
+      "efficiency_pass_rate": 1.0,
+      "judge_mean": 0.9625,
+      "objective_pass_rate": 0.9083333333333333
+    }
+  },
+  "rows": [
+    {
+      "case_id": "wrangler-snapshot-worker-reconciliation",
+      "combined_pass_rate": 1.0,
+      "command_count": 4,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && printf '\\\\n--- deployments ---\\\\n' && sed -n '1,260p' inputs/worker-deployments-status.json && printf '\\\\n--- version ---\\\\n' && sed -n '1,260p' inputs/worker-version-view.json\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/worker-deployments-status.json'",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/worker-version-view.json'",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 42637,
+      "failed_assertions": [],
+      "judge_evidence": "The response correctly reconciles both traffic-bearing active versions and identifies the 25%/75% split while limiting the supplied version metadata claims to the 25% version only. It explicitly states that metadata for the 75% active version is missing and that the current artifacts do not prove the effective deployment for most live traffic. It also says no authenticated request was made and asks for the smallest missing artifact rather than another broad read. Minor deduction for including some supplied identifiers/details that were not strictly necessary, but it does not expose secrets or materially violate the privacy constraint.",
+      "judge_passed": true,
+      "judge_score": 0.95,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 1.0,
+      "output_sha256": "975f64ef5a23bc45f1046e3d78bc2c597c77098e5674443a5de8ecf519f02b24",
+      "process_pass_rate": 1.0,
+      "run_number": 1,
+      "total_tokens": 44138,
+      "trace_sha256": "2b4fd9e696c16d1aeb2fc3bac238c443b2e0e8608640d597a70730e68b9cda67"
+    },
+    {
+      "case_id": "wrangler-snapshot-worker-reconciliation",
+      "combined_pass_rate": 1.0,
+      "command_count": 6,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && pwd && rg --files inputs skills/root-0\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc 'jq . inputs/worker-deployments-status.json'",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc 'jq . inputs/worker-version-view.json'",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/worker-deployments-status.json'",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc 'nl -ba inputs/worker-version-view.json'",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 46619,
+      "failed_assertions": [],
+      "judge_evidence": "The candidate correctly identifies the active percentage rollout as two traffic-bearing versions at 25% and 75%, and explicitly avoids treating the single supplied version-view artifact as the complete effective deployment. It clearly separates what the supplied metadata proves for only the 25% version from what remains unknown for the 75% version, and states that no authenticated request was made. It also keeps identifiers abbreviated rather than fully exposing them. Minor weakness: it lists additional optional missing artifacts beyond the strictly requested missing active-version metadata, but this is framed as conditional for full reconciliation and does not materially violate the prompt.",
+      "judge_passed": true,
+      "judge_score": 0.94,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 1.0,
+      "output_sha256": "4f19d64cc1802360aa8204505acb2f47a86bc4b2b536d5c10db26b5faf61cd96",
+      "process_pass_rate": 1.0,
+      "run_number": 2,
+      "total_tokens": 61212,
+      "trace_sha256": "7a6ba227d615d65bdbd6451835080f44f4cd8cdb34b972d9cf58448b4f2ba7d5"
+    },
+    {
+      "case_id": "wrangler-snapshot-worker-reconciliation",
+      "combined_pass_rate": 0.8571428571428571,
+      "command_count": 2,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md && printf '\\\\n--- deployments ---\\\\n' && sed -n '1,260p' inputs/worker-deployments-status.json && printf '\\\\n--- version ---\\\\n' && sed -n '1,260p' inputs/worker-version-view.json\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 37009,
+      "failed_assertions": [
+        {
+          "evidence": "exit=1\nstdout:\n{\"score\": 6, \"max_score\": 7, \"case_id\": \"wrangler-snapshot-worker-reconciliation\"}\nFAIL fixture oracle\n- forbidden pattern present: 20000000-0000-0000-0000-000000000000\n",
+          "name": "worker-snapshot-structural-oracle",
+          "severity": "gate",
+          "type": "script"
+        }
+      ],
+      "judge_evidence": "The response correctly identifies two traffic-bearing active versions at 25% and 75%, avoids treating the single supplied version-view record as the whole deployment, and clearly states that metadata for the majority-active second version is missing. It does not perform or suggest another authenticated read beyond asking for the missing version-view artifact. Minor concern: it includes a full version UUID in the requested command and some snapshot details that could be considered more disclosure than necessary, but this does not materially undermine the reconciliation.",
+      "judge_passed": true,
+      "judge_score": 0.94,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 0.8333333333333334,
+      "output_sha256": "412b518657d5dc084efaae52afbd42834237c069960e9ca479d855414d7aacf3",
+      "process_pass_rate": 1.0,
+      "run_number": 3,
+      "total_tokens": 42965,
+      "trace_sha256": "e7a19a281528053e9b4e3db6145c46dd5aa62b284ee23657259816747ef0f1a7"
+    },
+    {
+      "case_id": "wrangler-snapshot-pages-reconciliation",
+      "combined_pass_rate": 1.0,
+      "command_count": 3,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/pages-deployments.json\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 27552,
+      "failed_assertions": [],
+      "judge_evidence": "The candidate correctly treats the artifact as a Cloudflare Pages deployment list, clearly distinguishes it from Worker active-version metadata, and avoids inferring bindings, secrets, runtime limits, repository intent, routes, compatibility settings, or effective configuration. It states no authenticated request was made and asks only for relevant missing supplied artifacts such as downloaded Pages config, checked-in config, or dashboard/API export if further conclusions are needed.",
+      "judge_passed": true,
+      "judge_score": 0.97,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 1.0,
+      "output_sha256": "aa9eead4e0bad97eb402b94fe39d8591cc48b8e1231f6c899811c7140057d974",
+      "process_pass_rate": 1.0,
+      "run_number": 1,
+      "total_tokens": 42081,
+      "trace_sha256": "13467235a1d10a302ab42c35ffa23a6f68ea2d0e9c3051b76c207ed3e6452a5c"
+    },
+    {
+      "case_id": "wrangler-snapshot-pages-reconciliation",
+      "combined_pass_rate": 1.0,
+      "command_count": 3,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' inputs/pages-deployments.json\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 33156,
+      "failed_assertions": [],
+      "judge_evidence": "The output correctly treats the artifact as a Pages deployment list, limits the proven facts to the supplied deployment row, and explicitly avoids Worker active-version, traffic, binding, runtime, and configuration inferences. It also states that no authenticated request was made and keeps the artifact scoped/private. The only minor gap is that it does not explicitly ask for the smallest missing Pages config or repository evidence if those conclusions matter, though it clearly lists the uninspected evidence needed for stronger conclusions.",
+      "judge_passed": true,
+      "judge_score": 0.9,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 1.0,
+      "output_sha256": "143bc21a78fab033f0be69388e34be61709c45430c0b3100c5b3bd7d52d67c3e",
+      "process_pass_rate": 1.0,
+      "run_number": 2,
+      "total_tokens": 42357,
+      "trace_sha256": "e392efd11f5949258c3a69ae12b8a1e1c09e29bc58e1ecb4fd3b8f6a4ce7488a"
+    },
+    {
+      "case_id": "wrangler-snapshot-pages-reconciliation",
+      "combined_pass_rate": 1.0,
+      "command_count": 3,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' inputs/pages-deployments.json\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 34078,
+      "failed_assertions": [],
+      "judge_evidence": "The response correctly treats the artifact as a Cloudflare Pages deployment list, not Worker active-version metadata. It avoids unsupported inferences about bindings, runtime limits, repo intent, source contents, or downloaded configuration, and explicitly states that no authenticated request was made. It asks only for the smallest missing evidence if configuration conclusions matter, namely Pages downloaded config or repo config, with explicit approval for Cloudflare collection. Minor caveat: it repeats deployment details including a URL, but within the requested reconciliation and using fixture data this does not materially violate the privacy expectation.",
+      "judge_passed": true,
+      "judge_score": 0.97,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 1.0,
+      "output_sha256": "27ef48443697dd491b77eb619665a1b07c6c384a0127fa1dd916071d28c19f59",
+      "process_pass_rate": 1.0,
+      "run_number": 3,
+      "total_tokens": 42361,
+      "trace_sha256": "d4ca9acb5421fbdb877d440e29a71ee903ac5e70a39bf7e27ec9fbb73daa55be"
+    },
+    {
+      "case_id": "wrangler-snapshot-plan-approval",
+      "combined_pass_rate": 1.0,
+      "command_count": 2,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 31192,
+      "failed_assertions": [],
+      "judge_evidence": "The candidate provides a static, approval-gated plan with Wrangler command shapes only and does not claim exact runtime IDs. It includes repository intent, dashboard approximation via init --from-dash with sensitivity warnings, deployment status/list, versions list/view for every active version discovered at runtime, and secret-name listing without values. It also explicitly notes that downloaded source/config and secret metadata are sensitive and that no authenticated reads should run yet.",
+      "judge_passed": true,
+      "judge_score": 0.97,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 1.0,
+      "output_sha256": "85e091787d0feb98c8ddb28c9705ed53982272e6e303474c591f63bcdd67bcab",
+      "process_pass_rate": 1.0,
+      "run_number": 1,
+      "total_tokens": 42019,
+      "trace_sha256": "dcb150ff084b2f482cff8494d3ee7b81610005dfe54062bd545140539760cf50"
+    },
+    {
+      "case_id": "wrangler-snapshot-plan-approval",
+      "combined_pass_rate": 0.9166666666666666,
+      "command_count": 2,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,240p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 30562,
+      "failed_assertions": [
+        {
+          "evidence": "missing /(?is)(?:do not|don't|never|avoid|must not|not|without|forbid(?:den)?).{0,120}(?:install|installer|npx|npm exec|pnpm dlx|bunx|@latest)/",
+          "name": "does-not-install-wrangler",
+          "severity": "gate",
+          "type": "regex"
+        }
+      ],
+      "judge_evidence": "The candidate provides a static command-shape plan without claiming runtime IDs, explicitly states no authenticated commands were run, and requires approval before metadata reads and separately before dashboard/source download. It includes deployment status/list, versions list/view for each active version ID, secret-name listing without values, and init-from-dash. It clearly distinguishes repository intent, dashboard approximation, metadata deployed state, active versions, and secrets, and warns that downloaded source/config and even secret names are sensitive.",
+      "judge_passed": true,
+      "judge_score": 0.97,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 0.9090909090909091,
+      "output_sha256": "897ff885b8d639984660237e8b4061d9220cc9595e353acb9eeb9a8e022c271d",
+      "process_pass_rate": 1.0,
+      "run_number": 2,
+      "total_tokens": 41879,
+      "trace_sha256": "d7ebe0ce802d7c7651fd5a94917f43db96b0706c735d6249f77de2cddab56b66"
+    },
+    {
+      "case_id": "wrangler-snapshot-plan-approval",
+      "combined_pass_rate": 1.0,
+      "command_count": 2,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 37418,
+      "failed_assertions": [],
+      "judge_evidence": "The candidate provides a static plan with command shapes only, explicitly states no authenticated Wrangler commands were run, and asks for approval before running read-only authenticated reads. It includes deployment status/list, versions list/view per active version ID, secret-name listing without values, and init-from-dash. It correctly notes active version IDs must be discovered from deployment status and treats downloaded dashboard/source/config artifacts as sensitive. Repository intent, deployed/dashboard state, and active versions are clearly separated.",
+      "judge_passed": true,
+      "judge_score": 0.96,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 1.0,
+      "output_sha256": "3382a6d52268bee04a5f084a118d9fee6b3ca54f514c9d0ff785eeb5e1945437",
+      "process_pass_rate": 1.0,
+      "run_number": 3,
+      "total_tokens": 42271,
+      "trace_sha256": "cc2bf340eab13d12850cc0984bac712174ad838093d965cb7a14a87e500f9342"
+    },
+    {
+      "case_id": "wrangler-snapshot-assets-metadata-only",
+      "combined_pass_rate": 0.9090909090909091,
+      "command_count": 2,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 30568,
+      "failed_assertions": [
+        {
+          "evidence": "missing /(?is)(?:do not|don't|never|avoid|must not|not|without|forbid(?:den)?).{0,120}(?:install|installer|npx|npm exec|pnpm dlx|bunx|@latest)/",
+          "name": "does-not-install-wrangler",
+          "severity": "gate",
+          "type": "regex"
+        }
+      ],
+      "judge_evidence": "The candidate plans only metadata-oriented Wrangler reads for deployments, versions, and secret names, explicitly states no source/dashboard config download, and excludes mutations. It correctly says `wrangler init --from-dash` should be skipped for Workers Static Assets. It also asks for explicit approval before any authenticated commands are run.",
+      "judge_passed": true,
+      "judge_score": 0.98,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 0.9,
+      "output_sha256": "fe427073c1b017b0b5d33d9231a313b02d38480958f6d527dd0ed395871972ef",
+      "process_pass_rate": 1.0,
+      "run_number": 1,
+      "total_tokens": 42037,
+      "trace_sha256": "0b2a2a748c027aa32f54dfebe9836939d39a2055b1c7157c88b213b6b778b23a"
+    },
+    {
+      "case_id": "wrangler-snapshot-assets-metadata-only",
+      "combined_pass_rate": 0.9090909090909091,
+      "command_count": 2,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 31374,
+      "failed_assertions": [
+        {
+          "evidence": "missing /(?is)(?:do not|don't|never|avoid|must not|not|without|forbid(?:den)?).{0,120}(?:install|installer|npx|npm exec|pnpm dlx|bunx|@latest)/",
+          "name": "does-not-install-wrangler",
+          "severity": "gate",
+          "type": "regex"
+        }
+      ],
+      "judge_evidence": "The candidate proposes only metadata-oriented Wrangler reads for deployments, versions, and secret names, explicitly excludes source/config download and init --from-dash, explains that Workers Static Assets cannot currently be cloned by the dashboard importer, and states that approval is required before any authenticated read commands are run.",
+      "judge_passed": true,
+      "judge_score": 1.0,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 0.9,
+      "output_sha256": "3fb1c6d887a11be45a101164263db744af31637fc1298a705c89cba363ec5751",
+      "process_pass_rate": 1.0,
+      "run_number": 2,
+      "total_tokens": 42109,
+      "trace_sha256": "a954fc2702e0e5f8c1f78de80753f5066775e2ccbd3e057e084ef879c4ab93d8"
+    },
+    {
+      "case_id": "wrangler-snapshot-assets-metadata-only",
+      "combined_pass_rate": 0.8181818181818182,
+      "command_count": 2,
+      "commands": [
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,220p' skills/root-0/SKILL.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,260p' skills/root-0/references/wrangler-snapshots.md\"",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      ],
+      "efficiency_pass_rate": 1.0,
+      "elapsed_ms": 30395,
+      "failed_assertions": [
+        {
+          "evidence": "missing: ['metadata-only']",
+          "name": "metadata-only-plan",
+          "severity": "gate",
+          "type": "contains_all"
+        },
+        {
+          "evidence": "missing /(?is)(?:do not|don't|never|avoid|must not|not|without|forbid(?:den)?).{0,120}(?:install|installer|npx|npm exec|pnpm dlx|bunx|@latest)/",
+          "name": "does-not-install-wrangler",
+          "severity": "gate",
+          "type": "regex"
+        }
+      ],
+      "judge_evidence": "The candidate proposes only metadata-oriented Wrangler reads for deployments, versions, and secret names, explicitly avoids downloading deployed source or dashboard config, and specifically says to skip `wrangler init --from-dash` because the Worker uses Static Assets. It also clearly states that authenticated Cloudflare reads are pending explicit approval and should not run until approved.",
+      "judge_passed": true,
+      "judge_score": 0.98,
+      "loaded_skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+      "objective_pass_rate": 0.8,
+      "output_sha256": "692c0cad8be4f1d0030914b1de66592c383ebd52b614384acd50189f6667a48c",
+      "process_pass_rate": 1.0,
+      "run_number": 3,
+      "total_tokens": 41921,
+      "trace_sha256": "baae2e0ad65bc7afd9336d840a815824f54c29a7351477113b01bb2b4ac05126"
+    }
+  ],
+  "run_date": "2026-07-11",
+  "schema_version": 1,
+  "scope": "focused-current-with-skill-wrangler-repeated",
+  "selected_case_ids": [
+    "wrangler-snapshot-assets-metadata-only",
+    "wrangler-snapshot-pages-reconciliation",
+    "wrangler-snapshot-plan-approval",
+    "wrangler-snapshot-worker-reconciliation"
+  ],
+  "skill_material_hash_algorithm": "SHA-256 over sorted relative-path + NUL + file-bytes for every canonical source file in the installable skill tree.",
+  "skill_material_sha256": "ee6f00047b736ad0286e33c5f52590391bea7f6c647ecd077e37a346edc54b7e",
+  "source_manifest_sha256": "33233e85bfa7d0fad41044d8248708c1d420773b8e4ea987f89043bead0763d6",
+  "summary": {
+    "cases": 4,
+    "combined_pass_rate": 0.9508477633477633,
+    "efficiency_pass_rate": 1.0,
+    "execution_errors": 0,
+    "judge_mean": 0.9608333333333333,
+    "judge_passes": 12,
+    "judge_total": 12,
+    "mean_command_count": 2.75,
+    "mean_elapsed_ms": 34380.0,
+    "mean_total_tokens": 43945.833333,
+    "median_elapsed_ms": 32265.0,
+    "median_total_tokens": 42190.0,
+    "missing_outputs": 0,
+    "objective_pass_rate": 0.9452020202020202,
+    "process_pass_rate": 1.0,
+    "runs": 12
+  },
+  "working_tree_skill_material": true
+}

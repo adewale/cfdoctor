@@ -40,6 +40,7 @@ EXCLUDE_DIRS = {
     ".cache",
     ".turbo",
     ".vercel",
+    "corpus-cache",
 }
 
 TEXT_EXTS = {
@@ -83,6 +84,14 @@ BINDING_KEYS = {
     "browser_rendering": "Browser Run",
     "worker_loaders": "Dynamic Workers",
     "artifacts": "Artifacts",
+    "assets": "Workers Static Assets",
+    "containers": "Containers",
+    "dispatch_namespaces": "Dynamic Workers",
+    "pipelines": "Pipelines",
+    "ratelimits": "Rate Limiting bindings",
+    "secrets_store_secrets": "Secrets Store",
+    "send_email": "Email bindings",
+    "vpc_services": "Workers VPC",
 }
 SECRET_NAME_RE = re.compile(r"(secret|token|password|passwd|private|credential|client_secret|api[_-]?key|auth[_-]?key)", re.I)
 SECRET_VALUE_RE = re.compile(
@@ -96,7 +105,7 @@ SECRET_ASSIGN_RE = re.compile(
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
 NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
 
-SCANNER_VERSION = "0.3.3"
+SCANNER_VERSION = "0.3.5"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -115,6 +124,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-CONFIG-ENV-BINDING-PARITY", "CONFIG", "low", "low", "Environment binding parity needs verification", "Wrangler env scope is missing bindings declared at top level; envs commonly drift."),
     ("CFDOC-COST-TEMP-ENV-PAID-BINDINGS", "COST", "medium", "medium", "Temporary/preview environment is connected to paid or stateful Cloudflare services", "Preview/demo/workshop env uses paid or stateful Cloudflare products."),
     ("CFDOC-CONFIG-NO-OBSERVABILITY", "CONFIG", "low", "low", "Wrangler observability not configured in this scope", "No observability config; cost/error regressions are harder to diagnose."),
+    ("CFDOC-COST-LOG-VOLUME", "COST", "low", "high", "Observability is configured for full head sampling", "Full log/trace sampling is a concrete volume multiplier; materiality still requires traffic, retention, plan, and billing evidence."),
     ("CFDOC-COST-WORKERS-CACHE-BILLING", "COST", "low", "low", "Workers Cache is enabled; verify billing surface and auth-entrypoint exclusion", "Enabling cache.enabled bills hits as requests and makes normally-free static-asset and worker-to-worker traffic billable; auth/gateway entrypoints must disable caching."),
     ("CFDOC-CONFIG-UNPARSEABLE", "CONFIG", "medium", "high", "Could not parse Wrangler config", "Wrangler config failed to parse, so semantic config checks are incomplete."),
     ("CFDOC-SEC-SECRET-VALUE", "SEC", "critical", "medium", "Credential-shaped value appears in repository text", "A token/key/connection-string shaped value appears in tracked text."),
@@ -131,6 +141,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("WORKER-TCP-DB-FIT", "REL", "medium", "low", "Worker TCP/external database path lacks obvious pooling/TLS/timeout controls", "Direct sockets from Workers need TLS, timeouts, pooling, and Hyperdrive fit review."),
     ("CFDOC-COST-UNBOUNDED-FANOUT", "COST", "medium", "medium", "Promise.all map fanout lacks an obvious concurrency cap", "Unbounded fanout multiplies subrequests and downstream paid usage per action."),
     ("CFDOC-COST-RETRY-AMPLIFY", "COST", "medium", "low", "Retry/loop-shaped expensive path lacks obvious backoff or circuit breaker", "Hot retries into paid primitives or degraded dependencies amplify spend and outages."),
+    ("CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY", "COST", "medium", "low", "Webhook side effects lack obvious repo-visible idempotency", "Provider retries and duplicate deliveries can repeat downstream writes, fan-out, and paid work."),
     ("CFDOC-SEC-CORS-WILDCARD-CREDS", "SEC", "high", "medium", "Wildcard CORS appears near credentialed responses", "Access-Control-Allow-Origin * combined with credentials breaks browser auth safety."),
     ("CFDOC-SEC-SPOOFABLE-IP-HEADER", "SEC", "medium", "medium", "Code reads spoofable client-IP header", "x-forwarded-for/x-real-ip can be spoofed unless ingress is guaranteed through Cloudflare."),
     ("CFDOC-COST-KV-LIST-HOTPATH", "COST", "medium", "medium", "KV list operation appears in application code", "KV list/prefix scans on hot paths add latency and operation costs."),
@@ -653,7 +664,26 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                                 "medium",
                             ))
 
-        if not is_env and not data.get("observability"):
+        observability = data.get("observability")
+        if isinstance(observability, dict):
+            logs = observability.get("logs") if isinstance(observability.get("logs"), dict) else {}
+            traces = observability.get("traces") if isinstance(observability.get("traces"), dict) else {}
+            full_sampling = any(value == 1 or value == 1.0 for value in (
+                observability.get("head_sampling_rate"), logs.get("head_sampling_rate"), traces.get("head_sampling_rate")
+            ))
+            if full_sampling:
+                findings.append(Finding(
+                    "CFDOC-COST-LOG-VOLUME",
+                    "low",
+                    "Observability is configured for full head sampling",
+                    "cost review / observability",
+                    f"{label}: head_sampling_rate=1",
+                    "Full sampling can multiply retained log/trace volume, but repository config alone does not establish traffic, retention, plan, or cost materiality.",
+                    "Measure invocation/log/trace volume and retention, confirm the current plan and billing meter, then lower sampling only if the evidence supports it.",
+                    "high",
+                ))
+
+        if not is_env and not observability:
             findings.append(Finding(
                 "CFDOC-CONFIG-NO-OBSERVABILITY",
                 "low",
@@ -686,10 +716,67 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
         ))
 
 
-def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[str, set[str]], findings: list[Finding], queue_consumer_configured: bool = False) -> None:
+def static_string_symbols(files: list[tuple[Path, str]]) -> set[str]:
+    """Resolve simple repo-visible constant/alias chains used as singleton keys."""
+    definitions: dict[str, list[str]] = {}
+    aliases: dict[str, list[str]] = {}
+    for _, text in files:
+        for match in re.finditer(r"(?m)^\s*(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*=\s*([^;\n]+)", text):
+            definitions.setdefault(match.group(1), []).append(match.group(2).strip())
+        for match in re.finditer(r"(?m)^\s*import\s*\{([^}]+)\}\s*from\s*['\"][^'\"]+['\"]", text):
+            for item in match.group(1).split(","):
+                parts = re.split(r"\s+as\s+", item.strip())
+                if parts and parts[0]:
+                    aliases.setdefault(parts[-1], []).append(parts[0])
+
+    static: set[str] = set()
+    for _ in range(8):
+        changed = False
+        for name, expressions in definitions.items():
+            # Ambiguous duplicate definitions are not safe to resolve globally.
+            if len(set(expressions)) != 1:
+                continue
+            expr = expressions[0]
+            stripped = re.sub(r"(['\"])(?:\\.|(?!\1).)*\1", "", expr)
+            stripped = re.sub(r"`(?:\\.|[^`])*`", "", stripped)
+            identifiers = re.findall(r"\b[A-Za-z_$][\w$]*\b", stripped)
+            dynamic = [token for token in identifiers if token not in static and token not in {"env", "undefined"}]
+            has_literal = bool(re.search(r"['\"`]", expr))
+            alias_only = bool(re.fullmatch(r"[A-Za-z_$][\w$]*", expr))
+            if (has_literal or alias_only) and not dynamic and name not in static:
+                static.add(name)
+                changed = True
+        for local, imported_values in aliases.items():
+            if len(set(imported_values)) == 1 and imported_values[0] in static and local not in static:
+                static.add(local)
+                changed = True
+        if not changed:
+            break
+    return static
+
+
+def stream_source_symbols(files: list[tuple[Path, str]]) -> set[str]:
+    symbols: set[str] = set()
+    for _, text in files:
+        if not re.search(r"(?:cloudflarestream\.com|videodelivery\.net)", text, re.I):
+            continue
+        symbols.update(re.findall(r"(?m)^\s*export\s+(?:const|function|class)\s+([A-Za-z_$][\w$]*)", text))
+    return symbols
+
+
+def add_code_findings(
+    root: Path,
+    files: list[tuple[Path, str]],
+    bindings: dict[str, set[str]],
+    findings: list[Finding],
+    queue_consumer_names: set[str] | None = None,
+) -> None:
+    queue_consumer_names = queue_consumer_names or set()
     kv_names = bindings.get("KV", set())
+    static_symbols = static_string_symbols(files)
+    stream_symbols = stream_source_symbols(files)
     project_has_stream_host = any(
-        re.search(r"(cloudflarestream\.com|videodelivery\.net|<stream|stream-player)", t, re.I) for _, t in files
+        re.search(r"(?:cloudflarestream\.com|videodelivery\.net)", t, re.I) for _, t in files
     )
     d1_names = bindings.get("D1", set())
     r2_names = bindings.get("R2", set())
@@ -697,6 +784,40 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
     vectorize_names = bindings.get("Vectorize", set())
     dynamic_worker_names = bindings.get("Dynamic Workers", set()) or {"LOADER"}
     artifacts_names = bindings.get("Artifacts", set())
+
+    source_files = [(path, text) for path, text in files if path.suffix in CODE_EXTS]
+    project_text = "\n".join(text for _, text in source_files)
+    webhook_shaped = any(
+        "webhook" in path.as_posix().lower()
+        or re.search(r"webhook|x-github-event|stripe-signature|svix-|x-signature", text, re.I)
+        for path, text in source_files
+    )
+    has_webhook_side_effect = bool(re.search(
+        r"Promise\.all|waitUntil|\.send\s*\(|\.put\s*\(|\.insert\s*\(|fetch\s*\([^)]*,\s*\{[^}]*method\s*:\s*['\"]POST",
+        project_text,
+        re.I | re.S,
+    ))
+    has_webhook_idempotency = bool(re.search(
+        r"idempoten|dedup|delivery[_-]?id|event[_-]?id|x-github-delivery|webhook[_-]?id|alreadyProcessed|processedEvents",
+        project_text,
+        re.I,
+    ))
+    if webhook_shaped and has_webhook_side_effect and not has_webhook_idempotency:
+        evidence_path, evidence_text = next(
+            ((path, text) for path, text in source_files if re.search(r"webhook|request\.json\s*\(|Promise\.all|waitUntil", text, re.I)),
+            source_files[0],
+        )
+        hit = line_for(evidence_text, re.compile(r"webhook|request\.json\s*\(|Promise\.all|waitUntil", re.I)) or (1, "")
+        findings.append(Finding(
+            "CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY",
+            "medium",
+            "Webhook side effects lack obvious repo-visible idempotency",
+            "cost footgun / reliability",
+            f"{rel(evidence_path, root)}:{hit[0]}: {excerpt(hit[1])}",
+            "Webhook providers can retry or duplicate deliveries. Without a stable delivery/event key, downstream writes, fan-out, Queues, or paid API calls can repeat.",
+            "Verify signatures before side effects, persist a provider delivery/event idempotency key, make handlers replay-safe, and bound downstream retries/fan-out.",
+            "low",
+        ))
 
     for path, text in files:
         rpath = rel(path, root)
@@ -805,7 +926,11 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 "medium",
             ))
 
-        if project_has_stream_host and re.search(r"preload\s*=\s*['\"]auto['\"]", text, re.I):
+        stream_linked = bool(
+            re.search(r"(?:cloudflarestream\.com|videodelivery\.net|<stream|stream-player)", text, re.I)
+            or any(re.search(r"\b" + re.escape(symbol) + r"\b", text) for symbol in stream_symbols)
+        )
+        if project_has_stream_host and stream_linked and re.search(r"preload\s*=\s*['\"]auto['\"]", text, re.I):
             hit = line_for(text, r"preload\s*=\s*['\"]auto['\"]") or (1, "")
             findings.append(Finding(
                 "CFDOC-COST-MEDIA-VARIANT-EXPLOSION",
@@ -1107,11 +1232,9 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 ))
         hit = line_for(text, re.compile(r"idFromName\s*\(\s*['\"](?:global|singleton|default|main|root|all|system|scheduler|broadcast|counter|idempotency)['\"]", re.I))
         if not hit:
-            # Same hotspot through one level of indirection: a name held in a
-            # same-file string constant, or a per-deployment env var (one value
-            # per environment means one object).
-            ident = re.search(r"idFromName\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)", text)
-            if ident and re.search(r"(?:const|let|var)\s+" + re.escape(ident.group(1)) + r"\s*=\s*['\"][^'\"]*['\"]", text):
+            # Resolve bounded repo-visible constant/import/concatenation chains.
+            ident = re.search(r"idFromName\s*\(\s*([A-Za-z_$][\w$]*)\s*\)", text)
+            if ident and ident.group(1) in static_symbols:
                 hit = line_for(text, re.compile(r"idFromName\s*\(\s*" + re.escape(ident.group(1)) + r"\s*\)"))
             else:
                 hit = line_for(text, re.compile(r"idFromName\s*\(\s*env\.[A-Za-z0-9_]+\s*\)"))
@@ -1151,12 +1274,18 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 "medium",
             ))
         if do_shaped:
-            alarm_idx = re.search(r"\balarm\s*\([^)]*\)\s*[{=>]", text)
+            alarm_idx = re.search(r"\balarm\s*\([^)]*\)\s*(?::\s*[^\{=>]+)?\s*[\{=>]", text)
             alarm_window = text[alarm_idx.start():alarm_idx.start() + 1200] if alarm_idx else ""
             set_alarm = re.search(r"\bsetAlarm\s*\(", alarm_window, re.I)
-            # Only guards between the alarm declaration and the reschedule count;
-            # an unrelated `if (` after setAlarm() does not make it conditional.
-            if set_alarm and not re.search(r"if\s*\(|hasWork|pending|remaining|next|should|enabled|disabled|backoff|max|attempt|empty|queue", alarm_window[:set_alarm.start()], re.I):
+            # Require guard terms inside an actual condition before rescheduling;
+            # ordinary variables such as `nextRun` or `maxDelay` do not count.
+            guard_prefix = alarm_window[:set_alarm.start()] if set_alarm else ""
+            has_idle_guard = bool(re.search(
+                r"\bif\s*\([^)]*(?:hasWork|pending|remaining|should|enabled|disabled|backoff|attempts?|maxAttempts?|next(?:Alarm|Run|Wake)|empty|queue|\.length|\.size)[^)]*\)",
+                guard_prefix,
+                re.I,
+            ))
+            if set_alarm and not has_idle_guard:
                 hit = line_for(text, re.compile(r"\bsetAlarm\s*\(", re.I)) or (1, "")
                 findings.append(Finding(
                     "DO-ALARM-RECURSION",
@@ -1283,20 +1412,50 @@ def add_code_findings(root: Path, files: list[tuple[Path, str]], bindings: dict[
                 "Verify the origin is locked to Cloudflare or otherwise protected, cache safe responses before origin, and set origin-provider spend/scale controls.",
                 "medium",
             ))
-        if not queue_consumer_configured:
-            hit = line_for(text, re.compile(r"\basync\s+queue\s*\("))
-            if hit:
-                findings.append(Finding(
-                    "CFDOC-REL-QUEUE-NO-DLQ",
-                    "medium",
-                    "Queue consumer handler without consumer config in repo",
-                    "misconfiguration / reliability / cost footgun",
-                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
-                    "This code exports a queue() consumer but no repo config declares it, so retry and DLQ settings are dashboard-managed or otherwise invisible. Cloudflare defaults to three retries and then deletes the message unless a DLQ is configured; the actual terminal policy is not inspectable here.",
-                    "Declare the consumer with intentional retry/delay/DLQ settings in Wrangler config, or supply the dashboard consumer settings as audit evidence; keep processing idempotent for at-least-once delivery.",
-                    "low",
-                ))
+        queue_handler = line_for(text, re.compile(r"\basync\s+queue\s*\("))
+        referenced_queues = set(re.findall(
+            r"\b(?:batch|messages|messageBatch)\.(?:queue|queueName)\s*={2,3}\s*['\"]([^'\"]+)['\"]",
+            text,
+            re.I,
+        ))
+        missing_queue_config = sorted(referenced_queues - queue_consumer_names)
+        if queue_handler and (not queue_consumer_names or missing_queue_config):
+            detail = (
+                "code-referenced queues missing config: " + ", ".join(missing_queue_config)
+                if missing_queue_config else "no queue consumer config in repo"
+            )
+            findings.append(Finding(
+                "CFDOC-REL-QUEUE-NO-DLQ",
+                "medium",
+                "Queue consumer handler without matching consumer config in repo",
+                "misconfiguration / reliability / cost footgun",
+                f"{rpath}:{queue_handler[0]}: {excerpt(queue_handler[1])} ({detail})",
+                "A code-referenced Queue consumer is not matched by repository config, so retry and DLQ settings may be dashboard-managed or otherwise invisible. Cloudflare defaults to three retries and then deletes the message unless a DLQ is configured; the actual terminal policy is not inspectable here.",
+                "Declare every consumer with intentional retry/delay/DLQ settings in Wrangler config, or supply the dashboard consumer settings as audit evidence; keep processing idempotent for at-least-once delivery.",
+                "low",
+            ))
         hit = line_for(text, re.compile(r"fetch\s*\(\s*(?:(?:request|req|event\.request)\.(?:url|clone\s*\(\s*\))|new\s+URL\s*\([^)]*,\s*(?:request|req|event\.request)\.url)", re.I))
+        if not hit:
+            self_url_vars = set(re.findall(
+                r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:(?:request|req|event\.request)\.url|new\s+URL\s*\([^)]*,\s*(?:request|req|event\.request)\.url\s*\))",
+                text,
+                re.I,
+            ))
+            for _ in range(4):
+                aliases = {
+                    name for name, source in re.findall(
+                        r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([A-Za-z_$][\w$]*)\s*;?",
+                        text,
+                    ) if source in self_url_vars
+                }
+                if aliases <= self_url_vars:
+                    break
+                self_url_vars.update(aliases)
+            if self_url_vars:
+                hit = line_for(text, re.compile(
+                    r"fetch\s*\(\s*(?:" + "|".join(re.escape(name) for name in sorted(self_url_vars)) + r")\b",
+                    re.I,
+                ))
         if hit:
             findings.append(Finding(
                 "CFDOC-COST-ASYNC-LOOP",
@@ -1474,8 +1633,18 @@ def main(argv: list[str]) -> int:
     bindings = collect_bindings(configs)
     findings: list[Finding] = []
     add_config_findings(root, configs, findings, parse_errors)
-    queue_consumer_configured = any(queue_consumers(data) for _, _, data in configs if data)
-    add_code_findings(root, file_texts, bindings, findings, queue_consumer_configured=queue_consumer_configured)
+    queue_consumer_names: set[str] = set()
+    pending_configs = [data for _, _, data in configs if data]
+    while pending_configs:
+        data = pending_configs.pop()
+        for consumer in queue_consumers(data):
+            name = consumer.get("queue") or consumer.get("name")
+            if isinstance(name, str) and name.strip():
+                queue_consumer_names.add(name.strip())
+        envs = data.get("env")
+        if isinstance(envs, dict):
+            pending_configs.extend(value for value in envs.values() if isinstance(value, dict))
+    add_code_findings(root, file_texts, bindings, findings, queue_consumer_names=queue_consumer_names)
     if args.json:
         print(render_json(root, bindings, findings))
     else:

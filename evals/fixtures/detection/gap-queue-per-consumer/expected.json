@@ -1,0 +1,6 @@
+{
+  "description": "One configured Queue consumer must not mask a second code-referenced consumer absent from repository config.",
+  "evidence_ids": ["CFDOC-EVD-RETAINDB-LOOP"],
+  "required_check_ids": ["CFDOC-REL-QUEUE-NO-DLQ"],
+  "forbidden_check_ids": []
+}

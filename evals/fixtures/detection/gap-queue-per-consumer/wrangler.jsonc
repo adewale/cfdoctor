@@ -1,0 +1,9 @@
+{
+  "name": "queue-per-consumer-gap",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "observability": { "enabled": true },
+  "queues": {
+    "consumers": [{ "queue": "configured-jobs", "max_retries": 3, "dead_letter_queue": "configured-jobs-dlq" }]
+  }
+}

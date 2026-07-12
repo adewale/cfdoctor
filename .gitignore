@@ -1,2 +1,4 @@
 eval-runs/
+evals/holdout/
+evals/holdback/
 __pycache__/

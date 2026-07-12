@@ -6,7 +6,7 @@ Date: 2026-07-11
 
 Use Wrangler's existing authenticated read commands before designing a custom account collector or universal facts schema. Wrangler already owns authentication profiles, current Cloudflare API compatibility, and product-specific normalization.
 
-The repository wrapper is `scripts/capture_wrangler_snapshot.py`. It does not install Wrangler. It prints the static command plan and the runtime active-version command shape, requires explicit approval, runs an allowlist of read commands, writes a private local snapshot, and records command/file hashes. It never evaluates findings or calls a mutation command.
+The repository wrapper is `scripts/capture_wrangler_snapshot.py`. It does not install Wrangler. It defaults to metadata-only collection, prints the static command plan and the runtime active-version command shape, requires explicit approval, runs an allowlist of read commands, writes a private local snapshot, and records command/file hashes. Source/config download requires the separate `--include-source-config` opt-in. The wrapper never evaluates findings or calls a mutation command.
 
 ## Worker snapshot
 
@@ -18,6 +18,7 @@ wrangler deployments list --name <WORKER> --json
 wrangler versions list --name <WORKER> --json
 wrangler versions view <ACTIVE_VERSION_ID> --name <WORKER> --json
 wrangler secret list --name <WORKER> --format json
+# Only with --include-source-config:
 wrangler init --from-dash <WORKER> --no-delegate-c3
 ```
 
@@ -39,6 +40,7 @@ The wrapper uses:
 ```bash
 wrangler pages deployment list --project-name <PROJECT> --json
 wrangler pages secret list --project-name <PROJECT>
+# Only with --include-source-config:
 wrangler pages download config <PROJECT> --force
 ```
 
@@ -61,17 +63,19 @@ The wrapper therefore:
 - disables subprocess stdin so missing authentication fails instead of prompting;
 - stores stderr only inside the private snapshot;
 - rejects non-empty output directories, removes downloaded symlinks, and marks the snapshot partial;
-- supports `--metadata-only` to avoid downloading Worker source or Pages config.
+- defaults to metadata-only collection and requires `--include-source-config` before downloading Worker source/config or Pages config; `--metadata-only` remains an explicit spelling of the default.
 
 Authenticated reads still require the user's explicit approval under the skill's command policy. The user must review/redact the snapshot before sharing it with a model or committing any derived fixture.
 
 ## What this establishes
 
-A Worker snapshot gives three useful state layers without inventing a new abstraction:
+A Worker snapshot can give three useful state layers without inventing a new abstraction:
 
 1. **Repository intent** — the checked-in Wrangler configuration and source.
-2. **Downloaded dashboard approximation** — `init --from-dash`.
+2. **Optional downloaded dashboard approximation** — `init --from-dash`, only after explicit source/config opt-in.
 3. **Actually active versions** — deployment status plus version-specific runtime metadata.
+
+Confirm the concrete deployment name first: repositories can contain multiple Wrangler configs and `env.*` blocks with distinct deployed names. Service Bindings can also point at separately deployed Workers; do not recurse automatically. Treat each referenced Worker as a separate scope item and plan another approved snapshot only when the dependency matters.
 
 For Pages, compare checked-in intent, experimental `pages download config` output, and the deployment list. Diff the relevant layers rather than assuming any one is complete. Downloaded config is an approximation, and an active Worker deployment can contain multiple versions.
 
@@ -86,7 +90,7 @@ Wrangler does not provide one universal download for DNS, zone settings, WAF/rul
 
 The private mode-bit guarantees are tested on POSIX systems. Windows users must verify the snapshot directory's ACLs before capture; `chmod`-style assertions do not establish Windows confidentiality.
 
-The current Worker direct downloader rejects Workers with Assets. `init --from-dash` does not continuously synchronize dashboard changes, so each audit needs a fresh temporary snapshot. Plain vars may be present; secret values should not be, but all output still requires review.
+The current Worker direct downloader rejects Workers with Assets. A 2026-07-11 review of all accessible `adewale/*` default branches found Assets in 13 of 20 public deployable-project configs (and 16 of 24 when private projects were included), which reinforced metadata-only as the safe and broadly compatible default. `init --from-dash` does not continuously synchronize dashboard changes, so each audit needs a fresh temporary snapshot. Plain vars may be present; secret values should not be, but all output still requires review.
 
 ## Live validation
 

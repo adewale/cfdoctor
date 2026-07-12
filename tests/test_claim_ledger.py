@@ -22,10 +22,13 @@ class ClaimLedgerTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.ledger = json.loads((ROOT / "research/incident-claim-ledger.json").read_text())
 
-    def test_current_ledger_is_valid_with_unverified_review_due_warning(self) -> None:
+    def test_current_ledger_is_valid_and_superseded_source_is_resolved(self) -> None:
         errors, warnings = module.validate(copy.deepcopy(self.ledger), dt.date(2026, 7, 11))
         self.assertEqual([], errors)
-        self.assertTrue(any("CFDOC-EVD-AWS-S3-HOTLINK" in warning and "review due" in warning for warning in warnings))
+        self.assertEqual([], warnings)
+        record = next(item for item in self.ledger["records"] if item["id"] == "CFDOC-EVD-AWS-S3-HOTLINK")
+        self.assertEqual("superseded", record["status"])
+        self.assertIn("No recoverable primary", record["disposition"])
 
     def test_duplicate_evidence_id_is_rejected(self) -> None:
         ledger = copy.deepcopy(self.ledger)

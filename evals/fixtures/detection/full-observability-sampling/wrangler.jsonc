@@ -1,0 +1,10 @@
+{
+  "name": "full-observability-sampling",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-01",
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 1.0 }
+  }
+}

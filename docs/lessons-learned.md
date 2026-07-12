@@ -506,3 +506,41 @@ main. The targeted slice is small, but it now guards the actual product behavior
 58. Compare traces, commands, reference reads, and token outliers—not only final percentages—to explain model regressions.
 59. Route narrow workflows to dedicated references; burying them in broad guidance increases omission risk and unnecessary context.
 60. Report legacy and new-feature slices separately so a broad aggregate cannot hide either regression or genuine feature lift.
+
+### Survey real configuration fleets without confusing copies for projects
+
+A complete default-branch review of 86 accessible `adewale/*` repositories found
+334 Wrangler JSONC files, but only 24 were deployable-project configs. Sixty
+were maintained examples or compatibility tests, 20 were intentional cfdoctor
+fixtures, and 230 lived in a generated corpus cache. Several cached files were
+byte-identical copies of separately counted owner projects. A raw file count
+would therefore have overstated both product prevalence and scanner findings.
+
+The deployable configs still changed the design. Workers Static Assets appeared
+in two thirds of them, making Wrangler's Assets-incompatible dashboard importer
+a poor default and strengthening the least-privilege case for metadata-only
+capture. Environment overrides, multiple configs in one repository, and Service
+Bindings also showed that repository path and top-level Worker name do not
+fully identify deployed scope. Meanwhile, modern example/corpus configs exposed
+valid product keys that the scanner had not inventoried.
+
+61. Classify deployable source, maintained examples, intentional fixtures, and generated/vendored corpora before computing repository-fleet statistics.
+62. Exclude known generated corpus caches from default scans; exact copies otherwise double-count evidence and manufacture findings.
+63. Least-sensitive collection should be the default, especially when the more invasive path is unsupported by a common configuration such as Workers Static Assets.
+64. Confirm the concrete deployed name for each config/environment; a repository can own several separately deployed Workers.
+65. Service Bindings identify dependencies, not authorization to recurse into more account state; expand each target with a separate plan and approval.
+66. Use broad corpora to discover parser/product-surface gaps, not as authority for defect prevalence or current semantics.
+67. Repeated full observability sampling is a usage-evidence question, not a static defect: traffic, retention, plan, and billing data determine materiality.
+
+### Bounded static analysis and matched evaluation beat broad claims
+
+The 0.3.5 scanner pass closed five known gaps without pretending to solve arbitrary program analysis: it follows bounded constants/imports and URL aliases, matches literal Queue names, requires real alarm conditions, and links Stream preload through repo-visible symbols. The same calibration applied to prompt-only checks: explicit full sampling and webhook side effects can produce review leads, while effective origin, alert, and preview-public state still require account evidence.
+
+A matched three-way evaluation also changed the evidentiary quality. Running the exact current tree, immutable main, and no skill three times per case made the Wrangler lift clear while showing that legacy behavior remained statistically compatible with main and pricing still needed efficiency work. A second-model judge sample agreed on 26/27 pass decisions, which is useful sensitivity evidence but not a substitute for human labels.
+
+68. Resolve only bounded, repo-visible data flow; document the dynamic/helper-function boundary instead of calling the heuristic complete.
+69. A prompt-only check can gain a calibrated static lead without converting unavailable account state into a repository finding.
+70. When an incident source remains unavailable and uncorroborated at its review boundary, supersede it rather than perpetually warning or silently citing it.
+71. Compare current, immutable baseline, and no-skill arms under one manifest, sample count, and interleaved protocol before claiming current lift.
+72. Report feature, legacy, and new-eval slices separately: aggregate lift can coexist with a weak pricing slice or a non-significant legacy delta.
+73. Cross-model judge agreement measures sensitivity between judges; human-labeled alignment remains a separate requirement.

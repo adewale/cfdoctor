@@ -243,7 +243,12 @@ def capture(args: argparse.Namespace) -> int:
 
     plan = static_plan(args.kind, args.name, wrangler, args.profile, args.metadata_only)
     if args.plan:
-        print(json.dumps({"kind": args.kind, "name": args.name, "commands": [[wrangler, "--version"], *plan]}, indent=2))
+        print(json.dumps({
+            "kind": args.kind,
+            "name": args.name,
+            "metadata_only": args.metadata_only,
+            "commands": [[wrangler, "--version"], *plan],
+        }, indent=2))
         return 0
     if not args.approve_authenticated_read:
         print("error: pass --approve-authenticated-read after reviewing --plan", file=sys.stderr)
@@ -379,11 +384,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--wrangler", default="wrangler", help="Existing Wrangler executable; no package is installed")
     parser.add_argument("--profile", help="Wrangler authentication profile")
     parser.add_argument("--timeout", type=int, default=120)
-    parser.add_argument("--metadata-only", action="store_true", help="Skip Worker source/config or Pages config download")
+    download_mode = parser.add_mutually_exclusive_group()
+    download_mode.add_argument(
+        "--include-source-config",
+        action="store_true",
+        help="Also download Worker source/config or Pages config; metadata-only is the default",
+    )
+    download_mode.add_argument(
+        "--metadata-only",
+        action="store_true",
+        help="Explicitly select the default mode: do not download Worker source/config or Pages config",
+    )
     parser.add_argument("--plan", action="store_true", help="Print static command shapes without authenticating or writing")
     parser.add_argument("--approve-authenticated-read", action="store_true", help="Confirm the reviewed authenticated read plan")
     parser.add_argument("--allow-repo-output", action="store_true", help="Allow private snapshot output inside a Git worktree")
     args = parser.parse_args(argv)
+    args.metadata_only = not args.include_source_config
     if args.timeout < 1:
         parser.error("--timeout must be positive")
     return capture(args)

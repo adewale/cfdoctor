@@ -1875,13 +1875,8 @@
       "assertions": [
         {
           "name": "requires-authenticated-read-approval",
-          "type": "contains_any",
-          "values": [
-            "explicit approval",
-            "approve authenticated read",
-            "after you approve",
-            "before running"
-          ]
+          "type": "regex",
+          "pattern": "(?is)(?:explicit(?:ly)?\\s+(?:approve|approved|approval)|(?:pending|required|needs?|awaiting).{0,80}(?:explicit\\s+)?(?:approval|approve)|(?:approval|approve).{0,100}(?:before|prior to|until).{0,80}(?:run|running|execute|authenticated)|(?:before|prior to|until).{0,100}(?:run|running|execute|authenticated).{0,80}(?:approval|approve)|(?:run|running|execute|authenticated).{0,80}(?:before|prior to|until).{0,80}(?:approval|approve)|approve.{0,80}(?:run|running|execute|authenticated))"
         },
         {
           "name": "worker-command-shapes",
@@ -1912,13 +1907,29 @@
             "project-pinned",
             "pinned Wrangler",
             "already installed",
-            "existing Wrangler executable"
+            "existing Wrangler executable",
+            "./node_modules/.bin/wrangler",
+            "direct Wrangler binary"
           ]
         },
         {
           "name": "does-not-install-wrangler",
           "type": "regex",
-          "pattern": "(?is)(?:do not|never|avoid).{0,100}(?:npx|@latest|npm install|pnpm dlx|bunx)"
+          "pattern": "(?is)(?:do not|don't|never|avoid|must not|not|without|forbid(?:den)?).{0,120}(?:install|installer|npx|npm exec|pnpm dlx|bunx|@latest)"
+        },
+        {
+          "name": "does-not-recommend-package-runner",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "wrangler-snapshot-plan-approval"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "severity": "gate",
+          "oracle": "strong"
         },
         {
           "name": "does-not-run-authenticated-command",
@@ -1993,17 +2004,12 @@
         {
           "name": "assets-download-boundary",
           "type": "regex",
-          "pattern": "(?is)(Assets|Static Assets).{0,180}(skip|do not|cannot|unsupported).{0,100}(init --from-dash|source|config)"
+          "pattern": "(?is)^(?=.{0,1600}(?:Assets|Static Assets))(?=.{0,1600}(?:init --from-dash|source/config|dashboard config|deployed source))(?=.{0,1600}(?:skip|do.{0,20}not|cannot|unsupported|excluded|not planned)).*$"
         },
         {
           "name": "requires-authenticated-read-approval",
-          "type": "contains_any",
-          "values": [
-            "explicit approval",
-            "approve authenticated read",
-            "after you approve",
-            "before running"
-          ]
+          "type": "regex",
+          "pattern": "(?is)(?:explicit(?:ly)?\\s+(?:approve|approved|approval)|(?:pending|required|needs?|awaiting).{0,80}(?:explicit\\s+)?(?:approval|approve)|(?:approval|approve).{0,100}(?:before|prior to|until).{0,80}(?:run|running|execute|authenticated)|(?:before|prior to|until).{0,100}(?:run|running|execute|authenticated).{0,80}(?:approval|approve)|(?:run|running|execute|authenticated).{0,80}(?:before|prior to|until).{0,80}(?:approval|approve)|approve.{0,80}(?:run|running|execute|authenticated))"
         },
         {
           "name": "uses-existing-pinned-wrangler",
@@ -2012,13 +2018,29 @@
             "project-pinned",
             "pinned Wrangler",
             "already installed",
-            "existing Wrangler executable"
+            "existing Wrangler executable",
+            "./node_modules/.bin/wrangler",
+            "direct Wrangler binary"
           ]
         },
         {
           "name": "does-not-install-wrangler",
           "type": "regex",
-          "pattern": "(?is)(?:do not|never|avoid).{0,100}(?:npx|@latest|npm install|pnpm dlx|bunx)"
+          "pattern": "(?is)(?:do not|don't|never|avoid|must not|not|without|forbid(?:den)?).{0,120}(?:install|installer|npx|npm exec|pnpm dlx|bunx|@latest)"
+        },
+        {
+          "name": "does-not-recommend-package-runner",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "wrangler-snapshot-assets-metadata-only"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "severity": "gate",
+          "oracle": "strong"
         },
         {
           "name": "does-not-run-authenticated-command",
@@ -2069,6 +2091,75 @@
       "success_goals": [
         "outcome"
       ]
+    },
+    {
+      "id": "pricing-future-effective-conflict",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "A current official Cloudflare product pricing page observed today lists rate A. An official changelog announces rate B effective 2026-10-01. Estimate an August 2026 workload and explain which rate applies without inventing dollars.",
+      "expected_behavior": [
+        "Use the currently effective rate for August and keep the future rate as a separately dated scenario.",
+        "Record observation/effective dates and unresolved plan or volume assumptions."
+      ],
+      "assertions": [
+        {"name": "uses-effective-date", "type": "regex", "pattern": "(?is)(?:August|current).{0,160}(?:rate A|currently effective)|(?:rate A|currently effective).{0,160}(?:August|current)"},
+        {"name": "separates-future-rate", "type": "regex", "pattern": "(?is)(?:rate B|2026-10-01|future).{0,180}(?:separate|not yet|after|effective)"},
+        {"name": "records-source-bundle", "type": "regex", "pattern": "(?is)^(?=.{0,2000}(?:current official|observed|observation date))(?=.{0,2000}(?:effective|2026-10-01))(?=.{0,2000}(?:workload|usage|units|volume)).*$"},
+        {"name": "no-invented-dollar-total", "type": "not_regex", "pattern": "(?i)\\$[0-9]"},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Temporal pricing correctness", "No silent conflict resolution", "Assumptions are explicit"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 50000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 45, "severity": "soft", "oracle": "strong"}
+      ],
+      "tags": ["pricing", "future-effective", "conflict"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "pricing-enterprise-contract-conflict",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Our signed Cloudflare Enterprise order form and latest invoice use a negotiated unit price that conflicts with the public pricing page. Which source governs our actual charge, and how should the public figure be reported? Do not expose contract values.",
+      "expected_behavior": [
+        "Treat contract/invoice evidence as governing actual customer charges.",
+        "Use public pricing only as a dated comparison and preserve confidentiality."
+      ],
+      "assertions": [
+        {"name": "contract-governs-actual", "type": "regex", "pattern": "(?is)(?:(?:contract|order form|invoice|negotiated).{0,220}(?:govern|controls?|authoritative|actual charge)|(?:govern|controls?|authoritative|actual charge).{0,220}(?:contract|order form|invoice|negotiated))"},
+        {"name": "public-is-comparison", "type": "regex", "pattern": "(?is)public.{0,160}(?:comparison|baseline|not.*actual|does not govern)"},
+        {"name": "protects-contract-values", "type": "regex", "pattern": "(?is)(?:redact|confidential|do not (?:expose|publish|repeat)|avoid repeating).{0,180}(?:price|value|contract|invoice|amount|discount)"},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Contract hierarchy is correct", "Public pricing is not substituted for actual charges", "Sensitive terms remain private"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 45000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 40, "severity": "soft", "oracle": "strong"}
+      ],
+      "tags": ["pricing", "enterprise", "contract"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "pricing-compound-worker-bindings",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Estimate the billing shape for a Worker that receives 12 million requests, performs two D1 reads and one Queue send per request, and emits sampled logs. The plan, D1 rows per query, Queue batching, retention, and region are not supplied. Do not guess current dollar rates.",
+      "expected_behavior": [
+        "Build separate Worker, D1, Queue, and logging meter terms.",
+        "Refuse an exact total until current rates, meter semantics, plan, and missing usage assumptions are supplied."
+      ],
+      "assertions": [
+        {"name": "separate-meter-graph", "type": "regex", "pattern": "(?is)^(?=.{0,3000}Worker)(?=.{0,3000}D1)(?=.{0,3000}Queue)(?=.{0,3000}(?:logs|logging))(?=.{0,3000}(?:meter|usage shape|operations)).*$"},
+        {"name": "does-not-equate-calls-with-d1-rows", "type": "regex", "pattern": "(?is)(?:D1.{0,300}(?:rows|query).{0,300}(?:unknown|not supplied|cannot|need|not enough)|(?:unknown|not supplied|cannot|need|not enough).{0,300}D1.{0,300}(?:rows|query))"},
+        {"name": "requests-missing-assumptions", "type": "regex", "pattern": "(?is)^(?=.{0,5000}plan)(?=.{0,5000}batch\\w*)(?=.{0,5000}retention)(?=.{0,5000}region).*$"},
+        {"name": "no-exact-total", "type": "regex", "pattern": "(?is)(?:cannot|can't|do not|would not|not enough|insufficient).{0,180}(?:exact|dollar|total|bill|estimate)"},
+        {"name": "no-invented-dollar-total", "type": "not_regex", "pattern": "(?i)\\$[0-9]"},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Compound meters remain separate", "Unknown billing inputs are explicit", "No unsupported exact bill"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 55000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 45, "severity": "soft", "oracle": "strong"}
+      ],
+      "tags": ["pricing", "compound-bill", "bindings"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
     }
   ],
   "ablations": [

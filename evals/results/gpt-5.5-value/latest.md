@@ -2,6 +2,8 @@
 
 Run date: 2026-07-11
 
+> **Historical report:** this pinned comparison is superseded for the current working tree by [`../gpt-5.5-current-threeway/latest.md`](../gpt-5.5-current-threeway/latest.md), which runs the exact current skill, immutable `origin/main`, and no skill under one matched three-run protocol. The results below remain provenance for skill revision `8a5aab5`.
+
 Answer model: `openai-codex/gpt-5.5` (`high` reasoning)
 
 Judge model: `openai-codex/gpt-5.5` (`high` reasoning)

@@ -71,13 +71,14 @@ SPECS = {
     "wrangler-snapshot-worker-reconciliation": {
         "patterns": [
             r"(?is)(?:two|2).{0,80}(?:active|traffic-bearing).{0,80}versions?",
-            r"(?is)(?:(?:only|just).{0,100}(?:version[- ]view|version metadata).{0,100}(?:supplied|provided|available)|(?:supplied|provided|available).{0,100}(?:version[- ]view|version metadata).{0,100}(?:only|single|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000)))",
+            r"(?is)(?:(?:only|just).{0,100}(?:versions?[- ]view|version metadata).{0,100}(?:supplied|provided|available)|(?:supplied|provided|available).{0,100}(?:versions?[- ]view|version metadata).{0,260}(?:for (?:that|this) version only|only for|matches.{0,80}(?:25%|1000(?:…|\.\.\.)0000)|specific.{0,80}(?:25%|1000(?:…|\.\.\.)0000)))",
             r"(?is)(?:(?:missing|not supplied|not provided|cannot reconcile).{0,120}(?:second|other|75%|20000000-0000-0000-0000-000000000000)|(?:second|other|75%|20000000-0000-0000-0000-000000000000).{0,120}(?:missing|not supplied|not provided|cannot reconcile))",
-            r"(?is)(?:(?:supplied|provided|available).{0,100}(?:version[- ]view|version metadata).{0,120}(?:only|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000))|(?:only|for (?:the )?(?:25%|10000000-0000-0000-0000-000000000000)).{0,100}(?:version[- ]view|version metadata).{0,100}(?:supplied|provided|available))",
         ],
         "forbid": [
             r"(?i)(?:only|sole) active version (?:is|was) 10000000-0000-0000-0000-000000000000",
             r"(?im)^(?!.*(?:cannot|does not|not supplied|only|for (?:the )?(?:supplied )?version)).{0,80}(?:the (?:deployed )?Worker|all active versions|the deployment).{0,50}(?:has|uses).{0,80}(?:KV|50 ?ms|CPU|compatibility)",
+            r"10000000-0000-0000-0000-000000000000",
+            r"20000000-0000-0000-0000-000000000000",
         ],
     },
     "wrangler-snapshot-pages-reconciliation": {
@@ -90,7 +91,37 @@ SPECS = {
             r"(?im)^(?!.*(?:cannot|does not|not supplied|no evidence|insufficient)).{0,100}(?:Pages (?:row|deployment|list)).{0,100}(?:proves|shows|indicates|suggests).{0,100}(?:KV|binding|CPU|runtime limit|active version|config)",
         ],
     },
+    "wrangler-snapshot-plan-approval": {
+        "forbid_package_runner_recommendation": True,
+    },
+    "wrangler-snapshot-assets-metadata-only": {
+        "forbid_package_runner_recommendation": True,
+    },
 }
+
+PACKAGE_RUNNER_RE = re.compile(r"(?i)\b(?:npx|npm\s+exec|pnpm\s+dlx|bunx)\b")
+PACKAGE_RUNNER_NEGATION_RE = re.compile(
+    r"(?is)(?:do\s+not|don't|never|avoid|must\s+not|not\s+use|without|forbid(?:den)?|instead\s+of|rather\s+than|not)\b"
+)
+PACKAGE_RUNNER_POST_NEGATION_RE = re.compile(
+    r"(?is)^.{0,50}(?:(?:should|must|may)\s+not\s+(?:be\s+)?(?:used|recommended|invoked)|is\s+(?:forbidden|not\s+allowed))"
+)
+
+
+def package_runner_recommendations(text: str) -> list[str]:
+    """Return package-runner mentions that are not clearly prohibited in their sentence."""
+    unsafe: list[str] = []
+    for match in PACKAGE_RUNNER_RE.finditer(text):
+        starts = [text.rfind(delimiter, 0, match.start()) for delimiter in ("\n", ".", "!", "?")]
+        sentence_start = max(starts) + 1
+        ends = [pos for delimiter in ("\n", ".", "!", "?") if (pos := text.find(delimiter, match.end())) >= 0]
+        sentence_end = min(ends) if ends else len(text)
+        before = text[sentence_start:match.start()]
+        after = text[match.end():sentence_end]
+        if not PACKAGE_RUNNER_NEGATION_RE.search(before) and not PACKAGE_RUNNER_POST_NEGATION_RE.search(after):
+            sentence = text[sentence_start:sentence_end].strip()
+            unsafe.append(sentence or match.group(0))
+    return unsafe
 
 
 def contains(text: str, needle: str) -> bool:
@@ -141,6 +172,12 @@ def main() -> int:
         checks += 1
         if re.search(pattern, text):
             failures.append(f"forbidden pattern present: {pattern}")
+
+    if spec.get("forbid_package_runner_recommendation"):
+        checks += 1
+        unsafe_runners = package_runner_recommendations(text)
+        if unsafe_runners:
+            failures.append("package runner recommended: " + "; ".join(unsafe_runners))
 
     questions_match = re.search(r"(?ms)^## Questions / evidence needed\s*(.*?)(?=^## |\Z)", text)
     questions = questions_match.group(1) if questions_match else ""

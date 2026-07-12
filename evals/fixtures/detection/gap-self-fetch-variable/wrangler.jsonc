@@ -1,0 +1,7 @@
+{
+  "name": "self-fetch-variable-gap",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "loop.example.test/*" }]
+}

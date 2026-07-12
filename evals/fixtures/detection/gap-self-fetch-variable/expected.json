@@ -1,0 +1,6 @@
+{
+  "description": "A URL derived from the incoming request and passed through an alias before fetch remains a self-fetch lead.",
+  "evidence_ids": ["CFDOC-EVD-COEY-LOOPS", "CFDOC-EVD-RETAINDB-LOOP"],
+  "required_check_ids": ["CFDOC-COST-ASYNC-LOOP"],
+  "forbidden_check_ids": []
+}

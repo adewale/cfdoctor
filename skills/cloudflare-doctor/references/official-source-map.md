@@ -11,6 +11,9 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Workers metrics and analytics: https://developers.cloudflare.com/workers/observability/metrics-and-analytics/
 - Wrangler configuration: https://developers.cloudflare.com/workers/wrangler/configuration/
 - Workers secrets: https://developers.cloudflare.com/workers/configuration/secrets/
+- Workers Static Assets: https://developers.cloudflare.com/workers/static-assets/
+- Workers Static Assets billing and limitations: https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/
+- Workers Rate Limiting binding: https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
 - Compatibility dates: https://developers.cloudflare.com/workers/configuration/compatibility-dates/
 - `ExecutionContext.waitUntil`: https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil
 - Service bindings: https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/
@@ -37,6 +40,15 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Artifacts best practices: https://developers.cloudflare.com/artifacts/concepts/best-practices/
 - Artifacts authentication: https://developers.cloudflare.com/artifacts/guides/authentication/
 - Artifacts pricing/limits: https://developers.cloudflare.com/artifacts/platform/pricing/ and https://developers.cloudflare.com/artifacts/platform/limits/
+- Containers docs: https://developers.cloudflare.com/containers/
+- Containers pricing/limits: https://developers.cloudflare.com/containers/pricing/ and https://developers.cloudflare.com/containers/platform-details/limits/
+- Pipelines docs: https://developers.cloudflare.com/pipelines/
+- Pipelines pricing/limits: https://developers.cloudflare.com/pipelines/platform/pricing/ and https://developers.cloudflare.com/pipelines/platform/limits/
+- Workers VPC docs: https://developers.cloudflare.com/workers-vpc/
+- Workers VPC pricing/limits: https://developers.cloudflare.com/workers-vpc/reference/pricing/ and https://developers.cloudflare.com/workers-vpc/reference/limits/
+- Secrets Store docs: https://developers.cloudflare.com/secrets-store/
+- Email Workers send binding: https://developers.cloudflare.com/email-service/api/send-emails/workers-api/
+- Email Service pricing/limits: https://developers.cloudflare.com/email-service/platform/pricing/ and https://developers.cloudflare.com/email-service/platform/limits/
 
 ## Storage/data primitives
 

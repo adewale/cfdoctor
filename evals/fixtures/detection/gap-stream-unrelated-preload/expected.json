@@ -1,0 +1,7 @@
+{
+  "description": "A local video with preload=auto must not be attributed to an unrelated Stream URL elsewhere in the repository.",
+  "evidence_ids": ["CFDOC-EVD-METACAST-IMAGE"],
+  "required_check_ids": [],
+  "forbidden_check_ids": ["CFDOC-COST-MEDIA-VARIANT-EXPLOSION"],
+  "max_findings": 0
+}

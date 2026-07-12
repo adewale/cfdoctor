@@ -61,6 +61,19 @@ class CheckLinksTests(unittest.TestCase):
         unavailable = next(source["url"] for record in ledger["records"] for source in record["sources"] if source.get("availability") == "unavailable")
         self.assertNotIn(unavailable, urls)
 
+    def test_authenticated_runtime_api_templates_are_not_network_checked(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "docs").mkdir()
+            (root / "docs/api.md").write_text(
+                "Runtime template: https://api.cloudflare.com/client/v4/zones/<ZONE_ID>/dns_records\n"
+                "Docs: https://developers.cloudflare.com/api/resources/dns/",
+                encoding="utf-8",
+            )
+            urls = module.extract_urls(root, ["docs"])
+        self.assertFalse(any("api.cloudflare.com" in url for url in urls))
+        self.assertIn("https://developers.cloudflare.com/api/resources/dns/", urls)
+
     def test_extract_urls_respects_excluded_generated_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -1,0 +1,6 @@
+{
+  "description": "Ordinary next/max variable names before setAlarm must not masquerade as an idle-work guard.",
+  "evidence_ids": ["CFDOC-EVD-COEY-DO-GOTCHAS", "CFDOC-EVD-COEY-LOOPS"],
+  "required_check_ids": ["DO-ALARM-RECURSION"],
+  "forbidden_check_ids": []
+}

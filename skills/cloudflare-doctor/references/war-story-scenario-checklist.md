@@ -169,8 +169,8 @@ For each relevant scenario:
 
 - Evidence ID: `CFDOC-EVD-AWS-S3-HOTLINK`
 
-- Source: an unavailable 2024 first-hand S3 bill-shock candidate remains `unverified` in evidence record `CFDOC-EVD-AWS-S3-HOTLINK`; current AWS S3 pricing: https://aws.amazon.com/s3/pricing/
-- Source type: unverified incident candidate + current official docs. Do not cite the incident externally until a durable primary/archive source is recovered.
+- Source: the unavailable 2024 S3 bill-shock candidate was marked `superseded` at its 2026-07-11 review boundary because no recoverable primary page or independent corroboration was found; current AWS S3 pricing: https://aws.amazon.com/s3/pricing/
+- Source type: rejected discovery lead + current official docs. Do not cite the incident as evidence; retain only the independently testable public-storage exposure hypothesis.
 - Mechanism: public object/storage endpoint receives unexpected requests because a bucket/object name or URL is guessed/reused/misconfigured; request charges and egress can accrue even when no app code runs.
 - Cloudflare checks:
   - R2 public buckets/custom domains are intentional and cache/rate-limited.

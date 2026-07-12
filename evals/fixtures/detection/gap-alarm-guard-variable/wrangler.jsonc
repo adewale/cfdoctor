@@ -1,0 +1,8 @@
+{
+  "name": "alarm-guard-variable-gap",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "observability": { "enabled": true },
+  "durable_objects": { "bindings": [{ "name": "SCHEDULER", "class_name": "Scheduler" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Scheduler"] }]
+}
