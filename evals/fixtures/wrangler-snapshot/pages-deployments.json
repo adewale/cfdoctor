@@ -1,0 +1,11 @@
+[
+  {
+    "Id": "fixture-pages-deployment",
+    "Environment": "Production",
+    "Branch": "main",
+    "Source": "fixture-commit",
+    "Deployment": "https://fixture.pages.dev",
+    "Status": "Success",
+    "Build": "https://dash.cloudflare.com/fixture/pages/view/fixture/deployment"
+  }
+]

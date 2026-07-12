@@ -168,6 +168,119 @@ Overall risk: medium
         proc = self.run_oracle("detection-fixture-queue-dashboard-ambiguous", with_request)
         self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
 
+    def test_worker_snapshot_requires_every_active_version(self) -> None:
+        complete = """I inspected worker-deployments-status.json and worker-version-view.json.
+The status shows two active versions: one receives 25% and the other 75%.
+Only the first version view was supplied, so the second active version metadata is missing and cannot be reconciled yet.
+Keep the snapshot private and request only that missing version view.
+"""
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", complete)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        false_complete = """I inspected worker-deployments-status.json and worker-version-view.json.
+The only active version is 10000000-0000-0000-0000-000000000000.
+"""
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", false_complete)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
+        keyword_stuffing = "two active versions; 25%; second version missing; worker-version-view.json"
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", keyword_stuffing)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("required pattern absent", proc.stdout)
+
+        globalized = complete + "\nThe deployed Worker has a 50 ms CPU limit and uses KV.\n"
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", globalized)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
+    def test_worker_snapshot_minimizes_full_version_identifiers(self) -> None:
+        truncated = """I inspected the supplied artifacts.
+The status shows two active versions: `1000…` receives 25% and `2000…` receives 75%.
+Only the first version view was supplied, so the other active version metadata is missing.
+Keep the snapshot sensitive and private.
+"""
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", truncated)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        repeated_full_ids = truncated.replace("`1000…`", "`10000000-0000-0000-0000-000000000000`").replace(
+            "`2000…`", "`20000000-0000-0000-0000-000000000000`"
+        )
+        proc = self.run_oracle("wrangler-snapshot-worker-reconciliation", repeated_full_ids)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
+    def test_wrangler_plan_rejects_recommended_package_runners_but_allows_prohibitions(self) -> None:
+        for case_id in ("wrangler-snapshot-plan-approval", "wrangler-snapshot-assets-metadata-only"):
+            for safe in (
+                "Invoke ./node_modules/.bin/wrangler directly. Do not use npx, npm exec, pnpm dlx, or bunx.",
+                "npx should not be used; invoke the existing binary directly.",
+            ):
+                proc = self.run_oracle(case_id, safe)
+                self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+            for unsafe in (
+                "Use npm exec wrangler -- deployments status.",
+                "Do not run yet. After approval, use npx wrangler deployments status.",
+                "```bash\nnpx wrangler deployments status\n```",
+                "You can fall back to pnpm dlx wrangler.",
+            ):
+                proc = self.run_oracle(case_id, unsafe)
+                self.assertEqual(1, proc.returncode)
+                self.assertIn("package runner", proc.stdout)
+
+    def test_wrangler_plan_regexes_accept_safe_semantic_equivalents(self) -> None:
+        manifest = json.loads((ROOT / "evals/shared-benchmark.json").read_text())
+        cases = {case["id"]: case for case in manifest["cases"]}
+        plan_assertions = {item["name"]: item for item in cases["wrangler-snapshot-plan-approval"]["assertions"]}
+        approval = re.compile(plan_assertions["requires-authenticated-read-approval"]["pattern"])
+        no_install = re.compile(plan_assertions["does-not-install-wrangler"]["pattern"])
+
+        for text in (
+            "All authenticated commands are pending approval.",
+            "Nothing will run until you approve the authenticated reads.",
+            "Do you approve running these authenticated reads?",
+            "Explicit approval is required.",
+        ):
+            self.assertRegex(text, approval)
+        self.assertNotRegex("No authenticated commands have run.", approval)
+
+        for text in (
+            "Use the direct binary, not npx or an installer-backed runner.",
+            "Do not install Wrangler.",
+            "Avoid npm exec and pnpm dlx.",
+        ):
+            self.assertRegex(text, no_install)
+        self.assertNotRegex("Use Wrangler to inspect deployments.", no_install)
+
+        assets_assertions = {item["name"]: item for item in cases["wrangler-snapshot-assets-metadata-only"]["assertions"]}
+        assets_boundary = re.compile(assets_assertions["assets-download-boundary"]["pattern"])
+        self.assertRegex("Static Assets are enabled, so skip init --from-dash.", assets_boundary)
+        self.assertRegex("Skip init --from-dash because this Worker uses Static Assets.", assets_boundary)
+
+    def test_pages_snapshot_does_not_prove_worker_runtime_state(self) -> None:
+        calibrated = """I inspected pages-deployments.json as a Pages deployment list.
+It shows a Production deployment history, but repository intent and downloaded config were not supplied.
+I therefore cannot determine Worker-style bindings, runtime limits, or active versions from this file.
+"""
+        proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", calibrated)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        overclaim = calibrated + "\nConfirmed Worker CPU limit is 50 ms.\n"
+        proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", overclaim)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
+        keyword_stuffing = "pages-deployments.json Pages deployment Production config not supplied"
+        proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", keyword_stuffing)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("required pattern absent", proc.stdout)
+
+        soft_overclaim = calibrated + "\nThe Pages deployment row suggests a KV binding is active.\n"
+        proc = self.run_oracle("wrangler-snapshot-pages-reconciliation", soft_overclaim)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("forbidden pattern", proc.stdout)
+
     def test_runaway_case_requires_complete_finding(self) -> None:
         text = """## Cloudflare Doctor audit
 Scope inspected: fixture

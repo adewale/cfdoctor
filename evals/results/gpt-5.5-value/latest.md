@@ -1,114 +1,124 @@
-# GPT-5.5 three-way value, precision, and efficiency eval
+# GPT-5.5 expanded PR three-way value, precision, and efficiency eval
 
 Run date: 2026-07-11
+
+> **Historical report:** this pinned comparison is superseded for the current working tree by [`../gpt-5.5-current-threeway/latest.md`](../gpt-5.5-current-threeway/latest.md), which runs the exact current skill, immutable `origin/main`, and no skill under one matched three-run protocol. The results below remain provenance for skill revision `8a5aab5`.
 
 Answer model: `openai-codex/gpt-5.5` (`high` reasoning)
 
 Judge model: `openai-codex/gpt-5.5` (`high` reasoning)
+
 Harness: Skill Eval Harness v0.6.0, commit `abd8d7d57aae788658bc293abac1dab80dfb24ac`
 
 ## Compared variants
 
-- **Local skill:** commit `ee8c704fcd7763cb114bf8b416e0c13339aa74d3`, generated after targeted routing, focused-triage, precision, oracle, and efficiency changes.
-- **GitHub skill:** `origin/main` at `4a14f4d`, materialized in a detached worktree and graded as `old_skill`.
-- **No skill:** GPT-5.5 without cfdoctor instructions/references.
+- **PR skill (`with_skill`)**: commit `8a5aab572e065c120cd01571408785466251f157`.
+- **Current main (`old_skill`)**: `origin/main` at `4468533281e15a6c14c039a9cc4b186056b250ce`.
+- **No skill (`without_skill`)**: GPT-5.5 without cfdoctor instructions/references.
 
-The round contains 24 visible answer cases and 72 outputs (one run per case/variant), plus 20 GPT-5.5 qualitative judgments per variant. All 24 local outputs were regenerated from the single pinned local commit above; all GitHub outputs were freshly generated. Twenty-one unchanged no-skill outputs were reused from the immediately preceding same-day GPT-5.5 round; the three fixtures whose inputs changed were rerun. Four trigger-only cases remain in the separate deterministic trigger suite. Hidden holdout/holdback prompts were unavailable.
+The expanded round contains 28 visible answer cases and 84 graded outputs. All 28 PR answers were generated fresh from one skill revision. The 24 unchanged legacy current-main/no-skill outputs remained pinned to the same revisions and byte-identical case inputs; four new outputs per baseline were generated fresh. All 72 qualitative judgments were fresh. Four trigger-only cases remain in the deterministic suite. Hidden holdout/holdback prompts were unavailable.
 
-Qualitative assertions use an explicit `0.85` threshold rather than the previous implicit `1.0`. Deterministic grading used `--allow-scripts --strict`, including per-case token and elapsed-time assertions.
+Deterministic grading used `--allow-scripts --strict`; qualitative assertions used the declared `0.85` threshold. Dollar cost was unavailable, so tokens, elapsed time, and commands remain the cost proxies.
 
 ## Headline results
 
-| Metric | Local skill | GitHub skill | No skill |
+| Metric | PR skill | Current main | No skill |
 |---|---:|---:|---:|
-| Objective pass rate | **97.22%** | 60.28% | 73.19% |
-| Combined pass rate | **97.57%** | 65.23% | 70.50% |
-| Efficiency pass rate | **97.92%** | 45.83% | 97.92% |
-| GPT-5.5 judge mean score | **0.9585** | 0.9345 | 0.7570 |
-| Judge passes at 0.85 | **20/20** | 19/20 | 12/20 |
-| Mean tokens/run | **56,843** | 134,984 | 25,818 |
-| Median tokens/run | **54,482.5** | 140,637 | 17,330.5 |
-| Mean elapsed/run | **45.0 s** | 90.6 s | 26.9 s |
-| Mean commands/run | **2.75** | 8.50 | 1.25 |
+| Objective pass rate | **93.21%** | 88.39% | 72.70% |
+| Combined pass rate | **94.08%** | 89.68% | 68.32% |
+| Process pass rate | **100.00%** | **100.00%** | **100.00%** |
+| Efficiency pass rate | **98.21%** | 96.43% | **98.21%** |
+| GPT-5.5 judge mean | **0.9550** | 0.9392 | 0.7183 |
+| Judge passes at 0.85 | **24/24** | 23/24 | 11/24 |
+| Mean tokens/run | 50,375 | 49,243 | **24,605** |
+| Median tokens/run | 42,663.5 | **42,469.5** | **17,244.5** |
+| Mean elapsed/run | **32.4 s** | **32.4 s** | **25.4 s** |
+| Mean harness-normalized commands/run | 2.71 | 2.57 | **1.21** |
+| Missing outputs / execution errors | 0 / 0 | 0 / 0 | 0 / 0 |
 
-### Local versus GitHub
+## PR versus current main
 
-- Objective: **+36.94 percentage points**.
-- Combined: **+32.34 points**.
-- Efficiency: **+52.09 points**.
-- Mean tokens: **57.9% lower**.
-- Mean elapsed time: **50.3% lower**.
-- Mean commands: **67.6% lower**.
-- Judge score: **+0.0240**, with 20/20 rather than 19/20 passes.
+- Objective: **+4.82 percentage points**.
+- Combined: **+4.40 points**.
+- Efficiency: **+1.79 points**.
+- Judge score: **+0.0158**, with 24/24 rather than 23/24 passes.
+- Mean tokens: **2.3% higher**.
+- Mean elapsed time: effectively equal (**0.01% lower**).
+- Mean harness-normalized commands: **5.6% higher**.
 
-### Local versus no skill
+The paired objective difference was not significant in the seeded 4,096-sample sign-flip test (`mean delta = +0.048214`, `p = 0.234562`). This round supports equivalence on legacy behavior plus targeted new-functionality lift; it does not establish a universal quality improvement.
 
-- Objective: **+24.03 percentage points**.
-- Combined: **+27.07 points**.
-- Judge score: **+0.2015**.
-- Paired objective lift is significant in the harness's seeded sampled sign-flip test: `p = 0.000244` across 24 pairs (4,096 samples, seed 0).
-- The local skill still costs about **2.20×** mean tokens and **1.67×** elapsed time versus no skill. This is materially better than GitHub, but remains the main optimization ceiling.
+## PR versus no skill
 
-Dollar cost was unavailable; token and elapsed telemetry are the auditable cost proxies.
+- Objective: **+20.52 percentage points**.
+- Combined: **+25.76 points**.
+- Judge score: **+0.2367**, with 24/24 versus 11/24 passes.
+- Paired objective lift remained significant (`mean delta = +0.205159`, `p = 0.000244`).
 
-## Requested fixes: observed behavior
+The cost of that lift was about **2.05×** mean tokens, **1.27×** mean elapsed time, and **2.24×** mean harness-normalized commands versus no skill.
 
-### Clean baseline and path preservation
+## New Wrangler snapshot coverage
 
-The benchmark now uses a path-safe, self-contained clean fixture: `main: index.js`, intentional exact route behavior documented in a supplied README, `no-store`, sampled observability, and no bindings.
+Four cases now directly test the PR functionality:
 
-| Variant | Objective | Combined | Efficiency | Tokens | Result |
-|---|---:|---:|---:|---:|---|
-| Local | **1.00** | **1.00** | **1.00** | 58,424 | `No confirmed findings.`; compensating intent respected. |
-| GitHub | 0.25 | 0.20 | 0.00 | 162,985 | Fabricated a medium route/query-string finding despite explicit intent. |
-| No skill | 0.50 | 0.60 | 1.00 | 23,952 | Avoided a serious finding but lacked the structural scope/no-finding contract. |
+1. fixture-backed reconciliation of two traffic-bearing Worker versions when only one version view is supplied;
+2. fixture-backed separation of Pages deployment evidence from Worker version/config evidence;
+3. an approval-gated Worker snapshot command plan; and
+4. Static Assets metadata-only collection without source/config download.
 
-This fixes the prior flattened `src/index.js` false missing-entrypoint finding and upgrades the oracle to require zero finding blocks.
+| New four-case slice | PR skill | Current main | No skill |
+|---|---:|---:|---:|
+| Objective | **95.00%** | 60.00% | 69.72% |
+| Combined | **95.45%** | 61.95% | 64.45% |
+| Efficiency | **100.00%** | 75.00% | **100.00%** |
+| Judge mean | **0.9400** | 0.8625 | 0.7900 |
+| Judge passes | **4/4** | 3/4 | 1/4 |
 
-### DLQ-safe near miss
+The four-case slice is intentionally small and should be treated as a targeted regression guard, not a significance claim.
 
-The fixture now performs work before `ack()`, retries failures with a delay, sets `max_retries: 3`, and configures `dead_letter_queue`. The oracle no longer globally rejects benign phrases such as “not an unbounded retry policy”; it requires explicit process-before-ack recognition, the configured controls, and zero finding blocks. A contradictory ack-before-work regression now fails.
+## Legacy regression analysis
 
-| Variant | Objective | Combined | Efficiency | Tokens | Result |
-|---|---:|---:|---:|---:|---|
-| Local | **1.00** | **1.00** | **1.00** | 110,073 | No confirmed finding; optional DLQ operations correctly left as account evidence. |
-| GitHub | 0.00 | 0.25 | 0.00 | 162,925 | Invented retry-classification and DLQ-handling findings. |
-| No skill | 0.67 | 0.75 | 1.00 | 50,954 | Recognized DLQ/bounds but still called the valid policy weak. |
+The earlier 24-case PR round had scored 88.61% objective versus main's 93.12%. Trace analysis found no causal link to the new reference:
 
-### Standalone non-Cloudflare activation
+- PR and main `SKILL.md` were byte-identical.
+- None of the six divergent cases loaded the changed Wrangler/account-state reference.
+- The largest difference came from autonomous trajectory variance: one PR run searched the entire skill tree and consumed 364,334 tokens where main stopped after `SKILL.md` at 25,019 tokens.
+- Another PR run violated the no-evidence boundary by inspecting the scanner; its paired main run stopped early.
 
-The local skill now has a hard activation boundary: AWS-only tasks do not trigger the Cloudflare scanner or a Cloudflare audit. On the AWS case, local used 36,881 tokens versus GitHub's 106,591 and passed all efficiency checks. Harness discovery located and read the staged `SKILL.md`; no project files were supplied, and the answer did not run the scanner or emit an audit scaffold. No skill remained cheapest at 11,348 tokens.
+After adding direct coverage and rerunning all PR answers from one tuned skill revision, the legacy 24-case slice was effectively unchanged:
 
-### Valid JSONC path and structural oracle
+| Legacy 24-case slice | PR skill | Current main | No skill |
+|---|---:|---:|---:|
+| Objective | 92.92% | **93.12%** | 73.19% |
+| Combined | 93.85% | **94.31%** | 68.97% |
+| Efficiency | 97.92% | **100.00%** | 97.92% |
+| Judge mean | **0.9580** | 0.9545 | 0.7040 |
+| Judge passes | **20/20** | **20/20** | 10/20 |
 
-JSONC fixture inputs now preserve `main: index.js`. Local produced a complete evidence-backed broad-route finding and passed objective, qualitative, and efficiency gates (`1.00/1.00/1.00`); GitHub scored `0.333/0.50/0.00` and used 213,789 tokens.
+The legacy paired objective delta was `-0.21` points with sampled `p=1.0`. The prior apparent regression did not reproduce.
 
-## Implemented process changes
+The implementation change that improved the new slice was architectural rather than keyword tuning: Wrangler guidance moved out of the broad account-sharing document into a short dedicated reference, with direct routing for supplied snapshots/deployed-state collection. The reference makes approval, project-pinned tooling, active-version fanout, snapshot sensitivity, Pages/Worker separation, and Static Assets metadata-only behavior explicit.
 
-1. **Reference routing:** inventory and scanner first; read only references tied to concrete hypotheses. Broad playbook/provenance/war-story reading is no longer mandatory.
-2. **Output modes:** concise focused triage for narrow/no-finding cases; full scaffold only for broad audits or multiple material findings.
-3. **Activation:** standalone AWS/non-Cloudflare, generic DNS, status, news, brand, and conceptual prompts do not use cfdoctor's audit workflow.
-4. **Precision:** zero scanner findings, explicit intent, tests, and compensating controls suppress generic hygiene/default findings.
-5. **Fixture fidelity:** benchmark fixtures use path-safe staged entrypoints and explicit intent rather than flattened-path artifacts.
-6. **DLQ oracle:** safe control requires zero findings; benign negation text is allowed.
-7. **Judge calibration:** all judge assertions now set `threshold: 0.85`.
-8. **Efficiency gates:** every one of the 24 tune answer cases has token and elapsed-time limits; no-trigger cases have stricter budgets.
+Detailed evidence is in [`../../../research/gpt55-pr12-regression-analysis.md`](../../../research/gpt55-pr12-regression-analysis.md).
 
-## Remaining risks
+## Limitations
 
-- One sample per variant is insufficient for pass@k/flakiness claims.
-- GPT-5.5 judged GPT-5.5; release gating should add a human-labeled alignment set or second judge model.
-- Local remains slower and more token-heavy than no skill, even though the diagnostic lift is significant.
-- Some no-skill/GitHub answers receive high qualitative scores while failing structural precision or efficiency gates; combined metrics should remain multi-dimensional rather than judge-only.
-- Efficiency budgets are tune-set calibration, not universal latency/token guarantees; several runs are close to their visible thresholds, and hidden holdout/holdback cases were unavailable.
-- Raw dollar spend was unavailable from the Codex runner.
+- One answer per case is insufficient for pass@k or flakiness claims.
+- GPT-5.5 judged GPT-5.5; there is no human or second-model alignment sample.
+- The 24 unchanged current-main/no-skill outputs were reused from the immediately preceding same-day round; their judgments and all four new-case outputs were fresh.
+- Hidden holdout and holdback prompts were unavailable.
+- Efficiency thresholds are visible tune-set budgets, not universal guarantees.
+- Dollar-cost telemetry was unavailable.
 
 ## Reproduction artifacts
 
-A durable machine-readable aggregate with per-case scores, judge evidence, telemetry, normalized command traces, verified loaded-skill material hashes, failed assertions, and transcript/output hashes is committed at `evals/results/gpt-5.5-value/summary.json`. Raw transcripts remain outside the repository:
+The durable machine-readable aggregate at [`summary.json`](summary.json) contains all 84 per-case rows, objective/process/efficiency results, fresh judge evidence, normalized telemetry, failed assertions, command traces, skill material hashes, and output/trace hashes. Raw model artifacts remain outside Git:
 
-- Runs: `/tmp/cfdoctor-gpt55-3way-runs`
-- Judge rows: `/tmp/cfdoctor-gpt55-3way-judge.jsonl`
-- Local/no-skill benchmark: `/tmp/cfdoctor-gpt55-3way-local-none-final5.json`
-- GitHub benchmark: `/tmp/cfdoctor-gpt55-3way-github-final5.json`
-- GitHub baseline worktree: `/tmp/cfdoctor-github-baseline` at `4a14f4d`
+- Runs: `/tmp/cfdoctor-pr12-expanded-gpt55/runs`
+- PR judges: `/tmp/cfdoctor-pr12-expanded-gpt55/local-judge.jsonl`
+- Current-main judges: `/tmp/cfdoctor-pr12-expanded-gpt55/main-judge.jsonl`
+- No-skill judges: `/tmp/cfdoctor-pr12-expanded-gpt55/none-judge.jsonl`
+- PR benchmark: `/tmp/cfdoctor-pr12-expanded-gpt55/local-final.json`
+- Current-main benchmark: `/tmp/cfdoctor-pr12-expanded-gpt55/main-final.json`
+- No-skill benchmark: `/tmp/cfdoctor-pr12-expanded-gpt55/none-final.json`
+- Current-main worktree: `/tmp/cfdoctor-pr12-gpt55/main-baseline`

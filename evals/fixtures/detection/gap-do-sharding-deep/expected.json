@@ -1,0 +1,6 @@
+{
+  "description": "A singleton Durable Object key is hidden behind an imported, concatenated constant chain.",
+  "evidence_ids": ["CFDOC-EVD-COEY-DO-GOTCHAS"],
+  "required_check_ids": ["DO-SHARDING-HOTSPOT"],
+  "forbidden_check_ids": []
+}

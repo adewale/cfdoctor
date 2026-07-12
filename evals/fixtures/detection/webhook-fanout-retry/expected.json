@@ -5,7 +5,8 @@
   ],
   "required_check_ids": [
     "CFDOC-COST-UNBOUNDED-FANOUT",
-    "CFDOC-COST-RETRY-AMPLIFY"
+    "CFDOC-COST-RETRY-AMPLIFY",
+    "CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY"
   ],
   "forbidden_check_ids": []
 }

@@ -164,7 +164,10 @@ def extract_urls(root: Path, targets, excludes=DEFAULT_EXCLUDES) -> dict:
             if not url or "://" not in url or url in unavailable:
                 continue
             parsed = urllib.parse.urlsplit(url)
-            if (parsed.hostname or "").lower() == "github.com" and (".git@" in parsed.path or re.search(r"@v\d", parsed.path)):
+            hostname = (parsed.hostname or "").lower()
+            if hostname == "api.cloudflare.com":
+                continue  # authenticated runtime endpoint/template; validate the linked API docs instead
+            if hostname == "github.com" and (".git@" in parsed.path or re.search(r"@v\d", parsed.path)):
                 continue  # package-manager install syntax, not a browser URL
             found.setdefault(url, [])
             if rel not in found[url]:

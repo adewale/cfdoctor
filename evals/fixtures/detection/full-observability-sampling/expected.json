@@ -1,0 +1,6 @@
+{
+  "description": "Explicit full log/trace head sampling is a concrete volume lead, not proof of a material bill.",
+  "evidence_ids": ["CFDOC-EVD-LOGGING-METER"],
+  "required_check_ids": ["CFDOC-COST-LOG-VOLUME"],
+  "forbidden_check_ids": []
+}

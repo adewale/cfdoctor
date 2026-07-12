@@ -15,6 +15,8 @@ When dashboard/account settings matter, ask the user for the smallest evidence p
 
 Prefer exact exports over prose. If the user only provides prose, treat it as an architecture statement, not proof of dashboard settings.
 
+For Worker or Pages deployed-state collection and supplied Wrangler artifacts, use [`wrangler-snapshots.md`](wrangler-snapshots.md). Wrangler snapshots do not replace targeted DNS/WAF/Access/cache/analytics/billing evidence when those products are the actual hypothesis. When one such hypothesis remains unresolved, use [`targeted-account-reads.md`](targeted-account-reads.md) to plan only the smallest approved product/API read.
+
 ## Redaction and safety rules
 
 Tell users to redact:

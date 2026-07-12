@@ -1,6 +1,6 @@
 # Cloudflare Doctor
 
-Cloudflare Doctor is an Agent Skill plus read-only scanner for auditing Cloudflare projects. It helps an AI coding agent find best-practice drift, wrong primitives, misconfiguration, security/reliability risk, missed optimizations, and cost footguns across Workers, Pages, KV, D1, R2, Durable Objects, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Agents SDK, Artifacts, CDN/cache, DNS, WAF, Access/Zero Trust, and Cloudflare account/IaC surfaces.
+Cloudflare Doctor is an Agent Skill plus read-only scanner for auditing Cloudflare projects. It helps an AI coding agent find best-practice drift, wrong primitives, misconfiguration, security/reliability risk, missed optimizations, and cost footguns across Workers, Pages, Static Assets, KV, D1, R2, Durable Objects, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Containers, Pipelines, Workers VPC, Email bindings, Secrets Store, Agents SDK, Artifacts, CDN/cache, DNS, WAF, Access/Zero Trust, and Cloudflare account/IaC surfaces.
 
 The skill is intentionally source-driven: Cloudflare product behavior, pricing, limits, and best practices must be refreshed from current official Cloudflare docs before final recommendations. War stories are used as scenario prompts, not pricing authority.
 
@@ -36,9 +36,10 @@ Interpret the output as an evidence-backed risk review: findings should include 
 - `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
 - `scripts/check_coverage.py` — consistency check between `skills/cloudflare-doctor/references/check-coverage-matrix.md` and the scanner's check registry.
 - `scripts/check_claim_ledger.py` — validates stable evidence/source-cluster IDs, source quality, confidence dimensions, scenario/check/fixture lineage, and freshness in `research/incident-claim-ledger.json`.
+- `scripts/capture_wrangler_snapshot.py` — explicitly approved, private Wrangler snapshot wrapper for deployed Worker/Pages config and secret names, Worker active versions/bindings/limits, and Pages deployments; it never installs Wrangler or mutates Cloudflare state.
 - `scripts/check_links.py` — checks the installable runtime references plus current research/docs, excluding historical generated reports; optional semantic anchors detect critical official-doc content drift.
 - `docs/` — recipes, lessons learned, and the ranked improvement plan with per-change risk analysis.
-- `evals/` — trigger cases, shared benchmark manifest, detection fixtures (war-story known-bad projects plus a clean baseline), holdout/holdback placeholders, and saved eval reports.
+- `evals/` — trigger cases, shared benchmark manifest, detection fixtures (war-story known-bad projects plus a clean baseline), gitignored private holdout/holdback assets, and saved sanitized eval reports.
 - `examples/` — copy-paste usage examples.
 - `research/` — source notes used to evolve the audit checklist.
 - `TODO.md` — remaining and deferred work.
@@ -129,7 +130,7 @@ python3 -m json.tool package.json
 python3 -m json.tool evals/evals.json
 python3 -m json.tool evals/trigger-cases.json
 python3 -m json.tool evals/shared-benchmark.json
-python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/check_links.py
+python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/capture_wrangler_snapshot.py scripts/check_links.py
 python3 -m unittest discover -s tests
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
@@ -155,6 +156,22 @@ Cloudflare Doctor can audit repo evidence by itself, but stronger audits need th
 
 If account evidence is missing, Cloudflare Doctor should mark that scope as **not inspected** rather than infer dashboard state from repo files.
 
+## Capture deployed Worker or Pages state
+
+Use the project-pinned Wrangler executable. Review the static authenticated-read plan first; for Workers, Wrangler expands the displayed `versions view <ACTIVE_VERSION_ID>` shape after reading deployment status. Then write the snapshot to a private directory outside Git:
+
+```bash
+python3 scripts/capture_wrangler_snapshot.py \
+  --kind worker --name my-worker --output-dir /tmp/cfdoctor-my-worker \
+  --wrangler ./node_modules/.bin/wrangler --plan
+
+python3 scripts/capture_wrangler_snapshot.py \
+  --kind worker --name my-worker --output-dir /tmp/cfdoctor-my-worker \
+  --wrangler ./node_modules/.bin/wrangler --approve-authenticated-read
+```
+
+Use `--kind pages` for Pages. Metadata-only collection is the default; add `--include-source-config` to the reviewed plan and capture command only when deployed Worker source/config or experimental Pages config is necessary and explicitly accepted. Worker snapshots compare repository intent with active-version metadata and, when opted in, downloaded dashboard configuration; Pages snapshots compare intent with deployment history and optional downloaded config. The snapshot can contain plain vars, routes, resource names, secret names, account metadata, and—when opted in—deployed source, so review `REVIEW_BEFORE_SHARING.txt` and redact before sharing. See [`research/wrangler-state-snapshot.md`](research/wrangler-state-snapshot.md).
+
 ## Run the scanner directly
 
 From the root of a Cloudflare project:
@@ -177,7 +194,7 @@ It does **not** fetch current Cloudflare docs, inspect dashboard/account state, 
 ## Validate this repo
 
 ```bash
-python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/check_links.py
+python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/capture_wrangler_snapshot.py scripts/check_links.py
 python3 -m unittest discover -s tests
 python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
 python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
@@ -192,13 +209,14 @@ Run `npm run update-results` when the checked-in proof reports should change.
 Current proof from the latest validation run (2026-07-11):
 
 - Trigger eval: `39/39 = 100%` (`evals/results/latest.md`).
-- Detection eval: `19/19` fixtures pass, including valid/malformed JSONC and Queue-DLQ near-miss controls (`evals/results/detection/latest.md`).
-- Coverage matrix: consistent with the 58-check scanner registry.
-- Evidence ledger: 27 structured records cover all 23 checklist scenarios and have reciprocal fixture lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, and Cloudflare outage evidence.
-- Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass.
-- GPT-5.5 three-way value eval: 24 cases / 72 outputs comparing local, GitHub `origin/main`, and no skill. Local scored 97.22% objective / 97.57% combined, versus GitHub 60.28% / 65.23% and no skill 73.19% / 70.50%; local cut mean tokens 57.9% and elapsed time 50.3% versus GitHub (`evals/results/gpt-5.5-value/latest.md`).
+- Detection eval: `25/25` fixtures pass, including valid/malformed JSONC, Queue-DLQ controls, deeper DO sharding, per-consumer Queue matching, alarm guard precision, linked Stream preload, indirect self-fetch, and full observability sampling (`evals/results/detection/latest.md`).
+- Coverage matrix: consistent with the 60-check scanner registry.
+- Evidence ledger: 29 structured records cover all 23 checklist scenarios and 25 detection fixtures with reciprocal lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, three first-party Cloudflare outage postmortems, and an explicit superseded-evidence disposition.
+- Wrangler snapshot wrapper: 14 offline tests cover explicit approval/planning, exact Worker/Pages command shapes, profile forwarding, metadata-only-by-default behavior, opt-in Worker config/source and Pages config capture, active-version metadata, environment isolation, version/active-state failure gates, symlink removal, recursive private permissions, and Git-worktree refusal. Approved private live runs completed against `readability-worker` (Wrangler 4.71.0), `atlas` (4.94.0), and `keyboardia-staging` (4.53.0); only sanitized shapes were retained.
+- Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass across 37 cases / 6 ablations.
+- Current matched GPT-5.5 three-way eval: 31 visible answer cases × 3 variants × 3 runs = 279 fresh answers and 243 primary judgments. Current PR scored 89.15% objective / 89.69% combined, versus pinned `origin/main` 81.79% / 83.00% and no skill 72.97% / 69.24%. Paired objective lift was +7.36 points versus main (`p=0.000270`) and +16.17 versus no skill (`p=0.000010`). The Wrangler slice scored 93.01% versus 63.96% main and 60.53% no skill; legacy current/main remained compatible (`p=0.107439`). A 27-case Claude judge sample agreed with GPT on 26/27 pass decisions. The one-shot private release guard passed 2/2 with a 0.925 blind-judge mean. See `evals/results/gpt-5.5-current-threeway/latest.md` and `evals/results/private-release-2026-07-11.md`; earlier reports under `gpt-5.5-value/` are pinned historical evidence.
 - Static self-scan: `0 findings` with `--exclude evals/fixtures` (the fixtures are intentionally bad; a full scan finds only fixture paths).
-- Current-source links: 425 checked across 26 runtime/research/docs/evidence files, 0 dead/errors; all 11 critical official-doc semantic anchors passed on 2026-07-11. Historical generated reports and one explicitly unavailable discovery-only source are excluded from current network health.
+- Current-source links: 477 checked across 33 runtime/research/docs/evidence files, 0 dead/errors; all 11 critical official-doc semantic anchors passed on 2026-07-11. Generated/private eval paths and authenticated runtime API templates are excluded from current network health.
 
 ## Example audit prompts
 

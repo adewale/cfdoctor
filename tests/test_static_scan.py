@@ -45,6 +45,44 @@ class StaticScannerTests(unittest.TestCase):
         self.assertNotIn("CFDOC-CONFIG-UNPARSEABLE", ids)
         self.assertIn("Workers", report["detected_products"])
 
+    def test_modern_wrangler_products_are_inventoried(self) -> None:
+        report = scan({
+            "wrangler.jsonc": '''{
+              "name": "modern-bindings",
+              "main": "src/index.js",
+              "compatibility_date": "2026-07-01",
+              "assets": {"directory": "public", "binding": "ASSETS"},
+              "containers": [{"class_name": "Sandbox"}],
+              "dispatch_namespaces": [{"binding": "DISPATCH", "namespace": "tenant-workers"}],
+              "pipelines": [{"binding": "PIPELINE", "pipeline": "events"}],
+              "ratelimits": [{"name": "RATE_LIMITER", "namespace_id": "1"}],
+              "secrets_store_secrets": [{"binding": "API_TOKEN", "store_id": "store", "secret_name": "token"}],
+              "send_email": [{"name": "EMAIL"}],
+              "vpc_services": [{"binding": "VPC", "service_id": "service"}]
+            }''',
+            "src/index.js": "export default { fetch() { return new Response('ok') } }",
+        })
+        self.assertTrue({
+            "Containers",
+            "Dynamic Workers",
+            "Email bindings",
+            "Pipelines",
+            "Rate Limiting bindings",
+            "Secrets Store",
+            "Workers Static Assets",
+            "Workers VPC",
+        }.issubset(report["detected_products"]))
+
+    def test_generated_corpus_cache_is_excluded_from_repository_scan(self) -> None:
+        report = scan({
+            "wrangler.jsonc": '{"name":"app","main":"src/index.js","compatibility_date":"2026-07-01"}',
+            "src/index.js": "export default { fetch() { return new Response('ok') } }",
+            "corpus-cache/copied/wrangler.jsonc": '{"name":"copy","compatibility_date":"2099-01-01","routes":["*/*"]}',
+        })
+        ids = {finding["check_id"] for finding in report["findings"]}
+        self.assertNotIn("CFDOC-CONFIG-COMPAT-DATE-FUTURE", ids)
+        self.assertNotIn("CFDOC-COST-BROAD-ROUTE", ids)
+
     def test_malformed_jsonc_always_reports_parse_error(self) -> None:
         report = scan({
             "wrangler.jsonc": '''{

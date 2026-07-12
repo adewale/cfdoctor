@@ -29,7 +29,7 @@ jobs:
           find evals research -name '*.json' -print0 | xargs -0 -I{} python3 -m json.tool {} >/dev/null
 
       - name: Compile Python helpers
-        run: python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/check_links.py scripts/check_install_boundary.py evals/oracles/fixture_oracle.py
+        run: python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/capture_wrangler_snapshot.py scripts/check_links.py scripts/check_install_boundary.py evals/oracles/fixture_oracle.py
 
       - name: Run offline unit tests
         run: python3 -m unittest discover -s tests

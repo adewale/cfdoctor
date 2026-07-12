@@ -1,6 +1,6 @@
 ---
 name: cloudflare-doctor
-description: Audits concrete Cloudflare projects/configurations for best-practice drift, wrong primitive/product choices, missed optimizations, product misconfiguration, security gaps, reliability risks, and cost footguns. Use when reviewing repo/account evidence for Workers, Pages, Wrangler, KV, D1, R2, Durable Objects, WorkerEntrypoint/RpcTarget RPC, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Agents SDK, Artifacts, Analytics Engine, Workers Logs, CDN/cache, DNS, WAF, Access/Zero Trust, Cloudflare account settings, pricing/overages, or IaC decisions. Do not use for generic Cloudflare status-page/uptime questions, product news, or conceptual Cloudflare explainers without project/config/account evidence to audit.
+description: Audits concrete Cloudflare projects/configurations for best-practice drift, wrong primitive/product choices, missed optimizations, product misconfiguration, security gaps, reliability risks, and cost footguns. Use when reviewing repo/account evidence for Workers, Pages, Wrangler, Static Assets, KV, D1, R2, Durable Objects, WorkerEntrypoint/RpcTarget RPC, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Containers, Pipelines, Workers VPC, Email bindings, Secrets Store, Agents SDK, Artifacts, Analytics Engine, Workers Logs, CDN/cache, DNS, WAF, Access/Zero Trust, Cloudflare account settings, pricing/overages, or IaC decisions. Do not use for generic Cloudflare status-page/uptime questions, product news, or conceptual Cloudflare explainers without project/config/account evidence to audit.
 compatibility: Agent Skills clients including Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
 ---
 
@@ -29,13 +29,15 @@ Use this skill only when the request includes concrete Cloudflare project, confi
    python3 <skill-dir>/scripts/cfdoctor_static_scan.py .
    ```
    Treat scanner output as leads, not proof. Add `--json` for machine-readable leads with stable check IDs. When scanning this skill's own repository, add `--exclude evals/fixtures` (the fixtures are intentionally bad). A zero-finding scan is affirmative precision evidence: do not manufacture hygiene findings merely because the prompt asks what is wrong. Explicit intent, tests, or compensating controls in supplied README/config evidence suppress generic route/default/hygiene suggestions unless contrary runtime evidence exists.
-3. Map detected products, primitives, hot paths, and concrete hypotheses. Read only the minimum references needed to test those hypotheses; do not read a reference solely because its product is mentioned.
+3. Map detected products, primitives, hot paths, and concrete hypotheses. Read only the minimum references needed to test those hypotheses; do not read a reference solely because its product is mentioned. Before another reference or web fetch, name the unresolved question it would answer; stop once the finding is confirmed/rejected. For a narrow task, use one routed reference and at most two direct official pages unless a documented conflict requires more.
 
    | Reference routing | Read when |
    |---|---|
    | [`audit-playbook.md`](references/audit-playbook.md) | Broad repo/account audit, multiple product families, or the user requests the full audit. |
    | [`recommendation-provenance.md`](references/recommendation-provenance.md) | Before publishing confirmed findings that need sourced recommendations. |
-   | [`sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md) | A specific hypothesis depends on dashboard/account state. |
+   | [`wrangler-snapshots.md`](references/wrangler-snapshots.md) | The user supplies a Wrangler snapshot or asks to collect deployed Worker/Pages state. |
+   | [`sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md) | A different specific hypothesis depends on dashboard/account state. |
+   | [`targeted-account-reads.md`](references/targeted-account-reads.md) | Wrangler/repo evidence leaves one named DNS/ruleset/Access/R2/Queue/usage hypothesis unresolved. |
    | [`cloudflare-best-practices-docs.md`](references/cloudflare-best-practices-docs.md) | Locating official pages for an already identified hypothesis. |
    | [`product-fit-rubric.md`](references/product-fit-rubric.md) | A primitive/product choice is materially in question. |
    | [`config-and-security-checks.md`](references/config-and-security-checks.md) | Concrete Wrangler, binding, auth, secret, route, or IaC evidence is in scope. |
@@ -44,8 +46,9 @@ Use this skill only when the request includes concrete Cloudflare project, confi
    | [`war-story-scenario-checklist.md`](references/war-story-scenario-checklist.md) | A concrete incident-shaped mechanism is detected; use it for hypotheses, never current semantics. |
    | [`audit-engine-patterns.md`](references/audit-engine-patterns.md) | Designing/changing report or check tooling, not routine audits. |
    | [`check-coverage-matrix.md`](references/check-coverage-matrix.md) | Deciding whether the scanner already covers a pattern. |
-   | [`official-source-map.md`](references/official-source-map.md) | Verifying date-sensitive pricing/limits for an identified finding. |
-4. Fetch only the current official Cloudflare pages needed to confirm or reject the hypotheses, using product `llms.txt` indexes and applicable Markdown pages. Treat local references as navigation aids, not current authority. Every current product/configuration recommendation needs official `Source basis`. War stories can support historical mechanisms, not current semantics, applicability, or probability.
+   | [`official-source-map.md`](references/official-source-map.md) | Locating official product docs for an identified finding. |
+   | [`pricing-source-bundles.md`](references/pricing-source-bundles.md) | Resolving a concrete pricing/rate/meter conflict or estimating a compound bill. |
+4. Fetch only the current official Cloudflare pages needed to confirm or reject the hypotheses, using product `llms.txt` indexes and applicable Markdown pages. Treat local references as navigation aids, not current authority. Every current product/configuration recommendation needs official `Source basis`. War stories can support historical mechanisms, not current semantics, applicability, or probability. Exception: a static Wrangler snapshot plan or reconciliation from supplied artifacts should use [`wrangler-snapshots.md`](references/wrangler-snapshots.md) without browsing unless the user asks or a command's current availability/semantics is materially disputed.
 5. If account/dashboard state could change a hypothesis, ask for the smallest discriminating evidence package. Do not request broad account dumps or infer state from its absence in the repo.
 6. If TypeScript code exposes `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, or Agent classes, use the optional dead cross-boundary RPC path only when reachability is actually in scope. Gate third-party tools on approval/pinning and treat output as leads, not proof.
 7. Produce only evidence-backed findings. Prioritize correctness, security, reliability, and cost over exhaustive trivia.

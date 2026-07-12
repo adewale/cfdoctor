@@ -43,21 +43,21 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | CFDOC-COST-DO-UNBATCHED-WRITES | folded-into:DO-STORAGE-BATCHING | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §"Checks to add or strengthen" (§1, §14) | Duplicate/alias of DO-STORAGE-BATCHING; intentionally not registered as a separate scanner ID. |
 | CFDOC-COST-DYNAMIC-WORKER-DEDUPE | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §16; [`cost-footguns.md`](cost-footguns.md) | Dynamic Worker load path lacks obvious stable ID/dedupe. |
 | CFDOC-COST-KV-LIST-HOTPATH | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §1; proposed in §"Checks to add or strengthen" | KV list operation appears in application code. |
-| CFDOC-COST-LOG-VOLUME | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §12; proposed in §"Checks to add or strengthen" | Covered by [`cost-footguns.md`](cost-footguns.md) "Logging as a meter" guidance and war-story §12; needs Logpush/Analytics Engine dashboard evidence a repo regex cannot see. |
+| CFDOC-COST-LOG-VOLUME | scanner-lead | COST | low | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §12; proposed in §"Checks to add or strengthen" | Explicit `head_sampling_rate = 1` produces a high-confidence volume-multiplier lead; traffic, retention, plan, and billing evidence are still required for materiality. |
 | CFDOC-COST-MEDIA-VARIANT-EXPLOSION | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §4; proposed in §"Checks to add or strengthen" | Emitted by two scanner heuristics: image transform variants and Stream preload. |
-| CFDOC-COST-ORIGIN-BYPASS | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §5, §11; proposed in §"Checks to add or strengthen" | Covered by [`config-and-security-checks.md`](config-and-security-checks.md) DNS/origin-exposure checks and [`cost-footguns.md`](cost-footguns.md); needs DNS proxy status, R2 public-bucket, and origin-firewall account evidence. |
+| CFDOC-COST-ORIGIN-BYPASS | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §5, §11; proposed in §"Checks to add or strengthen" | Reassessed in 0.3.5: Terraform DNS-only records are already surfaced by `CFDOC-SEC-DNS-UNPROXIED` and public third-party origins by `CFDOC-COST-THIRD-PARTY-ORIGIN`; effective DNS proxy status, R2 public access, and origin-firewall state still require targeted account evidence. |
 | CFDOC-COST-PAGES-FUNCTION-ROUTES | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §3; [`cost-footguns.md`](cost-footguns.md) | Pages _routes.json broadly invokes Functions without obvious static exclusions. |
-| CFDOC-COST-PREVIEW-PUBLIC-PAID | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §13; proposed in §"Checks to add or strengthen" | Covered by [`config-and-security-checks.md`](config-and-security-checks.md) preview/temporary-environment checks; public/indexed status and TTL cleanup need dashboard evidence. Repo-visible paid bindings in preview envs are caught by CFDOC-COST-TEMP-ENV-PAID-BINDINGS. |
+| CFDOC-COST-PREVIEW-PUBLIC-PAID | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §13; proposed in §"Checks to add or strengthen" | Reassessed in 0.3.5: repo-visible preview paid bindings are already caught by `CFDOC-COST-TEMP-ENV-PAID-BINDINGS`; public/indexed status and lifecycle cleanup remain targeted account-evidence questions. |
 | CFDOC-COST-R2-LIST-HOTPATH | scanner-lead | COST | medium | [`cost-footguns.md`](cost-footguns.md) (R2 operation meters) | R2 bucket list appears in application code. |
 | CFDOC-COST-RETRY-AMPLIFY | scanner-lead | COST | medium | [`cost-footguns.md`](cost-footguns.md) (retry storms); [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §1 | Covers generic retry-without-backoff/circuit-breaker; distinct from the self-fetch-only CFDOC-COST-ASYNC-LOOP. |
-| CFDOC-COST-SPEND-ALERTS-ONLY | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §9; proposed in §"Checks to add or strengthen" | Covered by [`performance-and-reliability.md`](performance-and-reliability.md) "Resilience controls" (kill switches, circuit breakers) and [`cost-footguns.md`](cost-footguns.md); whether alerts are the only control is account-level semantic judgment. |
+| CFDOC-COST-SPEND-ALERTS-ONLY | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §9; proposed in §"Checks to add or strengthen" | Reassessed in 0.3.5: code-level bounds/circuit breakers are covered by mechanism-specific leads, but proving alerts are the only effective control requires account alerting plus runtime-control evidence. |
 | CFDOC-COST-TEMP-ENV-PAID-BINDINGS | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §7, §13; proposed in §"Checks to add or strengthen" | Temporary/preview environment is connected to paid or stateful Cloudflare services. |
 | CFDOC-COST-THIRD-PARTY-ORIGIN | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §10; proposed in §"Checks to add or strengthen" | Worker fetches a public third-party/serverless origin hostname. |
 | CFDOC-COST-UNBOUNDED-FANOUT | scanner-lead | COST | medium | [`cost-footguns.md`](cost-footguns.md) (bounded fanout) | Promise.all map fanout lacks an obvious concurrency cap. |
 | CFDOC-COST-VECTORIZE-DIMENSIONS | scanner-lead | COST | medium | [`cost-footguns.md`](cost-footguns.md) (Vectorize meters) | Vectorize query path should account for queried dimensions and fan-out. |
 | CFDOC-COST-WORKERS-CACHE-BILLING | scanner-lead | COST | low | [`cost-footguns.md`](cost-footguns.md) (Workers Cache) and [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §23; proposed in §"Checks to add or strengthen" | Wrangler config enables Workers Cache (`cache.enabled`); billing surface changes and auth/gateway entrypoints must be excluded. |
 | CFDOC-COST-WORKFLOW-STEPS | skill-prompt-only | COST | — | [`cost-footguns.md`](cost-footguns.md) and [`performance-and-reliability.md`](performance-and-reliability.md) (Workflows) | Review step count, state retention, retries, and child fan-out using code plus Workflow analytics; raw `step.do` counts are not sufficient for a static finding. |
-| CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §2, §19; proposed in §"Checks to add or strengthen" | Covered by [`cost-footguns.md`](cost-footguns.md) idempotency/anti-rework guidance and war-story §2/§19; "side effects before signature verification" ordering needs semantic judgment a regex cannot provide. |
+| CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §2, §19; proposed in §"Checks to add or strengthen" | Webhook-shaped projects with side effects and no repo-visible delivery/event dedupe key produce a low-confidence lead. Signature-verification ordering remains semantic review work. |
 | CFDOC-FIT-KV-COORDINATION | scanner-lead | FIT | high | [`product-fit-rubric.md`](product-fit-rubric.md) (KV consistency limits) | KV read-modify-write smell for coordination/counters. |
 | CFDOC-PERF-AWAITED-CACHE-PUT | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Cache put awaited in request path. |
 | CFDOC-PERF-D1-N-PLUS-ONE | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Many D1 prepared statements in one file; check for N+1 queries. |
@@ -114,16 +114,20 @@ and passes after:
   `preload="auto"` and the Stream hostname are in different files of the same
   project.
 
-Remaining known limits (honest scanner reach, not bugs to hide):
+The five follow-up gaps were hardened in scanner 0.3.5:
 
-- Sharding indirection deeper than one same-file constant (imported
-  constants, computed keys) is invisible.
-- The queue code arm is project-global: one properly configured consumer
-  silences it, which can mask a second dashboard-managed consumer.
-- Alarm guard words (`next`, `max`, `attempt`, ...) in ordinary variable
-  names before `setAlarm()` still suppress `DO-ALARM-RECURSION`.
-- The project-wide Stream arm trades precision for recall: `preload="auto"`
-  on a non-Stream `<video>` in a repo that mentions a Stream host anywhere
-  now produces a (low-confidence) lead.
-- Self-fetch through a URL variable assigned earlier still evades
-  `CFDOC-COST-ASYNC-LOOP`.
+- `DO-SHARDING-HOTSPOT` resolves bounded repo-visible string constants,
+  imports/aliases, and concatenation chains. Arbitrary helper-function or
+  runtime data flow remains outside static reach.
+- `CFDOC-REL-QUEUE-NO-DLQ` compares literal `batch.queue`/`queueName` branches
+  with every configured consumer, so one safe consumer cannot mask a second
+  code-referenced queue. Dynamic queue names still require review.
+- `DO-ALARM-RECURSION` requires guard terms inside an actual condition;
+  ordinary variables named `nextRun` or `maxDelay` no longer suppress it.
+  Guards hidden in helper functions remain semantic review work.
+- The Stream preload arm now requires a same-file Stream marker or a reference
+  to a symbol exported by a file containing a Stream host. This preserves the
+  split-config fixture while suppressing unrelated local-video preload.
+- `CFDOC-COST-ASYNC-LOOP` follows bounded same-file URL aliases derived from
+  the incoming request. Cross-module/runtime URL construction remains outside
+  static reach.

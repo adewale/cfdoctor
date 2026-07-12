@@ -370,3 +370,177 @@ confirmation before any authenticated production change.
 33. Model outputs for one reported variant must come from one pinned skill revision.
 34. Publish durable machine-readable eval aggregates; local raw-artifact paths are not sufficient evidence.
 35. Ledger URLs, declared freshness cadence, and fixture-to-check provenance all need direct validation.
+
+## What we learned from replacing the account collector with Wrangler
+
+The first ground-truth design invented a general facts schema before checking
+whether the official client could already retrieve the state we needed.
+Wrangler can download Worker/Pages configuration and list secret names; for
+Workers, it can also identify every active version and show version-specific
+bindings/runtime limits. That is a
+more current and testable normalization layer than a new API abstraction.
+
+The lesson is: **use the product's maintained read surface before building a
+collector**. Capture the raw official-client evidence privately, compare repo
+Worker intent with downloaded configuration and active version metadata (or
+Pages intent with downloaded config and deployments), then add one targeted API
+read only for a remaining hypothesis.
+
+Wrangler output is not harmless or complete: `init --from-dash` downloads
+source, plain vars and resource metadata may be present, gradual deployments can
+have multiple active versions, and downloaded config is an approximation rather
+than continuous sync. Explicit approval, private output, version recording, and
+review-before-sharing remain mandatory.
+
+36. Prefer maintained Wrangler read commands over a custom universal account-state schema.
+37. Effective Worker state requires deployment status plus every active version, not merely the latest version or downloaded config.
+38. Wrangler snapshots are sensitive local evidence: keep them outside Git, hash the artifacts, and review/redact before sharing.
+
+### Live Wrangler validation changed what we knew
+
+A disposable account was not a technical requirement. After explicit approval,
+existing projects covered the useful integration boundaries: a Worker without
+Assets exercised complete source/config capture, a Pages project exercised the
+experimental config downloader, and a staging Worker with Assets exercised the
+metadata-only path. All commands completed across Wrangler 4.53.0, 4.71.0, and
+4.94.0 without a Cloudflare mutation.
+
+The live outputs caught mock-reality drift. Pages `--json` returned capitalized
+display fields (`Id`, `Environment`, `Branch`, `Source`, `Deployment`, `Status`,
+and `Build`), while Worker version output included `number`, `annotations`, and
+nested `resources`. The fake was valuable for approval, allowlist, failure,
+permission, and manifest behavior, but it could not establish Cloudflare's real
+response contract. Sanitized fixtures must come from observed shapes.
+
+The metadata-only label also understated the privacy boundary. Wrangler wrote
+`.wrangler/cache` account metadata beneath its working directory even when no
+source was downloaded. Full Worker capture produced a substantial deployed
+bundle, and Pages download produced local config plus Wrangler cache files. The
+correct retention unit is therefore the entire snapshot directory: keep it
+private, extract only minimal schema evidence, and delete the raw directory.
+
+Finally, project dependency declarations were not uniformly installable with
+`npm ci` from the relevant subdirectories. Resolving each exact Wrangler version
+from the repository lockfile and installing only that version in an isolated
+temporary directory—with lifecycle scripts disabled—validated the intended
+client without modifying projects or executing unrelated setup code.
+
+39. Existing approved non-production projects can validate read-only collection; disposability is a safety option, not a correctness requirement.
+40. Handwritten fakes prove wrapper behavior, not external response fidelity; derive committed contract fixtures from reviewed, sanitized live shapes.
+41. Workers with Assets need a metadata-only path because `init --from-dash` cannot currently clone them.
+42. “Metadata-only” does not mean non-sensitive: Wrangler cache files can contain account metadata.
+43. Treat the complete snapshot directory as sensitive, including command stderr, downloaded config, source, and `.wrangler/cache`.
+44. Use exact lockfile-resolved client versions in isolated tooling directories when project installs are not reproducible; disable lifecycle scripts for read-only validation setup.
+45. Delete raw authenticated evidence after extracting the smallest durable schema facts needed for tests and documentation.
+
+### The PR audit tightened the meaning of “private” and “complete”
+
+Independent security, correctness, test-quality, and claim reviews agreed that
+the Wrangler-first scope was sound, but found that two labels were stronger than
+the implementation. A Worker snapshot with a successful status command but no
+`versions` array could be marked complete without capturing active runtime
+state. A downloaded symlink was recorded as rejected but remained on disk, where
+later archive or copy tooling could follow it. Both cases show that a warning in
+a manifest is not equivalent to enforcing the claimed postcondition.
+
+The audit also exposed two defense-in-depth gaps. Nested directory privacy had
+relied on the caller's umask even though files and the root directory were
+explicitly chmodded. Wrangler inherited the complete parent environment,
+including unrelated cloud credentials and Node injection options. Setting a
+restrictive umask, recursively enforcing directory modes, forwarding a narrow
+auth/config environment, and disabling subprocess stdin made the read boundary
+match the documentation more closely.
+
+Finally, prefix-matching fake commands were too permissive: they would accept
+unexpected trailing flags even though plan review is meaningful only when tests
+lock the complete argv. Exact command fakes plus fail-closed version and active
+state tests now make safety regressions observable.
+
+46. “Complete” is a verified postcondition: a Worker snapshot needs a non-empty active-version set and a successful view of every discovered version.
+47. Rejecting a symlink means removing or quarantining it, not merely recording an error while leaving it in a shareable directory.
+48. Private output requires a restrictive creation umask and recursive directory-mode assertions, not just root/file chmods.
+49. A read-only child process should receive only the credentials and configuration it needs; unrelated parent secrets and runtime injection variables stay outside the boundary.
+50. Command-allowlist tests must assert complete argv shapes because prefix fakes silently accept dangerous flag drift.
+51. Reserved wrapper filenames must be excluded by exact root path, not basename, or legitimate downloaded files can escape permissions and inventory.
+52. A plan containing runtime-discovered version IDs is a static command-shape review, not an exact concrete command transcript.
+
+### Review the fixes, not only the original change
+
+The first audit found real boundary failures; the post-fix audit then found a
+newly visible basename bug. Skipping every file named `manifest.json` was meant
+to exclude the wrapper's root manifest, but it also excluded legitimate
+downloaded project manifests from chmod, hashing, and inventory. Scoping the
+exception to the exact root path closed that gap. A final reviewer also caught
+that documentation still described runtime-expanded commands as an exact plan
+and blurred Worker active-version evidence into the Pages deployment model.
+
+The lesson is: **a fix is a new change that needs independent verification**.
+Run a fresh post-fix reviewer against the complete committed range, use focused
+regression probes for each accepted finding, and repeat until no fix worth doing
+now remains. Security-boundary tests should prove both directions: unrelated
+credentials and stdin do not cross the process boundary, while the required
+Cloudflare authentication still does.
+
+53. Treat post-fix review as a distinct validation phase because remediation can introduce adjacent omissions.
+54. Product capability claims must stay product-specific: Workers expose active-version metadata; Pages exposes deployments and downloaded config.
+55. Boundary tests need positive and negative controls: preserve required authentication while excluding unrelated secrets, injection options, and stdin.
+
+### A benchmark cannot value functionality it never exercises
+
+The first GPT-5.5 PR round scored below current main even though their
+`SKILL.md` files were byte-identical and none of the divergent cases loaded the
+new Wrangler reference. Trace comparison showed autonomous trajectory variance:
+one run searched the whole skill tree or read broad references while its paired
+run stopped early. The non-significant paired result was a regression signal,
+not causal evidence against the new guidance.
+
+More importantly, the benchmark had no Wrangler snapshot cases. Adding four
+focused cases changed the question from “did unrelated legacy answers vary?” to
+“does the model safely reconcile and collect this new evidence?” A dedicated,
+short routed reference then improved that four-case slice from 68.21% to 95%
+objective under strengthened semantic oracles, while the fresh 24-case legacy slice stayed within 0.21 points of
+main. The targeted slice is small, but it now guards the actual product behavior.
+
+56. Add eval cases for a feature before using aggregate model scores to judge that feature's value.
+57. When paired variants share identical loaded instructions and the changed reference was never read, inspect trajectory variance before claiming causation.
+58. Compare traces, commands, reference reads, and token outliers—not only final percentages—to explain model regressions.
+59. Route narrow workflows to dedicated references; burying them in broad guidance increases omission risk and unnecessary context.
+60. Report legacy and new-feature slices separately so a broad aggregate cannot hide either regression or genuine feature lift.
+
+### Survey real configuration fleets without confusing copies for projects
+
+A complete default-branch review of 86 accessible `adewale/*` repositories found
+334 Wrangler JSONC files, but only 24 were deployable-project configs. Sixty
+were maintained examples or compatibility tests, 20 were intentional cfdoctor
+fixtures, and 230 lived in a generated corpus cache. Several cached files were
+byte-identical copies of separately counted owner projects. A raw file count
+would therefore have overstated both product prevalence and scanner findings.
+
+The deployable configs still changed the design. Workers Static Assets appeared
+in two thirds of them, making Wrangler's Assets-incompatible dashboard importer
+a poor default and strengthening the least-privilege case for metadata-only
+capture. Environment overrides, multiple configs in one repository, and Service
+Bindings also showed that repository path and top-level Worker name do not
+fully identify deployed scope. Meanwhile, modern example/corpus configs exposed
+valid product keys that the scanner had not inventoried.
+
+61. Classify deployable source, maintained examples, intentional fixtures, and generated/vendored corpora before computing repository-fleet statistics.
+62. Exclude known generated corpus caches from default scans; exact copies otherwise double-count evidence and manufacture findings.
+63. Least-sensitive collection should be the default, especially when the more invasive path is unsupported by a common configuration such as Workers Static Assets.
+64. Confirm the concrete deployed name for each config/environment; a repository can own several separately deployed Workers.
+65. Service Bindings identify dependencies, not authorization to recurse into more account state; expand each target with a separate plan and approval.
+66. Use broad corpora to discover parser/product-surface gaps, not as authority for defect prevalence or current semantics.
+67. Repeated full observability sampling is a usage-evidence question, not a static defect: traffic, retention, plan, and billing data determine materiality.
+
+### Bounded static analysis and matched evaluation beat broad claims
+
+The 0.3.5 scanner pass closed five known gaps without pretending to solve arbitrary program analysis: it follows bounded constants/imports and URL aliases, matches literal Queue names, requires real alarm conditions, and links Stream preload through repo-visible symbols. The same calibration applied to prompt-only checks: explicit full sampling and webhook side effects can produce review leads, while effective origin, alert, and preview-public state still require account evidence.
+
+A matched three-way evaluation also changed the evidentiary quality. Running the exact current tree, immutable main, and no skill three times per case made the Wrangler lift clear while showing that legacy behavior remained statistically compatible with main and pricing still needed efficiency work. A second-model judge sample agreed on 26/27 pass decisions, which is useful sensitivity evidence but not a substitute for human labels.
+
+68. Resolve only bounded, repo-visible data flow; document the dynamic/helper-function boundary instead of calling the heuristic complete.
+69. A prompt-only check can gain a calibrated static lead without converting unavailable account state into a repository finding.
+70. When an incident source remains unavailable and uncorroborated at its review boundary, supersede it rather than perpetually warning or silently citing it.
+71. Compare current, immutable baseline, and no-skill arms under one manifest, sample count, and interleaved protocol before claiming current lift.
+72. Report feature, legacy, and new-eval slices separately: aggregate lift can coexist with a weak pricing slice or a non-significant legacy delta.
+73. Cross-model judge agreement measures sensitivity between judges; human-labeled alignment remains a separate requirement.

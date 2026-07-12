@@ -6,19 +6,17 @@ its intended benefit. Items are implemented in this order. Every item records
 its risks and downsides, because each change can also make the skill worse if
 the risk is ignored.
 
-## Status (end of 2026-06-09 pass)
+## Status (through 2026-07-11)
 
-1. Scanner check IDs + JSON output — **done** (scanner 0.3.0; 56-check registry; scanner 0.3.1 adds the dead-RPC review-surface lead, bringing the registry to 57 checks).
-2. Fixture-based detection evals — **done** (15 fixtures, including five
-   `gap-*` fixtures that reproduced and then closed real false negatives).
+1. Scanner check IDs + JSON output — **done** (scanner 0.3.5; 60-check registry).
+2. Fixture-based detection evals — **done** (25 fixtures, including calibrated false-negative and near-miss controls).
 3. Coverage matrix + consistency checker — **done** (CI-enforced).
 4. Link verification + archive fallbacks — **done** (initial run; periodic
    re-runs tracked in `TODO.md`).
 5. SKILL.md reference routing — **done deterministically** (trigger eval,
    contract markers); model-graded confirmation still pending (`TODO.md`).
-6. Holdout/holdback scaffolding — **rescoped** (see correction below); two
-   fixture-backed tune cases added to the shared benchmark.
-7. Account-state collector — **deferred** (needs a live Cloudflare account).
+6. Holdout/holdback scaffolding — **done**; private gitignored cases were scored exactly once for the release guard and only sanitized aggregates were retained.
+7. Deployed-state evidence — **Wrangler-first wrapper and approved live validation complete**.
 
 Remaining work lives in [`TODO.md`](../TODO.md).
 
@@ -119,14 +117,7 @@ Remaining work lives in [`TODO.md`](../TODO.md).
 
 ## 6. Holdout/holdback model-graded eval scaffolding
 
-- **Correction (2026-06-09):** this item was planned on a wrong premise. The
-  scaffolding already exists: `evals/shared-benchmark.json` defines 30 cases
-  across `tune`/`holdout`/`holdback` splits, and `evals/holdout/` +
-  `evals/holdback/` are intentionally gitignored so hidden cases stay out of
-  the public repo. "Filling" those directories from an ephemeral session
-  would produce unpushable files, so the scope changes to: strengthen the
-  visible `tune` split with cases backed by the new detection fixtures, so
-  model-graded audit cases and deterministic scanner cases share evidence.
+- **Correction (updated 2026-07-11):** the public manifest now defines 37 cases across `tune`/`holdout`/`holdback` splits. Private prompt/answer assets remain gitignored. One holdout and one holdback were populated in the local release environment, scored exactly once, and retained only as a sanitized 2/2-pass aggregate plus hashes; they must not become a retuning set. Visible tune cases remain tied to deterministic fixture and semantic oracles where possible.
 - **Verifiability: low-medium.** Case structure and JSON shape are
   verifiable; grading quality still requires running the external
   skill-eval-harness with a model.
@@ -137,18 +128,28 @@ Remaining work lives in [`TODO.md`](../TODO.md).
   - Fixture-backed tune cases are public, so models can memorize them; the
     gitignored holdout/holdback splits remain the contamination guard.
 
-## 7. Account-state collector (collect/eval split) — deferred
+## 7. Wrangler-first deployed-state snapshot — complete
 
-- **Verifiability: low.** Requires a live Cloudflare account, API token, and
-  plan-dependent API surface. Nothing in this environment can prove it works.
-- **Likelihood of success: low right now.** High design risk (token scopes,
-  redaction, plan differences) and the skill's safety policy requires explicit
-  user approval for authenticated reads.
-- **Decision: defer.** Shipping an untested collector that handles API tokens
-  is the kind of risk this plan exists to avoid: secrets handling, silent
-  partial snapshots presented as complete state, and support burden. The
-  design from `research/doctor-patterns-research.md` stands; implementation
-  should happen in a session with a real test account.
+- **Verifiability: high for the supported Worker/Pages scope.** A purpose-built
+  fake Wrangler proves command allowlisting, approval/plan gates,
+  active-version expansion, private file permissions, Git-worktree refusal,
+  metadata-only-by-default behavior, opt-in downloads, and manifest hashes. Approved live runs against
+  `readability-worker`, `atlas`, and `keyboardia-staging` proved the Worker,
+  Pages, and Assets metadata-only paths with Wrangler 4.71.0, 4.94.0, and 4.53.0.
+- **Likelihood of success: high for Workers/Pages.** Wrangler already owns
+  authentication profiles and current API normalization. `init --from-dash`,
+  Pages `download config`, deployment status, and version view expose much of
+  the effective Worker/Pages state without a custom API/token layer.
+- **Decision:** use `scripts/capture_wrangler_snapshot.py` as the first account
+  evidence path. It requires an existing pinned Wrangler binary, static plan
+  and dynamic version-command-shape review, explicit authenticated-read approval,
+  and private output outside Git. Metadata-only is the default; source/config
+  download requires `--include-source-config`. The default is supported by the
+  fleet review: 16 of 24 deployable configs used Workers Static Assets, which
+  the current direct Worker importer cannot clone.
+  Do not build a universal collector. Add targeted read-only API evidence only
+  when a concrete DNS/WAF/Access/cache/analytics/billing hypothesis remains
+  unresolved after a real Wrangler snapshot.
 
 ## Cross-cutting risks
 
