@@ -80,6 +80,8 @@ Smells:
 - Cron every minute for polling that could be event-driven, queue-driven, webhook-driven, or batched less often.
 - Long process encoded as recursive self-fetches or ad hoc KV state. Prefer Workflows/Queues/DO state machines.
 - Workflow/DO-alarm loops drain a KV/D1/R2 work list without atomic claim/idempotency/max-iteration/kill-switch controls.
+- Workflows used for high-frequency or low-latency per-request coordination. Workflows is a durable batch-and-steps engine, not a hot-path coordinator — use Durable Objects for per-request/per-key coordination and rate-limit-bucket latency.
+- Conversely, prefer Workflows over a hand-rolled raw-Durable-Object state machine for multi-step durable flows (provisioning, payment orchestration, long jobs with retries/sleeps): you get durable execution, retries, and step visibility without reimplementing them on alarms.
 
 ## Dynamic Workers, Artifacts, and Agents SDK
 
@@ -117,6 +119,17 @@ Smells:
 - Direct database connections from Workers without pooling/Hyperdrive where connection churn or geographic latency matters.
 - Database region far from users/Workers with no Smart Placement or data-local strategy.
 - ORM designed for long-lived Node processes used without checking Worker/runtime compatibility.
+- Relying on Hyperdrive's **default-on query caching** for write-heavy or strong read-after-write paths. Caching is enabled by default (default `max_age` 60s, `stale_while_revalidate` 15s) and Hyperdrive does **not** invalidate cached results when your app writes, so a later matching `SELECT` can return a stale row until `max_age` expires. Hyperdrive fits read-heavy workloads; for post-write reads, auth/permission lookups, or strong consistency, disable caching (`--caching-disabled`) or route those queries through a second uncached binding, and set `max_age`/`stale_while_revalidate` intentionally.
+
+## Email (Routing, the send_email binding, and Email Sending)
+
+Good fit:
+- **Email Routing** for receiving mail: custom addresses, catch-alls, and forwarding incoming email to a mailbox; process inbound mail with **Email Workers** (the `email()` handler) as an event source.
+- The **`send_email` binding** (Email Workers) for a Worker to send outbound mail **only to verified/allowlisted destination addresses** (`allowed_destination_addresses`) — e.g. notifying your own team/ops inbox — **not** arbitrary user recipients.
+- **Email Sending** (the outbound/transactional product) for originating mail to **arbitrary recipients** from your application.
+
+Wrong-primitive smell:
+- Code that expects to send outbound or transactional email to **arbitrary user addresses** (welcome/receipt/password-reset emails) via Email Routing or the `send_email` binding. Email Routing itself is inbound-only, and the `send_email` binding can deliver **only to pre-verified/allowlisted destinations**, so neither is a general transactional sender. Flag the mismatch and point arbitrary-recipient outbound at **Cloudflare Email Sending** (or a transactional provider such as Resend/Postmark/SES), keeping inbound handling on Email Routing/Email Workers.
 
 ## AI, media, browser automation, and vector search
 
@@ -143,3 +156,7 @@ Consider product fit rather than hand-rolling:
 - mTLS/API Shield for sensitive machine APIs when applicable.
 
 Smell: custom JavaScript-only bot checks, IP-block lists in code, or unauthenticated admin routes when Cloudflare security products could enforce closer to the edge.
+
+Turnstile fit and UX caveats:
+- Turnstile presence is not purely positive. It only protects an endpoint when the token is verified **server-side** (see [`config-and-security-checks.md`](config-and-security-checks.md)); a client-only widget is cosmetic.
+- When Turnstile (or any CAPTCHA) is the **sole gate** on a critical or irreversible flow (login, signup, password reset, checkout), a minority of legitimate users can get stuck in unexplained challenge loops. Provide an alternate path or human-support escape and account for the support/accessibility cost — treat a hard CAPTCHA gate with no fallback as a reliability/UX trade-off, not an unconditional win.

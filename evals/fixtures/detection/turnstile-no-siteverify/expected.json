@@ -1,0 +1,10 @@
+{
+  "description": "A Worker renders a Cloudflare Turnstile widget (api.js + cf-turnstile) and processes the POST without ever calling the siteverify endpoint or reading cf-turnstile-response, so the bot protection is cosmetic and bypassable.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-TURNSTILE-SITEVERIFY"
+  ],
+  "required_check_ids": [
+    "CFDOC-SEC-TURNSTILE-NO-SITEVERIFY"
+  ],
+  "forbidden_check_ids": []
+}

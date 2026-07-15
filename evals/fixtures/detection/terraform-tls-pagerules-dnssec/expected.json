@@ -1,0 +1,16 @@
+{
+  "description": "Terraform-managed Cloudflare zone with SSL/TLS Full (non-strict), a legacy cloudflare_page_rule, and no cloudflare_zone_dnssec resource. Exercises the graded-TLS, Page Rules maintenance, and DNSSEC-missing leads. Full (non-strict) must NOT be graded as Flexible.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-SSL-MODES",
+    "CFDOC-EVD-CF-PAGE-RULES-DEPRECATION",
+    "CFDOC-EVD-CF-DNSSEC"
+  ],
+  "required_check_ids": [
+    "CFDOC-SEC-TLS-FULL-NOT-STRICT",
+    "CFDOC-CONFIG-PAGE-RULES-LEGACY",
+    "CFDOC-CONFIG-DNSSEC-MISSING"
+  ],
+  "forbidden_check_ids": [
+    "CFDOC-SEC-TLS-FLEXIBLE"
+  ]
+}

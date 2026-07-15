@@ -24,6 +24,7 @@ Footguns:
 - Duplicate expensive operations without idempotency keys, especially generation/inference, media transforms, browser sessions, uploads, and write-side effects.
 - Cron triggers running too frequently or in every environment.
 - Preview, workshop, demo, or one-off Workers left routed to paid bindings/services after the event or test window.
+- Workers Static Assets `run_worker_first` set to `true` or a broad glob: requests served as static assets are free, but `run_worker_first` forces the Worker to run for matching paths, billed at the standard Workers request rate (and returning 429 once free-tier request limits are exceeded). Scope it to the paths that need the Worker, or use negative globs to keep static paths free.
 
 Diagnosis:
 - Estimate CPU/subrequests per request and multiply by traffic.
@@ -49,7 +50,7 @@ Footguns:
 ## KV
 
 Footguns:
-- KV reads/writes on every request for data that could be CDN-cached or in-request memoized.
+- KV reads/writes on every request for data that could be CDN-cached or in-request memoized. Note every read **operation** is billed regardless of whether it hits KV's edge cache — an edge-cache hit improves latency but gives **no per-operation cost discount**; only doing fewer distinct reads (in-request memoization, batching, caching) reduces the KV bill.
 - `KV.list()` in hot paths; list operations and pagination can become expensive and slow.
 - High-churn counters/sessions/locks that generate many writes and still lack correctness.
 - Large values or blob-like storage better suited to R2.
@@ -146,6 +147,8 @@ Footguns:
 - Image transformations multiplied by unique variants: unbounded width/height/format/DPR/quality combinations or flexible variants exposed to arbitrary user input. As of July 2026, Images binding calls are billed per unique source-and-parameter transformation per calendar month, not per call; `.info()` is free. Repeating the same uncached transform still reruns decode/encode work and the Worker, adding latency and Worker CPU/request usage even when it does not add another Images transformation unit.
 - Stream preloading/buffering counted as delivered minutes: players using aggressive preload/autoplay, background tabs, hidden players, or custom HLS/DASH clients that fetch media before users intentionally watch.
 - Browser Run sessions left open, retried blindly, or launched per request when a lighter fetch/HTML parser/API would work. Browser hours/concurrency can dominate cost.
+- Browser Run's default **60-second idle timeout** silently killing a long or blocked job mid-work (session close reason `BrowserIdle` rather than `NormalClosure`), yielding a partial/empty screenshot or PDF plus wasted spend that blind retries amplify. `keep_alive` extends the idle window to ~10 minutes but bills the longer session, and there is no fixed maximum session lifetime while active — set explicit per-job navigation/page deadlines and detect truncation instead of retrying blindly.
+- **AI Gateway** as a fix has its own cost/trust trade-off: the core proxy (caching, rate limiting, retries/fallbacks, analytics) is **free** when you bring your own provider keys (BYOK). Optional **Unified Billing** routes provider spend through Cloudflare and adds a **~5% fee on purchased credits** (inference itself is passed through at provider rates) — a deliberate convenience-vs-cost choice, not a default. The extra proxy hop also adds latency on latency-sensitive paths.
 
 Better patterns:
 - For Dynamic Workers, use deny-by-default egress/bindings, custom limits/timeouts, code-hash/version IDs, bounded logs, and per-run accounting for requests/CPU/unique workers.

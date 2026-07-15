@@ -1,0 +1,11 @@
+{
+  "description": "Control: the same Turnstile widget, but the POST handler verifies the cf-turnstile-response token via the siteverify endpoint with the secret key before accepting the submission. The no-siteverify lead must be suppressed, and correctly-wired verification code must stay quiet overall.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-TURNSTILE-SITEVERIFY"
+  ],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-SEC-TURNSTILE-NO-SITEVERIFY"
+  ],
+  "max_findings": 0
+}

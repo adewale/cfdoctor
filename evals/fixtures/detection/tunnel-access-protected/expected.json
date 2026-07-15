@@ -1,0 +1,11 @@
+{
+  "description": "Control: a cloudflared tunnel hostname that IS fronted by a Cloudflare Access application/policy. The no-Access nudge must be suppressed, and no credentials file is committed.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-TUNNEL"
+  ],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-SEC-TUNNEL-NO-ACCESS",
+    "CFDOC-SEC-TUNNEL-CREDENTIALS"
+  ]
+}

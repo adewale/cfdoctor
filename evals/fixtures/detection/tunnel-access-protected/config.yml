@@ -1,0 +1,9 @@
+# cloudflared tunnel config. Publishes an admin app, but a Cloudflare Access
+# application (see access.tf) protects the hostname, so the no-Access nudge must
+# be suppressed.
+tunnel: 7aa53bf3-8765-4bcd-9223-42d66d2662fa
+
+ingress:
+  - hostname: admin.example.com
+    service: http://localhost:8080
+  - service: http_status:404
