@@ -7,6 +7,7 @@ Check every `wrangler.jsonc` (Cloudflare-recommended for new projects), `wrangle
 - `compatibility_date` exists, is not in the future, and is intentionally maintained. Very old dates can hide behavior changes and missed platform improvements.
 - `compatibility_flags` are justified. `nodejs_compat` can be necessary, but it may increase bundle/polyfill surface; confirm the code really needs Node APIs.
 - `main`, `assets`, `pages_build_output_dir`, `workers_dev`, `routes`, and custom domains match the intended deployment model.
+- `assets.run_worker_first` is scoped intentionally. Requests served as static assets are free, but `run_worker_first: true` (or a broad glob like `/*`) forces the Worker to run for those requests, which is billed at the standard Workers request rate (and returns 429 once free-tier limits are hit). Scope it to only the paths that truly need the Worker, or use negative globs (`!/assets/*`) to keep static paths free — the Static Assets analog of over-broad Pages `_routes.json`.
 - `routes` are not broader than intended (`*`, whole-zone catchalls, production domains in preview envs).
 - Binding names are stable and environment-specific resources point to the right account/database/bucket/namespace.
 - `[env.*]` blocks preserve required bindings, vars, migrations, observability, and routes. Env drift is a common production-only bug.
@@ -39,6 +40,8 @@ Check request handlers and routes:
 - Webhook handlers verify signatures and timestamps before enqueueing/processing.
 - OAuth/OIDC flows use redirect URI allowlists, timing-safe secret/token comparisons where applicable, encrypted token storage, refresh-token rotation/expiry handling, and idempotency for callback/webhook side effects.
 - Rate limiting, Turnstile, WAF, or bot protections cover abuse-prone endpoints before expensive Worker/storage work.
+- Turnstile (and any CAPTCHA) is verified **server-side**: the endpoint POSTs the `cf-turnstile-response` token to `challenges.cloudflare.com/turnstile/v0/siteverify` with the secret key before accepting the request. Cloudflare states the client widget alone does not protect a form — tokens are forgeable, expire (300s), and are single-use — so a rendered widget with no server-side siteverify is a bypassable, cosmetic control (an attacker omits the widget and posts the endpoint directly). Verification may live in a separate service; confirm it is actually wired.
+- Managed WAF/Bot rules can false-positive on legitimate inbound webhook or machine-to-machine API traffic (unusual payloads/user agents). The fix is a narrowly-scoped WAF skip/exception on that path **plus** provider signature verification in the Worker — never disabling the WAF globally or widening a rule to a whole zone.
 - Do not trust arbitrary `X-Forwarded-For`/`CF-Connecting-IP` unless the traffic path guarantees Cloudflare is the only ingress.
 - Error responses/logs do not leak secrets, tokens, stack traces, SQL, object keys, or tenant data.
 - Browser/geolocation/device-fingerprint/IP-derived analytics are disclosed, minimized, consented where required, and not cached/logged into long-lived high-cardinality stores without retention limits.
@@ -61,6 +64,14 @@ Check request handlers and routes:
 - Artifacts repos and repo-scoped tokens are separated by environment/tenant/app where appropriate; tokens are not embedded in client firmware or app bundles unless scoped/rotatable and expected.
 - App/firmware update flows backed by Cloudflare Artifacts or Workers should verify signatures, support rollback/A-B deploy, and avoid one shared mutable "latest" object with no provenance.
 
+## Cloudflare Tunnel and origin publishing
+
+When a repo publishes an origin with `cloudflared` (Tunnel) config (`config.yml` with `tunnel:`/`ingress:`/`hostname:`) or Terraform tunnel resources (`cloudflare_zero_trust_tunnel_cloudflared`, tunnel config/ingress):
+
+- A tunnel **public hostname is reachable on the public internet by default**. A Cloudflare Access policy is what restricts it to authenticated users; Access is optional per Cloudflare's docs, so treat a tunnel hostname with no Access application/policy as a prompt: confirm the hostname is meant to be public, and if it fronts an internal/admin/preview surface, put an Access application in front of it. Access state may live in the dashboard rather than the repo — verify there if it is not in Terraform.
+- The cloudflared **credentials file** (`<TunnelID>.json` with `AccountTag`/`TunnelID`/`TunnelSecret`) authenticates and runs the tunnel. Committed to the repo it grants a persistent inbound path to the origin and cannot be scoped/rotated like a short-lived token. Remove it from the repo and history, re-run `cloudflared tunnel create` (or rotate the token) to invalidate the secret, and keep credentials out of version control (or use a remotely-managed tunnel token stored as a secret).
+- Tunnel is also the canonical **remediation** for an exposed origin (unproxied DNS-only record, direct origin IP, Flexible/Full-non-strict TLS): fronting the origin with a Tunnel (+ Access for auth) keeps connections outbound-only and hides the origin IP, rather than merely enabling proxying.
+
 ## R2/public assets
 
 - Public buckets contain only intentionally public objects.
@@ -72,12 +83,13 @@ Check request handlers and routes:
 
 These usually require Terraform/export/screenshots/API output:
 
-- DNS records: proxy status (orange-cloud) intentional; no accidental direct-origin bypass for protected services.
-- SSL/TLS: mode should normally be Full (strict) for production origins; avoid Flexible unless there is a deliberate constrained reason.
-- Origin exposure: origin IP/hostnames are not publicly reachable around Cloudflare when WAF/Access is expected to protect them.
-- WAF/rate limiting/bot rules cover expensive and sensitive paths.
-- Cache Rules/Page Rules/Transform Rules do not conflict with Worker routes or leak private content.
-- Access/Zero Trust policies protect admin/internal apps, previews, and dashboards where appropriate.
+- DNS records: proxy status (orange-cloud) intentional; no accidental direct-origin bypass for protected services. Record counts are plan-gated, not unlimited — Free zones created on/after 2024-09-01 are capped at ~200 records (older Free zones ~1,000), Pro/Business ~3,500 — so verify the per-plan limit against current DNS docs rather than assuming "unlimited" when auditing IaC that manages many records.
+- SSL/TLS mode should be **Full (strict)** for production origins (Terraform `ssl = "strict"`). Grade the alternatives: **Flexible** and **Off** leave the origin leg unencrypted/cleartext (high); **Full** (non-strict, Terraform `ssl = "full"`) encrypts but does **not validate** the origin certificate, so the origin leg is MITM-able (medium — only Full (strict) validates). Cloudflare's free ~15-year Origin CA certificate satisfies strict validation, so there is rarely a reason to stay below it.
+- DNSSEC is an easy anti-spoofing win; enable it where the zone warrants it. Enabling it in Cloudflare is not sufficient on its own — activation requires publishing the generated **DS record at the registrar**, so treat a repo/dashboard signal as a nudge to verify the registrar side, not proof.
+- Origin exposure: origin IP/hostnames are not publicly reachable around Cloudflare when WAF/Access is expected to protect them (Cloudflare Tunnel is the canonical way to publish an origin without opening inbound ports).
+- WAF/rate limiting/bot rules cover expensive and sensitive paths. WAF capability is **plan-gated in shifting ways** (Free = baseline managed ruleset + one rate-limit rule; Pro/Business add Cloudflare Managed + OWASP; Sensitive Data Detection, AI/LLM protections, and JA4/bot-score fields are Enterprise or add-on). Verify the specific gate against current docs before asserting a customer has or lacks a WAF capability — do not encode a memorized tier map.
+- Cache Rules/Transform Rules do not conflict with Worker routes or leak private content. **Page Rules entered maintenance mode on 2025-01-06** (no new Page Rules can be created; Cloudflare is migrating existing ones); new configuration should use Cache/Configuration/Origin/Redirect Rules instead.
+- Access/Zero Trust policies protect admin/internal apps, previews, dashboards, and Cloudflare Tunnel public hostnames where appropriate.
 - Logpush destinations, retention, and sampled analytics match privacy and cost expectations.
 
 ## CI/CD and deployment safety

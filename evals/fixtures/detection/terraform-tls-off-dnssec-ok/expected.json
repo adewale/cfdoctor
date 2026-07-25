@@ -1,0 +1,14 @@
+{
+  "description": "Terraform zone with SSL/TLS mode Off (graded high via CFDOC-SEC-TLS-FLEXIBLE) and DNSSEC enabled. Control: Off is graded high like Flexible, is NOT graded as Full (non-strict), and an enabled cloudflare_zone_dnssec suppresses the DNSSEC-missing lead.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-SSL-MODES",
+    "CFDOC-EVD-CF-DNSSEC"
+  ],
+  "required_check_ids": [
+    "CFDOC-SEC-TLS-FLEXIBLE"
+  ],
+  "forbidden_check_ids": [
+    "CFDOC-CONFIG-DNSSEC-MISSING",
+    "CFDOC-SEC-TLS-FULL-NOT-STRICT"
+  ]
+}

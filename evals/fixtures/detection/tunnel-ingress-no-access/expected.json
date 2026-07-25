@@ -1,0 +1,11 @@
+{
+  "description": "A cloudflared tunnel publishes an internal admin app on a public hostname with no Cloudflare Access policy, and the tunnel credentials JSON (AccountTag/TunnelID/TunnelSecret) is committed to the repo. All credential values are fake fixture strings.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-TUNNEL"
+  ],
+  "required_check_ids": [
+    "CFDOC-SEC-TUNNEL-NO-ACCESS",
+    "CFDOC-SEC-TUNNEL-CREDENTIALS"
+  ],
+  "forbidden_check_ids": []
+}

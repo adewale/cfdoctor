@@ -1,0 +1,10 @@
+{
+  "description": "A Workers Static Assets project sets assets.run_worker_first = true, so every request invokes the billable Worker instead of being served as a free static asset. Static-assets analog of the Pages _routes.json cost lead.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-STATIC-ASSETS-BILLING"
+  ],
+  "required_check_ids": [
+    "CFDOC-COST-ASSETS-RUN-WORKER-FIRST"
+  ],
+  "forbidden_check_ids": []
+}

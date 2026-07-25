@@ -113,7 +113,7 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.3.6"
+SCANNER_VERSION = "0.3.7"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -175,8 +175,15 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-COST-THIRD-PARTY-ORIGIN", "COST", "medium", "medium", "Worker fetches a public third-party/serverless origin hostname", "Cloudflare-fronted third-party origins still bill on cache misses or direct hostname access."),
     ("CFDOC-COST-ASYNC-LOOP", "COST", "medium", "low", "Worker appears to fetch the incoming request URL", "Self-fetch of the handled URL/host can recursively trigger billable invocations or loop errors."),
     ("CFDOC-CONFIG-PROCESS-ENV", "CONFIG", "low", "low", "process.env reference in Worker-adjacent code", "Workers receive env via handler bindings; process.env may be a Node assumption."),
-    ("CFDOC-SEC-TLS-FLEXIBLE", "SEC", "high", "high", "Terraform sets SSL/TLS mode to Flexible", "Flexible SSL leaves the Cloudflare-to-origin leg unencrypted."),
+    ("CFDOC-SEC-TLS-FLEXIBLE", "SEC", "high", "high", "Terraform sets SSL/TLS mode to Flexible or Off", "Flexible SSL leaves the Cloudflare-to-origin leg unencrypted; Off disables encryption entirely."),
+    ("CFDOC-SEC-TLS-FULL-NOT-STRICT", "SEC", "medium", "high", "Terraform sets SSL/TLS mode to Full (non-strict)", "Full mode encrypts the origin leg but does not validate the origin certificate, leaving it MITM-able."),
     ("CFDOC-SEC-DNS-UNPROXIED", "SEC", "medium", "medium", "Terraform has unproxied DNS record; verify origin exposure", "DNS-only records bypass Cloudflare WAF/cache/Access and may expose origin."),
+    ("CFDOC-CONFIG-PAGE-RULES-LEGACY", "CONFIG", "low", "high", "Terraform manages legacy Page Rules (maintenance mode)", "Page Rules entered maintenance mode on 2025-01-06; new configuration should use Cache/Configuration/Redirect/Origin Rules."),
+    ("CFDOC-CONFIG-DNSSEC-MISSING", "CONFIG", "low", "low", "Terraform-managed zone has no DNSSEC resource", "A Cloudflare zone managed in Terraform has no cloudflare_zone_dnssec resource; DNSSEC is an easy anti-spoofing win but also needs a registrar DS record."),
+    ("CFDOC-SEC-TURNSTILE-NO-SITEVERIFY", "SEC", "medium", "low", "Turnstile widget rendered without server-side siteverify", "A Turnstile client widget appears with no server-side siteverify call, so the protection may be cosmetic and bypassable."),
+    ("CFDOC-COST-ASSETS-RUN-WORKER-FIRST", "COST", "medium", "medium", "Workers Static Assets run_worker_first invokes the Worker for asset paths", "run_worker_first routes matching requests through the billable Worker instead of serving free static assets."),
+    ("CFDOC-SEC-TUNNEL-CREDENTIALS", "SEC", "high", "medium", "Committed Cloudflare Tunnel credentials file", "A cloudflared tunnel credentials file (AccountTag/TunnelID/TunnelSecret) in tracked text grants a persistent inbound path to the origin."),
+    ("CFDOC-SEC-TUNNEL-NO-ACCESS", "SEC", "medium", "low", "Cloudflare Tunnel public hostname without an Access policy", "A cloudflared/Terraform tunnel ingress hostname has no Cloudflare Access policy in the repo; confirm the exposure is intentionally public."),
 ]
 CHECKS: dict[str, dict[str, str]] = {
     cid: {"pillar": pillar, "severity": severity, "confidence": confidence, "title": title, "description": description}
@@ -539,6 +546,26 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                 "low",
             ))
 
+        assets_obj = data.get("assets")
+        if isinstance(assets_obj, dict):
+            run_worker_first = assets_obj.get("run_worker_first")
+            broad_rwf = run_worker_first is True or (
+                isinstance(run_worker_first, list)
+                and any(str(entry) in {"/*", "/**", "*"} for entry in run_worker_first)
+            )
+            if broad_rwf:
+                where = "run_worker_first=true" if run_worker_first is True else f"run_worker_first includes a broad glob ({', '.join(str(e) for e in run_worker_first)})"
+                findings.append(Finding(
+                    "CFDOC-COST-ASSETS-RUN-WORKER-FIRST",
+                    "medium",
+                    "Workers Static Assets run_worker_first invokes the Worker for asset paths",
+                    "cost footgun / missed optimization",
+                    f"{label}: assets.{where}",
+                    "Requests served as static assets are free, but `run_worker_first` forces matching requests through the Worker script, which is billed at the standard Workers request rate (and can return 429 once free-tier limits are hit). A broad `true`/`/*` setting turns normally-free asset hits into billable invocations.",
+                    "Scope `run_worker_first` to only the paths that truly need the Worker (auth callbacks, SSR routes), or use negative globs (`!/assets/*`) to keep static paths free; verify against the current Workers Static Assets billing docs.",
+                    "medium",
+                ))
+
         vars_obj = data.get("vars")
         if isinstance(vars_obj, dict):
             for name, value in vars_obj.items():
@@ -829,10 +856,104 @@ def add_code_findings(
             "low",
         ))
 
+    # Turnstile widget rendered without any server-side siteverify (project-level).
+    turnstile_client_re = re.compile(
+        r"cf-turnstile|turnstile\.render|@marsidev/react-turnstile|challenges\.cloudflare\.com/turnstile/v0/api\.js|TURNSTILE_SITE_KEY",
+        re.I,
+    )
+    turnstile_verify_re = re.compile(r"siteverify|cf-turnstile-response|TURNSTILE_SECRET", re.I)
+    if turnstile_client_re.search(project_text) and not turnstile_verify_re.search(project_text):
+        ev_path, ev_text = next(
+            ((path, text) for path, text in source_files if turnstile_client_re.search(text)),
+            source_files[0],
+        )
+        hit = line_for(ev_text, turnstile_client_re) or (1, "")
+        findings.append(Finding(
+            "CFDOC-SEC-TURNSTILE-NO-SITEVERIFY",
+            "medium",
+            "Turnstile widget rendered without server-side siteverify",
+            "security / misconfiguration",
+            f"{rel(ev_path, root)}:{hit[0]}: {excerpt(hit[1])}",
+            "Cloudflare's docs state server-side validation is mandatory: the client widget alone does not protect a form because Turnstile tokens can be forged, expire, and are single-use. Without a POST to challenges.cloudflare.com/turnstile/v0/siteverify (reading the cf-turnstile-response token with the secret key), an attacker can omit the widget and submit the endpoint directly.",
+            "Verify the cf-turnstile-response token server-side with the secret key before accepting the request; if verification lives in a separate service, confirm it is actually wired.",
+            "low",
+        ))
+
+    tf_files = [(path, text) for path, text in files if path.suffix == ".tf"]
+    tf_text = "\n".join(text for _, text in tf_files)
+
+    # Terraform-managed zone without a DNSSEC resource (project-level).
+    zone_re = re.compile(r'resource\s+"cloudflare_zone"\s')
+    dnssec_re = re.compile(r'resource\s+"cloudflare_zone_dnssec"')
+    if tf_files and zone_re.search(tf_text) and not dnssec_re.search(tf_text):
+        ev_path, ev_text = next(
+            ((path, text) for path, text in tf_files if zone_re.search(text)),
+            tf_files[0],
+        )
+        hit = line_for(ev_text, zone_re) or (1, "")
+        findings.append(Finding(
+            "CFDOC-CONFIG-DNSSEC-MISSING",
+            "low",
+            "Terraform-managed zone has no DNSSEC resource",
+            "misconfiguration / security",
+            f"{rel(ev_path, root)}:{hit[0]}: {excerpt(hit[1])}",
+            "DNSSEC adds origin-authentication to DNS answers and prevents spoofed records from redirecting your traffic. A Terraform-managed zone with no `cloudflare_zone_dnssec` resource likely has DNSSEC off.",
+            "Add a `cloudflare_zone_dnssec` resource to enable DNSSEC, then complete activation by adding the generated DS record at your registrar (DNSSEC is not active until the registrar DS record is published). Verify the DS record against current Cloudflare DNSSEC docs.",
+            "low",
+        ))
+
+    # Cloudflare Tunnel ingress hostname without an Access policy (project-level nudge).
+    tunnel_tf = re.search(r'resource\s+"cloudflare_(?:zero_trust_)?tunnel(?:_cloudflared)?(?:_config)?"', tf_text)
+    cloudflared_yaml = None
+    for path, text in files:
+        if path.suffix not in {".yml", ".yaml"}:
+            continue
+        if re.search(r"(?m)^\s*tunnel\s*:", text) and re.search(r"(?m)^\s*ingress\s*:", text) and re.search(r"(?m)^\s*-?\s*hostname\s*:", text):
+            cloudflared_yaml = (path, text)
+            break
+    has_access_policy = bool(re.search(
+        r"cloudflare_(?:zero_trust_)?access_(?:application|policy)",
+        tf_text,
+    ))
+    if (tunnel_tf or cloudflared_yaml) and not has_access_policy:
+        if cloudflared_yaml is not None:
+            ev_path, ev_text = cloudflared_yaml
+            hit = line_for(ev_text, re.compile(r"(?m)^\s*-?\s*hostname\s*:")) or (1, "")
+        else:
+            ev_path, ev_text = next(
+                ((path, text) for path, text in tf_files if re.search(r"tunnel", text, re.I)),
+                tf_files[0],
+            )
+            hit = line_for(ev_text, re.compile(r"tunnel", re.I)) or (1, "")
+        findings.append(Finding(
+            "CFDOC-SEC-TUNNEL-NO-ACCESS",
+            "medium",
+            "Cloudflare Tunnel public hostname without an Access policy",
+            "security / misconfiguration",
+            f"{rel(ev_path, root)}:{hit[0]}: {excerpt(hit[1])}",
+            "A Cloudflare Tunnel public hostname is reachable on the public internet by default; an Access policy is what restricts it to authenticated users. No Cloudflare Access application/policy is visible in the repo for this tunnel.",
+            "Confirm the hostname is meant to be public. If it fronts an internal, admin, or preview surface, put a Cloudflare Access application/policy in front of it (identity-provider login) so the tunnel is not open to everyone. Access policy state may also live in the dashboard—verify there if not managed in the repo.",
+            "low",
+        ))
+
     for path, text in files:
         rpath = rel(path, root)
         if path.name in CONFIG_NAMES:
             continue
+
+        # Committed cloudflared tunnel credentials file (AccountTag/TunnelID/TunnelSecret).
+        if path.suffix != ".md" and re.search(r'"TunnelSecret"\s*:', text) and "AccountTag" in text and "TunnelID" in text:
+            hit = line_for(text, re.compile(r'"TunnelSecret"\s*:')) or (1, "")
+            findings.append(Finding(
+                "CFDOC-SEC-TUNNEL-CREDENTIALS",
+                "high",
+                "Committed Cloudflare Tunnel credentials file",
+                "security",
+                f"{rpath}:{hit[0]}: cloudflared tunnel credentials (AccountTag/TunnelID/TunnelSecret) present in tracked file",
+                "A cloudflared tunnel credentials JSON (AccountTag, TunnelID, TunnelSecret) authenticates and runs the tunnel. Committed to the repo, it hands an attacker a persistent inbound path to your origin and cannot be scoped like a short-lived, revocable token.",
+                "Remove the credentials file from the repo and its history, re-run `cloudflared tunnel create` (or rotate the token) to invalidate the secret, keep credentials outside version control or in a secret store, and add the path to .gitignore.",
+                "medium",
+            ))
 
         # Obvious secret material. Evidence is redacted because scanner output often enters chat/CI logs.
         hit = line_for(text, SECRET_VALUE_RE)
@@ -1494,16 +1615,43 @@ def add_code_findings(
 
         # Terraform Cloudflare account smells.
         if path.suffix == ".tf":
-            hit = line_for(text, re.compile(r"ssl\s*=\s*['\"]flexible['\"]", re.I))
+            hit = line_for(text, re.compile(r"ssl\s*=\s*['\"](?:flexible|off)['\"]", re.I))
             if hit:
+                is_off = bool(re.search(r"ssl\s*=\s*['\"]off['\"]", hit[1], re.I))
                 findings.append(Finding(
                     "CFDOC-SEC-TLS-FLEXIBLE",
                     "high",
-                    "Terraform sets SSL/TLS mode to Flexible",
+                    "Terraform sets SSL/TLS mode to Flexible or Off",
                     "security / misconfiguration",
                     f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "Off disables encryption entirely (cleartext to the origin); Flexible encrypts the visitor leg but leaves the Cloudflare-to-origin leg unencrypted. Both are usually inappropriate for production and allow interception on the origin path."
+                    if is_off else
                     "Flexible SSL leaves the Cloudflare-to-origin leg unencrypted and is usually inappropriate for production.",
-                    "Use Full (strict) with a valid origin certificate unless a documented exception exists.",
+                    "Use Full (strict) with a valid origin certificate (Cloudflare offers a free ~15-year Origin CA certificate) unless a documented exception exists.",
+                    "high",
+                ))
+            hit = line_for(text, re.compile(r"ssl\s*=\s*['\"]full['\"]", re.I))
+            if hit:
+                findings.append(Finding(
+                    "CFDOC-SEC-TLS-FULL-NOT-STRICT",
+                    "medium",
+                    "Terraform sets SSL/TLS mode to Full (non-strict)",
+                    "security / misconfiguration",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "Full mode encrypts the Cloudflare-to-origin connection but does not validate the origin certificate, so a man-in-the-middle presenting any certificate on the origin leg is accepted. Only Full (strict) validates the origin certificate.",
+                    "Use Full (strict) (Terraform `ssl = \"strict\"`) with a valid origin certificate; Cloudflare's free Origin CA certificate satisfies strict validation.",
+                    "high",
+                ))
+            hit = line_for(text, re.compile(r'resource\s+"cloudflare_page_rule"', re.I))
+            if hit:
+                findings.append(Finding(
+                    "CFDOC-CONFIG-PAGE-RULES-LEGACY",
+                    "low",
+                    "Terraform manages legacy Page Rules (maintenance mode)",
+                    "best-practice drift / misconfiguration",
+                    f"{rpath}:{hit[0]}: {hit[1][:160]}",
+                    "Cloudflare Page Rules entered maintenance mode on 2025-01-06; you can no longer create new Page Rules in the dashboard and Cloudflare is migrating existing ones to the modern Rules products. New IaC should not add Page Rules.",
+                    "Migrate to the modern Rules resources: Cache Rules (`cloudflare_ruleset` http_request_cache_settings) for caching, plus Configuration/Origin/Redirect/Transform Rules as applicable. Verify the mapping against the current Page Rules migration guide.",
                     "high",
                 ))
             hit = line_for(text, re.compile(r"proxied\s*=\s*false", re.I))
