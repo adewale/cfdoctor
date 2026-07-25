@@ -173,6 +173,29 @@ class StaticScannerTests(unittest.TestCase):
         self.assertIn("batching alone is not a proven billing reduction", finding["message"])
         self.assertIn("coalesce redundant writes", finding["fix"].lower())
 
+    def secret_assignment_ids(self, report: dict) -> list[str]:
+        return [f["check_id"] for f in report["findings"] if f["check_id"] == "CFDOC-SEC-SECRET-ASSIGNMENT"]
+
+    def test_secret_named_reference_in_code_is_not_a_committed_credential(self) -> None:
+        report = scan({
+            "src/index.js": "\n".join([
+                'const token = form.get("cf-turnstile-response");',
+                "const apiKey = env.SERVICE_API_KEY;",
+                "const password = await getPassword();",
+                "const clientSecret = this.config.clientSecret;",
+            ]),
+            "main.tf": 'provider "cloudflare" {\n  api_token = var.cloudflare_api_token\n}',
+        })
+        self.assertEqual([], self.secret_assignment_ids(report))
+
+    def test_secret_literal_in_code_is_still_reported(self) -> None:
+        report = scan({"src/index.js": 'const apiKey = "live-9f8a7b6c5d4e3f21";'})
+        self.assertEqual(["CFDOC-SEC-SECRET-ASSIGNMENT"], self.secret_assignment_ids(report))
+
+    def test_unquoted_secret_literal_outside_code_is_still_reported(self) -> None:
+        report = scan({".env": "API_KEY=9f8a7b6c5d4e3f21abcd\n"})
+        self.assertEqual(["CFDOC-SEC-SECRET-ASSIGNMENT"], self.secret_assignment_ids(report))
+
 
 if __name__ == "__main__":
     unittest.main()

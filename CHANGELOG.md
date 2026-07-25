@@ -4,7 +4,7 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
-_No unreleased changes._
+- Fixed a `CFDOC-SEC-SECRET-ASSIGNMENT` false positive (scanner `0.3.6`). In source files a secret-named variable assigned a *reference* — `const token = form.get("cf-turnstile-response")`, `const apiKey = env.API_KEY`, `api_token = var.cloudflare_api_token` — was reported as a high-severity committed credential ("Rotate if real"). Those are the correct way to read a credential, and the first is the shape the skill's own Turnstile server-side-validation guidance asks for, so acting on cfdoctor's advice produced a new finding. Call and reference values are now exempt in code files only (`.js/.ts/.tf/.sql` and friends); unquoted literals in `.env`, YAML, and other config text are unchanged, as are quoted literals in code. Added the `secret-reference-not-literal` precision control (`max_findings: 0`, 26 detection fixtures) and three scanner unit tests covering both directions.
 
 ## 0.3.0 — 2026-07-12
 
