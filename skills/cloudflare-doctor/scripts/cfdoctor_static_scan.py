@@ -104,8 +104,16 @@ SECRET_ASSIGN_RE = re.compile(
 )
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
 NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
+# In source files a secret-named variable is usually assigned a reference, not a literal:
+# `const token = form.get("cf-turnstile-response")`, `const apiKey = env.API_KEY`,
+# `api_token = var.cloudflare_api_token`. Those read the credential correctly and are not
+# committed material. Only applied to code files, where an unquoted literal cannot occur.
+CODE_CALL_VALUE_RE = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*\s*\(")
+CODE_REFERENCE_VALUE_RE = re.compile(
+    r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
+)
 
-SCANNER_VERSION = "0.3.5"
+SCANNER_VERSION = "0.3.6"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -326,7 +334,7 @@ def excerpt(line: str, limit: int = 160) -> str:
     return line.strip().replace("\t", " ")[:limit]
 
 
-def is_sensitive_assignment(match: re.Match[str]) -> bool:
+def is_sensitive_assignment(match: re.Match[str], in_code_file: bool = False) -> bool:
     name = match.group(1)
     value = match.group(2)
     if not SECRET_NAME_RE.search(name):
@@ -336,6 +344,8 @@ def is_sensitive_assignment(match: re.Match[str]) -> bool:
     if PLACEHOLDER_SECRET_RE.search(value):
         return False
     if re.match(r"(?:re\.compile|RegExp)\(", value):
+        return False
+    if in_code_file and (CODE_CALL_VALUE_RE.match(value) or CODE_REFERENCE_VALUE_RE.match(value)):
         return False
     return True
 
@@ -838,9 +848,10 @@ def add_code_findings(
                 "Rotate the credential, remove it from history if needed, move it to secrets storage, and add secret scanning.",
                 "medium",
             ))
+        is_source_like = path.suffix in CODE_EXTS or path.name in SPECIAL_SOURCE_NAMES
         for line_no, line in enumerate(text.splitlines(), 1):
             match = SECRET_ASSIGN_RE.search(line)
-            if match and is_sensitive_assignment(match):
+            if match and is_sensitive_assignment(match, in_code_file=is_source_like):
                 findings.append(Finding(
                     "CFDOC-SEC-SECRET-ASSIGNMENT",
                     "high",
@@ -853,7 +864,6 @@ def add_code_findings(
                 ))
                 break
 
-        is_source_like = path.suffix in CODE_EXTS or path.name in SPECIAL_SOURCE_NAMES
         if not is_source_like:
             continue
 

@@ -1,0 +1,7 @@
+{
+  "description": "Control: secret-named variables that READ a credential from a Worker binding, a request field, or a Terraform variable are correct practice and must not be reported as committed credentials. Covers the remediation shape the scanner itself recommends (server-side token verification) and the Terraform `var.` reference shape.",
+  "evidence_ids": ["CFDOC-EVD-COEY-SECURITY"],
+  "required_check_ids": [],
+  "forbidden_check_ids": ["CFDOC-SEC-SECRET-ASSIGNMENT"],
+  "max_findings": 0
+}
