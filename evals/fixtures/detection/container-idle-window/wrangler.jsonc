@@ -1,0 +1,31 @@
+{
+  // Media transcoder: a Worker fronts an FFmpeg container. The container is
+  // sized for 1080p work and the class never sets sleepAfter, so every wake
+  // keeps provisioned memory/disk billable through the default idle window.
+  "name": "clip-transcoder",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-01",
+  "observability": { "enabled": true },
+  "containers": [
+    {
+      "class_name": "TranscodeContainer",
+      "image": "./Dockerfile",
+      "instance_type": "standard-4",
+      "max_instances": 10
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "TRANSCODER",
+        "class_name": "TranscodeContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["TranscodeContainer"]
+    }
+  ]
+}

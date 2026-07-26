@@ -117,6 +117,32 @@ Footguns:
 Better patterns:
 - Idempotency keys, DLQs, bounded retries, adaptive backoff, `NonRetryableError` for permanent failures, alerting, explicit fan-out limits, coarse meaningful Workflow steps, and intentional instance-state retention. Verify the announced billing start date before making a current invoice claim.
 
+## Containers
+
+Containers meter differently from every other compute primitive on the platform. Verify all rates and defaults against current Containers pricing/limits docs; the mechanisms below are what to reason about.
+
+Cost model:
+- Billing is per 10ms of **active** (awake) runtime across three separate meters: memory, CPU, and disk. Memory and disk bill on the instance's **provisioned** size — the `instance_type` you picked — for the entire time the instance is awake. Only CPU tracks actual use. An idle-but-awake container on the largest instance type still bills full memory and disk.
+- Charges stop when the instance sleeps, not when the request ends. The `sleepAfter` timer starts from the last request and any activity resets it, so **every wake carries an idle tail at full provisioned memory and disk**. The Container class default is currently `"10m"`; confirm it before quoting.
+- **Containers bill network egress**, unlike Workers and R2. Do not carry a "Cloudflare has no egress fees" assumption into a Container cost model — that intuition comes from R2 and does not apply here. Reading and writing R2 over Cloudflare's internal network avoids public-internet egress and is the cheaper data path.
+- Cold starts are real and image-dependent (Cloudflare documents roughly the 1–3 second range; operators report both faster and considerably slower depending on image size and init work). Cold start is latency, and it is also billed active time.
+
+Footguns:
+- **The idle tail dominates bursty workloads.** Work that takes seconds but wakes the instance repeatedly through the day pays the full sleep window per wake. Spread-out bursts can spend far more on idle than on the job. This is the single highest-leverage Containers cost question: requests per hour, gap between them, and `sleepAfter`.
+- Oversized `instance_type` chosen for peak headroom, billing that peak's memory/disk on every awake second.
+- Keep-warm pings adopted to dodge cold starts, which convert the workload to always-on billing. That is a deliberate latency-for-cost trade, not a free fix — price it explicitly, and if the answer is "always warm," re-run the product-fit question against a rented VM.
+- Containers used for sustained load where a VM or spot instance is cheaper. Operators actively disagree on this for the *same* workload (media transcoding), and the discriminator is duty cycle, not the workload type.
+- Retry loops that restart a container per attempt, paying cold start plus a fresh idle window each time.
+- Fan-out that trips `max_instances`: the excess start requests error rather than queue, so unbounded fan-out becomes user-visible failure as well as spend.
+- Per-job containers for work that could batch into one wake. Several small jobs inside one awake window amortize the idle tail; the same jobs spread across separate wakes do not.
+
+Better patterns:
+- Set `sleepAfter` deliberately from the measured request gap, or stop the instance as soon as work completes (`onActivityExpired()` calling `stop()`); do not inherit the default silently.
+- Size `instance_type` from measured memory/CPU, starting small — the default is `lite`.
+- Keep inputs/outputs in R2 and move them over the internal network rather than the public internet.
+- Batch queued work into a single wake where latency allows, and bound concurrency below `max_instances` with explicit backpressure.
+- Emit per-job cost proxies: wake count, awake seconds, instance type, cold-start count, and bytes egressed — awake-seconds-per-job is the number that reveals idle-tail waste, and it is not visible from job success/failure logs.
+
 ## Spend-amplification controls
 
 Footguns:

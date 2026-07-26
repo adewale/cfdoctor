@@ -95,6 +95,25 @@ Wrong-primitive/security smells:
 - Agents with autonomous loops, tool calls, browser/sandbox tools, scheduled tasks, or sub-agents without max steps, retries/backoff, cancellation, idempotency, and per-run cost proxies.
 - Browser-capable agents used for simple fetch/parse/API tasks where Workers fetch, Queues, or a lighter tool would be sufficient.
 
+## Containers
+
+Containers are the escape hatch from the Worker isolate, not a general compute tier. Reach for them when the work cannot be expressed as an isolate, and confirm the duty cycle before recommending them.
+
+Good fit:
+- Native binaries and toolchains that cannot run in a Worker: `ffmpeg`, ImageMagick, LaTeX, headless CLIs, Pandas/NumPy, language runtimes without a Workers build.
+- Work needing a real filesystem, more memory than a Worker isolate allows, or a long single-process job.
+- Bursty, infrequent, cleanly bounded jobs that hang off an otherwise Worker-shaped app — thumbnailing on upload, transcoding on publish, periodic report generation.
+- Jobs whose inputs and outputs already live in R2, so bytes move over Cloudflare's internal network instead of egressing.
+
+Wrong-primitive smells:
+- Work a Worker could do. A Container pays cold start and provisioned memory/disk for request/response logic, JSON transformation, or `fetch` orchestration that an isolate handles with neither.
+- **Sustained or always-on load.** The economics assume the instance sleeps. A container that is awake most of the time is competing with a rented VM or spot instance, and operators report reaching that conclusion in production. Establish duty cycle — requests per hour and gap between them — before endorsing Containers for steady traffic.
+- Instance type chosen by ceiling rather than by measurement. `instance_type` defaults to `lite`; the largest option bills its provisioned memory and disk the whole time the instance is awake. Size to observed usage, not headroom.
+- Fire-and-forget dispatch from a Worker that returns before the container finishes. The invoking execution context must stay alive (for example `ctx.waitUntil()` around the container call/monitor) or the job can be cut off mid-work after the Worker responds.
+- Long jobs with no `SIGTERM` handling. Rollouts signal active instances and then force-kill them after a grace period, so an in-flight job that ignores `SIGTERM` dies on deploy. Make jobs resumable or idempotent, or drain before rollout.
+- `max_instances` treated as a queue depth. Exceeding it errors the start request rather than queueing it; pair Containers with Queues or explicit backpressure when concurrent demand can exceed the cap.
+- A Container plus a Durable Object assumed to be co-located. Cloudflare does not guarantee the Durable Object and its Container instance run in the same location; do not build latency assumptions on it.
+
 ## Workers Cache, Cache API, CDN cache, Cache Rules
 
 Good fit:
