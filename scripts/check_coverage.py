@@ -33,7 +33,7 @@ FOLDED_PREFIX = "folded-into:"
 CHECK_ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9-]*$")
 
 
-def fail_harness(message: str) -> "NoReturn":  # noqa: F821 (py<3.11 friendly)
+def fail_harness(message: str) -> NoReturn:  # noqa: F821 (py<3.11 friendly)
     print(f"ERROR (harness): {message}", file=sys.stderr)
     sys.exit(2)
 

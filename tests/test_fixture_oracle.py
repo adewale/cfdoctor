@@ -141,7 +141,7 @@ No confirmed findings.
                 if "wrangler." not in Path(relpath).name:
                     continue
                 text = (ROOT / "evals" / relpath).read_text()
-                match = re.search(r'(?:"main"\s*:\s*"|^main\s*=\s*")([^"\n]+)', text, re.M)
+                match = re.search(r'(?:"main"\s*:\s*"|^main\s*=\s*")([^"\n]+)', text, re.MULTILINE)
                 if match:
                     checked += 1
                     self.assertIn(match.group(1), staged_names, case["id"])

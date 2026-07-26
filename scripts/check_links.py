@@ -322,11 +322,11 @@ def check_url(url: str) -> dict:
                 result["classification"] = "error"
                 result["detail"] = f"connection error: {reason}"
             return result
-        except (socket.timeout, TimeoutError):
+        except TimeoutError:
             result["classification"] = "error"
             result["detail"] = "timeout"
             return result
-        except Exception as exc:  # noqa: BLE001 - report, never crash a worker
+        except Exception as exc:
             result["classification"] = "error"
             result["detail"] = f"{type(exc).__name__}: {exc}"
             return result
