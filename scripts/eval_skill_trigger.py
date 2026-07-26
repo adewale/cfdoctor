@@ -20,7 +20,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
 TRIGGER_PATTERNS = [
     r"\bcloudflare\b",
     r"\bwrangler\b",
@@ -98,18 +97,18 @@ class CaseResult:
 
 def load_skill_description(path: Path) -> str:
     text = path.read_text(encoding="utf-8")
-    match = re.match(r"---\n(.*?)\n---", text, re.S)
+    match = re.match(r"---\n(.*?)\n---", text, re.DOTALL)
     if not match:
         raise ValueError(f"No frontmatter found in {path}")
     frontmatter = match.group(1)
-    desc = re.search(r"^description:\s*(.*)$", frontmatter, re.M)
+    desc = re.search(r"^description:\s*(.*)$", frontmatter, re.MULTILINE)
     if not desc:
         raise ValueError(f"No description field found in {path}")
     return desc.group(1).strip()
 
 
 def any_pattern(patterns: list[str], text: str) -> tuple[bool, list[str]]:
-    hits = [pat for pat in patterns if re.search(pat, text, re.I)]
+    hits = [pat for pat in patterns if re.search(pat, text, re.IGNORECASE)]
     return bool(hits), hits
 
 

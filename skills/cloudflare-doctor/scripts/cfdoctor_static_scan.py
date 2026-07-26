@@ -15,9 +15,10 @@ import json
 import os
 import re
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 try:
     import tomllib  # Python 3.11+
@@ -93,17 +94,17 @@ BINDING_KEYS = {
     "send_email": "Email bindings",
     "vpc_services": "Workers VPC",
 }
-SECRET_NAME_RE = re.compile(r"(secret|token|password|passwd|private|credential|client_secret|api[_-]?key|auth[_-]?key)", re.I)
+SECRET_NAME_RE = re.compile(r"(secret|token|password|passwd|private|credential|client_secret|api[_-]?key|auth[_-]?key)", re.IGNORECASE)
 SECRET_VALUE_RE = re.compile(
     r"(sk-[A-Za-z0-9_-]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}|cfpat_[A-Za-z0-9_-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|postgres(?:ql)?://[^\s'\"]+:[^\s'\"]+@|mysql://[^\s'\"]+:[^\s'\"]+@)",
-    re.I,
+    re.IGNORECASE,
 )
 SECRET_ASSIGN_RE = re.compile(
     r"^\s*(?:(?:export\s+)?(?:const|let|var)\s+|export\s+)?([A-Za-z_][A-Za-z0-9_-]*)\s*[:=]\s*['\"]?([^'\"\s#]{8,})",
-    re.I,
+    re.IGNORECASE,
 )
-PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.I)
-NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.I)
+PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.IGNORECASE)
+NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.IGNORECASE)
 # In source files a secret-named variable is usually assigned a reference, not a literal:
 # `const token = form.get("cf-turnstile-response")`, `const apiKey = env.API_KEY`,
 # `api_token = var.cloudflare_api_token`. Those read the credential correctly and are not
@@ -345,9 +346,7 @@ def is_sensitive_assignment(match: re.Match[str], in_code_file: bool = False) ->
         return False
     if re.match(r"(?:re\.compile|RegExp)\(", value):
         return False
-    if in_code_file and (CODE_CALL_VALUE_RE.match(value) or CODE_REFERENCE_VALUE_RE.match(value)):
-        return False
-    return True
+    return not (in_code_file and (CODE_CALL_VALUE_RE.match(value) or CODE_REFERENCE_VALUE_RE.match(value)))
 
 
 def redacted_secret_line(line: str, limit: int = 160) -> str:
@@ -659,7 +658,7 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                             "Verify inheritance for this Wrangler version and make production/staging bindings explicit where safety matters.",
                             "low",
                         ))
-                    if re.search(r"preview|demo|workshop|branch|test", env_name, re.I):
+                    if re.search(r"preview|demo|workshop|branch|test", env_name, re.IGNORECASE):
                         env_paid = [k for k in paid_or_stateful_keys if k in env_data]
                         inherited_paid = [k for k in paid_or_stateful_keys if k in data and k not in env_data]
                         if env_paid or inherited_paid:
@@ -768,7 +767,7 @@ def static_string_symbols(files: list[tuple[Path, str]]) -> set[str]:
 def stream_source_symbols(files: list[tuple[Path, str]]) -> set[str]:
     symbols: set[str] = set()
     for _, text in files:
-        if not re.search(r"(?:cloudflarestream\.com|videodelivery\.net)", text, re.I):
+        if not re.search(r"(?:cloudflarestream\.com|videodelivery\.net)", text, re.IGNORECASE):
             continue
         symbols.update(re.findall(r"(?m)^\s*export\s+(?:const|function|class)\s+([A-Za-z_$][\w$]*)", text))
     return symbols
@@ -786,7 +785,7 @@ def add_code_findings(
     static_symbols = static_string_symbols(files)
     stream_symbols = stream_source_symbols(files)
     project_has_stream_host = any(
-        re.search(r"(?:cloudflarestream\.com|videodelivery\.net)", t, re.I) for _, t in files
+        re.search(r"(?:cloudflarestream\.com|videodelivery\.net)", t, re.IGNORECASE) for _, t in files
     )
     d1_names = bindings.get("D1", set())
     r2_names = bindings.get("R2", set())
@@ -799,25 +798,25 @@ def add_code_findings(
     project_text = "\n".join(text for _, text in source_files)
     webhook_shaped = any(
         "webhook" in path.as_posix().lower()
-        or re.search(r"webhook|x-github-event|stripe-signature|svix-|x-signature", text, re.I)
+        or re.search(r"webhook|x-github-event|stripe-signature|svix-|x-signature", text, re.IGNORECASE)
         for path, text in source_files
     )
     has_webhook_side_effect = bool(re.search(
         r"Promise\.all|waitUntil|\.send\s*\(|\.put\s*\(|\.insert\s*\(|fetch\s*\([^)]*,\s*\{[^}]*method\s*:\s*['\"]POST",
         project_text,
-        re.I | re.S,
+        re.IGNORECASE | re.DOTALL,
     ))
     has_webhook_idempotency = bool(re.search(
         r"idempoten|dedup|delivery[_-]?id|event[_-]?id|x-github-delivery|webhook[_-]?id|alreadyProcessed|processedEvents",
         project_text,
-        re.I,
+        re.IGNORECASE,
     ))
     if webhook_shaped and has_webhook_side_effect and not has_webhook_idempotency:
         evidence_path, evidence_text = next(
-            ((path, text) for path, text in source_files if re.search(r"webhook|request\.json\s*\(|Promise\.all|waitUntil", text, re.I)),
+            ((path, text) for path, text in source_files if re.search(r"webhook|request\.json\s*\(|Promise\.all|waitUntil", text, re.IGNORECASE)),
             source_files[0],
         )
-        hit = line_for(evidence_text, re.compile(r"webhook|request\.json\s*\(|Promise\.all|waitUntil", re.I)) or (1, "")
+        hit = line_for(evidence_text, re.compile(r"webhook|request\.json\s*\(|Promise\.all|waitUntil", re.IGNORECASE)) or (1, "")
         findings.append(Finding(
             "CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY",
             "medium",
@@ -877,7 +876,7 @@ def add_code_findings(
             include_values = includes if isinstance(includes, list) else []
             exclude_values = excludes if isinstance(excludes, list) else []
             broad_include = any(str(v) in {"/*", "*", "/**"} for v in include_values)
-            static_excluded = any(re.search(r"\.(?:css|js|mjs|png|jpe?g|gif|svg|webp|ico|woff2?)(?:\*|$)", str(v), re.I) for v in exclude_values)
+            static_excluded = any(re.search(r"\.(?:css|js|mjs|png|jpe?g|gif|svg|webp|ico|woff2?)(?:\*|$)", str(v), re.IGNORECASE) for v in exclude_values)
             if broad_include and not static_excluded:
                 findings.append(Finding(
                     "CFDOC-COST-PAGES-FUNCTION-ROUTES",
@@ -894,8 +893,8 @@ def add_code_findings(
         ai_run_pattern = r"env\.(?:" + "|".join(re.escape(n) for n in sorted(ai_names)) + r")\.run\s*\("
         if re.search(ai_run_pattern, text):
             hit = line_for(text, ai_run_pattern) or (1, "")
-            has_loop_or_retry = re.search(r"\b(for|while)\s*\(|retry|attempt|backoff|setTimeout|queue", text, re.I)
-            has_idempotency = re.search(r"idempot|dedupe|cache|fingerprint|requestId|jobId", text, re.I)
+            has_loop_or_retry = re.search(r"\b(for|while)\s*\(|retry|attempt|backoff|setTimeout|queue", text, re.IGNORECASE)
+            has_idempotency = re.search(r"idempot|dedupe|cache|fingerprint|requestId|jobId", text, re.IGNORECASE)
             if has_loop_or_retry or not has_idempotency:
                 findings.append(Finding(
                     "CFDOC-COST-AI-NO-IDEMPOTENCY",
@@ -923,7 +922,7 @@ def add_code_findings(
                     "low",
                 ))
 
-        hit = line_for(text, re.compile(r"(/cdn-cgi/image/|cf\s*:\s*\{\s*image|\bimage\s*:\s*\{)", re.I | re.S))
+        hit = line_for(text, re.compile(r"(/cdn-cgi/image/|cf\s*:\s*\{\s*image|\bimage\s*:\s*\{)", re.IGNORECASE | re.DOTALL))
         if hit:
             findings.append(Finding(
                 "CFDOC-COST-MEDIA-VARIANT-EXPLOSION",
@@ -937,10 +936,10 @@ def add_code_findings(
             ))
 
         stream_linked = bool(
-            re.search(r"(?:cloudflarestream\.com|videodelivery\.net|<stream|stream-player)", text, re.I)
+            re.search(r"(?:cloudflarestream\.com|videodelivery\.net|<stream|stream-player)", text, re.IGNORECASE)
             or any(re.search(r"\b" + re.escape(symbol) + r"\b", text) for symbol in stream_symbols)
         )
-        if project_has_stream_host and stream_linked and re.search(r"preload\s*=\s*['\"]auto['\"]", text, re.I):
+        if project_has_stream_host and stream_linked and re.search(r"preload\s*=\s*['\"]auto['\"]", text, re.IGNORECASE):
             hit = line_for(text, r"preload\s*=\s*['\"]auto['\"]") or (1, "")
             findings.append(Finding(
                 "CFDOC-COST-MEDIA-VARIANT-EXPLOSION",
@@ -953,9 +952,9 @@ def add_code_findings(
                 "medium",
             ))
 
-        if re.search(r"(puppeteer|playwright|Browser Run|env\.[A-Z0-9_]*BROWSER)", text, re.I) and re.search(r"(launch|connect|newPage|browser\()", text):
+        if re.search(r"(puppeteer|playwright|Browser Run|env\.[A-Z0-9_]*BROWSER)", text, re.IGNORECASE) and re.search(r"(launch|connect|newPage|browser\()", text):
             if not re.search(r"\.close\s*\(", text):
-                hit = line_for(text, re.compile(r"(puppeteer|playwright|Browser Run|env\.[A-Z0-9_]*BROWSER)", re.I)) or (1, "")
+                hit = line_for(text, re.compile(r"(puppeteer|playwright|Browser Run|env\.[A-Z0-9_]*BROWSER)", re.IGNORECASE)) or (1, "")
                 findings.append(Finding(
                     "CFDOC-COST-BROWSER-NO-CLOSE",
                     "high",
@@ -970,9 +969,9 @@ def add_code_findings(
         dynamic_loader_pattern = r"env\.(?:" + "|".join(re.escape(n) for n in sorted(dynamic_worker_names)) + r")\.(?:load|get)\s*\("
         hit = line_for(text, dynamic_loader_pattern)
         if hit:
-            user_code_shaped = re.search(r"request\.|req\.|formData|json\s*\(\s*\)|prompt|code|source|script|llm|model", text, re.I)
-            has_egress_policy = re.search(r"globalOutbound\s*:|egress|null|deny|allowlist|bindings\s*:", text, re.I)
-            has_limits = re.search(r"limits\s*:|timeout|AbortController|max(?:Cpu|CPU|Requests|Duration|Unique|Depth|Steps)|budget|quota", text, re.I)
+            user_code_shaped = re.search(r"request\.|req\.|formData|json\s*\(\s*\)|prompt|code|source|script|llm|model", text, re.IGNORECASE)
+            has_egress_policy = re.search(r"globalOutbound\s*:|egress|null|deny|allowlist|bindings\s*:", text, re.IGNORECASE)
+            has_limits = re.search(r"limits\s*:|timeout|AbortController|max(?:Cpu|CPU|Requests|Duration|Unique|Depth|Steps)|budget|quota", text, re.IGNORECASE)
             if user_code_shaped and (not has_egress_policy or not has_limits):
                 findings.append(Finding(
                     "DYNAMIC-WORKER-SANDBOX-CAPABILITIES",
@@ -984,7 +983,7 @@ def add_code_findings(
                     "Use deny-by-default egress/bindings, custom limits/timeouts, code hash auditing, bounded logs, and dedupe/reuse by stable IDs where safe.",
                     "medium",
                 ))
-            if ".load" in hit[1] and not re.search(r"\.get\s*\(|hash|digest|fingerprint|cache|dedupe|version", text, re.I):
+            if ".load" in hit[1] and not re.search(r"\.get\s*\(|hash|digest|fingerprint|cache|dedupe|version", text, re.IGNORECASE):
                 findings.append(Finding(
                     "CFDOC-COST-DYNAMIC-WORKER-DEDUPE",
                     "medium",
@@ -997,8 +996,8 @@ def add_code_findings(
                 ))
 
         if re.search(r"\b(Agent|AIChatAgent|McpAgent|routeAgentRequest|getAgentByName|subAgent|startFiber|runFiber|scheduleTask|queueTask)\b", text):
-            has_loop_or_tool = re.search(r"while\s*\(|for\s*\(|tool|browser|sandbox|subAgent|schedule|queueTask|retry|autonomous|continueLastTurn", text, re.I)
-            has_agent_bounds = re.search(r"max(?:Steps|Iterations|Retries|Duration|Attempts)|AbortController|timeout|cancel|abort|idempot|backoff|jitter|budget|quota", text, re.I)
+            has_loop_or_tool = re.search(r"while\s*\(|for\s*\(|tool|browser|sandbox|subAgent|schedule|queueTask|retry|autonomous|continueLastTurn", text, re.IGNORECASE)
+            has_agent_bounds = re.search(r"max(?:Steps|Iterations|Retries|Duration|Attempts)|AbortController|timeout|cancel|abort|idempot|backoff|jitter|budget|quota", text, re.IGNORECASE)
             if has_loop_or_tool and not has_agent_bounds:
                 hit = line_for(text, re.compile(r"\b(Agent|AIChatAgent|McpAgent|subAgent|startFiber|runFiber|scheduleTask|queueTask)\b")) or (1, "")
                 findings.append(Finding(
@@ -1015,7 +1014,7 @@ def add_code_findings(
         if artifacts_names:
             artifacts_pattern = r"env\.(?:" + "|".join(re.escape(n) for n in sorted(artifacts_names)) + r")\."
             hit = line_for(text, artifacts_pattern)
-            if hit and not re.search(r"sign|signature|verify|rollback|token|namespace|tenant|environment|repo", text, re.I):
+            if hit and not re.search(r"sign|signature|verify|rollback|token|namespace|tenant|environment|repo", text, re.IGNORECASE):
                 findings.append(Finding(
                     "ARTIFACTS-UPDATE-SUPPLY-CHAIN",
                     "low",
@@ -1027,8 +1026,8 @@ def add_code_findings(
                     "low",
                 ))
 
-        hit = line_for(text, re.compile(r"\bconnect\s*\(.*(?:hostname|host|port)|from ['\"]cloudflare:sockets['\"]|node:net|\bnet\.Socket\b|createConnection\s*\(", re.I))
-        if hit and not re.search(r"hyperdrive|pool|tls|secureTransport|timeout|AbortController|close\s*\(|end\s*\(|destroy\s*\(", text, re.I):
+        hit = line_for(text, re.compile(r"\bconnect\s*\(.*(?:hostname|host|port)|from ['\"]cloudflare:sockets['\"]|node:net|\bnet\.Socket\b|createConnection\s*\(", re.IGNORECASE))
+        if hit and not re.search(r"hyperdrive|pool|tls|secureTransport|timeout|AbortController|close\s*\(|end\s*\(|destroy\s*\(", text, re.IGNORECASE):
             findings.append(Finding(
                 "WORKER-TCP-DB-FIT",
                 "medium",
@@ -1040,8 +1039,8 @@ def add_code_findings(
                 "low",
             ))
 
-        hit = line_for(text, re.compile(r"Promise\.all\s*\([^\n;]*\.map\s*\(", re.I))
-        if hit and not re.search(r"pLimit|limit|concurrency|batch|chunk|slice\s*\(|semaphore|queue", text, re.I):
+        hit = line_for(text, re.compile(r"Promise\.all\s*\([^\n;]*\.map\s*\(", re.IGNORECASE))
+        if hit and not re.search(r"pLimit|limit|concurrency|batch|chunk|slice\s*\(|semaphore|queue", text, re.IGNORECASE):
             findings.append(Finding(
                 "CFDOC-COST-UNBOUNDED-FANOUT",
                 "medium",
@@ -1053,11 +1052,11 @@ def add_code_findings(
                 "medium",
             ))
 
-        retry_shaped = re.search(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", text, re.I)
-        expensive_call = re.search(r"env\.[A-Za-z0-9_]+\.(run|query|send|sendBatch|put|list|prepare)\s*\(|fetch\s*\(|browser\.(launch|connect)|newPage\s*\(", text, re.I)
-        has_resilience_controls = re.search(r"circuit|breaker|backoff|jitter|maxAttempts|max_retries|maxRetries|AbortController|timeout|killSwitch|disable|enabled", text, re.I)
+        retry_shaped = re.search(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", text, re.IGNORECASE)
+        expensive_call = re.search(r"env\.[A-Za-z0-9_]+\.(run|query|send|sendBatch|put|list|prepare)\s*\(|fetch\s*\(|browser\.(launch|connect)|newPage\s*\(", text, re.IGNORECASE)
+        has_resilience_controls = re.search(r"circuit|breaker|backoff|jitter|maxAttempts|max_retries|maxRetries|AbortController|timeout|killSwitch|disable|enabled", text, re.IGNORECASE)
         if retry_shaped and expensive_call and not has_resilience_controls:
-            hit = line_for(text, re.compile(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", re.I)) or (1, "")
+            hit = line_for(text, re.compile(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", re.IGNORECASE)) or (1, "")
             findings.append(Finding(
                 "CFDOC-COST-RETRY-AMPLIFY",
                 "medium",
@@ -1070,7 +1069,7 @@ def add_code_findings(
             ))
 
         # CORS wildcard + credentials in same file.
-        if re.search(r"Access-Control-Allow-Origin['\"\s:,{]+\*", text) and re.search(r"Access-Control-Allow-Credentials['\"\s:,{]+true", text, re.I):
+        if re.search(r"Access-Control-Allow-Origin['\"\s:,{]+\*", text) and re.search(r"Access-Control-Allow-Credentials['\"\s:,{]+true", text, re.IGNORECASE):
             hit = line_for(text, r"Access-Control-Allow-Origin") or (1, "")
             findings.append(Finding(
                 "CFDOC-SEC-CORS-WILDCARD-CREDS",
@@ -1112,7 +1111,7 @@ def add_code_findings(
                     "If this is a hot path, keep a D1/KV manifest or cached index instead of listing per request.",
                     "medium",
                 ))
-            if re.search(rf"env\.{safe}\.get\s*\(", text) and re.search(rf"env\.{safe}\.put\s*\(", text) and re.search(r"counter|count|rate|limit|lock|nonce|inventory|balance", text, re.I):
+            if re.search(rf"env\.{safe}\.get\s*\(", text) and re.search(rf"env\.{safe}\.put\s*\(", text) and re.search(r"counter|count|rate|limit|lock|nonce|inventory|balance", text, re.IGNORECASE):
                 hit = line_for(text, rf"env\.{safe}\.(get|put)\s*\(") or (1, "")
                 findings.append(Finding(
                     "CFDOC-FIT-KV-COORDINATION",
@@ -1155,7 +1154,7 @@ def add_code_findings(
 
         # D1 query smells.
         if d1_names or ".prepare(" in text or ".batch(" in text:
-            hit = line_for(text, re.compile(r"SELECT\s+\*", re.I))
+            hit = line_for(text, re.compile(r"SELECT\s+\*", re.IGNORECASE))
             if hit:
                 findings.append(Finding(
                     "CFDOC-PERF-D1-SELECT-STAR",
@@ -1167,7 +1166,7 @@ def add_code_findings(
                     "Select only needed columns where useful, and verify bounds/index use with EXPLAIN QUERY PLAN plus D1 rows_read metadata before making a billing claim.",
                     "medium",
                 ))
-            hit = line_for(text, re.compile(r"ORDER\s+BY\s+RANDOM\s*\(", re.I))
+            hit = line_for(text, re.compile(r"ORDER\s+BY\s+RANDOM\s*\(", re.IGNORECASE))
             if hit:
                 findings.append(Finding(
                     "CFDOC-COST-D1-ORDER-RANDOM",
@@ -1204,7 +1203,7 @@ def add_code_findings(
             public_methods: list[str] = []
             method_rx = re.compile(
                 r"^\s*(?!(?:private|protected|static)\b)(?:public\s+)?(?:async\s+)?([A-Za-z_$][\w$]*)\s*\([^;{}]*\)\s*(?::\s*[^;{]+)?\{",
-                re.M,
+                re.MULTILINE,
             )
             for match in method_rx.finditer(text):
                 name = match.group(1)
@@ -1227,9 +1226,9 @@ def add_code_findings(
         # Durable Object hot spots, validation, lifecycle, storage, and hibernation smells.
         do_shaped = bool(re.search(r"DurableObject|durable_objects|idFrom(Name|String)\s*\(|acceptWebSocket|\.storage\.", text))
         if re.search(r"idFrom(Name|String)\s*\(|\.get\s*\([^\)]*\)\.fetch\s*\(", text):
-            has_front_door_validation = re.search(r"auth|jwt|session|permission|tenant|validate|schema|zod|method|content-type|rate|turnstile|captcha", text, re.I)
+            has_front_door_validation = re.search(r"auth|jwt|session|permission|tenant|validate|schema|zod|method|content-type|rate|turnstile|captcha", text, re.IGNORECASE)
             if not has_front_door_validation:
-                hit = line_for(text, re.compile(r"idFrom(Name|String)\s*\(|\.get\s*\([^\)]*\)\.fetch\s*\(", re.I)) or (1, "")
+                hit = line_for(text, re.compile(r"idFrom(Name|String)\s*\(|\.get\s*\([^\)]*\)\.fetch\s*\(", re.IGNORECASE)) or (1, "")
                 findings.append(Finding(
                     "CFDOC-COST-DO-FRONT-DOOR",
                     "medium",
@@ -1240,7 +1239,7 @@ def add_code_findings(
                     "Validate method/auth/tenant/request size and apply rate limiting before constructing or calling DO stubs.",
                     "low",
                 ))
-        hit = line_for(text, re.compile(r"idFromName\s*\(\s*['\"](?:global|singleton|default|main|root|all|system|scheduler|broadcast|counter|idempotency)['\"]", re.I))
+        hit = line_for(text, re.compile(r"idFromName\s*\(\s*['\"](?:global|singleton|default|main|root|all|system|scheduler|broadcast|counter|idempotency)['\"]", re.IGNORECASE))
         if not hit:
             # Resolve bounded repo-visible constant/import/concatenation chains.
             ident = re.search(r"idFromName\s*\(\s*([A-Za-z_$][\w$]*)\s*\)", text)
@@ -1259,7 +1258,7 @@ def add_code_findings(
                 "Shard Durable Objects by tenant/user/room/resource key, or use D1/KV/R2 if coordination is not required.",
                 "high",
             ))
-        hit = line_for(text, re.compile(r"idFromName\s*\([^\)]*(idempot|requestId|request_id|eventId|event_id|messageId|message_id|nonce|randomUUID|Date\.now|crypto\.randomUUID)", re.I))
+        hit = line_for(text, re.compile(r"idFromName\s*\([^\)]*(idempot|requestId|request_id|eventId|event_id|messageId|message_id|nonce|randomUUID|Date\.now|crypto\.randomUUID)", re.IGNORECASE))
         if hit:
             findings.append(Finding(
                 "DO-EPHEMERAL-IDEMPOTENCY-OBJECTS",
@@ -1271,7 +1270,7 @@ def add_code_findings(
                 "Use bounded hash shards, time buckets with TTL cleanup, or KV/D1 for short-lived idempotency depending on consistency requirements.",
                 "low",
             ))
-        hit = line_for(text, re.compile(r"(?:this\.)?(?:ctx|state)\.storage\.list\s*\(|this\.storage\.list\s*\(", re.I))
+        hit = line_for(text, re.compile(r"(?:this\.)?(?:ctx|state)\.storage\.list\s*\(|this\.storage\.list\s*\(", re.IGNORECASE))
         if hit:
             findings.append(Finding(
                 "DO-STORAGE-LIST-HOTPATH",
@@ -1286,17 +1285,17 @@ def add_code_findings(
         if do_shaped:
             alarm_idx = re.search(r"\balarm\s*\([^)]*\)\s*(?::\s*[^\{=>]+)?\s*[\{=>]", text)
             alarm_window = text[alarm_idx.start():alarm_idx.start() + 1200] if alarm_idx else ""
-            set_alarm = re.search(r"\bsetAlarm\s*\(", alarm_window, re.I)
+            set_alarm = re.search(r"\bsetAlarm\s*\(", alarm_window, re.IGNORECASE)
             # Require guard terms inside an actual condition before rescheduling;
             # ordinary variables such as `nextRun` or `maxDelay` do not count.
             guard_prefix = alarm_window[:set_alarm.start()] if set_alarm else ""
             has_idle_guard = bool(re.search(
                 r"\bif\s*\([^)]*(?:hasWork|pending|remaining|should|enabled|disabled|backoff|attempts?|maxAttempts?|next(?:Alarm|Run|Wake)|empty|queue|\.length|\.size)[^)]*\)",
                 guard_prefix,
-                re.I,
+                re.IGNORECASE,
             ))
             if set_alarm and not has_idle_guard:
-                hit = line_for(text, re.compile(r"\bsetAlarm\s*\(", re.I)) or (1, "")
+                hit = line_for(text, re.compile(r"\bsetAlarm\s*\(", re.IGNORECASE)) or (1, "")
                 findings.append(Finding(
                     "DO-ALARM-RECURSION",
                     "medium",
@@ -1307,10 +1306,10 @@ def add_code_findings(
                     "Only set the next alarm when work remains; add max attempts/backoff, an idle stop condition, and a kill switch.",
                     "low",
                 ))
-            storage_puts = re.findall(r"(?:this\.)?(?:ctx|state)\.storage\.put\s*\(|this\.storage\.put\s*\(", text, re.I)
-            put_in_loop = re.search(r"(?:for|while)\s*\([^)]*\)\s*{[^{}]{0,1000}(?:this\.)?(?:ctx|state|storage)\.?storage?\.put\s*\(", text, re.I | re.S)
+            storage_puts = re.findall(r"(?:this\.)?(?:ctx|state)\.storage\.put\s*\(|this\.storage\.put\s*\(", text, re.IGNORECASE)
+            put_in_loop = re.search(r"(?:for|while)\s*\([^)]*\)\s*{[^{}]{0,1000}(?:this\.)?(?:ctx|state|storage)\.?storage?\.put\s*\(", text, re.IGNORECASE | re.DOTALL)
             if len(storage_puts) >= 4 or put_in_loop:
-                hit = line_for(text, re.compile(r"storage\.put\s*\(", re.I)) or (1, "")
+                hit = line_for(text, re.compile(r"storage\.put\s*\(", re.IGNORECASE)) or (1, "")
                 findings.append(Finding(
                     "DO-STORAGE-BATCHING",
                     "low",
@@ -1333,8 +1332,8 @@ def add_code_findings(
                 "For Durable Object WebSockets, evaluate `ctx.acceptWebSocket` hibernation APIs and persistence model.",
                 "low",
             ))
-        if do_shaped and re.search(r"WebSocketPair|acceptWebSocket|\.accept\s*\(\s*\)", text) and not re.search(r"webSocketClose|webSocketError|addEventListener\s*\(\s*['\"]close|\.close\s*\(|clearTimeout|timeout|disconnect", text, re.I):
-            hit = line_for(text, re.compile(r"WebSocketPair|acceptWebSocket|\.accept\s*\(\s*\)", re.I)) or (1, "")
+        if do_shaped and re.search(r"WebSocketPair|acceptWebSocket|\.accept\s*\(\s*\)", text) and not re.search(r"webSocketClose|webSocketError|addEventListener\s*\(\s*['\"]close|\.close\s*\(|clearTimeout|timeout|disconnect", text, re.IGNORECASE):
+            hit = line_for(text, re.compile(r"WebSocketPair|acceptWebSocket|\.accept\s*\(\s*\)", re.IGNORECASE)) or (1, "")
             findings.append(Finding(
                 "DO-SOCKET-CLOSE-HYGIENE",
                 "medium",
@@ -1345,8 +1344,8 @@ def add_code_findings(
                 "Handle close/error callbacks, clear timers, remove connection state, and add idle timeouts/heartbeats where appropriate.",
                 "low",
             ))
-        if do_shaped and re.search(r"(?:event|ctx)\.waitUntil\s*\(", text, re.I):
-            hit = line_for(text, re.compile(r"(?:event|ctx)\.waitUntil\s*\(", re.I)) or (1, "")
+        if do_shaped and re.search(r"(?:event|ctx)\.waitUntil\s*\(", text, re.IGNORECASE):
+            hit = line_for(text, re.compile(r"(?:event|ctx)\.waitUntil\s*\(", re.IGNORECASE)) or (1, "")
             severity = "medium" if "event.waitUntil" in hit[1] else "low"
             findings.append(Finding(
                 "DO-WAITUNTIL-LIFECYCLE",
@@ -1358,8 +1357,8 @@ def add_code_findings(
                 "Verify the code uses the correct DO context API, has timeouts/retry visibility, and moves long or retryable work to a durable async primitive.",
                 "low",
             ))
-        if do_shaped and re.search(r"session|preference|prefs|config|cache|read[-_ ]?heavy|profile", text, re.I) and not re.search(r"WebSocketPair|acceptWebSocket|alarm\s*\(|lock|counter|rate|limit|coordination|serialize|transaction", text, re.I):
-            hit = line_for(text, re.compile(r"\.storage\.(get|put)\s*\(", re.I)) or (1, "")
+        if do_shaped and re.search(r"session|preference|prefs|config|cache|read[-_ ]?heavy|profile", text, re.IGNORECASE) and not re.search(r"WebSocketPair|acceptWebSocket|alarm\s*\(|lock|counter|rate|limit|coordination|serialize|transaction", text, re.IGNORECASE):
+            hit = line_for(text, re.compile(r"\.storage\.(get|put)\s*\(", re.IGNORECASE)) or (1, "")
             findings.append(Finding(
                 "KV-VS-DO-STORAGE-FIT",
                 "low",
@@ -1370,8 +1369,8 @@ def add_code_findings(
                 "Recheck consistency and access pattern; compare KV, D1, R2, and DO storage with current docs before deciding.",
                 "low",
             ))
-        if do_shaped and re.search(r"Promise\.all\s*\([^\)]*(idFromName|idFromString|stub|\.fetch\s*\()", text, re.I | re.S) and not re.search(r"pLimit|limit|concurrency|batch|chunk|semaphore|backpressure|queue", text, re.I):
-            hit = line_for(text, re.compile(r"Promise\.all", re.I)) or (1, "")
+        if do_shaped and re.search(r"Promise\.all\s*\([^\)]*(idFromName|idFromString|stub|\.fetch\s*\()", text, re.IGNORECASE | re.DOTALL) and not re.search(r"pLimit|limit|concurrency|batch|chunk|semaphore|backpressure|queue", text, re.IGNORECASE):
+            hit = line_for(text, re.compile(r"Promise\.all", re.IGNORECASE)) or (1, "")
             findings.append(Finding(
                 "DO-FANOUT-TAX",
                 "medium",
@@ -1398,7 +1397,7 @@ def add_code_findings(
             ))
 
         # Public service/origin fetch smells.
-        hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(workers\.dev|pages\.dev|cloudflareworkers\.com)", re.I))
+        hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(workers\.dev|pages\.dev|cloudflareworkers\.com)", re.IGNORECASE))
         if hit:
             findings.append(Finding(
                 "CFDOC-PERF-PUBLIC-SERVICE-URL",
@@ -1410,7 +1409,7 @@ def add_code_findings(
                 "Use service bindings for same-account Worker-to-Worker calls when applicable.",
                 "medium",
             ))
-        hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(vercel\.app|netlify\.app|railway\.app|onrender\.com|fly\.dev|herokuapp\.com|firebaseapp\.com|web\.app|supabase\.co)", re.I))
+        hit = line_for(text, re.compile(r"fetch\s*\(\s*['\"]https://[^'\"]+\.(vercel\.app|netlify\.app|railway\.app|onrender\.com|fly\.dev|herokuapp\.com|firebaseapp\.com|web\.app|supabase\.co)", re.IGNORECASE))
         if hit:
             findings.append(Finding(
                 "CFDOC-COST-THIRD-PARTY-ORIGIN",
@@ -1426,7 +1425,7 @@ def add_code_findings(
         referenced_queues = set(re.findall(
             r"\b(?:batch|messages|messageBatch)\.(?:queue|queueName)\s*={2,3}\s*['\"]([^'\"]+)['\"]",
             text,
-            re.I,
+            re.IGNORECASE,
         ))
         missing_queue_config = sorted(referenced_queues - queue_consumer_names)
         if queue_handler and (not queue_consumer_names or missing_queue_config):
@@ -1444,12 +1443,12 @@ def add_code_findings(
                 "Declare every consumer with intentional retry/delay/DLQ settings in Wrangler config, or supply the dashboard consumer settings as audit evidence; keep processing idempotent for at-least-once delivery.",
                 "low",
             ))
-        hit = line_for(text, re.compile(r"fetch\s*\(\s*(?:(?:request|req|event\.request)\.(?:url|clone\s*\(\s*\))|new\s+URL\s*\([^)]*,\s*(?:request|req|event\.request)\.url)", re.I))
+        hit = line_for(text, re.compile(r"fetch\s*\(\s*(?:(?:request|req|event\.request)\.(?:url|clone\s*\(\s*\))|new\s+URL\s*\([^)]*,\s*(?:request|req|event\.request)\.url)", re.IGNORECASE))
         if not hit:
             self_url_vars = set(re.findall(
                 r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:(?:request|req|event\.request)\.url|new\s+URL\s*\([^)]*,\s*(?:request|req|event\.request)\.url\s*\))",
                 text,
-                re.I,
+                re.IGNORECASE,
             ))
             for _ in range(4):
                 aliases = {
@@ -1464,7 +1463,7 @@ def add_code_findings(
             if self_url_vars:
                 hit = line_for(text, re.compile(
                     r"fetch\s*\(\s*(?:" + "|".join(re.escape(name) for name in sorted(self_url_vars)) + r")\b",
-                    re.I,
+                    re.IGNORECASE,
                 ))
         if hit:
             findings.append(Finding(
@@ -1494,7 +1493,7 @@ def add_code_findings(
 
         # Terraform Cloudflare account smells.
         if path.suffix == ".tf":
-            hit = line_for(text, re.compile(r"ssl\s*=\s*['\"]flexible['\"]", re.I))
+            hit = line_for(text, re.compile(r"ssl\s*=\s*['\"]flexible['\"]", re.IGNORECASE))
             if hit:
                 findings.append(Finding(
                     "CFDOC-SEC-TLS-FLEXIBLE",
@@ -1506,7 +1505,7 @@ def add_code_findings(
                     "Use Full (strict) with a valid origin certificate unless a documented exception exists.",
                     "high",
                 ))
-            hit = line_for(text, re.compile(r"proxied\s*=\s*false", re.I))
+            hit = line_for(text, re.compile(r"proxied\s*=\s*false", re.IGNORECASE))
             if hit:
                 findings.append(Finding(
                     "CFDOC-SEC-DNS-UNPROXIED",
@@ -1625,7 +1624,7 @@ def main(argv: list[str]) -> int:
         print(f"error: root does not exist: {root}", file=sys.stderr)
         return 2
 
-    excludes = [e[2:] if e.startswith("./") else e for e in args.exclude]
+    excludes = [e.removeprefix("./") for e in args.exclude]
     file_texts: list[tuple[Path, str]] = []
     configs: list[tuple[Path, str, dict[str, Any]]] = []
     parse_errors: list[tuple[Path, str]] = []

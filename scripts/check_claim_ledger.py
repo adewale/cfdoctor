@@ -28,7 +28,7 @@ def load_json(path: Path) -> dict:
 
 def matrix_ids() -> set[str]:
     text = MATRIX.read_text(encoding="utf-8")
-    return set(re.findall(r"^\| ([A-Z0-9][A-Z0-9-]+) \|", text, re.M))
+    return set(re.findall(r"^\| ([A-Z0-9][A-Z0-9-]+) \|", text, re.MULTILINE))
 
 
 def fixture_manifests() -> dict[str, dict]:
@@ -38,11 +38,11 @@ def fixture_manifests() -> dict[str, dict]:
 def checklist_evidence_ids() -> dict[int, str]:
     text = (ROOT / "skills/cloudflare-doctor/references/war-story-scenario-checklist.md").read_text(encoding="utf-8")
     mapping: dict[int, str] = {}
-    matches = list(re.finditer(r"^### (\d+)\. ", text, re.M))
+    matches = list(re.finditer(r"^### (\d+)\. ", text, re.MULTILINE))
     for index, match in enumerate(matches):
         end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
         block = text[match.start():end]
-        evidence = re.search(r"^- Evidence ID: `([^`]+)`", block, re.M)
+        evidence = re.search(r"^- Evidence ID: `([^`]+)`", block, re.MULTILINE)
         if evidence:
             mapping[int(match.group(1))] = evidence.group(1)
     return mapping
