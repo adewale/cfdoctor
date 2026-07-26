@@ -113,7 +113,7 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.3.6"
+SCANNER_VERSION = "0.3.7"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -142,6 +142,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-COST-VECTORIZE-DIMENSIONS", "COST", "medium", "low", "Vectorize query path should account for queried dimensions and fan-out", "Vectorize cost can depend on dimensions/topK/namespaces; verify against current pricing."),
     ("CFDOC-COST-MEDIA-VARIANT-EXPLOSION", "COST", "medium", "medium", "Media transformation variants or delivery preload may be unbounded", "Image transformation variants or Stream preload can multiply paid work per asset."),
     ("CFDOC-COST-BROWSER-NO-CLOSE", "COST", "high", "medium", "Browser Run session is opened without an obvious close path", "Browser sessions left open or retried blindly can dominate session-time billing."),
+    ("CFDOC-COST-CONTAINER-IDLE-WINDOW", "COST", "medium", "medium", "Container class does not set sleepAfter; the default idle window bills provisioned memory and disk", "A Container bills provisioned memory and disk for the whole time it is awake, so every wake leaves a default-length idle tail after the last request."),
     ("DYNAMIC-WORKER-SANDBOX-CAPABILITIES", "SEC", "high", "medium", "Dynamic Worker/code execution lacks obvious capability or resource bounds", "User/LLM code execution without explicit egress/binding/limit posture risks exfiltration and spend."),
     ("CFDOC-COST-DYNAMIC-WORKER-DEDUPE", "COST", "medium", "low", "Dynamic Worker load path lacks obvious stable ID/dedupe", "New Dynamic Workers for repeated identical code can multiply unique-worker cost."),
     ("AGENT-AUTONOMOUS-LOOP-COST", "COST", "medium", "low", "Cloudflare Agent loop/tool path lacks obvious bounds or cancellation", "Agent loops/tools/schedules without max steps or cancellation can repeat paid work."),
@@ -1518,6 +1519,37 @@ def add_code_findings(
                     "Confirm the record is intentionally DNS-only; otherwise enable proxying and restrict direct origin access.",
                     "medium",
                 ))
+
+    # Project-level: a configured Container whose class never sets sleepAfter keeps
+    # billing provisioned memory/disk for the default idle window after each wake.
+    # This is a config-level fact rather than a semantic judgement: the property is
+    # either declared on the Container subclass or it is not.
+    if bindings.get("Containers"):
+        container_class_files = [
+            (path, text) for path, text in source_files
+            if re.search(r"extends\s+Container\b", text)
+        ]
+        # Match declaration/call shapes, not prose: a comment or doc string that
+        # merely names the API is not evidence the idle window was chosen.
+        declares_sleep_after = any(
+            re.search(r"\bsleepAfter\s*[=:]", text) for _, text in source_files
+        )
+        stops_explicitly = any(
+            re.search(r"\b(?:onActivityExpired|renewActivityTimeout)\s*\(", text) for _, text in source_files
+        )
+        if container_class_files and not declares_sleep_after and not stops_explicitly:
+            path, text = container_class_files[0]
+            hit = line_for(text, re.compile(r"extends\s+Container\b")) or (1, "")
+            findings.append(Finding(
+                "CFDOC-COST-CONTAINER-IDLE-WINDOW",
+                "medium",
+                "Container class does not set sleepAfter; the default idle window bills provisioned memory and disk",
+                "cost footgun",
+                f"{rel(path, root)}:{hit[0]}: {excerpt(hit[1])}",
+                "Containers bill memory and disk on the instance's provisioned size for every 10ms it is awake, and CPU on actual use. An instance stays awake until the sleepAfter timer expires with no requests, so each wake adds an idle tail at full provisioned memory/disk before charges stop. Bursty, spread-out traffic pays that tail once per wake.",
+                "Set an explicit `sleepAfter` on the Container class sized to the real request gap, or stop the instance as soon as work finishes (`onActivityExpired()` calling `stop()`). Size `instance_type` to the workload rather than the largest option, since memory/disk bill on provisioned size while awake. Verify the current default and rates against Cloudflare's Containers pricing and Container class docs.",
+                "medium",
+            ))
 
 
 def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings: dict[str, set[str]], findings: list[Finding], files_scanned: int) -> str:

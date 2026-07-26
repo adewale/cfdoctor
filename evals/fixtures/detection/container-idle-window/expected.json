@@ -1,0 +1,11 @@
+{
+  "description": "Worker-fronted FFmpeg Container sized standard-4 whose Container subclass never sets sleepAfter and never overrides onActivityExpired, so each wake bills provisioned memory and disk through the default idle window.",
+  "evidence_ids": [
+    "CFDOC-EVD-VIDEOTOBE-CONTAINER-FFMPEG",
+    "CFDOC-EVD-KCD-CONTAINER-FFMPEG"
+  ],
+  "required_check_ids": [
+    "CFDOC-COST-CONTAINER-IDLE-WINDOW"
+  ],
+  "forbidden_check_ids": []
+}
