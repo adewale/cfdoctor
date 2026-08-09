@@ -39,8 +39,9 @@ Ask only for relevant sections; do not request everything by default.
 
 ### Account / billing
 
-- Plan type, recent Free→Paid changes, spending caps/usage alerts if available.
-- Product usage/overage line items: Workers, D1, R2, KV, Durable Objects, Queues, Dynamic Workers, Agents SDK-related Workers/DO/browser/sandbox usage, Artifacts, Workers AI, Vectorize, Images, Stream, Browser Run, Logpush/analytics, WAF/rate limiting, Zero Trust seats.
+- Plan type, recent Free→Paid changes, budget alert configuration (thresholds, recipients — note the $10 auto-created default; alerts are informational only, there is no hard spending cap), and per-product usage notifications versus the meters actually in use.
+- Billable usage dashboard export or API output for the affected cycle, and the billing notification history when detection latency is in question.
+- Product usage/overage line items: Workers, D1, R2, KV, Durable Objects (including storage rows read/written, not only requests/duration), Queues, Dynamic Workers, Agents SDK-related Workers/DO/browser/sandbox usage, Artifacts, Workers AI, Vectorize, Images, Stream, Browser Run, Logpush/analytics, WAF/rate limiting, Zero Trust seats.
 - Top products by spend and usage time window.
 
 ### DNS / zone / origin

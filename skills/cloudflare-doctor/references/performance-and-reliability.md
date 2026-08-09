@@ -73,6 +73,8 @@ For each layer, record: cache owner, key, TTL, invalidation trigger, stale-while
 - For WebSockets, consider Durable Object WebSocket hibernation to avoid duration billing and improve survivability for long-lived idle connections. Add close/error/timeout cleanup paths and persist only the state needed to resume after hibernation/eviction.
 - Treat `ctx.waitUntil()` in a DO as a lifecycle decision, not a free background thread. If work can outlive the request or needs retries/visibility, consider alarms, Queues, Workflows, or Agents durable execution.
 - Keep object methods short; offload expensive work to Queues/Workflows where possible. Fan-out to many DOs needs concurrency caps, backpressure, and per-run metrics.
+- Bound every DO-to-DO or self re-trigger path. Stub calls between DO classes that can return to the caller — directly or through `waitUntil`, alarms, or queued work — form a detached loop that per-invocation limits never stop, because each hop is a fresh invocation. Pass an explicit hop/depth budget and check it in every class on the cycle, add an idempotency/turn key, and check a kill-switch flag inside the loop step so the chain can be stopped without a deploy.
+- Bound hot-path SQL in SQLite-backed DOs with WHERE/LIMIT and supporting indexes; unbounded SELECTs re-read every row and the rows-read meter compounds with table growth even when requests/duration look small.
 - Ensure Wrangler migrations track class lifecycle.
 
 ## Cross-boundary RPC reachability

@@ -46,6 +46,13 @@ the plan doc and the git history, not repeated here.
 - [x] Run `python3 scripts/check_links.py --strict --check-content` for this release (477 URLs; zero dead/error targets after excluding authenticated runtime API templates).
 - [ ] Re-run the strict content-aware link check quarterly or for the next release.
 
+## StandardAgents DO runaway-loop follow-ups (2026-08-09)
+
+- [ ] Re-review `CFDOC-EVD-STDAGENTS-DO-LOOP` by 2026-09-08: check the X threads/replies for the confirmed in-code trigger (stub calls vs alarms), any Cloudflare refund outcome, and independent pickup (HN or postmortem) that could raise the independence score.
+- [ ] Verify budget-alert delivery latency against current docs/changelog at the same review: the cycle-end delivery observed in the incident is operator evidence, and Cloudflare has said billable-usage data is moving toward real-time; update `CFDOC-EVD-CF-BUDGET-ALERTS` and scenario 9/24 wording if semantics change.
+- [ ] Consider extending `DO-STUB-CALL-CYCLE` to cross-script `script_name` Durable Object bindings once a real multi-config fixture exists; same-config scope only today, and the matrix row documents the boundary.
+- [ ] Confirm the Billable Usage API response shape against the API schema docs (the endpoint template in `targeted-account-reads.md` came from the launch blog) before relying on it in an approved read.
+
 ## Research backlog (new patterns and experience reports)
 
 The 29-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios and 25 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.

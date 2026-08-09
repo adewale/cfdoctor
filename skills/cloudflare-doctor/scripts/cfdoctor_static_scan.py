@@ -114,7 +114,7 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.3.6"
+SCANNER_VERSION = "0.4.0"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -171,6 +171,8 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("DO-WAITUNTIL-LIFECYCLE", "REL", "low", "low", "Durable Object background work should be bounded and API-correct", "DO background work needs the right lifecycle API and a durable primitive for long work."),
     ("KV-VS-DO-STORAGE-FIT", "FIT", "low", "low", "Durable Object storage used for possibly read-heavy data", "Read-heavy write-rare data may fit KV/D1/R2 without DO coordination cost."),
     ("DO-FANOUT-TAX", "COST", "medium", "low", "Fan-out to Durable Objects lacks obvious backpressure", "Waking many DOs from one request concentrates latency and duration without caps."),
+    ("DO-STUB-CALL-CYCLE", "COST", "high", "low", "Durable Object classes appear to call each other's stubs in a cycle", "DO-to-DO stub calls that form a cycle can detach into runaway loops; per-invocation limits reset on every hop while request, duration, and storage rows-read meters keep billing."),
+    ("DO-SQL-SCAN-HOTPATH", "COST", "medium", "medium", "Durable Object SQL query has no obvious WHERE/LIMIT bound", "Unbounded SELECTs via storage.sql.exec re-read every row; SQLite-backed Durable Object storage rows read are billed and can dominate cost on hot or looping paths."),
     ("CFDOC-PERF-AWAITED-CACHE-PUT", "PERF", "low", "medium", "Cache put awaited in request path", "Awaiting cache writes adds user-visible latency when waitUntil would do."),
     ("CFDOC-PERF-PUBLIC-SERVICE-URL", "PERF", "medium", "medium", "Public Cloudflare service URL fetch; consider service bindings", "Public URLs between same-account Workers add routing overhead and auth ambiguity."),
     ("CFDOC-COST-THIRD-PARTY-ORIGIN", "COST", "medium", "medium", "Worker fetches a public third-party/serverless origin hostname", "Cloudflare-fronted third-party origins still bill on cache misses or direct hostname access."),
@@ -415,6 +417,34 @@ def collect_bindings(configs: list[tuple[Path, str, dict[str, Any]]]) -> dict[st
     for _, _, data in configs:
         visit_cfg(data)
     return bindings
+
+
+def durable_object_class_map(configs: list[tuple[Path, str, dict[str, Any]]]) -> dict[str, str]:
+    """Map Durable Object binding names to class names across config and env scopes."""
+    mapping: dict[str, str] = {}
+
+    def visit(data: dict[str, Any]) -> None:
+        durable = data.get("durable_objects")
+        if isinstance(durable, dict):
+            entries = durable.get("bindings")
+            if isinstance(entries, list):
+                for entry in entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    name = entry.get("name") or entry.get("binding")
+                    class_name = entry.get("class_name")
+                    if isinstance(name, str) and name and isinstance(class_name, str) and class_name:
+                        mapping.setdefault(name, class_name)
+        envs = data.get("env")
+        if isinstance(envs, dict):
+            for env_data in envs.values():
+                if isinstance(env_data, dict):
+                    visit(env_data)
+
+    for _, _, data in configs:
+        if isinstance(data, dict):
+            visit(data)
+    return mapping
 
 
 def d1_migration_dirs(config_path: Path, data: dict[str, Any]) -> list[Path]:
@@ -773,12 +803,95 @@ def stream_source_symbols(files: list[tuple[Path, str]]) -> set[str]:
     return symbols
 
 
+DO_CYCLE_GUARD_RE = re.compile(
+    r"\bif\s*\([^)]{0,160}(?:depth|hops?\b|budget|iterations?|remaining|ttl\b|attempts?|max[A-Za-z_][\w$]*)",
+    re.IGNORECASE,
+)
+
+
+def add_do_cycle_findings(
+    root: Path,
+    source_files: list[tuple[Path, str]],
+    do_binding_classes: dict[str, str],
+    findings: list[Finding],
+) -> None:
+    """Flag Durable Object classes whose stub calls form a class-level cycle.
+
+    Uses the Wrangler binding->class map, so only same-config-scope cycles are
+    visible; cross-script `script_name` bindings are out of scope for this lead.
+    """
+    if not do_binding_classes:
+        return
+    edges: dict[str, dict[str, tuple[Path, int, str]]] = {}
+    guard_seen: dict[str, bool] = {}
+    for path, text in source_files:
+        class_matches = list(re.finditer(r"\bclass\s+([A-Za-z_$][\w$]*)", text))
+        for index, match in enumerate(class_matches):
+            cls = match.group(1)
+            end = class_matches[index + 1].start() if index + 1 < len(class_matches) else len(text)
+            span = text[match.start():end]
+            guard_seen[cls] = guard_seen.get(cls, False) or bool(DO_CYCLE_GUARD_RE.search(span))
+            for binding, target in do_binding_classes.items():
+                stub = re.search(
+                    r"(?:this\.)?env\." + re.escape(binding) + r"\s*\.\s*(?:get|getByName|idFromName|idFromString|newUniqueId)\s*\(",
+                    span,
+                )
+                if not stub:
+                    continue
+                abs_pos = match.start() + stub.start()
+                line_no = text.count("\n", 0, abs_pos) + 1
+                line_text = text.splitlines()[line_no - 1] if text.splitlines() else ""
+                edges.setdefault(cls, {}).setdefault(target, (path, line_no, line_text))
+
+    reported: set[frozenset[str]] = set()
+
+    def find_cycle(start: str) -> list[str] | None:
+        found: list[str] | None = None
+
+        def dfs(node: str, trail: list[str]) -> None:
+            nonlocal found
+            for nxt in sorted(edges.get(node, {})):
+                if found:
+                    return
+                if nxt == start:
+                    found = trail[:]
+                elif nxt not in trail and nxt in edges:
+                    dfs(nxt, trail + [nxt])
+
+        dfs(start, [start])
+        return found
+
+    for start in sorted(edges):
+        cycle = find_cycle(start)
+        if not cycle:
+            continue
+        key = frozenset(cycle)
+        if key in reported:
+            continue
+        reported.add(key)
+        if all(guard_seen.get(cls, False) for cls in cycle):
+            continue
+        src_path, line_no, line_text = edges[cycle[-1]][start]
+        chain = " -> ".join(cycle + [cycle[0]])
+        findings.append(Finding(
+            "DO-STUB-CALL-CYCLE",
+            "high",
+            "Durable Object classes appear to call each other's stubs in a cycle",
+            "cost footgun / reliability",
+            f"{rel(src_path, root)}:{line_no}: {excerpt(line_text)} (cycle: {chain})",
+            "Durable Object handlers that call each other's stubs can re-trigger indefinitely once detached via waitUntil, alarms, or queued work. Per-invocation limits reset on every hop, so nothing platform-side stops the loop while DO requests, duration, and SQLite storage rows read keep billing until the code is changed or a kill switch fires.",
+            "Break or bound the cycle: pass and check an explicit hop/depth budget, add an idempotency/turn key, check a kill-switch flag inside every hop, and alert on the Durable Objects rows-read/request meters so a runaway loop is caught in hours, not at invoice time.",
+            "low",
+        ))
+
+
 def add_code_findings(
     root: Path,
     files: list[tuple[Path, str]],
     bindings: dict[str, set[str]],
     findings: list[Finding],
     queue_consumer_names: set[str] | None = None,
+    do_binding_classes: dict[str, str] | None = None,
 ) -> None:
     queue_consumer_names = queue_consumer_names or set()
     kv_names = bindings.get("KV", set())
@@ -795,6 +908,7 @@ def add_code_findings(
     artifacts_names = bindings.get("Artifacts", set())
 
     source_files = [(path, text) for path, text in files if path.suffix in CODE_EXTS]
+    add_do_cycle_findings(root, source_files, do_binding_classes or {}, findings)
     project_text = "\n".join(text for _, text in source_files)
     webhook_shaped = any(
         "webhook" in path.as_posix().lower()
@@ -1282,6 +1396,34 @@ def add_code_findings(
                 "Fetch known keys, compact related state into one object where safe, maintain a manifest, or cache loaded state intentionally.",
                 "medium",
             ))
+        if is_source_like:
+            sql_exec_matches = list(re.finditer(
+                r"(?:(?:this\.)?(?:ctx|state)\.storage|this\.storage)\s*\.\s*sql\s*\.\s*exec\s*\(\s*(?P<q>[`'\"])(?P<sql>(?:\\.|(?!(?P=q)).)*?)(?P=q)",
+                text,
+                re.IGNORECASE | re.DOTALL,
+            ))
+            if not sql_exec_matches and do_shaped:
+                sql_exec_matches = list(re.finditer(
+                    r"\bsql\s*\.\s*exec\s*\(\s*(?P<q>[`'\"])(?P<sql>(?:\\.|(?!(?P=q)).)*?)(?P=q)",
+                    text,
+                    re.IGNORECASE | re.DOTALL,
+                ))
+            for sql_match in sql_exec_matches:
+                statement = sql_match.group("sql")
+                if re.search(r"\bselect\b", statement, re.IGNORECASE) and not re.search(r"\bwhere\b|\blimit\b", statement, re.IGNORECASE):
+                    line_no = text.count("\n", 0, sql_match.start()) + 1
+                    line_text = text.splitlines()[line_no - 1]
+                    findings.append(Finding(
+                        "DO-SQL-SCAN-HOTPATH",
+                        "medium",
+                        "Durable Object SQL query has no obvious WHERE/LIMIT bound",
+                        "cost footgun / missed optimization",
+                        f"{rpath}:{line_no}: {excerpt(line_text)}",
+                        "SQLite-backed Durable Object storage bills rows read, and an unbounded SELECT re-reads every row on each call. On a request, alarm, or loop path against a growing table this compounds quadratically and can dominate the bill while requests/duration stay small.",
+                        "Add WHERE predicates and LIMIT bounds backed by indexes, keep hot-path reads to known keys, and watch the Durable Objects rows-read meter (billable usage) after deploys that touch storage access.",
+                        "medium",
+                    ))
+                    break
         if do_shaped:
             alarm_idx = re.search(r"\balarm\s*\([^)]*\)\s*(?::\s*[^\{=>]+)?\s*[\{=>]", text)
             alarm_window = text[alarm_idx.start():alarm_idx.start() + 1200] if alarm_idx else ""
@@ -1653,7 +1795,14 @@ def main(argv: list[str]) -> int:
         envs = data.get("env")
         if isinstance(envs, dict):
             pending_configs.extend(value for value in envs.values() if isinstance(value, dict))
-    add_code_findings(root, file_texts, bindings, findings, queue_consumer_names=queue_consumer_names)
+    add_code_findings(
+        root,
+        file_texts,
+        bindings,
+        findings,
+        queue_consumer_names=queue_consumer_names,
+        do_binding_classes=durable_object_class_map(configs),
+    )
     if args.json:
         print(render_json(root, bindings, findings))
     else:

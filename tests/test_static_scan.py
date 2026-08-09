@@ -196,6 +196,164 @@ class StaticScannerTests(unittest.TestCase):
         report = scan({".env": "API_KEY=9f8a7b6c5d4e3f21abcd\n"})
         self.assertEqual(["CFDOC-SEC-SECRET-ASSIGNMENT"], self.secret_assignment_ids(report))
 
+    TWO_DO_CONFIG = """{
+      "name": "two-do-app",
+      "main": "src/index.js",
+      "compatibility_date": "2026-07-01",
+      "observability": {"enabled": true, "head_sampling_rate": 0.05},
+      "durable_objects": {"bindings": [
+        {"name": "COORDINATOR", "class_name": "Coordinator"},
+        {"name": "RUNNER", "class_name": "TaskRunner"}
+      ]},
+      "migrations": [{"tag": "v1", "new_sqlite_classes": ["Coordinator", "TaskRunner"]}]
+    }"""
+
+    def test_do_stub_call_cycle_between_two_classes_is_reported(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.TWO_DO_CONFIG,
+            "src/index.js": "\n".join([
+                "export class Coordinator {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const id = this.env.RUNNER.idFromName(auth);",
+                "    this.ctx.waitUntil(this.env.RUNNER.get(id).fetch('https://do/run'));",
+                "    return new Response('ok');",
+                "  }",
+                "}",
+                "export class TaskRunner {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const id = this.env.COORDINATOR.idFromName(auth);",
+                "    this.ctx.waitUntil(this.env.COORDINATOR.get(id).fetch('https://do/notify'));",
+                "    return new Response('done');",
+                "  }",
+                "}",
+            ]),
+        })
+        cycle = [f for f in report["findings"] if f["check_id"] == "DO-STUB-CALL-CYCLE"]
+        self.assertEqual(1, len(cycle))
+        self.assertIn("Coordinator -> TaskRunner -> Coordinator", cycle[0]["evidence"])
+
+    def test_do_stub_chain_without_cycle_is_not_reported(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.TWO_DO_CONFIG,
+            "src/index.js": "\n".join([
+                "export class Coordinator {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const id = this.env.RUNNER.idFromName(auth);",
+                "    await this.env.RUNNER.get(id).fetch('https://do/run');",
+                "    return new Response('ok');",
+                "  }",
+                "}",
+                "export class TaskRunner {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) { return new Response('done'); }",
+                "}",
+            ]),
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_do_stub_cycle_with_depth_guard_in_every_class_is_suppressed(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.TWO_DO_CONFIG,
+            "src/index.js": "\n".join([
+                "export class Coordinator {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const depth = Number(request.headers.get('x-hop-depth') || 0);",
+                "    if (depth >= 3) return new Response('depth limit', { status: 429 });",
+                "    const id = this.env.RUNNER.idFromName(auth);",
+                "    await this.env.RUNNER.get(id).fetch('https://do/run');",
+                "    return new Response('ok');",
+                "  }",
+                "}",
+                "export class TaskRunner {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const depth = Number(request.headers.get('x-hop-depth') || 0);",
+                "    if (depth >= 3) return new Response('depth limit', { status: 429 });",
+                "    const id = this.env.COORDINATOR.idFromName(auth);",
+                "    await this.env.COORDINATOR.get(id).fetch('https://do/notify');",
+                "    return new Response('done');",
+                "  }",
+                "}",
+            ]),
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_do_self_stub_call_is_reported_as_cycle(self) -> None:
+        report = scan({
+            "wrangler.jsonc": """{
+              "name": "self-do-app",
+              "main": "src/index.js",
+              "compatibility_date": "2026-07-01",
+              "observability": {"enabled": true, "head_sampling_rate": 0.05},
+              "durable_objects": {"bindings": [{"name": "SELF_DO", "class_name": "Looper"}]},
+              "migrations": [{"tag": "v1", "new_sqlite_classes": ["Looper"]}]
+            }""",
+            "src/index.js": "\n".join([
+                "export class Looper {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const id = this.env.SELF_DO.idFromName(auth);",
+                "    this.ctx.waitUntil(this.env.SELF_DO.get(id).fetch('https://do/again'));",
+                "    return new Response('ok');",
+                "  }",
+                "}",
+            ]),
+        })
+        cycle = [f for f in report["findings"] if f["check_id"] == "DO-STUB-CALL-CYCLE"]
+        self.assertEqual(1, len(cycle))
+        self.assertIn("Looper -> Looper", cycle[0]["evidence"])
+
+    def do_sql_ids(self, report: dict) -> list[str]:
+        return [f["check_id"] for f in report["findings"] if f["check_id"] == "DO-SQL-SCAN-HOTPATH"]
+
+    def test_do_sql_unbounded_select_is_reported(self) -> None:
+        report = scan({
+            "src/index.js": "\n".join([
+                "export class EventLog {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const rows = this.ctx.storage.sql.exec('SELECT * FROM events ORDER BY created_at').toArray();",
+                "    return Response.json(rows.length);",
+                "  }",
+                "}",
+            ]),
+        })
+        self.assertEqual(["DO-SQL-SCAN-HOTPATH"], self.do_sql_ids(report))
+
+    def test_do_sql_bounded_select_is_not_reported(self) -> None:
+        report = scan({
+            "src/index.js": "\n".join([
+                "export class EventLog {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const rows = this.ctx.storage.sql.exec('SELECT id FROM events WHERE done = 0 LIMIT 10').toArray();",
+                "    return Response.json(rows.length);",
+                "  }",
+                "}",
+            ]),
+        })
+        self.assertEqual([], self.do_sql_ids(report))
+
+    def test_prose_mention_of_sql_exec_in_markdown_is_not_reported(self) -> None:
+        report = scan({
+            "docs/notes.md": "Audit `storage.sql.exec(\"SELECT * FROM events\")` shapes for rows-read cost.",
+        })
+        self.assertEqual([], self.do_sql_ids(report))
+
 
 if __name__ == "__main__":
     unittest.main()

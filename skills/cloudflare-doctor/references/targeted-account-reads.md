@@ -30,6 +30,8 @@ Use an existing pinned product CLI when it exposes the field. Otherwise ask the 
 | A preview deployment is public and paid | The named project/environment deployment, routes, bindings, and lifecycle/last-active evidence | Every Pages/Workers project |
 | Logging is materially expensive | Product usage for the named Worker/time window, sampling config, retained bytes/events, retention, and invoice line item | Raw logs or request payloads |
 | A cost estimate needs entitlement | Plan/contract name and only the relevant product entitlement/line item, with negotiated values redacted when possible | Full invoice/account contract |
+| A meter is running away right now | Billable usage for the current cycle (dashboard export or the account billable-usage API), filtered to the suspect product/meter and date range | Full invoice history or unrelated products |
+| Billing alerts could not have caught this | Budget alert configuration (thresholds, recipients, enabled state — note the auto-created $10 default) and the notification history for the affected cycle | All account notification settings |
 
 ## API command-shape examples
 
@@ -47,6 +49,13 @@ curl --fail-with-body --silent --show-error \
 curl --fail-with-body --silent --show-error \
   "https://api.cloudflare.com/client/v4/zones/<ZONE_ID>/rulesets/phases/<PHASE>/entrypoint" \
   --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+
+# Current-cycle billable usage for a runaway-meter hypothesis (data updates daily)
+curl --fail-with-body --silent --show-error \
+  --get "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/billable-usage" \
+  --data-urlencode "from=<YYYY-MM-DD>" \
+  --data-urlencode "to=<YYYY-MM-DD>" \
+  --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
 ```
 
 Do not paste the token or literal authorization header into reports. Store raw output in a private temporary directory, extract only the fields needed to decide the hypothesis, hash the retained artifact, and delete the raw response after review.
@@ -61,6 +70,8 @@ For products whose current Wrangler version has an exact `list`/`get`/`info` com
 - R2 API: https://developers.cloudflare.com/api/resources/r2/
 - Queues API: https://developers.cloudflare.com/api/resources/queues/
 - GraphQL Analytics API: https://developers.cloudflare.com/analytics/graphql-api/
+- Billable usage dashboard/data source: https://developers.cloudflare.com/billing/manage/billable-usage/
+- Budget alerts (informational only; no pause/cap): https://developers.cloudflare.com/billing/manage/budget-alerts/
 
 ## Reporting
 

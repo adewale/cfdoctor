@@ -92,6 +92,8 @@ Footguns:
 - Long-lived WebSockets handled without hibernation when idle duration dominates, or ordinary DO requests keeping objects active with timers/polling instead of alarms/queues.
 - WebSocket code with no close/error/timeout cleanup; zombie sessions can keep state and duration alive longer than intended.
 - Alarm handlers that unconditionally call `setAlarm()` again, creating a persistent wake-up loop even when no work remains.
+- Durable Objects that call each other's stubs (or their own binding) in a cycle. Once each hop detaches via `waitUntil`, alarms, or queued work, per-invocation subrequest limits reset on every hop, so no platform limit stops the loop; requests, duration, and storage rows read keep billing until the code changes or a kill switch fires.
+- Unbounded `storage.sql.exec` SELECTs (no WHERE/LIMIT, no supporting index) on request/alarm/loop paths. SQLite-backed DO storage bills rows read, and re-scanning a growing table compounds roughly quadratically; a rows-read-dominated bill with small request/duration meters is the signature (a 2026-08 first-hand incident put storage rows read at 98.5% of an $8,846 cycle).
 - `storage.list()` on hot paths or on wake-up as a generic read mechanism; list/pagination amplifies reads and latency versus fetching known keys or compact state.
 - Repeated writes to the same logical state that could be coalesced. Multi-key batching of distinct keys can improve correctness/latency but current pricing still bills the distinct rows/units, so do not claim savings from batching alone; verify SQLite versus legacy KV-backed storage and actual rows/units changed.
 - One DO per ephemeral idempotency key/request ID/notification/short-lived event, causing object-count and storage cleanup problems without much coordination benefit.
@@ -103,6 +105,7 @@ Footguns:
 Better patterns:
 - Validate and rate-limit before obtaining/calling DO stubs; reject malformed/unauthorized requests in the Worker where possible.
 - Shard by natural key or bounded hash/time buckets, use hibernation for WebSockets, close/cleanup sockets, persist state intentionally, coalesce redundant writes, use transactions/multi-key APIs for correctness and latency rather than assumed billing savings, only reschedule alarms when work remains, offload heavy/background work to Queues/Workflows, and use D1/KV/R2 for data that does not need per-key coordination.
+- For any DO-to-DO or self re-trigger path, pass an explicit hop/depth budget and check it in every hop, add an idempotency/turn key so replays cannot restart the chain, and bound hot SQL with WHERE/LIMIT plus indexes. Watch the Durable Objects rows-read meter after deploys that touch storage access; requests and duration alone can look harmless while rows read dominate.
 
 ## Queues and Workflows
 
@@ -125,13 +128,16 @@ Footguns:
 - Missing kill switches for expensive features, cron jobs, queue consumers, demo/workshop routes, Dynamic Workers, Agents scheduled tasks/tools, Workers AI, Browser Run, Images/Stream transforms, or Vectorize search.
 - No anti-rework cache: the same logical operation repeats after refresh, retry, queue replay, webhook duplicate, browser reconnect, or user double-click.
 - Run summaries log success/failure but not cost proxies, making it impossible to notice spend amplification until billing arrives.
+- Relying on Cloudflare billing notifications as the runaway-spend defense. Budget alerts are informational only — they do not pause or cap usage, there is no hard spending limit, eligible Pay-as-you-go accounts get only an auto-created $10 default threshold, and per-product usage notifications scoped to one product (for example Workers requests) cannot see a different meter (for example DO storage rows read). Verify configured scope, thresholds, recipients, and delivery latency against current billing docs instead of assuming timely alerts.
+- Kill switches that only guard the HTTP edge. A loop detached through `waitUntil`, alarms, queue consumers, or DO-to-DO stubs never passes the edge again; the flag must be checked inside every loop step (alarm entry, consumer entry, stub-call site) to actually stop it.
 
 Better patterns:
 - Circuit breaker per dependency/product with threshold, cooldown, degraded fallback, alert, and manual override.
 - Persisted idempotency/result cache keyed by logical job/user action, not by retry attempt.
 - Fanout limits: max items, max depth, max concurrency, max queued messages, tenant quotas, and backpressure.
-- Kill switches in config/secrets/flags that can disable expensive routes/jobs without deploys.
-- Per-run summaries that emit inputs, outputs, retries, DLQ count, fanout count, CPU-ish duration, subrequests, D1 rows, R2/KV ops, DO calls/duration, AI/browser/media/vector units, and cache hit/miss counts.
+- Kill switches in config/secrets/flags that can disable expensive routes/jobs without deploys, checked inside loop steps (alarm handlers, queue consumers, DO stub-call sites), with `deleteAlarm()`, queue pause, and deployment rollback as the break-glass paths.
+- Per-run summaries that emit inputs, outputs, retries, DLQ count, fanout count, CPU-ish duration, subrequests, D1 rows, R2/KV ops, DO calls/duration/storage rows read-written, AI/browser/media/vector units, and cache hit/miss counts.
+- Deliberate billing-detection posture: budget alert thresholds sized to expected daily burn (replace the $10 default), recipients that are actually monitored, and a daily billable-usage review or API poll with an anomaly threshold so a runaway meter is caught in hours-to-days, not at invoice time.
 
 ## Dynamic Workers, Agents SDK, Workers AI, Vectorize, Images, Stream, and Browser Run
 

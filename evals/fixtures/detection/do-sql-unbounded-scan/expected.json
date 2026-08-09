@@ -1,0 +1,10 @@
+{
+  "description": "Single Durable Object whose hot dashboard read runs an unbounded SELECT over a growing SQLite table. The bounded alarm cleanup query must not fire, and with no second DO there must be no stub-cycle finding.",
+  "evidence_ids": ["CFDOC-EVD-STDAGENTS-DO-LOOP"],
+  "required_check_ids": [
+    "DO-SQL-SCAN-HOTPATH"
+  ],
+  "forbidden_check_ids": [
+    "DO-STUB-CALL-CYCLE"
+  ]
+}

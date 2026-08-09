@@ -261,6 +261,36 @@
     ]
   },
   {
+    "id": "durable-objects-runaway-loop-bill",
+    "prompt": "Our Cloudflare bill exploded and the invoice is almost all Durable Objects storage rows read. Audit our DOs for runaway loops between objects.",
+    "expected": "trigger",
+    "category": "durable objects cost incident",
+    "description_terms": [
+      "Durable Objects",
+      "runaway-loop bill"
+    ]
+  },
+  {
+    "id": "cloudflare-spend-controls-budget-alerts",
+    "prompt": "Cloudflare has no spending limits and our budget alert only arrived at the end of the billing cycle. Review our Cloudflare Workers project for cost controls and detection latency.",
+    "expected": "trigger",
+    "category": "spend controls / billing alerts",
+    "description_terms": [
+      "budget alerts",
+      "spend monitoring"
+    ]
+  },
+  {
+    "id": "do-stub-cycle-review",
+    "prompt": "Two Durable Objects in our stack call each other's stubs. Check whether this can infinite loop and what it would cost.",
+    "expected": "trigger",
+    "category": "durable objects loop risk",
+    "description_terms": [
+      "Durable Objects",
+      "cost footguns"
+    ]
+  },
+  {
     "id": "aws-lambda-cost",
     "prompt": "Audit our AWS Lambda and DynamoDB bill for cost footguns.",
     "expected": "no_trigger",
@@ -331,5 +361,11 @@
     "prompt": "Review our analytics engine design in PostgreSQL for high-cardinality event queries.",
     "expected": "no_trigger",
     "category": "generic analytics false friend"
+  },
+  {
+    "id": "aws-budget-alert-generic",
+    "prompt": "Why did my AWS budget alert fire late? Explain how AWS Budgets evaluates thresholds.",
+    "expected": "no_trigger",
+    "category": "non-cloudflare billing"
   }
 ]

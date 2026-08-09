@@ -1,0 +1,16 @@
+{
+  // One-directional coordinator -> runner chain with bounded SQL reads.
+  // False-positive guard: a DO-to-DO call that never returns to the caller
+  // is a chain, not a cycle, and must not be flagged.
+  "name": "session-pipeline",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [
+      { "name": "SESSION_COORDINATOR", "class_name": "SessionCoordinator" },
+      { "name": "TASK_RUNNER", "class_name": "TaskRunner" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SessionCoordinator", "TaskRunner"] }]
+}
