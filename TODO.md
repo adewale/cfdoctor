@@ -48,7 +48,7 @@ the plan doc and the git history, not repeated here.
 
 ## Research backlog (new patterns and experience reports)
 
-The 29-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios and 25 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.
+The 30-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios and 26 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.
 
 - [x] Mine 544 recent `cloudflare/cloudflare-docs` commits for warnings, pricing/billing transitions, deprecations, and limits; retain selected first-party fossils in `research/frontier-refresh-2026-07-11.md`.
 - [x] Sweep 1,160 recent `cloudflare/workers-sdk` issues for guardrail/failure leads; keep issue evidence discovery-only until reproduced/corroborated.
@@ -58,3 +58,13 @@ The 29-record structured `research/incident-claim-ledger.json` now separates inc
 - [x] Cover Containers, Pipelines, Workers VPC, Email Service, Dynamic Workers, and Agents/Browser/Sandbox risk surfaces.
 - [x] Add Deno Deploy, AWS Amplify, and Dynamic Workers/Workers for Platforms to the evidence matrix.
 - [x] Define four explicit synthetic workload profiles (hobby, launch, production SaaS, viral/abuse), clearly labeled as replaceable assumptions rather than observed averages.
+- [ ] Derive a fixture-first D1 rows-read check family from the two accepted
+      first-hand D1 incidents (`CFDOC-EVD-D1-134-BILL`,
+      `CFDOC-EVD-KCD-D1-ISOLATE-CACHE`, see
+      `research/kentcdodds-pr-890-review.md`): per-isolate-only cache adapters
+      around expensive D1 aggregates, missing-index hot queries, and
+      `forceFresh`/cache-bypass reachable from public actions. Precision
+      controls must keep legitimate cheap-value in-memory caching and
+      L1-memory-over-L2-shared layering from firing; adding a runtime scenario
+      also requires widening the 1..23 range pinned in
+      `scripts/check_claim_ledger.py` together with the runtime checklist.
