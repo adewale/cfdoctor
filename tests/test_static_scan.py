@@ -315,6 +315,63 @@ class StaticScannerTests(unittest.TestCase):
         self.assertEqual(1, len(cycle))
         self.assertIn("Looper -> Looper", cycle[0]["evidence"])
 
+    THREE_DO_CONFIG = """{
+      "name": "three-do-ring",
+      "main": "src/index.js",
+      "compatibility_date": "2026-07-01",
+      "observability": {"enabled": true, "head_sampling_rate": 0.05},
+      "durable_objects": {"bindings": [
+        {"name": "STAGE_A", "class_name": "StageA"},
+        {"name": "STAGE_B", "class_name": "StageB"},
+        {"name": "STAGE_C", "class_name": "StageC"}
+      ]},
+      "migrations": [{"tag": "v1", "new_sqlite_classes": ["StageA", "StageB", "StageC"]}]
+    }"""
+
+    @staticmethod
+    def ring_stage(cls: str, next_binding: str, guarded: bool) -> str:
+        guard = [
+            "    const depth = Number(request.headers.get('x-hop-depth') || 0);",
+            "    if (depth >= 3) return new Response('hop limit reached', { status: 429 });",
+        ] if guarded else []
+        return "\n".join([
+            f"export class {cls} {{",
+            "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+            "  async fetch(request) {",
+            "    const auth = request.headers.get('authorization');",
+            *guard,
+            f"    const id = this.env.{next_binding}.idFromName(auth);",
+            f"    this.ctx.waitUntil(this.env.{next_binding}.get(id).fetch('https://do/next'));",
+            f"    return new Response('{cls}');",
+            "  }",
+            "}",
+        ])
+
+    def test_do_stub_cycle_through_three_classes_is_reported_with_full_path(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.THREE_DO_CONFIG,
+            "src/index.js": "\n".join([
+                self.ring_stage("StageA", "STAGE_B", guarded=False),
+                self.ring_stage("StageB", "STAGE_C", guarded=False),
+                self.ring_stage("StageC", "STAGE_A", guarded=False),
+            ]),
+        })
+        cycle = [f for f in report["findings"] if f["check_id"] == "DO-STUB-CALL-CYCLE"]
+        self.assertEqual(1, len(cycle))
+        self.assertIn("StageA -> StageB -> StageC -> StageA", cycle[0]["evidence"])
+
+    def test_do_stub_three_class_cycle_with_one_unguarded_class_still_fires(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.THREE_DO_CONFIG,
+            "src/index.js": "\n".join([
+                self.ring_stage("StageA", "STAGE_B", guarded=True),
+                self.ring_stage("StageB", "STAGE_C", guarded=True),
+                self.ring_stage("StageC", "STAGE_A", guarded=False),
+            ]),
+        })
+        cycle = [f for f in report["findings"] if f["check_id"] == "DO-STUB-CALL-CYCLE"]
+        self.assertEqual(1, len(cycle))
+
     def do_sql_ids(self, report: dict) -> list[str]:
         return [f["check_id"] for f in report["findings"] if f["check_id"] == "DO-SQL-SCAN-HOTPATH"]
 
