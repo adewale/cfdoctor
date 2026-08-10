@@ -3,7 +3,7 @@
 Remaining work, ordered by the same criteria as
 [`docs/improvement-plan.md`](docs/improvement-plan.md) (verifiability first,
 then likelihood of delivering value). Items completed on 2026-06-09 — stable
-scanner check IDs (v0.3.0), the fixture-based detection eval (now 25 fixtures, including JSONC, Queue, sharding, alarm, Stream, self-fetch, observability, and webhook controls), the coverage
+scanner check IDs (v0.3.0), the fixture-based detection eval (now 28 fixtures, including JSONC, Queue, sharding, alarm, Stream, self-fetch, observability, webhook, and D1 index/layout controls), the coverage
 matrix + CI consistency checker, citation link verification, SKILL.md
 reference routing, and five false-negative heuristic fixes — are recorded in
 the plan doc and the git history, not repeated here.
@@ -48,7 +48,7 @@ the plan doc and the git history, not repeated here.
 
 ## Research backlog (new patterns and experience reports)
 
-The 29-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios and 25 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.
+The 29-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 24 runtime scenarios and 28 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.
 
 - [x] Mine 544 recent `cloudflare/cloudflare-docs` commits for warnings, pricing/billing transitions, deprecations, and limits; retain selected first-party fossils in `research/frontier-refresh-2026-07-11.md`.
 - [x] Sweep 1,160 recent `cloudflare/workers-sdk` issues for guardrail/failure leads; keep issue evidence discovery-only until reproduced/corroborated.

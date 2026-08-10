@@ -1,0 +1,12 @@
+{
+  "description": "Remediated twin of d1-unindexed-hot-queries: composite indexes cover the hot predicates, migrations note the post-index ANALYZE/PRAGMA optimize step, and the layout loader serves navigation data cache-aside from KV under a versioned key. Precision control: the scanner must stay silent.",
+  "evidence_ids": [
+    "CFDOC-EVD-D1-134-BILL"
+  ],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-COST-D1-NO-INDEXES",
+    "CFDOC-COST-D1-LAYOUT-HOTPATH"
+  ],
+  "max_findings": 0
+}
