@@ -196,6 +196,89 @@ class StaticScannerTests(unittest.TestCase):
         report = scan({".env": "API_KEY=9f8a7b6c5d4e3f21abcd\n"})
         self.assertEqual(["CFDOC-SEC-SECRET-ASSIGNMENT"], self.secret_assignment_ids(report))
 
+    D1_APP_CONFIG = '''{
+      "name": "d1-index-test",
+      "compatibility_date": "2026-07-01",
+      "observability": {"enabled": true},
+      "d1_databases": [{"binding": "DB", "database_name": "app", "database_id": "x"}]
+    }'''
+
+    def test_unindexed_d1_filtered_query_is_flagged_and_sql_index_suppresses(self) -> None:
+        base = {
+            "wrangler.jsonc": self.D1_APP_CONFIG,
+            "migrations/0001_init.sql": "CREATE TABLE reimbursement (id INTEGER PRIMARY KEY, year INTEGER NOT NULL, state_id INTEGER NOT NULL);",
+            "src/index.js": 'const latest = await env.DB.prepare("SELECT MAX(year) AS year FROM reimbursement").first();',
+        }
+        report = scan(base)
+        finding = next(f for f in report["findings"] if f["check_id"] == "CFDOC-COST-D1-NO-INDEXES")
+        self.assertIn("migrations/0001_init.sql", finding["evidence"])
+        self.assertIn("rows read (scanned), not rows returned", finding["message"])
+        self.assertIn("ANALYZE", finding["fix"])
+
+        indexed = dict(base)
+        indexed["migrations/0002_indexes.sql"] = "CREATE INDEX reimbursement_year_idx ON reimbursement(year);"
+        ids = {f["check_id"] for f in scan(indexed)["findings"]}
+        self.assertNotIn("CFDOC-COST-D1-NO-INDEXES", ids)
+
+    def test_orm_index_definition_suppresses_d1_no_indexes(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.D1_APP_CONFIG,
+            "migrations/0001_init.sql": "CREATE TABLE reimbursement (id INTEGER PRIMARY KEY, year INTEGER NOT NULL);",
+            "src/schema.ts": 'export const reimbursement = sqliteTable("reimbursement", { year: integer("year") }, (t) => [index("reimbursement_year_idx").on(t.year)]);',
+            "src/index.js": 'await env.DB.prepare("SELECT year FROM reimbursement WHERE year = ?1").bind(2026).all();',
+        })
+        self.assertNotIn("CFDOC-COST-D1-NO-INDEXES", {f["check_id"] for f in report["findings"]})
+
+    def test_unfiltered_d1_queries_alone_do_not_claim_missing_indexes(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.D1_APP_CONFIG,
+            "migrations/0001_init.sql": "CREATE TABLE settings (id INTEGER PRIMARY KEY, value TEXT);",
+            "src/index.js": 'await env.DB.prepare("SELECT value FROM settings LIMIT 1").first();',
+        })
+        self.assertNotIn("CFDOC-COST-D1-NO-INDEXES", {f["check_id"] for f in report["findings"]})
+
+    def test_layout_level_d1_query_without_cache_is_flagged(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.D1_APP_CONFIG,
+            "src/routes/+layout.server.ts": 'export async function load({ platform }) { return await platform.env.DB.prepare("SELECT MAX(year) AS year FROM reimbursement").first(); }',
+        })
+        finding = next(f for f in report["findings"] if f["check_id"] == "CFDOC-COST-D1-LAYOUT-HOTPATH")
+        self.assertIn("+layout.server.ts", finding["evidence"])
+        self.assertIn("every page view", finding["message"])
+
+    def test_nextjs_app_layout_d1_query_is_flagged_but_page_routes_are_not(self) -> None:
+        query = 'await env.DB.prepare("SELECT slug FROM sections ORDER BY position").all();'
+        report = scan({
+            "wrangler.jsonc": self.D1_APP_CONFIG,
+            "app/dashboard/layout.tsx": query,
+            "src/routes/prices/+page.server.ts": query,
+        })
+        layout_hits = [f["evidence"] for f in report["findings"] if f["check_id"] == "CFDOC-COST-D1-LAYOUT-HOTPATH"]
+        self.assertEqual(1, len(layout_hits))
+        self.assertIn("app/dashboard/layout.tsx", layout_hits[0])
+
+    def test_cached_layout_d1_query_is_not_flagged(self) -> None:
+        config = '''{
+          "name": "d1-index-test",
+          "compatibility_date": "2026-07-01",
+          "observability": {"enabled": true},
+          "d1_databases": [{"binding": "DB", "database_name": "app", "database_id": "x"}],
+          "kv_namespaces": [{"binding": "NAV_CACHE", "id": "y"}]
+        }'''
+        report = scan({
+            "wrangler.jsonc": config,
+            "src/routes/+layout.server.ts": "\n".join([
+                "export async function load({ platform }) {",
+                '  const hit = await platform.env.NAV_CACHE.get("nav-data:v1", "json");',
+                "  if (hit) return hit;",
+                '  const fresh = await platform.env.DB.prepare("SELECT MAX(year) AS year FROM reimbursement").first();',
+                '  await platform.env.NAV_CACHE.put("nav-data:v1", JSON.stringify(fresh));',
+                "  return fresh;",
+                "}",
+            ]),
+        })
+        self.assertNotIn("CFDOC-COST-D1-LAYOUT-HOTPATH", {f["check_id"] for f in report["findings"]})
+
 
 if __name__ == "__main__":
     unittest.main()

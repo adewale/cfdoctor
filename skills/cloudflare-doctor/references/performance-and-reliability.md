@@ -91,6 +91,8 @@ When a TypeScript repo has these boundary classes:
 
 - Schema migrations are checked in and applied intentionally per environment.
 - Queries use indexes for common filters/sorts; avoid unbounded results, `ORDER BY RANDOM()`, and table scans on hot paths. Treat `SELECT *` as a projection/schema-coupling review, not proof of a billed-row scan; confirm with `EXPLAIN QUERY PLAN` and D1 `rows_read` metadata.
+- Run `ANALYZE` (or `PRAGMA optimize`) after batch index/schema changes so `sqlite_stat1` statistics exist; without them the planner can keep scanning or pick the wrong index even when good indexes are present.
+- Keep D1 queries out of layout/root-level loaders and middleware that run on every page view; cache or precompute that data instead.
 - Batch statements where practical.
 - Use constraints/unique indexes for correctness rather than only application checks.
 - Add `LIMIT`/pagination to user-controlled queries.

@@ -206,12 +206,12 @@ python3 scripts/check_links.py --validate-policy
 
 Run `npm run update-results` when the checked-in proof reports should change.
 
-Current proof from the latest validation run (2026-07-11):
+Current proof from the latest validation run (2026-08-10; model-based evals from 2026-07-11):
 
 - Trigger eval: `39/39 = 100%` (`evals/results/latest.md`).
-- Detection eval: `25/25` fixtures pass, including valid/malformed JSONC, Queue-DLQ controls, deeper DO sharding, per-consumer Queue matching, alarm guard precision, linked Stream preload, indirect self-fetch, and full observability sampling (`evals/results/detection/latest.md`).
-- Coverage matrix: consistent with the 60-check scanner registry.
-- Evidence ledger: 29 structured records cover all 23 checklist scenarios and 25 detection fixtures with reciprocal lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, three first-party Cloudflare outage postmortems, and an explicit superseded-evidence disposition.
+- Detection eval: `28/28` fixtures pass, including valid/malformed JSONC, Queue-DLQ controls, deeper DO sharding, per-consumer Queue matching, alarm guard precision, linked Stream preload, indirect self-fetch, full observability sampling, credential-reference precision, and the unindexed-D1/cached-layout pair (`evals/results/detection/latest.md`).
+- Coverage matrix: consistent with the 62-check scanner registry.
+- Evidence ledger: 29 structured records cover all 24 checklist scenarios and 28 detection fixtures with reciprocal lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, three first-party Cloudflare outage postmortems, and an explicit superseded-evidence disposition.
 - Wrangler snapshot wrapper: 14 offline tests cover explicit approval/planning, exact Worker/Pages command shapes, profile forwarding, metadata-only-by-default behavior, opt-in Worker config/source and Pages config capture, active-version metadata, environment isolation, version/active-state failure gates, symlink removal, recursive private permissions, and Git-worktree refusal. Approved private live runs completed against `readability-worker` (Wrangler 4.71.0), `atlas` (4.94.0), and `keyboardia-staging` (4.53.0); only sanitized shapes were retained.
 - Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass across 37 cases / 6 ablations.
 - Current matched GPT-5.5 three-way eval: 31 visible answer cases × 3 variants × 3 runs = 279 fresh answers and 243 primary judgments. Current PR scored 89.15% objective / 89.69% combined, versus pinned `origin/main` 81.79% / 83.00% and no skill 72.97% / 69.24%. Paired objective lift was +7.36 points versus main (`p=0.000270`) and +16.17 versus no skill (`p=0.000010`). The Wrangler slice scored 93.01% versus 63.96% main and 60.53% no skill; legacy current/main remained compatible (`p=0.107439`). A 27-case Claude judge sample agreed with GPT on 26/27 pass decisions. The one-shot private release guard passed 2/2 with a 0.925 blind-judge mean. See `evals/results/gpt-5.5-current-threeway/latest.md` and `evals/results/private-release-2026-07-11.md`; earlier reports under `gpt-5.5-value/` are pinned historical evidence.

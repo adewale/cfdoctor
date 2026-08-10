@@ -352,6 +352,21 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
   - `Cache-Control`/TTL, `Vary`, and `ctx.cache.purge()` ownership are intentional; only `GET`/`HEAD` are cached (`206`, `520`–`526`, WebSocket upgrades, and custom RPC methods bypass).
 - Evidence to request: Wrangler `cache`/`exports[*].cache` config, entrypoint layout (which entrypoint authenticates), `Cache-Control` headers set in code, `ctx.props`/cache-key composition, purge call sites, and request/CPU metrics before vs after enabling.
 
+### 24. Unindexed hot D1 queries turn every page view into billed full-table scans
+
+- Evidence ID: `CFDOC-EVD-D1-134-BILL`
+
+- Story: "How I Cut My Cloudflare D1 Bill by 95%," fullstacksveltekit.com, 2026-04, https://fullstacksveltekit.com/blog/cloudflare-d1-bill — 127,599,130,859 rows read ($127.60 of a $134.14 month) against a ~765k-row Medicaid-rates database.
+- Official docs: D1 pricing, https://developers.cloudflare.com/d1/platform/pricing/; D1 use indexes, https://developers.cloudflare.com/d1/best-practices/use-indexes/; D1 metrics/analytics, https://developers.cloudflare.com/d1/observability/metrics-analytics/
+- Source type: first-hand war story + official docs. Refresh current D1 pricing/included volumes before quoting numbers.
+- Mechanism: D1 bills rows *read* (scanned), not rows returned, so indexing is a billing control, not just latency tuning. The table had primary keys only; `SELECT MAX(year)`, `DISTINCT`/aggregate stats, and `(code, year)` lookups each rescanned the full table (765,283 rows to return one value). Two of those queries lived in the layout-level loader that runs on every page view before page code, multiplying the scans by sitewide traffic. Even after indexes existed, the planner kept picking bad plans until `ANALYZE` populated `sqlite_stat1` (a further 6.7× reduction on one query). Fixes: four composite indexes matching hot predicates, `ANALYZE`/`PRAGMA optimize` after the batch index change, and KV cache-aside with versioned keys (`nav-data:v1`) for the layout data — roughly 95% fewer billed rows.
+- Cloudflare checks:
+  - Every hot `WHERE`/`ORDER BY`/`GROUP BY`/aggregate predicate is covered by an index (composite where queries filter on several columns); migrations or ORM schema actually create them before launch, even for weekend projects.
+  - `ANALYZE` (or `PRAGMA optimize`) runs after batch index/schema changes so `sqlite_stat1` exists; `EXPLAIN QUERY PLAN` confirms index use instead of scans.
+  - Layout/root-level loaders and other every-page code paths do not query D1 directly; rarely-changing data (navigation, latest-period, lookup lists) is cached (KV cache-aside/Workers Cache) with explicit versioned keys and invalidation.
+  - Per-query `rows_read` (query metadata and D1 metrics/analytics) is monitored; a high rows-read-to-rows-returned ratio is treated as a cost regression, not just slow-query noise.
+- Evidence to request: D1 metrics/analytics rows-read breakdown per query, `EXPLAIN QUERY PLAN` for the top queries, migration/ORM index definitions, whether `ANALYZE` ran after the last index change, which queries execute in layout/middleware paths, cache config for those paths, and the billing/usage export.
+
 ## Scenario-to-check matrix
 
 | Scenario | Cloudflare products/configs to inspect |
@@ -364,6 +379,7 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 | Direct origin/bucket bypass | DNS proxy status, R2 public/custom domains, origin firewall, Authenticated Origin Pulls, cache/WAF coverage |
 | Public storage/object hotlinking | R2 public buckets/custom domains, signed URLs, cache rules, object operation counts, WAF/rate limiting |
 | Meter hidden behind one request | Workers CPU/subrequests, D1 rows read, R2/KV ops, DO duration/storage writes, Queue retries, AI/Vectorize units |
+| Unindexed hot D1 queries / rows-read amplification | D1 migrations and ORM schema (index coverage), `EXPLAIN QUERY PLAN`, `ANALYZE`/`sqlite_stat1`, layout/middleware query paths, KV/Workers Cache in front of every-page data, D1 metrics rows read, billing export |
 | Temporary env left live | Pages previews, Workers preview URLs/routes, env bindings, crons, queues, D1/R2/KV prod sharing |
 | Cache layer conflict/leak | Browser cache, CDN/Cache Rules, Workers Cache (`cache.enabled`), Worker Cache API, KV/D1/R2 caches, AI Gateway cache, cache keys/TTLs/purge |
 | Workers Cache billing/auth surface | Wrangler `cache`/`exports[*].cache`, auth/gateway entrypoint exclusion, `ctx.props` cache-key separation, `Cache-Control`/`Vary`, `ctx.cache.purge()`, request/CPU metrics before vs after |
@@ -390,6 +406,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - `CFDOC-COST-THIRD-PARTY-ORIGIN`: Cloudflare-fronted Vercel/Netlify/Railway/Render/Fly/Heroku/AWS/GCP/Azure/Supabase/Firebase origin can still be billed through cache misses or direct default hostname access.
 - `CFDOC-COST-LOG-VOLUME`: Workers Logs/Logpush/Analytics Engine or external log ingestion can spike under error/bot traffic without sampling/retention controls.
 - `CFDOC-COST-WORKERS-CACHE-BILLING`: Workers Cache (`cache.enabled`) is on; verify hits still bill a request, that normally-free static-asset and worker-to-worker traffic becoming billed is intended, and that auth/gateway entrypoints set `cache.enabled = false`.
+- `CFDOC-COST-D1-NO-INDEXES`: D1 schema creates tables but nothing creates a secondary index while code runs filtered/aggregate queries; every such query rescans the table and every scanned row is billed.
+- `CFDOC-COST-D1-LAYOUT-HOTPATH`: Layout/root-level loader queries D1 without obvious caching, multiplying its rows read by sitewide page views.
 - `CFDOC-COST-PREVIEW-PUBLIC-PAID`: Preview/review/demo environment is public, indexed, or connected to paid/prod services without TTL cleanup.
 - `DO-WEBSOCKET-DURATION`: Long-lived DO WebSocket lacks hibernation/close strategy and duration observability.
 - `DO-STORAGE-LIST-HOTPATH`: DO storage list/prefix scan appears on request, alarm, or wake-up path.

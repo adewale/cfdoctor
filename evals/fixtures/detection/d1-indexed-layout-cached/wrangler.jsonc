@@ -1,0 +1,14 @@
+{
+  // Remediated twin of d1-unindexed-hot-queries: same site with composite
+  // indexes, planner statistics, and KV cache-aside navigation data.
+  "name": "what-medicaid-pays",
+  "main": ".svelte-kit/cloudflare/_worker.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "medicaid", "database_id": "0000fixture0000" }
+  ],
+  "kv_namespaces": [
+    { "binding": "NAV_CACHE", "id": "0000fixture0001" }
+  ]
+}
