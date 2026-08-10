@@ -1,0 +1,7 @@
+{
+  "description": "Near-miss control for the kentcdodds.com PR #890 shape: the expensive D1 aggregate is backed by a shared KV cachified adapter, a hand-rolled L1 map sits in front of the shared KV layer, and per-isolate LRU is reserved for a cheap static value; the isolate-cache lead must stay quiet.",
+  "evidence_ids": ["CFDOC-EVD-KCD-D1-ISOLATE-CACHE"],
+  "required_check_ids": [],
+  "forbidden_check_ids": ["CFDOC-COST-D1-ISOLATE-CACHE"],
+  "max_findings": 0
+}

@@ -173,6 +173,106 @@ class StaticScannerTests(unittest.TestCase):
         self.assertIn("batching alone is not a proven billing reduction", finding["message"])
         self.assertIn("coalesce redundant writes", finding["fix"].lower())
 
+    D1_WRANGLER = '''{
+      "name": "d1-cache-test",
+      "compatibility_date": "2026-07-01",
+      "observability": {"enabled": true},
+      "d1_databases": [{"binding": "DB", "database_name": "blog", "database_id": "x"}]
+    }'''
+    D1_MIGRATION = "CREATE TABLE post_reads(id INTEGER PRIMARY KEY, slug TEXT, client_id TEXT);"
+
+    def test_memory_only_cachified_adapter_on_d1_aggregate_is_flagged(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.D1_WRANGLER,
+            "migrations/0001.sql": self.D1_MIGRATION,
+            "src/reads.ts": "\n".join([
+                "import { LRUCache } from 'lru-cache';",
+                "const lruCache = new LRUCache({ max: 500 });",
+                "export function getBlogPostReadCounts(env) {",
+                "  return cachified({",
+                "    key: 'blog:post-read-counts',",
+                "    cache: lruCache,",
+                "    ttl: 1000 * 60 * 30,",
+                "    async getFreshValue() {",
+                "      return env.DB.prepare('SELECT slug, COUNT(id) AS reads FROM post_reads GROUP BY slug').all();",
+                "    },",
+                "  });",
+                "}",
+            ]),
+        })
+        finding = next(f for f in report["findings"] if f["check_id"] == "CFDOC-COST-D1-ISOLATE-CACHE")
+        self.assertIn("lruCache", finding["evidence"])
+        self.assertIn("regardless of TTL", finding["message"])
+
+    def test_module_scope_map_memo_on_d1_aggregate_is_flagged(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.D1_WRANGLER,
+            "migrations/0001.sql": self.D1_MIGRATION,
+            "src/stats.js": "\n".join([
+                "const statsMemo = new Map();",
+                "export async function totalReaders(env) {",
+                "  const hit = statsMemo.get('total');",
+                "  if (hit && hit.expires > Date.now()) return hit.value;",
+                "  const row = await env.DB.prepare('SELECT COUNT(DISTINCT client_id) AS total FROM post_reads').first();",
+                "  statsMemo.set('total', { value: row.total, expires: Date.now() + 300000 });",
+                "  return row.total;",
+                "}",
+            ]),
+        })
+        self.assertIn("CFDOC-COST-D1-ISOLATE-CACHE", {f["check_id"] for f in report["findings"]})
+
+    def test_shared_kv_layer_suppresses_isolate_cache_lead(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.D1_WRANGLER,
+            "migrations/0001.sql": self.D1_MIGRATION,
+            "src/layered.js": "\n".join([
+                "const l1 = new Map();",
+                "export async function readTotals(env) {",
+                "  const cached = l1.get('totals');",
+                "  if (cached) return cached;",
+                "  const stored = await env.CACHE_KV.get('totals', 'json');",
+                "  if (stored) { l1.set('totals', stored); return stored; }",
+                "  const rows = await env.DB.prepare('SELECT slug, SUM(read_ms) AS total_ms FROM post_reads GROUP BY slug').all();",
+                "  await env.CACHE_KV.put('totals', JSON.stringify(rows), { expirationTtl: 1800 });",
+                "  l1.set('totals', rows);",
+                "  return rows;",
+                "}",
+            ]),
+            "src/shared-adapter.ts": "\n".join([
+                "export function getReadCounts(env) {",
+                "  return cachified({",
+                "    key: 'blog:post-read-counts',",
+                "    cache: sharedKvCache(env),",
+                "    ttl: 1000 * 60 * 30,",
+                "    async getFreshValue() {",
+                "      return env.DB.prepare('SELECT slug, COUNT(id) AS reads FROM post_reads GROUP BY slug').all();",
+                "    },",
+                "  });",
+                "}",
+            ]),
+        })
+        self.assertNotIn("CFDOC-COST-D1-ISOLATE-CACHE", {f["check_id"] for f in report["findings"]})
+
+    def test_memory_cache_of_cheap_point_query_is_not_flagged(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.D1_WRANGLER,
+            "migrations/0001.sql": self.D1_MIGRATION,
+            "src/title.ts": "\n".join([
+                "import { LRUCache } from 'lru-cache';",
+                "const lruCache = new LRUCache({ max: 500 });",
+                "export function getPostTitle(env, slug) {",
+                "  return cachified({",
+                "    key: `title:${slug}`,",
+                "    cache: lruCache,",
+                "    async getFreshValue() {",
+                "      return env.DB.prepare('SELECT title FROM posts WHERE slug = ?1').bind(slug).first();",
+                "    },",
+                "  });",
+                "}",
+            ]),
+        })
+        self.assertNotIn("CFDOC-COST-D1-ISOLATE-CACHE", {f["check_id"] for f in report["findings"]})
+
     def secret_assignment_ids(self, report: dict) -> list[str]:
         return [f["check_id"] for f in report["findings"] if f["check_id"] == "CFDOC-SEC-SECRET-ASSIGNMENT"]
 

@@ -9,7 +9,9 @@
 |---|---|---|---|---|
 | broad-route-cron-storm | PASS | 2/2 | 2 | - |
 | clean-baseline | PASS | 0/0 | 0 (max 0) | - |
+| d1-isolate-cache-rescan | PASS | 1/1 | 2 | - |
 | d1-nplus1-dashboard | PASS | 2/2 | 3 | - |
+| d1-shared-cache-safe | PASS | 0/0 | 0 (max 0) | - |
 | dead-rpc-surface | PASS | 1/1 | 1 | - |
 | do-gotchas | PASS | 3/3 | 6 | - |
 | do-sql-unbounded-scan | PASS | 1/1 | 1 | - |
@@ -55,12 +57,28 @@
 - Max findings allowed: 0
 - Check IDs emitted (0 findings): (none)
 
+### d1-isolate-cache-rescan — PASS
+
+- Scenario: kentcdodds.com PR #890 shape: full-table D1 PostRead aggregates cached only in per-isolate memory (a cachified lruCache adapter and a module-scope Map memo) behind a hot route and a 2-minute warmup cron, so isolate churn re-runs the scans regardless of TTL.
+- Evidence IDs: CFDOC-EVD-KCD-D1-ISOLATE-CACHE
+- Required check IDs: CFDOC-COST-D1-ISOLATE-CACHE
+- Check IDs emitted (2 findings): CFDOC-COST-D1-ISOLATE-CACHE
+
 ### d1-nplus1-dashboard — PASS
 
 - Scenario: Blog feed endpoint that loads every post with SELECT * and then runs four more queries per post (author, comments, like total, latest comment) plus a per-post UPDATE inside the loop. Models read-amplification bills where billed rows grow with content size on every page view.
 - Evidence IDs: CFDOC-EVD-FIREBASE-READS
 - Required check IDs: CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR
 - Check IDs emitted (3 findings): CFDOC-COST-RETRY-AMPLIFY, CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR
+
+### d1-shared-cache-safe — PASS
+
+- Scenario: Near-miss control for the kentcdodds.com PR #890 shape: the expensive D1 aggregate is backed by a shared KV cachified adapter, a hand-rolled L1 map sits in front of the shared KV layer, and per-isolate LRU is reserved for a cheap static value; the isolate-cache lead must stay quiet.
+- Evidence IDs: CFDOC-EVD-KCD-D1-ISOLATE-CACHE
+- Required check IDs: (none)
+- Forbidden check IDs: CFDOC-COST-D1-ISOLATE-CACHE
+- Max findings allowed: 0
+- Check IDs emitted (0 findings): (none)
 
 ### dead-rpc-surface — PASS
 

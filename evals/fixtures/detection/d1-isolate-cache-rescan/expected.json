@@ -1,0 +1,7 @@
+{
+  "description": "kentcdodds.com PR #890 shape: full-table D1 PostRead aggregates cached only in per-isolate memory (a cachified lruCache adapter and a module-scope Map memo) behind a hot route and a 2-minute warmup cron, so isolate churn re-runs the scans regardless of TTL.",
+  "evidence_ids": ["CFDOC-EVD-KCD-D1-ISOLATE-CACHE"],
+  "required_check_ids": ["CFDOC-COST-D1-ISOLATE-CACHE"],
+  "forbidden_check_ids": [],
+  "expected_evidence_terms": ["lruCache", "rankMemo"]
+}
