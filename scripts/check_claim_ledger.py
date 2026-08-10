@@ -166,7 +166,7 @@ def validate(ledger: dict, as_of: dt.date) -> tuple[list[str], list[str]]:
             if check_id not in known_checks:
                 errors.append(f"{rid}: unknown check_id {check_id}")
         for number in record.get("scenario_numbers", []):
-            if not isinstance(number, int) or number < 1 or number > 23:
+            if not isinstance(number, int) or number < 1 or number > 24:
                 errors.append(f"{rid}: invalid scenario number {number}")
             covered_scenarios.add(number)
             if number in scenario_records and scenario_records[number] != rid:
@@ -177,12 +177,12 @@ def validate(ledger: dict, as_of: dt.date) -> tuple[list[str], list[str]]:
                 errors.append(f"{rid}: unknown fixture_id {fixture_id}")
             ledger_fixture_links.setdefault(fixture_id, set()).add(rid)
 
-    missing_scenarios = sorted(set(range(1, 24)) - covered_scenarios)
+    missing_scenarios = sorted(set(range(1, 25)) - covered_scenarios)
     if missing_scenarios:
         errors.append(f"ledger does not cover checklist scenarios: {missing_scenarios}")
     checklist_map = checklist_evidence_ids()
-    if set(checklist_map) != set(range(1, 24)):
-        errors.append("runtime checklist must contain exactly one Evidence ID for scenarios 1..23")
+    if set(checklist_map) != set(range(1, 25)):
+        errors.append("runtime checklist must contain exactly one Evidence ID for scenarios 1..24")
     for number, rid in checklist_map.items():
         if scenario_records.get(number) != rid:
             errors.append(f"scenario {number}: checklist evidence {rid} does not match ledger {scenario_records.get(number)}")
@@ -240,7 +240,7 @@ def main(argv: list[str] | None = None) -> int:
         for error in errors:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
-    print(f"OK: evidence ledger has {len(ledger['records'])} records covering 23 scenarios and {len(fixture_manifests())} fixtures")
+    print(f"OK: evidence ledger has {len(ledger['records'])} records covering 24 scenarios and {len(fixture_manifests())} fixtures")
     return 0
 
 

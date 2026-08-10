@@ -1,0 +1,11 @@
+{
+  // Blog read-stats API backed by D1, with a 2-minute warmup cron.
+  "name": "blog-read-stats",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "blog", "database_id": "0000fixture0000" }
+  ],
+  "triggers": { "crons": ["*/2 * * * *"] }
+}

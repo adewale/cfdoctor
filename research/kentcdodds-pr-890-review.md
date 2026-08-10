@@ -148,26 +148,37 @@ legitimately include "record the convention where agents will read it" so the
 class of bug stays fixed. That is also a validation of cfdoctor's own
 reference-driven design.
 
-## Proposed derivations (follow-up, fixture-first, not yet implemented)
+## Derivations (implemented 2026-08-10 in the same change series)
 
-- Scanner lead candidate `CFDOC-COST-D1-ISOLATE-CACHE` (low confidence):
-  module-scope in-memory cache construction (`new Map(`, `new LRUCache(`,
-  `lru-cache` import) whose cached getter contains D1 access
-  (`.prepare(`/`env.<D1>.`) with aggregate-without-bound smell (`COUNT(`,
-  `GROUP BY`, missing `WHERE`/`LIMIT`). Precision constraints: in-memory
-  caching of cheap values is legitimate (the kcd convention explicitly keeps
-  `lruCache` for those); an L1-memory-over-L2-shared layering is the *good*
-  pattern and must not fire; only flag when no shared layer (KV/Workers
-  Cache/cache RPC/D1-backed cache) appears for the same value.
-- Detection fixture: minimal Worker with a cachified-style LRU-only wrapper
-  around a full-table D1 aggregate on a hot route plus warmup cron; a near-miss
-  control with the same code shape backed by a KV adapter (and ideally an
-  L1+L2 layered control) to hold precision.
-- Wire `CFDOC-EVD-D1-134-BILL` and `CFDOC-EVD-KCD-D1-ISOLATE-CACHE` to the new
-  check IDs/fixtures once they exist; a new runtime scenario requires widening
-  the 1..23 scenario range pinned in `scripts/check_claim_ledger.py` and the
-  runtime checklist together.
-- Extend the `forceFresh`-from-public-action lead into the existing
+- Scanner lead `CFDOC-COST-D1-ISOLATE-CACHE` (scanner 0.3.7, COST, medium
+  severity, medium confidence). Fires on two shapes when the file has D1
+  evidence and an aggregate SQL string (`COUNT`/`SUM`/`AVG`/`GROUP_CONCAT` +
+  `FROM`, or `SELECT … FROM … GROUP BY`): a cachified-style call site whose
+  `cache:` adapter is memory-only (`lruCache`, `memoryCache`, `new Map(`,
+  `new LRUCache(`) with the aggregate inside that call site's window, or a
+  module-scope `Map`/`LRUCache` memo used near the aggregate with no shared
+  layer (`env.*.get/put`, `caches.*`, `KVNamespace`, `CACHE_RPC`) in the same
+  window. Precision held by design and by tests: shared/KV adapters,
+  L1-memory-over-L2-shared layering, and memory caching of cheap point
+  queries do not fire.
+- Detection fixtures: `d1-isolate-cache-rescan` (both bad shapes behind a hot
+  route and a 2-minute warmup cron; must fire) and `d1-shared-cache-safe`
+  (KV-backed adapter, L1-over-L2 map, cheap-value LRU; `max_findings: 0`).
+  Four scanner unit tests in `tests/test_static_scan.py` cover fire and
+  suppress directions.
+- Runtime scenario 24 added to the war-story checklist;
+  `scripts/check_claim_ledger.py` widened to scenarios 1..24; ledger record
+  `CFDOC-EVD-KCD-D1-ISOLATE-CACHE` wired to the scenario, check, and both
+  fixtures. Guidance added to `cost-footguns.md` (D1 section) and the layered
+  cache map in `performance-and-reliability.md`.
+
+## Remaining follow-ups (queued in TODO.md)
+
+- The missing-index/hot-query half of the meter (grounded in
+  `CFDOC-EVD-D1-134-BILL`) needs schema/index awareness the regex scanner
+  lacks; it stays a skill-level question until a fixture-first heuristic
+  exists.
+- The `forceFresh`-from-public-action amplifier should fold into the existing
   idempotency/hot-path check family rather than a new pillar.
 
 ## Official docs to pair with these scenarios

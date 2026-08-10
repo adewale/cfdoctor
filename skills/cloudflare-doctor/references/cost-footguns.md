@@ -65,9 +65,13 @@ Footguns:
 - N+1 query patterns in Workers; count queries and rows read per user-visible request, not just HTTP request count.
 - Using D1 as an analytics/event sink or queue.
 - Recomputing public query results on every request instead of caching.
+- Caching an expensive aggregate only in per-isolate memory (a module-scope `Map`/LRU, or a memory-only cachified adapter). Isolates have no guaranteed lifetime, so deploys, evictions, low-traffic locations, and warmup crons re-run the scan regardless of TTL; the effective refresh rate scales with isolates × churn, not 1/TTL. Rows-read cost is per-execution scan size × execution count — indexes/query shape bound the first factor, cache architecture bounds the second (war-story scenario 24).
+- Cache-bypass refreshes (`forceFresh`, purge-then-recompute) reachable from public or per-request actions without a did-state-actually-change guard; and assuming a forced refresh propagates into nested cached values (cachified `forceFresh` is not recursive).
 
 Better patterns:
 - Add indexes, limits, batching, prepared statements, constraints, and CDN/cache layers where consistency allows.
+- Back expensive aggregates with a shared cache layer (KV-backed adapter, cache service, or Workers Cache where fit); keep per-isolate memory as an L1 in front of the shared layer or for values that are cheap to recompute.
+- Attribute rows read per query with D1 GraphQL analytics (`d1QueriesAdaptiveGroups` ordered by rows read) and compare execution counts against the TTL-implied refresh rate; a large gap means the cache layer is not doing what its TTL suggests.
 - Use Queues/Analytics Engine/R2 for high-volume event capture depending on requirements.
 
 ## R2

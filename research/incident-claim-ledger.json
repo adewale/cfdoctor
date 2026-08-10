@@ -64,6 +64,6 @@
       "current_semantics_urls": ["https://developers.cloudflare.com/d1/platform/pricing/", "https://developers.cloudflare.com/d1/observability/metrics-analytics/", "https://developers.cloudflare.com/workers/reference/how-workers-works/"],
       "verified_at": "2026-08-10", "review_due": "2026-11-10",
       "confidence": {"authenticity": 2, "mechanism": 2, "independence": 1, "applicability": 2, "temporal": 2},
-      "scenario_numbers": [], "check_ids": [], "fixture_ids": []}
+      "scenario_numbers": [24], "check_ids": ["CFDOC-COST-D1-ISOLATE-CACHE"], "fixture_ids": ["d1-isolate-cache-rescan", "d1-shared-cache-safe"]}
   ]
 }
