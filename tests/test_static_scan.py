@@ -253,6 +253,23 @@ class StaticScannerTests(unittest.TestCase):
         })
         self.assertNotIn("CFDOC-COST-D1-ISOLATE-CACHE", {f["check_id"] for f in report["findings"]})
 
+    def test_function_local_accumulator_map_is_not_flagged(self) -> None:
+        # Real-world false positive (flux-search): a Map created inside the
+        # function is a per-call result accumulator, not a cross-request cache.
+        report = scan({
+            "wrangler.jsonc": self.D1_WRANGLER,
+            "migrations/0001.sql": self.D1_MIGRATION,
+            "src/topics.ts": "\n".join([
+                "export async function topicsBySlug(env) {",
+                "  const out = new Map<string, string[]>();",
+                "  const rows = await env.DB.prepare('SELECT slug, COUNT(id) AS reads FROM post_reads GROUP BY slug').all();",
+                "  rows.results.forEach((row) => { out.set(row.slug, row.reads); });",
+                "  return out;",
+                "}",
+            ]),
+        })
+        self.assertNotIn("CFDOC-COST-D1-ISOLATE-CACHE", {f["check_id"] for f in report["findings"]})
+
     def test_memory_cache_of_cheap_point_query_is_not_flagged(self) -> None:
         report = scan({
             "wrangler.jsonc": self.D1_WRANGLER,

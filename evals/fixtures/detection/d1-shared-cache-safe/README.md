@@ -6,7 +6,10 @@ architecture is the corrected one: the aggregate key uses a shared KV-backed
 cachified adapter, a hand-rolled L1 `Map` sits *in front of* the shared KV
 layer rather than replacing it, and the per-isolate `lruCache` is reserved for
 a value that is cheap to recompute. `CFDOC-COST-D1-ISOLATE-CACHE` must stay
-quiet here, and the fixture must produce zero findings overall.
+quiet here, and the fixture must produce zero findings overall. A
+function-local accumulator `Map` next to the same aggregate (the flux-search
+false-positive shape: created per call, so it cannot cache across requests)
+is also included and must stay quiet.
 
 Committed only as a detection eval control for
 `scripts/cfdoctor_static_scan.py`.

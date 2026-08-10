@@ -163,9 +163,19 @@ reference-driven design.
   queries do not fire.
 - Detection fixtures: `d1-isolate-cache-rescan` (both bad shapes behind a hot
   route and a 2-minute warmup cron; must fire) and `d1-shared-cache-safe`
-  (KV-backed adapter, L1-over-L2 map, cheap-value LRU; `max_findings: 0`).
-  Four scanner unit tests in `tests/test_static_scan.py` cover fire and
-  suppress directions.
+  (KV-backed adapter, L1-over-L2 map, cheap-value LRU, function-local
+  accumulator; `max_findings: 0`). Five scanner unit tests in
+  `tests/test_static_scan.py` cover fire and suppress directions.
+- Live validation (2026-08-10): scanning five recent `adewale/*` D1 repos
+  found one false-positive class — function-local accumulator `Map`s inside
+  query helpers matched the memo shape even though a per-call Map cannot
+  cache across requests. Fixed by requiring module-scope (column-0)
+  declarations, which also corrected line attribution (`\s*` had been
+  swallowing newlines). The corrected scanner reports zero isolate-cache
+  findings across those repos; the one true adjacent instance found by hand
+  (a module-scope embedding cache in front of a paid Workers AI call) is the
+  same mechanism on a different meter and is a candidate for generalizing the
+  check beyond D1.
 - Runtime scenario 24 added to the war-story checklist;
   `scripts/check_claim_ledger.py` widened to scenarios 1..24; ledger record
   `CFDOC-EVD-KCD-D1-ISOLATE-CACHE` wired to the scenario, check, and both

@@ -121,8 +121,10 @@ MEM_CACHE_ADAPTER_RE = re.compile(
     r"cache\s*:\s*(?:lruCache\b|lru\b|memCache\b|memoryCache\b|inMemoryCache\b|new\s+Map\s*\(|new\s+(?:LRUCache|QuickLRU)\s*[<(])"
 )
 ANY_CACHE_ADAPTER_RE = re.compile(r"cachified\s*(?:<[^>\n]{0,120}>)?\s*\(|\bcache\s*:\s*")
+# Module scope only (column 0): a function-local Map is created per call and
+# cannot cache across requests, so indented declarations are accumulators.
 MEM_CACHE_STORE_RE = re.compile(
-    r"(?m)^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*new\s+(?:Map|LRUCache|QuickLRU)\s*[<(]"
+    r"(?m)^(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*new\s+(?:Map|LRUCache|QuickLRU)\s*[<(]"
 )
 D1_AGGREGATE_SQL_RE = re.compile(
     r"['\"`][^'\"`]{0,600}?\b(?:COUNT|SUM|AVG|GROUP_CONCAT|TOTAL)\s*\("
