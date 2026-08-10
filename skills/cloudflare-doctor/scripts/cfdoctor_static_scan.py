@@ -114,7 +114,29 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.3.6"
+# Per-isolate cache shapes (kentcdodds.com PR #890): memory-only caching of
+# expensive D1 aggregates re-runs full scans on every isolate churn event, so
+# the effective refresh rate scales with isolates and churn rather than the TTL.
+MEM_CACHE_ADAPTER_RE = re.compile(
+    r"cache\s*:\s*(?:lruCache\b|lru\b|memCache\b|memoryCache\b|inMemoryCache\b|new\s+Map\s*\(|new\s+(?:LRUCache|QuickLRU)\s*[<(])"
+)
+ANY_CACHE_ADAPTER_RE = re.compile(r"cachified\s*(?:<[^>\n]{0,120}>)?\s*\(|\bcache\s*:\s*")
+# Module scope only (column 0): a function-local Map is created per call and
+# cannot cache across requests, so indented declarations are accumulators.
+MEM_CACHE_STORE_RE = re.compile(
+    r"(?m)^(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*new\s+(?:Map|LRUCache|QuickLRU)\s*[<(]"
+)
+D1_AGGREGATE_SQL_RE = re.compile(
+    r"['\"`][^'\"`]{0,600}?\b(?:COUNT|SUM|AVG|GROUP_CONCAT|TOTAL)\s*\("
+    r"[^'\"`]{0,600}?\bFROM\b[^'\"`]{0,600}?['\"`]"
+    r"|['\"`][^'\"`]{0,600}?\bSELECT\b[^'\"`]{0,600}?\bFROM\b[^'\"`]{0,600}?\bGROUP\s+BY\b[^'\"`]{0,600}?['\"`]",
+    re.IGNORECASE,
+)
+SHARED_CACHE_LAYER_RE = re.compile(
+    r"env\.[A-Za-z0-9_]+\.(?:get|put)\s*\(|caches\.(?:default|open)\b|KVNamespace|CACHE_RPC"
+)
+
+SCANNER_VERSION = "0.3.7"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -159,6 +181,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-PERF-R2-BUFFERING", "PERF", "medium", "low", "R2 object may be buffered instead of streamed", "Buffering R2 objects increases memory/CPU pressure and delays first byte."),
     ("CFDOC-PERF-D1-SELECT-STAR", "PERF", "low", "medium", "D1 query uses SELECT *; review projection and bounds", "SELECT * widens transfer/decoding and couples code to schema, but does not by itself prove a full scan or increase D1 billed rows read."),
     ("CFDOC-COST-D1-ORDER-RANDOM", "COST", "high", "high", "D1 query orders by RANDOM()", "Random ordering forces expensive scans/sorts that grow with table size."),
+    ("CFDOC-COST-D1-ISOLATE-CACHE", "COST", "medium", "medium", "Expensive D1 aggregate appears cached only in per-isolate memory", "Memory-only caching re-runs D1 aggregate scans on every isolate churn event; the effective refresh rate scales with isolates and churn, not the TTL, and D1 bills rows scanned."),
     ("CFDOC-PERF-D1-N-PLUS-ONE", "PERF", "low", "low", "Many D1 prepared statements in one file; check for N+1 queries", "Several sequential queries per request can multiply latency and billed rows."),
     ("CFDOC-COST-DO-FRONT-DOOR", "COST", "medium", "low", "Durable Object call path lacks obvious front-door validation", "Invalid/bot traffic should be rejected before it becomes DO requests/duration."),
     ("DO-SHARDING-HOTSPOT", "COST", "high", "high", "Durable Object idFromName uses a global/singleton key", "Low-cardinality DO keys concentrate traffic into one hot object."),
@@ -1189,6 +1212,44 @@ def add_code_findings(
                     "Trace route-level query counts; batch, join, cache, or denormalize where appropriate.",
                     "low",
                 ))
+            # Per-isolate memory caching of expensive aggregates: either a
+            # cachified-style call site whose cache adapter is memory-only, or a
+            # module-scope Map/LRU memo wrapping the aggregate with no shared
+            # KV/cache layer near the query.
+            if D1_AGGREGATE_SQL_RE.search(text):
+                lines = text.splitlines()
+                mem_hit: tuple[int, str] | None = None
+                for adapter in MEM_CACHE_ADAPTER_RE.finditer(text):
+                    boundary = ANY_CACHE_ADAPTER_RE.search(text, adapter.end())
+                    window_end = min(adapter.start() + 1600, boundary.start() if boundary else len(text))
+                    if D1_AGGREGATE_SQL_RE.search(text, adapter.start(), window_end):
+                        line_no = text.count("\n", 0, adapter.start()) + 1
+                        mem_hit = (line_no, lines[line_no - 1])
+                        break
+                if mem_hit is None:
+                    for store in MEM_CACHE_STORE_RE.finditer(text):
+                        use_rx = re.compile(r"\b" + re.escape(store.group(1)) + r"\.(?:get|set|has)\s*\(")
+                        if not use_rx.search(text):
+                            continue
+                        for aggregate in D1_AGGREGATE_SQL_RE.finditer(text):
+                            window = text[max(0, aggregate.start() - 1500):aggregate.start() + 1500]
+                            if use_rx.search(window) and not SHARED_CACHE_LAYER_RE.search(window):
+                                line_no = text.count("\n", 0, store.start()) + 1
+                                mem_hit = (line_no, lines[line_no - 1])
+                                break
+                        if mem_hit:
+                            break
+                if mem_hit:
+                    findings.append(Finding(
+                        "CFDOC-COST-D1-ISOLATE-CACHE",
+                        "medium",
+                        "Expensive D1 aggregate appears cached only in per-isolate memory",
+                        "cost footgun / missed optimization",
+                        f"{rpath}:{mem_hit[0]}: {excerpt(mem_hit[1])}",
+                        "Isolate memory is per-isolate and has no guaranteed lifetime: deploys, evictions, low-traffic locations, and warmup crons start cold isolates that re-run the cached computation regardless of TTL, so a full-scan D1 aggregate can execute far more often than the TTL implies while D1 bills every row scanned, not rows returned.",
+                        "Back expensive aggregate keys with a shared cache layer (for example a KV-backed cachified adapter or cache service), keep per-isolate memory only as an L1 in front of the shared layer or for values that are cheap to recompute, and compare per-query execution counts and rows read (D1 GraphQL d1QueriesAdaptiveGroups) against the TTL-implied refresh rate.",
+                        "medium",
+                    ))
 
         # Durable Object / Workers RPC public-method reachability.
         rpc_boundary = re.search(r"\bclass\s+([A-Za-z_$][\w$]*)\s+extends\s+(?:[A-Za-z_$][\w$]*\.)?(DurableObject|WorkerEntrypoint|WorkflowEntrypoint|RpcTarget|Agent)\b", text)

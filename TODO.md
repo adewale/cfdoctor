@@ -48,7 +48,7 @@ the plan doc and the git history, not repeated here.
 
 ## Research backlog (new patterns and experience reports)
 
-The 29-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios and 25 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.
+The 30-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 24 runtime scenarios and 28 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.
 
 - [x] Mine 544 recent `cloudflare/cloudflare-docs` commits for warnings, pricing/billing transitions, deprecations, and limits; retain selected first-party fossils in `research/frontier-refresh-2026-07-11.md`.
 - [x] Sweep 1,160 recent `cloudflare/workers-sdk` issues for guardrail/failure leads; keep issue evidence discovery-only until reproduced/corroborated.
@@ -58,3 +58,16 @@ The 29-record structured `research/incident-claim-ledger.json` now separates inc
 - [x] Cover Containers, Pipelines, Workers VPC, Email Service, Dynamic Workers, and Agents/Browser/Sandbox risk surfaces.
 - [x] Add Deno Deploy, AWS Amplify, and Dynamic Workers/Workers for Platforms to the evidence matrix.
 - [x] Define four explicit synthetic workload profiles (hobby, launch, production SaaS, viral/abuse), clearly labeled as replaceable assumptions rather than observed averages.
+- [x] Derive the per-isolate-cache half of the D1 rows-read check family from
+      `CFDOC-EVD-KCD-D1-ISOLATE-CACHE` (see
+      `research/kentcdodds-pr-890-review.md`): scanner lead
+      `CFDOC-COST-D1-ISOLATE-CACHE` (scanner 0.3.7), war-story scenario 24,
+      `d1-isolate-cache-rescan` fixture plus `d1-shared-cache-safe` near-miss
+      control (`max_findings: 0`) holding cheap-value LRU and L1-over-L2
+      layering quiet, four scanner unit tests, and validator widening to
+      scenarios 1..24.
+- [ ] Derive the remaining D1 rows-read halves: a missing-index/hot-query lead
+      grounded in `CFDOC-EVD-D1-134-BILL` (needs schema/index awareness the
+      current regex scanner lacks), and a `forceFresh`/cache-bypass-from-
+      public-action lead folded into the existing idempotency/hot-path check
+      family. Fixture-first, with near-miss controls, as above.

@@ -352,6 +352,20 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
   - `Cache-Control`/TTL, `Vary`, and `ctx.cache.purge()` ownership are intentional; only `GET`/`HEAD` are cached (`206`, `520`–`526`, WebSocket upgrades, and custom RPC methods bypass).
 - Evidence to request: Wrangler `cache`/`exports[*].cache` config, entrypoint layout (which entrypoint authenticates), `Cache-Control` headers set in code, `ctx.props`/cache-key composition, purge call sites, and request/CPU metrics before vs after enabling.
 
+### 24. Per-isolate cache TTLs do not bound D1 rows-read billing
+
+- Evidence ID: `CFDOC-EVD-KCD-D1-ISOLATE-CACHE`
+
+- Story: kentcdodds.com's August 2026 invoice included a $195.05 D1 line item for 195 billion rows read. Two full-table `PostRead` aggregates (~961K rows per scan) were cached only through a per-isolate `lru-cache` cachified adapter with 5–30 minute TTLs, so isolate churn (deploys, eviction, a 2-minute warmup cron) re-ran the scans roughly 127× more often than the TTLs imply. The merged fix moved the keys to a shared KV-backed cache, raised one TTL, skipped `forceFresh` ranking refreshes for deduplicated repeat reads, and recorded the convention where future agent sessions read it. Sources: https://github.com/kentcdodds/kentcdodds.com/pull/890 and https://github.com/kentcdodds/kentcdodds.com/blob/main/docs/agents/data-table-conventions.md
+- Source type: war story / first-hand merged fix PR with invoice figures; the multiplier and per-scan size are derivable from the PR's own execution and rows-read numbers.
+- Mechanism: isolate memory has no guaranteed lifetime, so a memory-only cache's effective refresh rate scales with isolates × churn events, not 1/TTL, while D1 bills rows scanned rather than rows returned. Full-scan aggregates are the worst case, and warmup crons make it worse by starting cold isolates on a schedule. This is the execution-count half of the rows-read meter; `CFDOC-EVD-D1-134-BILL` (missing indexes on hot queries) is the per-execution scan-size half.
+- Cloudflare checks:
+  - Expensive D1 aggregates are backed by a shared cache layer (KV-backed cachified adapter, cache service, or Workers Cache where it fits); per-isolate memory is only an L1 in front of the shared layer or reserved for cheap-to-recompute values (`CFDOC-COST-D1-ISOLATE-CACHE`).
+  - Cache-bypass refreshes (`forceFresh`, purge-then-recompute) reachable from public or per-request actions are gated on an actual state change; nested cached values are traced per key because cachified `forceFresh` is not recursive.
+  - TTL math is checked against isolate churn: per-query execution counts are compared with the TTL-implied refresh rate.
+  - Warmup/cron traffic is accounted as a cold-isolate generator for any per-isolate cache.
+- Evidence to request: per-query execution counts and rows read from D1 GraphQL analytics (`d1QueriesAdaptiveGroups` ordered by rows read), deploy cadence, cron schedules, cache adapter wiring (which keys use which layer), and the shared layer's TTL/invalidation story.
+
 ## Scenario-to-check matrix
 
 | Scenario | Cloudflare products/configs to inspect |
@@ -367,6 +381,7 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 | Temporary env left live | Pages previews, Workers preview URLs/routes, env bindings, crons, queues, D1/R2/KV prod sharing |
 | Cache layer conflict/leak | Browser cache, CDN/Cache Rules, Workers Cache (`cache.enabled`), Worker Cache API, KV/D1/R2 caches, AI Gateway cache, cache keys/TTLs/purge |
 | Workers Cache billing/auth surface | Wrangler `cache`/`exports[*].cache`, auth/gateway entrypoint exclusion, `ctx.props` cache-key separation, `Cache-Control`/`Vary`, `ctx.cache.purge()`, request/CPU metrics before vs after |
+| Per-isolate cache illusion on D1 aggregates | cachified/memo cache adapters, module-scope Map/LRU stores, shared KV/cache-service layers, D1 aggregate queries, `forceFresh`/purge call sites, warmup crons, deploy cadence, `d1QueriesAdaptiveGroups` rows-read attribution |
 | Logging as a meter | Workers Logs, Logpush, Analytics Engine, destination retention/lifecycle, log sampling/redaction, error-storm alerts |
 | Public previews/review apps | Pages previews, Workers preview URLs, preview routes/domains, paid env bindings, crons, queues, cleanup/noindex policies |
 | Durable Object billing/lifecycle gotchas | DO WebSockets, hibernation, alarms, storage list/get/put patterns, shard keys, object cardinality, stub fanout, idempotency design, metrics |
@@ -390,6 +405,7 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - `CFDOC-COST-THIRD-PARTY-ORIGIN`: Cloudflare-fronted Vercel/Netlify/Railway/Render/Fly/Heroku/AWS/GCP/Azure/Supabase/Firebase origin can still be billed through cache misses or direct default hostname access.
 - `CFDOC-COST-LOG-VOLUME`: Workers Logs/Logpush/Analytics Engine or external log ingestion can spike under error/bot traffic without sampling/retention controls.
 - `CFDOC-COST-WORKERS-CACHE-BILLING`: Workers Cache (`cache.enabled`) is on; verify hits still bill a request, that normally-free static-asset and worker-to-worker traffic becoming billed is intended, and that auth/gateway entrypoints set `cache.enabled = false`.
+- `CFDOC-COST-D1-ISOLATE-CACHE`: Expensive D1 aggregate cached only in per-isolate memory (memory-only cachified adapter or module-scope Map/LRU memo) re-runs full scans on isolate churn regardless of TTL.
 - `CFDOC-COST-PREVIEW-PUBLIC-PAID`: Preview/review/demo environment is public, indexed, or connected to paid/prod services without TTL cleanup.
 - `DO-WEBSOCKET-DURATION`: Long-lived DO WebSocket lacks hibernation/close strategy and duration observability.
 - `DO-STORAGE-LIST-HOTPATH`: DO storage list/prefix scan appears on request, alarm, or wake-up path.

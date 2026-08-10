@@ -59,7 +59,7 @@ When a request crosses multiple Cloudflare primitives, require an explicit cache
 | D1/R2-backed cache | Whether D1 indexes/rows-read and R2 operations are reduced rather than shifted; metadata in D1/KV, bytes in R2, CDN cache in front when public. |
 | Durable Object cache/state | Whether DO is used only where coordination/serialization is needed; avoid using DO as a broad read cache. |
 | AI Gateway / prompt/result cache | Cache key includes model, prompt/version, parameters, tenant/user policy, and safety constraints; idempotency prevents duplicate paid generations. |
-| Application memoization | Scope is per request/process only unless persisted; avoid assuming isolate memory is durable or globally shared. |
+| Application memoization | Scope is per-isolate only unless persisted, and isolates have no guaranteed lifetime: deploys, evictions, and warmup crons re-run the recompute regardless of TTL. Back expensive recomputes (for example D1 aggregates) with a shared KV/cache layer and keep isolate memory as an L1 or for cheap values. |
 
 For each layer, record: cache owner, key, TTL, invalidation trigger, stale-while-revalidate behavior, whether it caches errors/negative results, and how it prevents personalized-data leaks.
 
