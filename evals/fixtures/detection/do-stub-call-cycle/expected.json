@@ -1,0 +1,10 @@
+{
+  "description": "Two Durable Objects re-trigger each other via detached waitUntil stub calls while every hop re-scans a growing SQLite table. Models the 2026-08 StandardAgents runaway-loop bill where DO storage rows read were 98.5% of an $8,846 invoice.",
+  "evidence_ids": ["CFDOC-EVD-STDAGENTS-DO-LOOP"],
+  "required_check_ids": [
+    "DO-STUB-CALL-CYCLE",
+    "DO-SQL-SCAN-HOTPATH"
+  ],
+  "forbidden_check_ids": [],
+  "expected_evidence_terms": ["cycle:"]
+}

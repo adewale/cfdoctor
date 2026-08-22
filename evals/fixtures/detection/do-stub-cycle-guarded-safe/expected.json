@@ -1,0 +1,9 @@
+{
+  "description": "Two Durable Objects that call each other but check an explicit hop-depth budget in every class before the next stub call. False-positive guard: a bounded ping-pong must not be flagged as a runaway cycle, zero findings total.",
+  "evidence_ids": ["CFDOC-EVD-STDAGENTS-DO-LOOP"],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "DO-STUB-CALL-CYCLE"
+  ],
+  "max_findings": 0
+}

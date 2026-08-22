@@ -192,3 +192,13 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Analytics Engine sampling: https://developers.cloudflare.com/analytics/analytics-engine/sampling/
 - R2 metrics: https://developers.cloudflare.com/r2/platform/metrics-analytics/
 - Cloudflare public plans: https://www.cloudflare.com/plans/
+
+## Billing visibility and spend controls
+
+- Billing docs index: https://developers.cloudflare.com/billing/
+- Billable usage dashboard (daily, invoice-pipeline data; Pay-as-you-go): https://developers.cloudflare.com/billing/manage/billable-usage/
+- Budget alerts (informational only — no pause/cap; $10 default auto-created for eligible Pay-as-you-go accounts): https://developers.cloudflare.com/billing/manage/budget-alerts/
+- Budget alerts default-on changelog: https://developers.cloudflare.com/changelog/post/2026-06-15-budget-alerts-default-on/
+- Billable Usage API announcement: https://blog.cloudflare.com/billable-usage-api/
+- Usage-based billing overview: https://developers.cloudflare.com/billing/understand/usage-based-billing/
+- Notification types (per-product usage notifications): https://developers.cloudflare.com/notifications/notification-available/

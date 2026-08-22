@@ -1,0 +1,13 @@
+{
+  "name": "agent-session-loop",
+  "main": "index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [
+      { "name": "SESSION_COORDINATOR", "class_name": "SessionCoordinator" },
+      { "name": "TASK_RUNNER", "class_name": "TaskRunner" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SessionCoordinator", "TaskRunner"] }]
+}

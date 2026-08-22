@@ -1,0 +1,10 @@
+{
+  "description": "One-directional Durable Object chain (coordinator hands work to runner, runner never calls back) with WHERE/LIMIT-bounded SQL. False-positive guard: no stub-cycle or unbounded-scan findings, zero findings total.",
+  "evidence_ids": ["CFDOC-EVD-STDAGENTS-DO-LOOP"],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "DO-STUB-CALL-CYCLE",
+    "DO-SQL-SCAN-HOTPATH"
+  ],
+  "max_findings": 0
+}

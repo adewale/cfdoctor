@@ -4,7 +4,7 @@ Use this checklist to turn public billing/failure horror stories into concrete C
 
 The canonical source/lineage/taxonomy record is the repo-only `research/incident-claim-ledger.json` in the [cfdoctor repository](https://github.com/adewale/cfdoctor/tree/main/research). Each scenario below carries an evidence ID; aggregators, mirrors, and discussions are aliases within one source cluster rather than independent corroboration. Incident observations, operator inferences, official guidance, and current product semantics remain distinct evidence classes.
 
-Link and claim status last verified: 2026-07-11 (`scripts/check_links.py` and `scripts/check_claim_ledger.py`).
+Link and claim status last verified: 2026-08-09 (`scripts/check_links.py` and `scripts/check_claim_ledger.py`).
 
 ## How to use
 
@@ -142,14 +142,16 @@ For each relevant scenario:
 
 - Evidence ID: `CFDOC-EVD-SPEND-CONTROLS`
 
-- Official docs: Vercel Spend Management, https://vercel.com/docs/pricing/spend-management; Netlify billing/usage, https://docs.netlify.com/manage/accounts-and-billing/billing; Firebase avoid surprise bills, https://firebase.google.com/docs/projects/billing/avoid-surprise-bills; Google budgets, https://cloud.google.com/billing/docs/how-to/budgets; Azure budgets, https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets
+- Official docs: Vercel Spend Management, https://vercel.com/docs/pricing/spend-management; Netlify billing/usage, https://docs.netlify.com/manage/accounts-and-billing/billing; Firebase avoid surprise bills, https://firebase.google.com/docs/projects/billing/avoid-surprise-bills; Google budgets, https://cloud.google.com/billing/docs/how-to/budgets; Azure budgets, https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets. Cloudflare-native semantics (budget alerts, billable usage dashboard/API) are tracked in `CFDOC-EVD-CF-BUDGET-ALERTS`: Cloudflare budget alerts are informational only, do not pause or cap usage, and eligible Pay-as-you-go accounts get an auto-created $10 default alert — https://developers.cloudflare.com/billing/manage/budget-alerts/ and https://developers.cloudflare.com/billing/manage/billable-usage/
 - Source type: official docs.
-- Mechanism: budgets/alerts may notify after spend has begun; they do not replace rate limits, kill switches, queues, idempotency, and cache controls.
+- Mechanism: budgets/alerts may notify after spend has begun; they do not replace rate limits, kill switches, queues, idempotency, and cache controls. On Cloudflare specifically there is no hard spend cap, alert scope must match the meters in use, and delivery latency should be verified rather than assumed (see scenario 24 for a first-hand detection-at-invoice case).
 - Cloudflare checks:
   - Billing alerts exist but are not the only control.
+  - Budget alert thresholds are deliberate (not only the $10 auto-created default), recipients are monitored, and per-product notifications cover the meters actually in use.
   - Product-level kill switches and WAF/rate limits exist for expensive paths.
   - Quotas/backpressure are enforced in code/config before provider billing meters.
-- Evidence to request: alert config, WAF/rate-limit rules, kill-switch flags, queue/backpressure implementation.
+  - Billable usage (dashboard or API) is reviewed on a cadence that matches how fast a runaway meter could spend.
+- Evidence to request: alert config, notification history, billable usage export, WAF/rate-limit rules, kill-switch flags, queue/backpressure implementation.
 
 ### 10. Cloudflare-fronted third-party origins still bill at the origin
 
@@ -352,6 +354,21 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
   - `Cache-Control`/TTL, `Vary`, and `ctx.cache.purge()` ownership are intentional; only `GET`/`HEAD` are cached (`206`, `520`–`526`, WebSocket upgrades, and custom RPC methods bypass).
 - Evidence to request: Wrangler `cache`/`exports[*].cache` config, entrypoint layout (which entrypoint authenticates), `Cache-Control` headers set in code, `ctx.props`/cache-key composition, purge call sites, and request/CPU metrics before vs after enabling.
 
+### 24. Two Durable Objects re-trigger each other; the rows-read meter dominates; budget alerts arrive too late
+
+- Evidence ID: `CFDOC-EVD-STDAGENTS-DO-LOOP`
+
+- Story: StandardAgents reported an $8,846.78 Cloudflare cycle (2026-07-09 to 2026-08-09) after "2 Durable Objects deep in our stack infinite looped." The attached spend breakdown shows Durable Objects Storage Rows Read at $8,710.39 (98.5%) versus under $50 each for DO compute requests, duration, and rows written; daily spend ramped from ~$40 to ~$600 within a week, ran ~3 weeks, stopped around 2026-07-30, and the team learned of it from the cycle-end bill on 2026-08-08. Their auto-created $10 default budget alert reported "88468% of $10.00 budget" at cycle close, and their pre-existing Workers-scoped usage notifications could not see the DO storage meter. Sources: Justin Schroeder, 2026-08-08, https://x.com/jpschroeder/status/2086144942657712500; Boyd thread, 2026-08-08, https://x.com/0xboyd/status/2086136894803279932 and https://x.com/0xboyd/status/2086143037042749480
+- Source type: first-hand operator posts with billing screenshots, one source cluster; scenario source only. Cite current Cloudflare docs for pricing, alert semantics, and limits.
+- Mechanism: two DO classes hand work to each other through stubs, and the chain detaches via `waitUntil`/alarms/queued work, so per-invocation subrequest limits reset on every hop and nothing platform-side stops the loop. When each hop re-reads growing state (`storage.sql.exec` SELECT without bounds, or `storage.list()`), SQLite-backed rows read compound roughly quadratically — the bill signature is rows read >> rows written with small request/duration meters. Cloudflare budget alerts are informational only (no pause/cap), so detection defaults to the invoice unless the team watches daily billable usage.
+- Cloudflare checks:
+  - `DO-STUB-CALL-CYCLE`: no DO-to-DO stub-call cycles without an explicit per-hop depth/budget guard, idempotency/turn key, and kill-switch check inside the loop step.
+  - `DO-SQL-SCAN-HOTPATH`: hot-path `storage.sql.exec` SELECTs carry WHERE/LIMIT bounds backed by indexes; growing tables are not re-scanned per hop.
+  - `CFDOC-COST-SPEND-ALERTS-ONLY`: a budget alert exists beyond the $10 auto-created default, thresholds match expected daily burn, recipients are monitored, the team knows alerts are informational only and may lag, and per-product notifications cover the meters actually in use (DO storage, not just Workers requests).
+  - Billable usage (dashboard/API) is reviewed daily, or polled with an anomaly threshold, so a runaway meter is caught in hours-to-days rather than at invoice time.
+  - A kill switch (config/KV/DO-storage flag checked inside every hop, plus `deleteAlarm()`/queue-pause/rollback paths) can stop detached loops without a deploy.
+- Evidence to request: Wrangler `durable_objects` bindings and migrations, DO class code and stub call graph, alarm/`waitUntil` usage, SQL/storage access patterns, budget alert configuration and notification history, billable usage export or API output for the affected cycle, and DO metrics (requests, duration, storage rows) for the loop window.
+
 ## Scenario-to-check matrix
 
 | Scenario | Cloudflare products/configs to inspect |
@@ -363,7 +380,9 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 | Duplicate expensive generation | Workers AI, AI Gateway caching/rate limits, Vectorize embedding/query flow, Images/Stream/Browser Run jobs |
 | Direct origin/bucket bypass | DNS proxy status, R2 public/custom domains, origin firewall, Authenticated Origin Pulls, cache/WAF coverage |
 | Public storage/object hotlinking | R2 public buckets/custom domains, signed URLs, cache rules, object operation counts, WAF/rate limiting |
-| Meter hidden behind one request | Workers CPU/subrequests, D1 rows read, R2/KV ops, DO duration/storage writes, Queue retries, AI/Vectorize units |
+| Meter hidden behind one request | Workers CPU/subrequests, D1 rows read, R2/KV ops, DO duration/requests, DO storage rows read/written (SQLite), Queue retries, AI/Vectorize units |
+| DO-to-DO loop / detached re-trigger | `durable_objects` bindings, DO class stub call graph, `waitUntil`/alarm chains, hop budgets, idempotency keys, kill-switch flags, DO rows-read/request metrics |
+| Budget alerts / spend detection latency | Budget alert config and thresholds (incl. the $10 auto-created default), notification history, per-product usage notifications vs meters in use, billable usage dashboard/API cadence |
 | Temporary env left live | Pages previews, Workers preview URLs/routes, env bindings, crons, queues, D1/R2/KV prod sharing |
 | Cache layer conflict/leak | Browser cache, CDN/Cache Rules, Workers Cache (`cache.enabled`), Worker Cache API, KV/D1/R2 caches, AI Gateway cache, cache keys/TTLs/purge |
 | Workers Cache billing/auth surface | Wrangler `cache`/`exports[*].cache`, auth/gateway entrypoint exclusion, `ctx.props` cache-key separation, `Cache-Control`/`Vary`, `ctx.cache.purge()`, request/CPU metrics before vs after |
@@ -398,6 +417,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - `DO-SHARDING-HOTSPOT`: DO IDs use singleton/low-cardinality keys or unbounded high-cardinality ephemeral keys.
 - `DO-EPHEMERAL-IDEMPOTENCY-OBJECTS`: One DO per idempotency/request key instead of bounded shard/time bucket/TTL store.
 - `DO-STORAGE-BATCHING`: Repeated DO writes need coalescing/transaction review; verify backend and rows/units changed before making a cost claim.
+- `DO-STUB-CALL-CYCLE`: DO classes call each other's stubs (or their own binding) in a cycle without a per-hop depth/budget guard, idempotency key, or in-loop kill switch.
+- `DO-SQL-SCAN-HOTPATH`: `storage.sql.exec` SELECT without WHERE/LIMIT on a request/alarm/loop path; SQLite-backed rows read compound with table growth.
 - `DO-FANOUT-TAX`: One request/job fans out to many DO stubs without backpressure or urgency/cost budget.
 - `DO-WAITUNTIL-LIFECYCLE`: DO uses background lifecycle work without clear bounded duration, retries, or better Queue/Workflow/Agent fit.
 - `KV-VS-DO-STORAGE-FIT`: DO storage used for read-heavy/write-rare data that may fit KV/D1/R2 once consistency/query needs are known.

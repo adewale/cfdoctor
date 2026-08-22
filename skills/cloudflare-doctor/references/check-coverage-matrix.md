@@ -50,7 +50,7 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | CFDOC-COST-PREVIEW-PUBLIC-PAID | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §13; proposed in §"Checks to add or strengthen" | Reassessed in 0.3.5: repo-visible preview paid bindings are already caught by `CFDOC-COST-TEMP-ENV-PAID-BINDINGS`; public/indexed status and lifecycle cleanup remain targeted account-evidence questions. |
 | CFDOC-COST-R2-LIST-HOTPATH | scanner-lead | COST | medium | [`cost-footguns.md`](cost-footguns.md) (R2 operation meters) | R2 bucket list appears in application code. |
 | CFDOC-COST-RETRY-AMPLIFY | scanner-lead | COST | medium | [`cost-footguns.md`](cost-footguns.md) (retry storms); [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §1 | Covers generic retry-without-backoff/circuit-breaker; distinct from the self-fetch-only CFDOC-COST-ASYNC-LOOP. |
-| CFDOC-COST-SPEND-ALERTS-ONLY | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §9; proposed in §"Checks to add or strengthen" | Reassessed in 0.3.5: code-level bounds/circuit breakers are covered by mechanism-specific leads, but proving alerts are the only effective control requires account alerting plus runtime-control evidence. |
+| CFDOC-COST-SPEND-ALERTS-ONLY | skill-prompt-only | COST | — | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §9, §24; proposed in §"Checks to add or strengthen" | Reassessed in 0.3.5: code-level bounds/circuit breakers are covered by mechanism-specific leads, but proving alerts are the only effective control requires account alerting plus runtime-control evidence. Strengthened in 0.4.0 with Cloudflare-native budget-alert scope/threshold/latency questions (Cloudflare budget alerts are informational only and do not cap usage). |
 | CFDOC-COST-TEMP-ENV-PAID-BINDINGS | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §7, §13; proposed in §"Checks to add or strengthen" | Temporary/preview environment is connected to paid or stateful Cloudflare services. |
 | CFDOC-COST-THIRD-PARTY-ORIGIN | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §10; proposed in §"Checks to add or strengthen" | Worker fetches a public third-party/serverless origin hostname. |
 | CFDOC-COST-UNBOUNDED-FANOUT | scanner-lead | COST | medium | [`cost-footguns.md`](cost-footguns.md) (bounded fanout) | Promise.all map fanout lacks an obvious concurrency cap. |
@@ -78,8 +78,10 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | DO-FANOUT-TAX | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Fan-out to Durable Objects lacks obvious backpressure. |
 | DO-SHARDING-HOTSPOT | scanner-lead | COST | high | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Durable Object idFromName uses a global/singleton key. |
 | DO-SOCKET-CLOSE-HYGIENE | scanner-lead | REL | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | WebSocket path lacks obvious close/error cleanup. |
+| DO-SQL-SCAN-HOTPATH | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §24; proposed in §"Checks to add or strengthen" | `storage.sql.exec` SELECT without structural WHERE/LIMIT in a literal statement; SQL comments and quoted values/identifiers do not count as clauses. Variable/constructed SQL remains semantic review work. |
 | DO-STORAGE-BATCHING | scanner-lead | COST | low | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; current DO pricing/storage docs | Review repeated writes for coalescing/transaction latency. Batching distinct keys does not itself reduce billed rows/units; backend and rows changed matter. |
 | DO-STORAGE-LIST-HOTPATH | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Durable Object storage.list appears in code. |
+| DO-STUB-CALL-CYCLE | scanner-lead | COST | high | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §24; proposed in §"Checks to add or strengthen" | Lexical same-script DO-to-DO stub invocation cycles from one Wrangler config/environment binding map; suppressed only when every cycle edge has a visible terminating guard and advances the guarded value in the invocation. Queue/Worker hops, cross-script `script_name`, helper/dynamic binding indirection, and exhaustive dense-graph cycle enumeration remain semantic review work. |
 | DO-WAITUNTIL-LIFECYCLE | scanner-lead | REL | low | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Durable Object background work should be bounded and API-correct. |
 | DO-WEBSOCKET-DURATION | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | WebSocket handling may not use Durable Object hibernation. |
 | DYNAMIC-WORKER-SANDBOX-CAPABILITIES | scanner-lead | SEC | high | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §16; proposed in §"Checks to add or strengthen" | Dynamic Worker/code execution lacks obvious capability or resource bounds. |
@@ -131,3 +133,28 @@ The five follow-up gaps were hardened in scanner 0.3.5:
 - `CFDOC-COST-ASYNC-LOOP` follows bounded same-file URL aliases derived from
   the incoming request. Cross-module/runtime URL construction remains outside
   static reach.
+
+Scanner 0.4.0 added two Durable Object leads motivated by the 2026-08
+StandardAgents runaway-loop bill (`CFDOC-EVD-STDAGENTS-DO-LOOP`), each with
+known-bad and false-positive-guard fixtures:
+
+- `DO-STUB-CALL-CYCLE` builds one lexical class-level graph per Wrangler
+  config/environment from local `durable_objects` bindings and brace-bounded
+  class bodies. Only an actual method invocation on a `get()`/`getByName()`
+  stub creates an edge; `idFromName()`, `idFromString()`, `newUniqueId()`, or
+  stub construction alone do not. Rings are not size-limited (2-, 3-, and
+  10-class cases are pinned). A cycle is suppressed only when each cycle edge
+  has a visible terminating depth/hop/budget guard and passes an incremented or
+  decremented guard value in that invocation.
+- The cycle lead intentionally does not compose non-DO hops (`DO -> Queue ->
+  consumer Worker -> DO`, `DO -> service-binding Worker -> DO`) or cross-script
+  `script_name` bindings. Namespace/helper indirection such as `call(env.DO)`
+  or `env[name]` is also invisible. DFS reports the first cycle found from each
+  start class and deduplicates by node-set, so it proves that a cycle lead
+  exists rather than exhaustively listing every overlapping loop in a dense
+  graph. The finding therefore tells reviewers to audit the full async call
+  graph; related Queue/self-fetch/service-binding checks cover only components.
+- `DO-SQL-SCAN-HOTPATH` flags literal `storage.sql.exec` SELECT statements
+  with neither WHERE nor LIMIT, in source files only, so reference prose and
+  docs cannot trip it. Variable/constructed SQL and index quality remain
+  semantic review work backed by rows-read metrics.

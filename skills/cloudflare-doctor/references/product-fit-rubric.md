@@ -80,6 +80,7 @@ Smells:
 - Cron every minute for polling that could be event-driven, queue-driven, webhook-driven, or batched less often.
 - Long process encoded as recursive self-fetches or ad hoc KV state. Prefer Workflows/Queues/DO state machines.
 - Workflow/DO-alarm loops drain a KV/D1/R2 work list without atomic claim/idempotency/max-iteration/kill-switch controls.
+- Durable Objects that re-trigger each other (or themselves) through stubs/`waitUntil`/alarms as an ad hoc pipeline. Prefer Queues/Workflows for multi-step work; if DO-to-DO calls must stay, require per-hop depth budgets, idempotency keys, and an in-loop kill switch.
 
 ## Dynamic Workers, Artifacts, and Agents SDK
 

@@ -1,0 +1,12 @@
+{
+  // Usage ledger Durable Object whose dashboard endpoint re-reads the whole
+  // table on every request; models the rows-read-dominated DO bill mechanism.
+  "name": "usage-ledger",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "USAGE_LEDGER", "class_name": "UsageLedger" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["UsageLedger"] }]
+}
