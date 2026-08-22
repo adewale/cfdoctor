@@ -50,7 +50,8 @@ the plan doc and the git history, not repeated here.
 
 - [ ] Re-review `CFDOC-EVD-STDAGENTS-DO-LOOP` by 2026-09-08: check the X threads/replies for the confirmed in-code trigger (stub calls vs alarms), any Cloudflare refund outcome, and independent pickup (HN or postmortem) that could raise the independence score.
 - [ ] Verify budget-alert delivery latency against current docs/changelog at the same review: the cycle-end delivery observed in the incident is operator evidence, and Cloudflare has said billable-usage data is moving toward real-time; update `CFDOC-EVD-CF-BUDGET-ALERTS` and scenario 9/24 wording if semantics change.
-- [ ] Consider extending `DO-STUB-CALL-CYCLE` to cross-script `script_name` Durable Object bindings once a real multi-config fixture exists; same-config scope only today, and the matrix row documents the boundary.
+- [ ] Consider extending `DO-STUB-CALL-CYCLE` to cross-script `script_name` Durable Object bindings once a representative deployed cross-script fixture can prove resolution and precision; same-script scope only today, and the matrix row documents the boundary.
+- [ ] Consider a separate composed async-loop graph for DO -> Queue -> consumer Worker -> DO and DO -> service-binding Worker -> DO only after representative fixtures establish binding resolution and acceptable precision. Existing queue re-enqueue, self-fetch, service-binding, and DO-cycle leads cover components but must not be presented as end-to-end detection.
 - [ ] Confirm the Billable Usage API response shape against the API schema docs (the endpoint template in `targeted-account-reads.md` came from the launch blog) before relying on it in an approved read.
 
 ## Research backlog (new patterns and experience reports)

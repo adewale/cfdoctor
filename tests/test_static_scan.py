@@ -258,7 +258,7 @@ class StaticScannerTests(unittest.TestCase):
         ids = {f["check_id"] for f in report["findings"]}
         self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
 
-    def test_do_stub_cycle_with_depth_guard_in_every_class_is_suppressed(self) -> None:
+    def test_do_stub_cycle_with_unpropagated_depth_guard_is_reported(self) -> None:
         report = scan({
             "wrangler.jsonc": self.TWO_DO_CONFIG,
             "src/index.js": "\n".join([
@@ -285,6 +285,194 @@ class StaticScannerTests(unittest.TestCase):
                 "  }",
                 "}",
             ]),
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_do_stub_cycle_is_not_suppressed_by_guard_in_another_method(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.TWO_DO_CONFIG,
+            "src/index.js": "\n".join([
+                "export class Coordinator {",
+                "  constructor(ctx, env) { this.env = env; }",
+                "  validate(depth) { if (depth >= 3) return false; return true; }",
+                "  fetch(request) {",
+                "    const depth = Number(request.headers.get('x-hop-depth') || 0);",
+                "    return this.env.RUNNER.getByName('runner').fetch('https://do/run', {",
+                "      headers: { 'x-hop-depth': String(depth + 1) },",
+                "    });",
+                "  }",
+                "}",
+                "export class TaskRunner {",
+                "  constructor(ctx, env) { this.env = env; }",
+                "  validate(depth) { if (depth >= 3) return false; return true; }",
+                "  fetch(request) {",
+                "    const depth = Number(request.headers.get('x-hop-depth') || 0);",
+                "    return this.env.COORDINATOR.getByName('coordinator').fetch('https://do/back', {",
+                "      headers: { 'x-hop-depth': String(depth + 1) },",
+                "    });",
+                "  }",
+                "}",
+            ]),
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_do_stub_cycle_with_terminating_propagated_depth_guard_is_suppressed(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.TWO_DO_CONFIG,
+            "src/index.js": "\n".join([
+                "export class Coordinator {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const depth = Number(request.headers.get('x-hop-depth') || 0);",
+                "    if (depth >= 3) return new Response('depth limit', { status: 429 });",
+                "    const id = this.env.RUNNER.idFromName(auth);",
+                "    return this.env.RUNNER.get(id).fetch('https://do/run', {",
+                "      headers: { 'x-hop-depth': String(depth + 1), authorization: auth },",
+                "    });",
+                "  }",
+                "}",
+                "export class TaskRunner {",
+                "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
+                "  async fetch(request) {",
+                "    const auth = request.headers.get('authorization');",
+                "    const depth = Number(request.headers.get('x-hop-depth') || 0);",
+                "    if (depth >= 3) return new Response('depth limit', { status: 429 });",
+                "    const id = this.env.COORDINATOR.idFromName(auth);",
+                "    return this.env.COORDINATOR.get(id).fetch('https://do/notify', {",
+                "      headers: { 'x-hop-depth': String(depth + 1), authorization: auth },",
+                "    });",
+                "  }",
+                "}",
+            ]),
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_do_binding_id_or_stub_construction_without_invocation_is_not_a_cycle(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.TWO_DO_CONFIG,
+            "src/index.js": "\n".join([
+                "export class Coordinator {",
+                "  constructor(ctx, env) { this.env = env; }",
+                "  fetch() {",
+                "    const runnerId = this.env.RUNNER.idFromName('reference-only');",
+                "    const runner = this.env.RUNNER.get(runnerId);",
+                "    return Response.json({ runner: runner.id.toString() });",
+                "  }",
+                "}",
+                "export class TaskRunner {",
+                "  constructor(ctx, env) { this.env = env; }",
+                "  fetch() {",
+                "    const coordinatorId = this.env.COORDINATOR.idFromName('reference-only');",
+                "    const coordinator = this.env.COORDINATOR.get(coordinatorId);",
+                "    return Response.json({ coordinator: coordinator.id.toString() });",
+                "  }",
+                "}",
+            ]),
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_do_stub_rpc_cycle_through_local_variables_is_reported(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.TWO_DO_CONFIG,
+            "src/index.js": """
+              export class Coordinator {
+                constructor(ctx, env) { this.env = env; }
+                run() {
+                  const runner = this.env.RUNNER.getByName('runner')
+                  return runner.runTask();
+                }
+              }
+              export class TaskRunner {
+                constructor(ctx, env) { this.env = env; }
+                notify() {
+                  const coordinator = this.env.COORDINATOR.getByName('coordinator');
+                  return coordinator.notify();
+                }
+              }
+            """,
+        })
+        cycle = [f for f in report["findings"] if f["check_id"] == "DO-STUB-CALL-CYCLE"]
+        self.assertEqual(1, len(cycle))
+
+    def test_worker_entrypoint_after_do_class_is_not_attributed_to_class(self) -> None:
+        report = scan({
+            "wrangler.jsonc": """{
+              "name": "entrypoint-and-do",
+              "main": "src/index.js",
+              "compatibility_date": "2026-07-01",
+              "durable_objects": {"bindings": [{"name": "ROOM", "class_name": "Room"}]},
+              "migrations": [{"tag": "v1", "new_sqlite_classes": ["Room"]}]
+            }""",
+            "src/index.js": "\n".join([
+                "export class Room {",
+                "  fetch() { return new Response('room'); }",
+                "}",
+                "export default {",
+                "  async fetch(request, env) {",
+                "    const id = env.ROOM.idFromName('main');",
+                "    return env.ROOM.get(id).fetch(request);",
+                "  },",
+                "};",
+            ]),
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_helper_and_dynamic_binding_indirection_are_explicit_cycle_boundaries(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.TWO_DO_CONFIG,
+            "src/index.js": """
+              async function invoke(namespace, name) {
+                return namespace.getByName(name).fetch('https://do/next');
+              }
+              export class Coordinator {
+                constructor(ctx, env) { this.env = env; }
+                fetch() { return invoke(this.env.RUNNER, 'runner'); }
+              }
+              export class TaskRunner {
+                constructor(ctx, env) { this.env = env; }
+                fetch() {
+                  const binding = 'COORDINATOR';
+                  return this.env[binding].getByName('coordinator').fetch('https://do/back');
+                }
+              }
+            """,
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_queue_and_service_binding_hops_are_not_do_stub_edges(self) -> None:
+        report = scan({
+            "wrangler.jsonc": """{
+              "name": "composed-loop-shape",
+              "main": "src/index.js",
+              "compatibility_date": "2026-07-01",
+              "durable_objects": {"bindings": [
+                {"name": "COORDINATOR", "class_name": "Coordinator"}
+              ]},
+              "queues": {"producers": [{"binding": "JOBS", "queue": "jobs"}]},
+              "services": [{"binding": "ROUTER", "service": "router-worker"}],
+              "migrations": [{"tag": "v1", "new_sqlite_classes": ["Coordinator"]}]
+            }""",
+            "src/index.js": """
+              export class Coordinator {
+                constructor(ctx, env) { this.env = env; }
+                async fetch(request) {
+                  await this.env.JOBS.send({ id: request.url });
+                  return this.env.ROUTER.fetch(request);
+                }
+              }
+              export default {
+                async queue(batch, env) {
+                  return env.COORDINATOR.getByName('main').fetch('https://do/resume');
+                }
+              };
+            """,
         })
         ids = {f["check_id"] for f in report["findings"]}
         self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
@@ -329,20 +517,26 @@ class StaticScannerTests(unittest.TestCase):
     }"""
 
     @staticmethod
-    def ring_stage(cls: str, next_binding: str, guarded: bool) -> str:
+    def ring_stage(class_name: str, next_binding: str, guarded: bool) -> str:
         guard = [
             "    const depth = Number(request.headers.get('x-hop-depth') || 0);",
             "    if (depth >= 3) return new Response('hop limit reached', { status: 429 });",
         ] if guarded else []
+        call = (
+            f"    this.ctx.waitUntil(this.env.{next_binding}.get(id).fetch('https://do/next', "
+            "{ headers: { 'x-hop-depth': String(depth + 1) } }));"
+            if guarded
+            else f"    this.ctx.waitUntil(this.env.{next_binding}.get(id).fetch('https://do/next'));"
+        )
         return "\n".join([
-            f"export class {cls} {{",
+            f"export class {class_name} {{",
             "  constructor(ctx, env) { this.ctx = ctx; this.env = env; }",
             "  async fetch(request) {",
             "    const auth = request.headers.get('authorization');",
             *guard,
             f"    const id = this.env.{next_binding}.idFromName(auth);",
-            f"    this.ctx.waitUntil(this.env.{next_binding}.get(id).fetch('https://do/next'));",
-            f"    return new Response('{cls}');",
+            call,
+            f"    return new Response('{class_name}');",
             "  }",
             "}",
         ])
@@ -371,6 +565,92 @@ class StaticScannerTests(unittest.TestCase):
         })
         cycle = [f for f in report["findings"] if f["check_id"] == "DO-STUB-CALL-CYCLE"]
         self.assertEqual(1, len(cycle))
+
+    def test_do_stub_cycle_through_ten_classes_is_reported(self) -> None:
+        count = 10
+        bindings = [
+            {"name": f"STAGE_{index}", "class_name": f"Stage{index}"}
+            for index in range(count)
+        ]
+        config = {
+            "name": "ten-do-ring",
+            "main": "src/index.js",
+            "compatibility_date": "2026-07-01",
+            "durable_objects": {"bindings": bindings},
+            "migrations": [{"tag": "v1", "new_sqlite_classes": [item["class_name"] for item in bindings]}],
+        }
+        source = "\n".join(
+            self.ring_stage(f"Stage{index}", f"STAGE_{(index + 1) % count}", guarded=False)
+            for index in range(count)
+        )
+        report = scan({"wrangler.jsonc": json.dumps(config), "src/index.js": source})
+        cycle = [f for f in report["findings"] if f["check_id"] == "DO-STUB-CALL-CYCLE"]
+        self.assertEqual(1, len(cycle))
+        self.assertIn("Stage0 -> Stage1 -> Stage2", cycle[0]["evidence"])
+
+    def test_do_cycles_are_scoped_per_wrangler_project(self) -> None:
+        report = scan({
+            "worker-one/wrangler.jsonc": """{
+              "name": "worker-one",
+              "main": "src/index.js",
+              "compatibility_date": "2026-07-01",
+              "durable_objects": {"bindings": [
+                {"name": "SELF_A", "class_name": "A"},
+                {"name": "TO_B", "class_name": "B"}
+              ]},
+              "migrations": [{"tag": "v1", "new_sqlite_classes": ["A", "B"]}]
+            }""",
+            "worker-one/src/index.js": """
+              export class A { constructor(ctx, env) { this.env = env; } async fetch() {
+                const id = this.env.TO_B.idFromName('x');
+                return this.env.TO_B.get(id).fetch('https://do/b');
+              }}
+              export class B { fetch() { return new Response('done'); } }
+            """,
+            "worker-two/wrangler.jsonc": """{
+              "name": "worker-two",
+              "main": "src/index.js",
+              "compatibility_date": "2026-07-01",
+              "durable_objects": {"bindings": [
+                {"name": "SELF_B", "class_name": "B"},
+                {"name": "TO_A", "class_name": "A"}
+              ]},
+              "migrations": [{"tag": "v1", "new_sqlite_classes": ["A", "B"]}]
+            }""",
+            "worker-two/src/index.js": """
+              export class B { constructor(ctx, env) { this.env = env; } async fetch() {
+                const id = this.env.TO_A.idFromName('x');
+                return this.env.TO_A.get(id).fetch('https://do/a');
+              }}
+              export class A { fetch() { return new Response('done'); } }
+            """,
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
+
+    def test_cross_script_do_binding_is_an_explicit_cycle_detection_boundary(self) -> None:
+        report = scan({
+            "wrangler.jsonc": """{
+              "name": "local-worker",
+              "main": "src/index.js",
+              "compatibility_date": "2026-07-01",
+              "durable_objects": {"bindings": [
+                {"name": "LOCAL_A", "class_name": "A"},
+                {"name": "REMOTE_B", "class_name": "B", "script_name": "remote-worker"}
+              ]},
+              "migrations": [{"tag": "v1", "new_sqlite_classes": ["A"]}]
+            }""",
+            "src/index.js": """
+              export class A { constructor(ctx, env) { this.env = env; } async fetch() {
+                return this.env.REMOTE_B.getByName('b').fetch('https://do/b');
+              }}
+              export class B { constructor(ctx, env) { this.env = env; } async fetch() {
+                return this.env.LOCAL_A.getByName('a').fetch('https://do/a');
+              }}
+            """,
+        })
+        ids = {f["check_id"] for f in report["findings"]}
+        self.assertNotIn("DO-STUB-CALL-CYCLE", ids)
 
     def do_sql_ids(self, report: dict) -> list[str]:
         return [f["check_id"] for f in report["findings"] if f["check_id"] == "DO-SQL-SCAN-HOTPATH"]
@@ -404,6 +684,36 @@ class StaticScannerTests(unittest.TestCase):
             ]),
         })
         self.assertEqual([], self.do_sql_ids(report))
+
+    def test_do_sql_limit_in_comment_does_not_hide_unbounded_select(self) -> None:
+        report = scan({
+            "src/index.js": """
+              export class EventLog {
+                constructor(ctx, env) { this.ctx = ctx; this.env = env; }
+                fetch() {
+                  return Response.json(
+                    this.ctx.storage.sql.exec('SELECT * FROM events /* TODO: add LIMIT */').toArray()
+                  );
+                }
+              }
+            """,
+        })
+        self.assertEqual(["DO-SQL-SCAN-HOTPATH"], self.do_sql_ids(report))
+
+    def test_do_sql_keyword_in_string_literal_does_not_hide_unbounded_select(self) -> None:
+        report = scan({
+            "src/index.js": """
+              export class EventLog {
+                constructor(ctx, env) { this.ctx = ctx; this.env = env; }
+                fetch() {
+                  return Response.json(
+                    this.ctx.storage.sql.exec("SELECT 'LIMIT' AS note, id FROM events").toArray()
+                  );
+                }
+              }
+            """,
+        })
+        self.assertEqual(["DO-SQL-SCAN-HOTPATH"], self.do_sql_ids(report))
 
     def test_prose_mention_of_sql_exec_in_markdown_is_not_reported(self) -> None:
         report = scan({

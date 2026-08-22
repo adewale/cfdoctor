@@ -419,32 +419,80 @@ def collect_bindings(configs: list[tuple[Path, str, dict[str, Any]]]) -> dict[st
     return bindings
 
 
-def durable_object_class_map(configs: list[tuple[Path, str, dict[str, Any]]]) -> dict[str, str]:
-    """Map Durable Object binding names to class names across config and env scopes."""
+def durable_object_class_map(data: dict[str, Any]) -> dict[str, str]:
+    """Map local Durable Object binding names to classes in one config scope."""
     mapping: dict[str, str] = {}
+    ambiguous: set[str] = set()
+    durable = data.get("durable_objects")
+    if not isinstance(durable, dict):
+        return mapping
+    entries = durable.get("bindings")
+    if not isinstance(entries, list):
+        return mapping
+    for entry in entries:
+        if not isinstance(entry, dict) or entry.get("script_name"):
+            continue
+        name = entry.get("name") or entry.get("binding")
+        class_name = entry.get("class_name")
+        if not (isinstance(name, str) and name and isinstance(class_name, str) and class_name):
+            continue
+        if name in mapping and mapping[name] != class_name:
+            ambiguous.add(name)
+            continue
+        mapping[name] = class_name
+    for name in ambiguous:
+        mapping.pop(name, None)
+    return mapping
 
-    def visit(data: dict[str, Any]) -> None:
-        durable = data.get("durable_objects")
-        if isinstance(durable, dict):
-            entries = durable.get("bindings")
-            if isinstance(entries, list):
-                for entry in entries:
-                    if not isinstance(entry, dict):
-                        continue
-                    name = entry.get("name") or entry.get("binding")
-                    class_name = entry.get("class_name")
-                    if isinstance(name, str) and name and isinstance(class_name, str) and class_name:
-                        mapping.setdefault(name, class_name)
+
+def durable_object_scopes(
+    configs: list[tuple[Path, str, dict[str, Any]]],
+    source_files: list[tuple[Path, str]],
+) -> list[tuple[list[tuple[Path, str]], dict[str, str]]]:
+    """Return same-project source/binding scopes for lexical DO cycle analysis.
+
+    A nested Wrangler project is excluded from its parent's source scope. Env
+    binding maps are analyzed separately because Wrangler bindings do not safely
+    compose across scopes. Cross-script ``script_name`` bindings are excluded by
+    ``durable_object_class_map`` and remain semantic review work.
+    """
+    config_dirs = {path.parent.resolve() for path, _, _ in configs}
+    scopes: list[tuple[list[tuple[Path, str]], dict[str, str]]] = []
+    seen: set[tuple[tuple[str, ...], tuple[tuple[str, str], ...]]] = set()
+
+    for config_path, _, data in configs:
+        config_dir = config_path.parent.resolve()
+        main = data.get("main")
+        main_path = (config_dir / main).resolve() if isinstance(main, str) and main else None
+        scoped_files: list[tuple[Path, str]] = []
+        for path, text in source_files:
+            resolved = path.resolve()
+            inside_project = resolved.is_relative_to(config_dir)
+            inside_nested_project = any(
+                other != config_dir and resolved.is_relative_to(other)
+                for other in config_dirs
+                if other.is_relative_to(config_dir)
+            )
+            if (inside_project and not inside_nested_project) or resolved == main_path:
+                scoped_files.append((path, text))
+
+        scope_data = [data]
         envs = data.get("env")
         if isinstance(envs, dict):
-            for env_data in envs.values():
-                if isinstance(env_data, dict):
-                    visit(env_data)
-
-    for _, _, data in configs:
-        if isinstance(data, dict):
-            visit(data)
-    return mapping
+            scope_data.extend(env_data for env_data in envs.values() if isinstance(env_data, dict))
+        for candidate in scope_data:
+            mapping = durable_object_class_map(candidate)
+            if not mapping or not scoped_files:
+                continue
+            key = (
+                tuple(sorted(str(path.resolve()) for path, _ in scoped_files)),
+                tuple(sorted(mapping.items())),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            scopes.append((scoped_files, mapping))
+    return scopes
 
 
 def d1_migration_dirs(config_path: Path, data: dict[str, Any]) -> list[Path]:
@@ -803,10 +851,266 @@ def stream_source_symbols(files: list[tuple[Path, str]]) -> set[str]:
     return symbols
 
 
-DO_CYCLE_GUARD_RE = re.compile(
-    r"\bif\s*\([^)]{0,160}(?:depth|hops?\b|budget|iterations?|remaining|ttl\b|attempts?|max[A-Za-z_][\w$]*)",
+DO_GUARD_NAME_RE = re.compile(
+    r"(?:depth|hops?|budget|iterations?|remaining|ttl|attempts?|max[A-Za-z_][\w$]*)",
     re.IGNORECASE,
 )
+
+
+@dataclass
+class DoCallEdge:
+    path: Path
+    line_no: int
+    line_text: str
+    guarded: bool
+
+
+def mask_javascript_non_code(text: str) -> str:
+    """Mask JS/TS strings, comments, templates, and likely regex literals.
+
+    Offsets and newlines are preserved so lexical class/call locations still
+    map to the original source. This is intentionally a small lexer, not a JS
+    parser; dynamic binding lookup and helper dataflow remain out of scope.
+    """
+    out = list(text)
+    i = 0
+    state = "code"
+    escaped = False
+    regex_class = False
+    previous_significant = ""
+    current_word = ""
+    last_word = ""
+    while i < len(text):
+        char = text[i]
+        nxt = text[i + 1] if i + 1 < len(text) else ""
+        if state == "code":
+            if char == "/" and nxt in {"/", "*"}:
+                if current_word:
+                    last_word = current_word
+                    current_word = ""
+                state = "line_comment" if nxt == "/" else "block_comment"
+                out[i] = out[i + 1] = " "
+                i += 2
+                continue
+            if char in {"'", '"', "`"}:
+                if current_word:
+                    last_word = current_word
+                    current_word = ""
+                state = {"'": "single", '"': "double", "`": "template"}[char]
+                out[i] = " "
+                escaped = False
+                i += 1
+                continue
+            if char == "/":
+                if not previous_significant or previous_significant in "=(:,[!&|?{};+-*%^~<>" or (
+                    last_word in {"return", "throw", "case", "yield", "await"}
+                    or current_word in {"return", "throw", "case", "yield", "await"}
+                ):
+                    if current_word:
+                        last_word = current_word
+                        current_word = ""
+                    state = "regex"
+                    regex_class = False
+                    escaped = False
+                    out[i] = " "
+                    i += 1
+                    continue
+            if char.isalnum() or char in "_$":
+                current_word += char
+                previous_significant = char
+            else:
+                if current_word:
+                    last_word = current_word
+                    current_word = ""
+                if not char.isspace():
+                    previous_significant = char
+            i += 1
+            continue
+
+        if char not in "\r\n":
+            out[i] = " "
+        if state == "line_comment":
+            if char in "\r\n":
+                state = "code"
+            i += 1
+            continue
+        if state == "block_comment":
+            if char == "*" and nxt == "/":
+                out[i] = out[i + 1] = " "
+                i += 2
+                state = "code"
+            else:
+                i += 1
+            continue
+        if state == "regex":
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == "[":
+                regex_class = True
+            elif char == "]":
+                regex_class = False
+            elif char == "/" and not regex_class:
+                state = "code"
+                previous_significant = "v"
+                current_word = ""
+                last_word = ""
+            i += 1
+            continue
+        if escaped:
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif (state == "single" and char == "'") or (state == "double" and char == '"') or (
+            state == "template" and char == "`"
+        ):
+            state = "code"
+            previous_significant = "v"
+            current_word = ""
+            last_word = ""
+        i += 1
+    return "".join(out)
+
+
+def matching_delimiter(text: str, opening: int, open_char: str, close_char: str) -> int | None:
+    depth = 0
+    for index in range(opening, len(text)):
+        if text[index] == open_char:
+            depth += 1
+        elif text[index] == close_char:
+            depth -= 1
+            if depth == 0:
+                return index
+    return None
+
+
+def top_level_class_spans(text: str) -> list[tuple[str, int, int]]:
+    """Find brace-bounded top-level named class bodies in JS/TS source."""
+    masked = mask_javascript_non_code(text)
+    depth_at: list[int] = [0] * (len(masked) + 1)
+    depth = 0
+    for index, char in enumerate(masked):
+        depth_at[index] = depth
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth = max(0, depth - 1)
+    spans: list[tuple[str, int, int]] = []
+    for match in re.finditer(r"\bclass\s+([A-Za-z_$][\w$]*)", masked):
+        if depth_at[match.start()] != 0:
+            continue
+        opening = masked.find("{", match.end())
+        if opening < 0:
+            continue
+        closing = matching_delimiter(masked, opening, "{", "}")
+        if closing is not None:
+            spans.append((match.group(1), match.start(), closing + 1))
+    return spans
+
+
+def terminating_guard_variables(masked_prefix: str) -> dict[str, set[str]]:
+    """Return top-level terminating guard variables and safe adjustment directions."""
+    guarded: dict[str, set[str]] = {}
+    depth_at: list[int] = [0] * (len(masked_prefix) + 1)
+    depth = 0
+    for index, char in enumerate(masked_prefix):
+        depth_at[index] = depth
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth = max(0, depth - 1)
+    for match in re.finditer(r"\bif\s*\(", masked_prefix):
+        if depth_at[match.start()] != 0:
+            continue
+        opening = masked_prefix.find("(", match.start())
+        closing = matching_delimiter(masked_prefix, opening, "(", ")")
+        if closing is None:
+            continue
+        condition = masked_prefix[opening + 1:closing]
+        cursor = closing + 1
+        while cursor < len(masked_prefix) and masked_prefix[cursor].isspace():
+            cursor += 1
+        terminates = False
+        if cursor < len(masked_prefix) and masked_prefix[cursor] == "{":
+            body_end = matching_delimiter(masked_prefix, cursor, "{", "}")
+            if body_end is not None:
+                terminates = bool(re.search(r"\b(?:return|throw)\b", masked_prefix[cursor + 1:body_end]))
+        else:
+            statement_end = masked_prefix.find(";", cursor, cursor + 400)
+            if statement_end < 0:
+                statement_end = masked_prefix.find("\n", cursor, cursor + 400)
+            if statement_end < 0:
+                statement_end = min(len(masked_prefix), cursor + 400)
+            terminates = bool(re.match(r"(?:return|throw)\b", masked_prefix[cursor:statement_end].lstrip()))
+        if not terminates:
+            continue
+        for identifier in re.findall(r"\b[A-Za-z_$][\w$]*\b", condition):
+            if not DO_GUARD_NAME_RE.fullmatch(identifier):
+                continue
+            directions = guarded.setdefault(identifier, set())
+            name = re.escape(identifier)
+            if re.search(rf"\b{name}\s*(?:>=|>)|(?:<=|<)\s*\b{name}\b", condition):
+                directions.add("+")
+            if re.search(rf"\b{name}\s*(?:<=|<)|(?:>=|>)\s*\b{name}\b", condition):
+                directions.add("-")
+    return guarded
+
+
+def containing_class_member_start(masked_span: str, position: int) -> int:
+    stack: list[int] = []
+    for index, char in enumerate(masked_span[:position]):
+        if char == "{":
+            stack.append(index)
+        elif char == "}" and stack:
+            stack.pop()
+    return stack[1] + 1 if len(stack) >= 2 else 0
+
+
+def invocation_propagates_guard(masked_span: str, invocation_start: int) -> bool:
+    member_start = containing_class_member_start(masked_span, invocation_start)
+    guarded = terminating_guard_variables(masked_span[member_start:invocation_start])
+    if not guarded:
+        return False
+    statement_end = masked_span.find(";", invocation_start, invocation_start + 1600)
+    if statement_end < 0:
+        statement_end = min(len(masked_span), invocation_start + 1600)
+    statement = masked_span[invocation_start:statement_end]
+    for variable, directions in guarded.items():
+        name = re.escape(variable)
+        increments = re.search(rf"(?:\b{name}\s*\+\+|\+\+\s*\b{name}|\b{name}\s*\+\s*1\b)", statement)
+        decrements = re.search(rf"(?:\b{name}\s*--|--\s*\b{name}|\b{name}\s*-\s*1\b)", statement)
+        if ("+" in directions and increments) or ("-" in directions and decrements):
+            return True
+    return False
+
+
+def do_stub_invocations(masked_span: str, binding: str) -> list[tuple[int, int]]:
+    """Return namespace and invocation offsets for lexical stub method calls."""
+    namespace = r"(?:this\.)?env\." + re.escape(binding)
+    calls: list[tuple[int, int]] = []
+    direct = re.compile(
+        namespace
+        + r"\s*\.\s*(?:get|getByName)\s*\(.{0,500}?\)\s*\.\s*(?P<method>[A-Za-z_$][\w$]*)\s*\(",
+        re.DOTALL,
+    )
+    for match in direct.finditer(masked_span):
+        calls.append((match.start(), match.start("method")))
+
+    assignment = re.compile(
+        r"\b(?:const|let|var|using)\s+(?P<stub>[A-Za-z_$][\w$]*)\s*(?::[^=;]+)?=\s*"
+        + namespace
+        + r"\s*\.\s*(?:get|getByName)\s*\(.{0,500}?\)\s*(?:;|(?=\r?\n))",
+        re.DOTALL,
+    )
+    for match in assignment.finditer(masked_span):
+        use = re.search(
+            r"\b" + re.escape(match.group("stub")) + r"\s*\.\s*(?!id\b|name\b)([A-Za-z_$][\w$]*)\s*\(",
+            masked_span[match.end():],
+        )
+        if use:
+            calls.append((match.start(), match.end() + use.start(1)))
+    return calls
 
 
 def add_do_cycle_findings(
@@ -815,33 +1119,28 @@ def add_do_cycle_findings(
     do_binding_classes: dict[str, str],
     findings: list[Finding],
 ) -> None:
-    """Flag Durable Object classes whose stub calls form a class-level cycle.
-
-    Uses the Wrangler binding->class map, so only same-config-scope cycles are
-    visible; cross-script `script_name` bindings are out of scope for this lead.
-    """
+    """Flag local Durable Object classes whose lexical stub calls form a cycle."""
     if not do_binding_classes:
         return
-    edges: dict[str, dict[str, tuple[Path, int, str]]] = {}
-    guard_seen: dict[str, bool] = {}
+    edges: dict[str, dict[str, DoCallEdge]] = {}
+    do_classes = set(do_binding_classes.values())
     for path, text in source_files:
-        class_matches = list(re.finditer(r"\bclass\s+([A-Za-z_$][\w$]*)", text))
-        for index, match in enumerate(class_matches):
-            cls = match.group(1)
-            end = class_matches[index + 1].start() if index + 1 < len(class_matches) else len(text)
-            span = text[match.start():end]
-            guard_seen[cls] = guard_seen.get(cls, False) or bool(DO_CYCLE_GUARD_RE.search(span))
+        for cls, start, end in top_level_class_spans(text):
+            if cls not in do_classes:
+                continue
+            span = text[start:end]
+            masked_span = mask_javascript_non_code(span)
             for binding, target in do_binding_classes.items():
-                stub = re.search(
-                    r"(?:this\.)?env\." + re.escape(binding) + r"\s*\.\s*(?:get|getByName|idFromName|idFromString|newUniqueId)\s*\(",
-                    span,
-                )
-                if not stub:
-                    continue
-                abs_pos = match.start() + stub.start()
-                line_no = text.count("\n", 0, abs_pos) + 1
-                line_text = text.splitlines()[line_no - 1] if text.splitlines() else ""
-                edges.setdefault(cls, {}).setdefault(target, (path, line_no, line_text))
+                for namespace_pos, invocation_pos in do_stub_invocations(masked_span, binding):
+                    abs_pos = start + namespace_pos
+                    line_no = text.count("\n", 0, abs_pos) + 1
+                    line_text = text.splitlines()[line_no - 1] if text.splitlines() else ""
+                    guarded = invocation_propagates_guard(masked_span, invocation_pos)
+                    existing = edges.setdefault(cls, {}).get(target)
+                    if existing:
+                        existing.guarded = existing.guarded and guarded
+                    else:
+                        edges[cls][target] = DoCallEdge(path, line_no, line_text, guarded)
 
     reported: set[frozenset[str]] = set()
 
@@ -869,20 +1168,75 @@ def add_do_cycle_findings(
         if key in reported:
             continue
         reported.add(key)
-        if all(guard_seen.get(cls, False) for cls in cycle):
+        cycle_edges = [edges[cycle[index]][cycle[(index + 1) % len(cycle)]] for index in range(len(cycle))]
+        if all(edge.guarded for edge in cycle_edges):
             continue
-        src_path, line_no, line_text = edges[cycle[-1]][start]
+        edge = edges[cycle[-1]][start]
         chain = " -> ".join(cycle + [cycle[0]])
         findings.append(Finding(
             "DO-STUB-CALL-CYCLE",
             "high",
             "Durable Object classes appear to call each other's stubs in a cycle",
             "cost footgun / reliability",
-            f"{rel(src_path, root)}:{line_no}: {excerpt(line_text)} (cycle: {chain})",
+            f"{rel(edge.path, root)}:{edge.line_no}: {excerpt(edge.line_text)} (cycle: {chain})",
             "Durable Object handlers that call each other's stubs can re-trigger indefinitely once detached via waitUntil, alarms, or queued work. Per-invocation limits reset on every hop, so nothing platform-side stops the loop while DO requests, duration, and SQLite storage rows read keep billing until the code is changed or a kill switch fires.",
-            "Break or bound the cycle: pass and check an explicit hop/depth budget, add an idempotency/turn key, check a kill-switch flag inside every hop, and alert on the Durable Objects rows-read/request meters so a runaway loop is caught in hours, not at invoice time.",
+            "Break or bound the cycle: pass and check an explicit hop/depth budget, add an idempotency/turn key, check a kill-switch flag inside every hop, and alert on the Durable Objects rows-read/request meters so a runaway loop is caught in hours, not at invoice time. Audit the full async call graph too: Queue, service-binding Worker, and cross-script hops are outside this lexical DO-to-DO lead.",
             "low",
         ))
+
+
+def strip_sql_comments_and_literals(statement: str) -> str:
+    """Mask SQL comments and quoted values/identifiers while preserving words."""
+    out = list(statement)
+    i = 0
+    state = "code"
+    while i < len(statement):
+        char = statement[i]
+        nxt = statement[i + 1] if i + 1 < len(statement) else ""
+        if state == "code":
+            if char == "-" and nxt == "-":
+                out[i] = out[i + 1] = " "
+                state = "line_comment"
+                i += 2
+                continue
+            if char == "/" and nxt == "*":
+                out[i] = out[i + 1] = " "
+                state = "block_comment"
+                i += 2
+                continue
+            if char in {"'", '"', "`", "["}:
+                out[i] = " "
+                state = {"'": "single", '"': "double", "`": "backtick", "[": "bracket"}[char]
+            i += 1
+            continue
+        if char not in "\r\n":
+            out[i] = " "
+        if state == "line_comment":
+            if char in "\r\n":
+                state = "code"
+            i += 1
+            continue
+        if state == "block_comment":
+            if char == "*" and nxt == "/":
+                out[i] = out[i + 1] = " "
+                state = "code"
+                i += 2
+            else:
+                i += 1
+            continue
+        closing = {"single": "'", "double": '"', "backtick": "`", "bracket": "]"}[state]
+        if char == closing:
+            if nxt == closing and state in {"single", "double"}:
+                out[i + 1] = " "
+                i += 2
+                continue
+            state = "code"
+        elif char == "\\" and nxt:
+            out[i + 1] = " "
+            i += 2
+            continue
+        i += 1
+    return "".join(out)
 
 
 def add_code_findings(
@@ -891,7 +1245,7 @@ def add_code_findings(
     bindings: dict[str, set[str]],
     findings: list[Finding],
     queue_consumer_names: set[str] | None = None,
-    do_binding_classes: dict[str, str] | None = None,
+    do_scopes: list[tuple[list[tuple[Path, str]], dict[str, str]]] | None = None,
 ) -> None:
     queue_consumer_names = queue_consumer_names or set()
     kv_names = bindings.get("KV", set())
@@ -908,7 +1262,14 @@ def add_code_findings(
     artifacts_names = bindings.get("Artifacts", set())
 
     source_files = [(path, text) for path, text in files if path.suffix in CODE_EXTS]
-    add_do_cycle_findings(root, source_files, do_binding_classes or {}, findings)
+    for scoped_files, binding_classes in do_scopes or []:
+        before = {(finding.check_id, finding.evidence) for finding in findings}
+        scoped_findings: list[Finding] = []
+        add_do_cycle_findings(root, scoped_files, binding_classes, scoped_findings)
+        findings.extend(
+            finding for finding in scoped_findings
+            if (finding.check_id, finding.evidence) not in before
+        )
     project_text = "\n".join(text for _, text in source_files)
     webhook_shaped = any(
         "webhook" in path.as_posix().lower()
@@ -1410,7 +1771,10 @@ def add_code_findings(
                 ))
             for sql_match in sql_exec_matches:
                 statement = sql_match.group("sql")
-                if re.search(r"\bselect\b", statement, re.IGNORECASE) and not re.search(r"\bwhere\b|\blimit\b", statement, re.IGNORECASE):
+                structural_sql = strip_sql_comments_and_literals(statement)
+                if re.search(r"\bselect\b", structural_sql, re.IGNORECASE) and not re.search(
+                    r"\bwhere\b|\blimit\b", structural_sql, re.IGNORECASE
+                ):
                     line_no = text.count("\n", 0, sql_match.start()) + 1
                     line_text = text.splitlines()[line_no - 1]
                     findings.append(Finding(
@@ -1795,13 +2159,14 @@ def main(argv: list[str]) -> int:
         envs = data.get("env")
         if isinstance(envs, dict):
             pending_configs.extend(value for value in envs.values() if isinstance(value, dict))
+    cycle_source_files = [(path, text) for path, text in file_texts if path.suffix in CODE_EXTS]
     add_code_findings(
         root,
         file_texts,
         bindings,
         findings,
         queue_consumer_names=queue_consumer_names,
-        do_binding_classes=durable_object_class_map(configs),
+        do_scopes=durable_object_scopes(configs, cycle_source_files),
     )
     if args.json:
         print(render_json(root, bindings, findings))
