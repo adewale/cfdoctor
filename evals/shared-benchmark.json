@@ -2165,19 +2165,26 @@
       "id": "pos-do-stub-cycle-rows-read-bill",
       "split": "tune",
       "kind": "audit-output",
-      "prompt": "Cloudflare Doctor this project: a coordinator Durable Object and a runner Durable Object hand work to each other through stubs and waitUntil, and last month's invoice was almost entirely the 'Durable Objects Storage Rows Read' line. We only noticed when the monthly bill arrived. Diagnose the mechanism and tell us what to change.",
+      "files": [
+        "fixtures/detection/do-stub-call-cycle/wrangler.jsonc",
+        "fixtures/detection/do-stub-call-cycle/index.js"
+      ],
+      "prompt": "Cloudflare Doctor this attached Workers project. Identify the most material reliability or cost risk, explain the evidence, and recommend the smallest safe fix.",
       "expected_behavior": [
         "Identify the DO-to-DO stub cycle as a detached runaway loop and the SQLite rows-read meter as the dominant billing mechanism.",
         "Pair the code fix with detection-latency and kill-switch mitigations."
       ],
       "assertions": [
+        {"name": "scanner-cycle-check-id", "type": "contains", "value": "DO-STUB-CALL-CYCLE", "description": "Requires the PR scanner's stable cycle finding rather than a prompt-primed generic diagnosis."},
+        {"name": "cycle-class-members", "type": "contains_all", "values": ["SessionCoordinator", "TaskRunner"], "description": "Requires identifying both actual classes in the attached source rather than a generic DO loop."},
         {"name": "detect-rows-read-meter", "type": "regex", "pattern": "(?is)(rows\\s+read|storage\\s+rows|sqlite)", "description": "Requires naming the rows-read/SQLite storage meter rather than generic DO cost."},
         {"name": "detect-cycle-mechanism", "type": "regex", "pattern": "(?is)(cycle|loop|re-?trigger|ping-?pong|call(?:s|ing)?\\s+each\\s+other)", "description": "Requires the DO-to-DO re-trigger mechanism, not just a product mention."},
-        {"name": "detection-latency-mitigation", "type": "regex", "pattern": "(?is)(budget\\s+alert|billable\\s+usage|usage\\s+alert|daily\\s+(?:cost|usage|spend)|kill\\s*switch|hop\\s+(?:budget|depth|limit)|depth\\s+(?:budget|limit|guard))", "description": "Requires at least one concrete detection/containment control, not only a code fix."},
+        {"name": "containment-mitigation", "type": "regex", "pattern": "(?is)(budget\\s+alert|billable\\s+usage|usage\\s+alert|daily\\s+(?:cost|usage|spend)|kill\\s*switch|hop\\s+(?:budget|depth|limit)|depth\\s+(?:budget|limit|guard)|idempoten)", "description": "Requires at least one concrete containment control, not only naming the cycle."},
         {"name": "output-contract", "type": "contains_all", "values": ["Scope inspected:", "Scope not inspected:", "Docs refreshed:", "Evidence:", "Cost / trade-off:", "Verify:", "Source basis:", "Confidence:"]},
-        {"name": "qualitative-review", "type": "judge", "rubric": ["Evidence-first", "Current docs over memory", "Confirmed vs suspected separation"], "threshold": 0.85},
-        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 120000, "severity": "soft", "oracle": "strong"},
-        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 120, "severity": "soft", "oracle": "strong"}
+        {"name": "fixture-script-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "pos-do-stub-cycle-rows-read-bill"], "pass_exit_code": 0, "timeout_s": 10, "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Explains how reciprocal Durable Object calls form a runaway loop and how the growing SQLite read amplifies cost", "Recommends the smallest safe way to break the cycle plus a bounded containment control", "Treats static scanner output as a lead and separates repository evidence from uninspected runtime state"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 140, "severity": "soft", "oracle": "strong"}
       ],
       "tags": ["durable-objects", "cost-incident", "loops"],
       "domain": "cloudflare-workers",
@@ -2188,7 +2195,7 @@
       "id": "pos-spend-limits-detection-latency",
       "split": "tune",
       "kind": "audit-output",
-      "prompt": "Cloudflare Doctor question with our Workers project attached: can we set a hard spending cap on Cloudflare, and why did our budget alert only show up at the end of the billing cycle? Recommend how we should catch a runaway meter within a day.",
+      "prompt": "Cloudflare billing question: we expected our budget alert to stop a runaway charge, but it arrived near the end of the billing cycle. What should we rely on to catch and contain a runaway meter within a day?",
       "expected_behavior": [
         "State that Cloudflare budget alerts are informational only with no hard cap, and treat alert scope/threshold/latency as audit evidence.",
         "Recommend daily billable-usage review plus in-code bounds and a kill switch, grounded in current Cloudflare billing docs."

@@ -1,8 +1,6 @@
 {
-  // Agent session coordinator plus task runner, modeled on the 2026-08 StandardAgents bill:
-  // two Durable Objects re-trigger each other and re-scan a growing SQLite table every hop.
   "name": "agent-session-loop",
-  "main": "src/index.js",
+  "main": "index.js",
   "compatibility_date": "2026-05-01",
   "observability": { "enabled": true },
   "durable_objects": {

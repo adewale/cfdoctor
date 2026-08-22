@@ -1,7 +1,3 @@
-// Intentionally bad: two Durable Objects re-trigger each other with no hop budget,
-// idempotency key, or kill switch, and every hop re-reads the whole events table.
-// The chain detaches through waitUntil, so per-invocation limits reset on each hop.
-
 export class SessionCoordinator {
   constructor(ctx, env) {
     this.ctx = ctx;
@@ -44,8 +40,6 @@ export class TaskRunner {
       return new Response("unauthorized", { status: 401 });
     }
     const sessionId = request.headers.get("x-session-id") || "unknown";
-    // "Report progress" back to the coordinator, which schedules more work here:
-    // SessionCoordinator -> TaskRunner -> SessionCoordinator, forever.
     const id = this.env.SESSION_COORDINATOR.idFromName(sessionId);
     this.ctx.waitUntil(
       this.env.SESSION_COORDINATOR.get(id).fetch("https://do/notify", {

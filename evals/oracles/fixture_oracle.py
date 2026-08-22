@@ -39,6 +39,28 @@ SPECS = {
         "require_core": True,
         "require_complete_finding": True,
     },
+    "pos-do-stub-cycle-rows-read-bill": {
+        "all": [
+            "wrangler.jsonc",
+            "index.js",
+            "DO-STUB-CALL-CYCLE",
+            "SessionCoordinator",
+            "TaskRunner",
+            "Evidence:",
+            "Why it matters:",
+            "Fix:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:",
+        ],
+        "any": [
+            ["cycle", "loop", "re-trigger", "ping-pong", "call each other"],
+            ["rows read", "storage rows", "SQLite"],
+            ["kill switch", "hop budget", "depth budget", "depth limit", "idempotency"],
+        ],
+        "require_core": True,
+    },
     "detection-fixture-clean-baseline-precision": {
         "any": [["not inspected", "cannot inspect", "no dashboard access"]],
         "require_core": True,

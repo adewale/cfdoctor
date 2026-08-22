@@ -296,6 +296,49 @@ self-fetch recursive DLQ Cost / trade-off Source basis
         self.assertEqual(1, proc.returncode)
         self.assertIn("no structurally complete finding block", proc.stdout)
 
+    def test_do_cycle_case_requires_scanner_id_and_cycle_members(self) -> None:
+        text = """## Cloudflare Doctor audit
+Scope inspected: wrangler.jsonc and index.js
+Scope not inspected: deployed code, dashboard, logs, and billing data
+Docs refreshed: current Durable Objects billing and SQLite docs
+Detected products: Workers, Durable Objects
+Cost proxy summary: SQLite rows read can grow on every cycle hop
+Overall risk: critical
+### Severity: critical — detached Durable Object call cycle
+- Category: runaway cost and reliability
+- Evidence: DO-STUB-CALL-CYCLE in index.js; cycle: SessionCoordinator -> TaskRunner -> SessionCoordinator
+- Why it matters: the loop can continue across invocations
+- Fix: add a propagated hop budget and kill switch, then make work idempotent
+- Cost / trade-off: bounded work may stop an incomplete session for recovery
+- Verify: rerun the scanner and confirm DO-STUB-CALL-CYCLE is absent
+- Source basis: current Cloudflare Durable Objects documentation
+- Confidence: high
+### Severity: high — unbounded SQLite scan
+- Category: storage cost
+- Evidence: DO-SQL-SCAN-HOTPATH in index.js
+- Why it matters: every loop hop reads growing SQLite storage rows
+- Fix: add a selective WHERE clause and LIMIT
+- Cost / trade-off: requires an index and pagination
+- Verify: rerun the scanner and inspect rows read
+- Source basis: current Cloudflare Durable Objects pricing documentation
+- Confidence: high
+## Run summary with cost proxies
+"""
+        proc = self.run_oracle("pos-do-stub-cycle-rows-read-bill", text)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        without_check_ids = text.replace("DO-STUB-CALL-CYCLE", "stub cycle").replace(
+            "DO-SQL-SCAN-HOTPATH", "SQL scan"
+        )
+        proc = self.run_oracle("pos-do-stub-cycle-rows-read-bill", without_check_ids)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("missing required text", proc.stdout)
+
+        without_cycle_member = text.replace("TaskRunner", "BackgroundRunner")
+        proc = self.run_oracle("pos-do-stub-cycle-rows-read-bill", without_cycle_member)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("missing required text", proc.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
