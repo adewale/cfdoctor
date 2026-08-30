@@ -1,0 +1,13 @@
+{
+  "name": "public-guides",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "workers_dev": false,
+  "routes": [{ "pattern": "guides.example.com/*", "zone_name": "example.com" }],
+  "kv_namespaces": [{ "binding": "CONFIG", "id": "11111111111111111111111111111111" }],
+  "r2_buckets": [{ "binding": "GUIDES", "bucket_name": "guides" }],
+  "queues": { "producers": [{ "binding": "EVENTS", "queue": "guide-views" }] },
+  "analytics_engine_datasets": [{ "binding": "ANALYTICS", "dataset": "guide_views" }],
+  "services": [{ "binding": "THUMBNAILS", "service": "thumbnail-worker" }],
+  "browser": { "binding": "BROWSER" }
+}

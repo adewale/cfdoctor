@@ -1,0 +1,14 @@
+{
+  "collected_at": "2026-08-01T12:00:00Z",
+  "hosts": {
+    "catalog.example.com": {
+      "cache_rule": "cache successful /product/* responses for 10 minutes",
+      "waf_ruleset": "block verified abusive crawlers"
+    },
+    "catalogue-origin.example-account.workers.dev": {
+      "enabled": true,
+      "covered_by_zone_cache_rule": false,
+      "covered_by_zone_waf_ruleset": false
+    }
+  }
+}

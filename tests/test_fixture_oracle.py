@@ -132,20 +132,106 @@ No confirmed findings.
         self.assertEqual(1, proc.returncode)
         self.assertIn("missing one of", proc.stdout)
 
-    def test_benchmark_fixtures_preserve_staged_entrypoint_paths(self) -> None:
+    def test_benchmark_fixtures_have_unambiguous_staged_paths(self) -> None:
         manifest = json.loads((ROOT / "evals/shared-benchmark.json").read_text())
         checked = 0
         for case in manifest["cases"]:
-            staged_names = {Path(path).name for path in case.get("files", [])}
-            for relpath in case.get("files", []):
+            case_files = case.get("files", [])
+            staged_names = [Path(path).name for path in case_files]
+            self.assertEqual(
+                len(staged_names),
+                len(set(staged_names)),
+                f'{case["id"]} has colliding basenames in the flattening harness',
+            )
+            for relpath in case_files:
                 if "wrangler." not in Path(relpath).name:
                     continue
                 text = (ROOT / "evals" / relpath).read_text()
                 match = re.search(r'(?:"main"\s*:\s*"|^main\s*=\s*")([^"\n]+)', text, re.MULTILINE)
                 if match:
                     checked += 1
-                    self.assertIn(match.group(1), staged_names, case["id"])
+                    main = match.group(1)
+                    fixture_dir = Path(relpath).parent
+                    direct_entrypoint = str(fixture_dir / main)
+                    if direct_entrypoint in case_files:
+                        continue
+
+                    package_rel = str(fixture_dir / "package.json")
+                    self.assertIn(package_rel, case_files, case["id"])
+                    package = json.loads((ROOT / "evals" / package_rel).read_text())
+                    self.assertIn("build", package.get("scripts", {}), case["id"])
+                    self.assertTrue(main.startswith(".svelte-kit/"), case["id"])
         self.assertGreaterEqual(checked, 5)
+
+    def test_framework_source_map_matches_real_sources(self) -> None:
+        fixture = ROOT / "evals/fixtures/benchmark/framework-public-surface"
+        proc = subprocess.run(
+            ["node", str(fixture / "check-source-map.mjs")],
+            cwd=fixture,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+    def test_public_surface_forbidden_assertions_reject_contradictions(self) -> None:
+        manifest = json.loads((ROOT / "evals/shared-benchmark.json").read_text())
+        assertions = {
+            (case["id"], assertion["name"]): assertion
+            for case in manifest["cases"]
+            for assertion in case.get("assertions", [])
+        }
+        contradictions = {
+            ("public-surface-cache-regeneration-meter-shift", "cache-keyspace-no-contradiction"):
+                "/report/ does not accept arbitrary invalid keys. D1 does not run before validation.",
+            ("public-surface-dependency-cost-composition", "browser-lifecycle-no-contradiction"):
+                "The browser close in finally is not correct and is not bounded.",
+            ("public-surface-alternate-host-control-gap", "alternate-host-control-no-contradiction"):
+                "workers.dev is not outside the cache rules and is not outside the WAF rules.",
+            ("public-surface-alternate-host-control-gap", "alternate-host-fix-no-contradiction"):
+                "Do not reject invalid slugs before D1.",
+            ("public-surface-unknown-route-metered-fallback", "fallback-fix-no-contradiction"):
+                "Do not use an allowlist to reject requests before D1.",
+        }
+        for key, text in contradictions.items():
+            assertion = assertions[key]
+            self.assertEqual("not_regex", assertion["type"], key)
+            self.assertRegex(text, re.compile(assertion["pattern"]), key)
+
+        safe = {
+            ("public-surface-cache-regeneration-meter-shift", "cache-keyspace-no-contradiction"):
+                "Unknown /report/ slugs reach D1 before validation and the 404.",
+            ("public-surface-dependency-cost-composition", "browser-lifecycle-no-contradiction"):
+                "The browser is not a lifecycle leak because it is closed in finally.",
+            ("public-surface-alternate-host-control-gap", "alternate-host-control-no-contradiction"):
+                "workers.dev is outside both the cache rule and WAF rule.",
+            ("public-surface-alternate-host-control-gap", "alternate-host-fix-no-contradiction"):
+                "Reject invalid slugs before D1.",
+            ("public-surface-unknown-route-metered-fallback", "fallback-fix-no-contradiction"):
+                "Use a publish-refreshed allowlist to reject unknown paths before D1.",
+        }
+        for key, text in safe.items():
+            self.assertNotRegex(text, re.compile(assertions[key]["pattern"]), key)
+
+    def test_public_surface_source_assertions_require_relevant_products(self) -> None:
+        manifest = json.loads((ROOT / "evals/shared-benchmark.json").read_text())
+        assertions = {
+            (case["id"], assertion["name"]): assertion
+            for case in manifest["cases"]
+            for assertion in case.get("assertions", [])
+        }
+        key = ("public-surface-subresource-fanout", "subresource-official-source-basis")
+        pattern = re.compile(assertions[key]["pattern"])
+        self.assertNotRegex(
+            "Source basis: https://developers.cloudflare.com/workers/",
+            pattern,
+        )
+        self.assertRegex(
+            "Source basis: https://developers.cloudflare.com/r2/pricing/ "
+            "https://developers.cloudflare.com/images/optimization/binding/ "
+            "https://developers.cloudflare.com/d1/platform/pricing/ "
+            "https://developers.cloudflare.com/workers/runtime-apis/cache/",
+            pattern,
+        )
 
     def test_queue_ambiguity_requires_a_specific_evidence_request(self) -> None:
         summary_only = """## Cloudflare Doctor audit

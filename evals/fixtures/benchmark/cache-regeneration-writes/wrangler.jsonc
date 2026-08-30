@@ -1,0 +1,11 @@
+{
+  "name": "public-reports",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "workers_dev": false,
+  "routes": [{ "pattern": "reports.example.com/*", "zone_name": "example.com" }],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "reports", "database_id": "00000000-0000-0000-0000-000000000022" }
+  ],
+  "r2_buckets": [{ "binding": "RENDERS", "bucket_name": "report-renders" }]
+}
