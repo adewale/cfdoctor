@@ -1,0 +1,12 @@
+{
+  "name": "public-catalogue",
+  "main": ".svelte-kit/cloudflare/_worker.js",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "assets": { "directory": ".svelte-kit/cloudflare", "binding": "ASSETS" },
+  "routes": [{ "pattern": "catalog.example.com/*", "zone_name": "example.com" }],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "catalogue", "database_id": "00000000-0000-0000-0000-000000000021" }
+  ]
+}

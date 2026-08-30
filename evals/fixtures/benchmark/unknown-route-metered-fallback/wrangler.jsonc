@@ -1,0 +1,11 @@
+{
+  "name": "public-handbook",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "workers_dev": false,
+  "routes": [{ "pattern": "handbook.example.com/*", "zone_name": "example.com" }],
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "handbook", "database_id": "00000000-0000-0000-0000-000000000026" }
+  ]
+}

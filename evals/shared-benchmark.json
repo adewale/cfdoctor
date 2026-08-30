@@ -37,6 +37,625 @@
   "notes": "",
   "cases": [
     {
+      "id": "crawlable-page-live-d1-cost",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/crawlable-page-cost/README.md",
+        "fixtures/benchmark/crawlable-page-cost/wrangler.jsonc",
+        "fixtures/benchmark/crawlable-page-cost/index.js"
+      ],
+      "prompt": "Cloudflare Doctor the attached public Worker before launch. Identify crawler-driven cost risks and recommend the smallest safe fix.",
+      "expected_behavior": [
+        "Build a bounded public-surface inventory from the host, router, sitemap, and rendered links; include the off-sitemap `/abstract/:id` and `/about` routes without enumerating URLs, and distinguish the 35,000 known abstracts from the larger syntactically accepted `/abstract/*` keyspace.",
+        "Attribute the shared layout COUNT query to every content route before adding the homepage aggregate, browse query, and bounded detail lookup, while marking deployed traffic and controls as not inspected.",
+        "Rank route-family cost multiplied by observed or bounded crawl volume; present one fill per distinct key as a corpus-covering crawl scenario because complete request coverage is not supplied, then account for location and refill multipliers; reject invalid abstract keys before live work, remove or materialize shared aggregates outside the high-cardinality request path, verify the residual lookup is bounded, and cache recrawls when freshness permits."
+      ],
+      "assertions": [
+        {
+          "name": "bounded-public-surface-inventory",
+          "type": "contains_all",
+          "values": [
+            "/browse",
+            "/abstract/",
+            "/about"
+          ],
+          "description": "The audit includes route families discovered outside the incomplete sitemap."
+        },
+        {
+          "name": "sitemap-is-not-the-boundary",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*sitemap)(?=.*(?:not.{0,100}(?:bound|complete|exhaustive|contain)|outside.{0,100}sitemap|sitemap.{0,120}(?:omit|only|incomplete|seed))).*$",
+          "description": "The audit treats the sitemap as one discovery source rather than the complete public surface."
+        },
+        {
+          "name": "bounded-dynamic-family",
+          "type": "regex",
+          "pattern": "(?is)/abstract/(?:\\:id|\\{id\\}|\\[id\\]|\\*|[^\\s]{0,30}).{0,240}(?:35[, ]?000|35k|dynamic|parameter|route family|representative|cardinality)",
+          "description": "The audit models the abstract route as a bounded family rather than enumerating live URLs."
+        },
+        {
+          "name": "known-corpus-vs-accepted-keyspace",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:35[, ]?000|35k).{0,220}(?:known|valid|real|corpus|content))(?=.*(?:/abstract/|abstract route).{0,260}(?:arbitrary|unknown|invalid|malformed|unbounded|larger|syntactically accepted))(?=.*(?:shared|COUNT|D1).{0,300}(?:before|prior to).{0,180}(?:404|reject|validat|existence)).*$",
+          "description": "The audit does not substitute the known content count for the larger accepted route keyspace and locates metered work before rejection."
+        },
+        {
+          "name": "shared-and-route-specific-dependency-map",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:shared|layout|every (?:content )?(?:page|route)).{0,240}(?:COUNT|D1|abstracts))(?=.*(?:homepage|root route|`/`).{0,400}(?:D1|database|quer))(?=.*(?:homepage|root route|`/`).{0,400}(?:group|entities|two|2))(?=.*/browse.{0,300}(?:D1|database|quer))(?=.*/abstract/.{0,300}(?:bounded|single row|lookup|WHERE|LIMIT|parameter))(?=.*/about.{0,240}(?:shared|layout|COUNT|D1|database|quer)).*$",
+          "description": "The audit assigns inherited layout work and route-specific work to each content route family."
+        },
+        {
+          "name": "prevents-shared-broad-work",
+          "type": "regex",
+          "pattern": "(?is)(?:precomput|materializ|cache.{0,160}(?:before|ahead of).{0,120}(?:D1|quer)|(?:before|ahead of).{0,120}(?:D1|quer).{0,160}cache|(?:move|remove|only execute).{0,220}(?:COUNT|corpus|shared).{0,320}(?:abstract|dynamic|high.cardinality))",
+          "description": "The fix removes the corpus-scale shared work from the high-cardinality request path rather than merely caching after it executes."
+        },
+        {
+          "name": "cold-miss-envelope",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:corpus.covering|full crawl|if|assuming|scenario|envelope).{0,220}(?:first.fill|one fill|distinct|cold|key))(?=.*(?:colo|data.?center|location|expiry|expiration|eviction|revalidat|concurren|refill)).*$",
+          "description": "The recommendation presents one fill per requested key as a corpus-covering scenario and names a distributed-cache or lifecycle refill multiplier."
+        },
+        {
+          "name": "official-source-basis",
+          "type": "regex",
+          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/d1/)(?=.*developers\\.cloudflare\\.com/workers/(?:cache|runtime-apis/cache))",
+          "description": "The D1 billing and cache behavior are grounded in their directly relevant official documentation."
+        },
+        {
+          "name": "scenario-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Builds a bounded public-surface graph from host routes, router code, sitemap, and internal links rather than treating the sitemap as exhaustive",
+            "Models dynamic routes as families and attributes shared layout dependencies before route-specific work",
+            "Treats query shape as one multiplier rather than the whole problem",
+            "Does not infer deployed traffic, cache hit ratio, WAF, bot, rate-limit, Access, or billing state",
+            "Separates the known content corpus from the larger accepted keyspace and identifies whether invalid keys reach metered work before rejection",
+            "Labels one fill per distinct key as a corpus-covering scenario because complete request coverage is not supplied, then considers independent locations, expiry/eviction/revalidation, and concurrent fills",
+            "Prevents corpus-scale/shared D1 work on each crawl; any residual lookup is explicitly bounded and recrawls are cached",
+            "Uses current official Cloudflare documentation that directly supports cache and billing semantics"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 160000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "crawlable-page-cost",
+        "fixture-backed"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "public-surface-framework-inherited-loader",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/framework-public-surface/README.md",
+        "fixtures/benchmark/framework-public-surface/wrangler.jsonc",
+        "fixtures/benchmark/framework-public-surface/package.json",
+        "fixtures/benchmark/framework-public-surface/svelte.config.js",
+        "fixtures/benchmark/framework-public-surface/vite.config.js",
+        "fixtures/benchmark/framework-public-surface/source-map.txt"
+      ],
+      "prompt": "Cloudflare Doctor this public SvelteKit catalogue before launch. Audit crawler-amplified cost from the public surface inward.",
+      "expected_behavior": [
+        "Derive the bounded route-family inventory from Wrangler, real SvelteKit filesystem routes, shared loader, and links rather than the incomplete sitemap.",
+        "Attribute both shared layout queries to `/`, `/categories`, `/about`, and the 60,000 known products while distinguishing the unbounded `[slug]` keyspace and the fact that shared and detail D1 work executes before product existence is established; identify `/sitemap.xml` as a zero-D1 endpoint outside the page layout.",
+        "Recommend removing or materializing shared aggregates outside the high-cardinality request path and verifying the residual lookup plan."
+      ],
+      "assertions": [
+        {
+          "name": "framework-route-inventory",
+          "type": "contains_all",
+          "values": ["/categories", "/product/", "/about", "/sitemap.xml"]
+        },
+        {
+          "name": "framework-root-and-zero-d1-endpoint",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:root route|homepage|`/`).{0,240}(?:shared|layout|D1|COUNT))(?=.*/sitemap\\.xml.{0,260}(?:zero D1|no D1|without D1|does not.{0,80}(?:D1|layout)|endpoint)).*$"
+        },
+        {
+          "name": "manifest-not-sitemap-boundary",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:SvelteKit|filesystem route|src/routes|framework))(?=.*(?:/product|product family))(?=.*(?:/about|shared|layout)).*$"
+        },
+        {
+          "name": "shared-loader-attribution",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:shared|layout).{0,220}(?:COUNT|GROUP BY|categor))(?=.*product.{0,160}(?:60[, ]?000|60k).{0,260}(?:shared|layout|inherit))(?=.*product.{0,300}(?:lookup|WHERE|slug|LIMIT)).*$"
+        },
+        {
+          "name": "framework-accepted-keyspace",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:60[, ]?000|60k).{0,200}(?:known|valid|real|product|corpus))(?=.*(?:\\[slug\\]|/product/|dynamic route).{0,280}(?:arbitrary|unknown|invalid|unbounded|larger|accepted keyspace))(?=.*(?:shared|layout|COUNT|GROUP BY|D1).{0,320}(?:before|prior to).{0,200}(?:exist|validat|404|reject|lookup)).*$"
+        },
+        {
+          "name": "framework-primary-fix",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:materializ|precomput|publish|move|remove))(?=.*(?:shared|layout|COUNT|aggregate|productCount))(?=.*(?:product|high.cardinality|60[, ]?000)).*$"
+        },
+        {
+          "name": "framework-official-source-basis",
+          "type": "regex",
+          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/d1/)(?=.*developers\\.cloudflare\\.com/workers/(?:framework-guides|configuration/routing))"
+        },
+        {
+          "name": "framework-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Builds the public graph from real SvelteKit filesystem routes, shared loaders, and internal-link evidence, not just the sitemap",
+            "Includes the root page under the shared layout and distinguishes the zero-D1 /sitemap.xml endpoint",
+            "Attributes both shared layout queries before route-specific loader work",
+            "Separates the 60,000 known products from the syntactically unbounded [slug] keyspace and locates D1 work before content validation",
+            "Removes corpus-scale shared work from the product request path and asks for evidence that the residual lookup is bounded"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 160000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": ["public-surface", "framework-routes", "fixture-backed"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-surface-cache-regeneration-meter-shift",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/cache-regeneration-writes/README.md",
+        "fixtures/benchmark/cache-regeneration-writes/wrangler.jsonc",
+        "fixtures/benchmark/cache-regeneration-writes/index.js"
+      ],
+      "prompt": "Cloudflare Doctor this public report Worker before launch. Does its cache strategy actually contain crawler-driven cost?",
+      "expected_behavior": [
+        "Trace a cache miss through D1, Cache API put, and an R2 write for every valid report key; distinguish the 20,000 known reports from arbitrary accepted `/report/*` keys that still reach D1 before a 404.",
+        "Because supplied discovery evidence does not establish requests to all 20,000 reports, present 20,000 distinct fills as a corpus-covering crawl scenario rather than an observed lower bound; explain that the Cache API is data-center-local and expiry, eviction, revalidation, versioning, and concurrency can refill, shifting cost into R2 Class A writes rather than eliminating it.",
+        "Recommend publish-time rendering or removing the per-miss R2 write, with explicit refresh and invalidation ownership."
+      ],
+      "assertions": [
+        {
+          "name": "cache-fill-meter-chain",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:cache miss|miss).{0,300}D1)(?=.*(?:R2|RENDERS).{0,180}(?:put|write|Class A))(?=.*(?:Cache API|caches\\.default|data.center|colo)).*$"
+        },
+        {
+          "name": "cache-cold-family",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:20[, ]?000|20k).{0,280}(?:scenario|envelope|if|assuming|corpus.covering|full crawl))(?=.*(?:distinct|unique).{0,180}(?:fill|miss|key))(?=.*(?:R2|write|Class A))(?=.*(?:colo|data.?center|location|expiry|eviction|revalidat|version|concurren)).*$"
+        },
+        {
+          "name": "cache-known-vs-accepted-keyspace",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:20[, ]?000|20k).{0,180}(?:known|valid|real|report|corpus))(?=.*(?:/report/|report route).{0,260}(?:arbitrary|unknown|invalid|unbounded|larger|accepted keyspace))(?=.*D1.{0,240}(?:before|prior to).{0,160}(?:404|reject|exist|validat)).*$"
+        },
+        {
+          "name": "cache-keyspace-no-contradiction",
+          "type": "not_regex",
+          "pattern": "(?is)(?:/report/.{0,160}(?:does not|doesn't|cannot|never).{0,100}(?:accept|match|reach).{0,120}(?:arbitrary|unknown|invalid)|D1.{0,160}(?:does not|doesn't|never).{0,100}(?:run|execute).{0,120}(?:before|prior to).{0,100}(?:validat|404|reject))"
+        },
+        {
+          "name": "cache-meter-shift",
+          "type": "regex",
+          "pattern": "(?is)(?:shift|move|replace|trade).{0,180}(?:meter|cost|D1|R2)|(?:cache|caching).{0,220}(?:not|does not|doesn't).{0,120}(?:eliminate|contain|solve)"
+        },
+        {
+          "name": "cache-fill-fix",
+          "type": "regex",
+          "pattern": "(?is)(?:publish|pre.?render|materializ|remove|stop).{0,260}(?:R2|RENDERS|per.miss|cache miss|write).{0,260}(?:refresh|invalidat|owner|dataset)"
+        },
+        {
+          "name": "cache-official-source-basis",
+          "type": "regex",
+          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/d1/)(?=.*developers\\.cloudflare\\.com/workers/runtime-apis/cache)(?=.*developers\\.cloudflare\\.com/r2/pricing)"
+        },
+        {
+          "name": "cache-regeneration-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Maps the cold and revalidation path through D1, the local Cache API, and R2 put",
+            "Separates known reports from the larger accepted slug keyspace and identifies D1 work before not-found rejection",
+            "Treats a fill/write for all 20,000 reports as a corpus-covering scenario because complete request/discovery coverage is not supplied, then accounts for independent locations and refill lifecycle",
+            "Recognizes that caching can move the billable meter into regeneration writes",
+            "Recommends removing request-triggered persistence or moving it to the publish path with explicit invalidation",
+            "Uses current official Cloudflare Cache API and R2 documentation for cache topology and operation billing"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 160000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": ["public-surface", "cache-regeneration", "fixture-backed"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-surface-dependency-cost-composition",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+          "fixtures/benchmark/dependency-cost-composition/README.md",
+          "fixtures/benchmark/dependency-cost-composition/wrangler.jsonc",
+          "fixtures/benchmark/dependency-cost-composition/package.json",
+          "fixtures/benchmark/dependency-cost-composition/index.js"
+      ],
+      "prompt": "Cloudflare Doctor this public guide renderer before launch. Audit the crawler-driven dependency and cost composition from its actual accepted request surface.",
+      "expected_behavior": [
+        "Distinguish the 8,000 known guides from the syntactically accepted `/guide/:slug` keyspace, while recognizing that non-guide paths return the directory response before every binding call rather than falsely claiming the whole hostname triggers paid work.",
+        "Inventory KV, R2, a service binding, Browser Run, Analytics Engine, and Queue operations per accepted GET without falsely reporting a browser-close leak; separately verify each operation's current billable or quota unit, exclusion, aggregation key, and window from official Cloudflare documentation rather than calling every binding paid.",
+        "Preserve the early non-guide route guard, reject unknown guide slugs before downstream rendering work, serve pre-rendered public output, and move view side effects off crawler GETs."
+      ],
+      "assertions": [
+        {
+          "name": "dependency-cost-composition",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*KV)(?=.*R2)(?=.*(?:service binding|service call|thumbnail))(?!.*(?:missing|unclosed).{0,60}browser)(?=.*Browser)(?=.*Analytics)(?=.*Queue).*$"
+        },
+        {
+          "name": "ordinary-family-multiplier",
+          "type": "regex",
+          "pattern": "(?is)(?:8[, ]?000|8k).{0,320}(?:known|valid|real|guide|corpus).{0,320}(?:KV|R2|Browser|Queue|operation|request)"
+        },
+        {
+          "name": "dependency-accepted-keyspace-before-work",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:8[, ]?000|8k).{0,200}(?:known|valid|real|guide|corpus))(?=.*(?:/guide/|guide route|slug).{0,240}(?:arbitrary|unknown|invalid|larger|accepted keyspace|one.segment))(?=.*(?:non.guide|outside|other path|route guard|regex).{0,260}(?:before|prior to|without).{0,220}(?:binding|KV|R2|Browser|Queue|dependenc|meter))(?=.*(?:unknown|invalid).{0,120}(?:guide|slug).{0,260}(?:KV|R2|thumbnail|Browser|dependenc|work)).*$",
+          "description": "The audit separates valid guides, accepted guide slugs, and the zero-binding non-guide rejection path without turning the fixture into a catch-all defect."
+        },
+        {
+          "name": "browser-lifecycle-recognized",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*browser)(?=.*(?:close|closing|closes|closed))(?=.*(?:finally|not a (?:lifecycle )?leak|correct|bounded)).*$"
+        },
+        {
+          "name": "browser-lifecycle-no-contradiction",
+          "type": "not_regex",
+          "pattern": "(?is)(?:browser.{0,80}(?:is|was|remains|appears)\\s+(?:not|never)\\s+(?:closed|bounded)|browser.{0,80}(?:never\\s+closes|does not close)|browser\\s+close.{0,40}(?:is|was)\\s+not\\s+(?:correct|bounded)|(?:missing|unclosed).{0,40}browser)"
+        },
+        {
+          "name": "dependency-composition-fix",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:preserve|keep|already|non.guide|route guard).{0,260}(?:before|prior to|without).{0,220}(?:binding|KV|R2|dependenc|work))(?=.*(?:reject|validat|allowlist|404).{0,260}(?:unknown|invalid).{0,160}(?:guide|slug))(?=.*(?:pre.?render|static|materializ|publish).{0,260}(?:guide|output|page).{0,320}(?:Queue|Analytics|view|crawler|GET|cache)).*$"
+        },
+        {
+          "name": "ordinary-call-vs-billing-semantics",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:call|invocation|operation|request))(?=.*(?:billable unit|billing unit|meter|quota|included|no additional|not billed|aggregation|window))(?=.*(?:service binding|Analytics Engine|Browser Run|Browser Rendering)).*$",
+          "description": "The audit separates dependency calls from current pricing and quota semantics instead of calling every binding paid."
+        },
+        {
+          "name": "dependency-official-source-basis",
+          "type": "regex",
+          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/kv/)(?=.*developers\\.cloudflare\\.com/r2/)(?=.*developers\\.cloudflare\\.com/workers/(?:platform/pricing|runtime-apis/bindings/service-bindings))(?=.*developers\\.cloudflare\\.com/browser-run/)(?=.*developers\\.cloudflare\\.com/analytics/analytics-engine/)(?=.*developers\\.cloudflare\\.com/queues/)"
+        },
+        {
+          "name": "dependency-composition-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Separates 8,000 valid guides from accepted /guide/:slug values, while explicitly recognizing that non-guide paths return before binding calls and rejecting any claim that all host paths trigger the dependency chain",
+            "Identifies any remaining unknown-guide work without conflating it with the separately tested catch-all-host defect",
+            "Inventories KV, R2, service binding, Browser Run, Analytics Engine, and Queue calls, then separately states the current billable/quota unit, exclusion, aggregation key, and window where applicable",
+            "Does not describe every binding as paid; directly relevant official Cloudflare product and pricing/limits pages govern mutable semantics",
+            "Recognizes the browser is closed correctly and does not substitute a lifecycle-leak diagnosis",
+            "Preserves the early route guard, validates unknown guide slugs before downstream work, and moves page generation and crawler-triggered side effects out of the public GET path"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 160000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": ["public-surface", "primitive-composition", "fixture-backed"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-surface-subresource-fanout",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/subresource-fanout/README.md",
+        "fixtures/benchmark/subresource-fanout/wrangler.jsonc",
+        "fixtures/benchmark/subresource-fanout/index.js"
+      ],
+      "prompt": "Cloudflare Doctor this public gallery before launch. Audit the cost of a crawler loading a rendered page, not just the HTML handler.",
+      "expected_behavior": [
+        "Distinguish the 10,000 known galleries from arbitrary syntactically accepted gallery/media/API keys, and identify which unknown keys reach R2, Images, or D1 before validation.",
+        "Follow HTML discovery edges to twelve media requests and one metadata request for every known gallery page.",
+        "Map each media request to an R2 read and Images transformation call and the metadata request to D1, while separating Images calls from billing by unique source-plus-parameters transformations per calendar month.",
+        "Multiply the subresource fan-out by the known family, bound the larger accepted keyspaces separately, and recommend early rejection plus pre-generated normalized variants and caching before metered dependencies."
+      ],
+      "assertions": [
+        {
+          "name": "subresource-request-fanout",
+          "type": "regex",
+          "pattern": "(?is)(?:12|twelve).{0,160}(?:image|media).{0,260}(?:one|1).{0,120}(?:JSON|metadata|API)"
+        },
+        {
+          "name": "subresource-dependency-map",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:media|image).{0,260}R2.{0,260}Images)(?=.*(?:metadata|API).{0,220}D1).*$"
+        },
+        {
+          "name": "subresource-family-multiplier",
+          "type": "regex",
+          "pattern": "(?is)(?:10[, ]?000|10k).{0,280}(?:12|twelve|fan.out|subresource).{0,320}(?:R2|Images|D1|request|operation)"
+        },
+        {
+          "name": "subresource-images-billing-window",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*Images.{0,260}(?:call|request|transform))(?=.*unique.{0,180}(?:source|image).{0,180}(?:parameter|variant|transform))(?=.*(?:calendar month|monthly|per month))(?=.*(?:repeat|same|cached|deduplicat).{0,180}(?:not.{0,80}(?:bill|usage)|once)).*$"
+        },
+        {
+          "name": "subresource-accepted-keyspaces",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:10[, ]?000|10k).{0,200}(?:known|valid|real|gallery|corpus))(?=.*(?:/gallery/|/media/|/api/gallery/).{0,320}(?:arbitrary|unknown|invalid|unbounded|larger|accepted keyspace))(?=.*(?:R2|Images|D1).{0,300}(?:before|prior to).{0,180}(?:exist|validat|404|reject)).*$"
+        },
+        {
+          "name": "subresource-primary-fix",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:reject|validat|allowlist|404).{0,260}(?:before|prior to).{0,240}(?:R2|Images|D1|dependenc|meter))(?=.*(?:pre.?generat|materializ|normalize).{0,220}(?:variant|image|media).{0,260}(?:cache|immutable|publish)).*$"
+        },
+        {
+          "name": "subresource-official-source-basis",
+          "type": "regex",
+          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/r2/)(?=.*developers\\.cloudflare\\.com/images/)(?=.*developers\\.cloudflare\\.com/d1/)(?=.*developers\\.cloudflare\\.com/workers/(?:runtime-apis/cache|cache/))"
+        },
+        {
+          "name": "subresource-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Treats the cheap HTML response as a discovery node rather than concluding the page is free",
+            "Separates the known gallery corpus from the larger accepted gallery, media, and API keyspaces and identifies metered work before validity rejection",
+            "Counts twelve independently requested media paths plus the metadata API for each known page",
+            "Maps R2, Images, and D1 calls while separating Images request fan-out from unique source-plus-parameters transformations billed once per calendar month",
+            "Adds early rejection, moves transformations toward normalized pre-generated variants, and caches before metered work",
+            "Grounds current R2, Images, D1, and cache semantics in directly relevant official Cloudflare documentation"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 160000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": ["public-surface", "subresource-fanout", "fixture-backed"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-surface-alternate-host-control-gap",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/alternate-public-host/README.md",
+        "fixtures/benchmark/alternate-public-host/wrangler.jsonc",
+        "fixtures/benchmark/alternate-public-host/deployed-controls.json",
+        "fixtures/benchmark/alternate-public-host/index.js"
+      ],
+      "prompt": "Cloudflare Doctor the attached public catalogue deployment. Audit crawler cost across every supplied hostname and control boundary.",
+      "expected_behavior": [
+        "Create separate host nodes for the production custom domain and enabled workers.dev hostname.",
+        "Use the supplied control export to show that the 60,000 known products are cached and WAF-covered only on the custom domain, while arbitrary syntactically accepted `/product/*` keys reach D1 on both hosts before content validity is known.",
+        "Recommend disabling workers.dev or applying an equivalent supported protection, and rejecting invalid keys before D1, rather than assuming production-zone rules cover it or the known corpus bounds exposure."
+      ],
+      "assertions": [
+        {
+          "name": "alternate-host-inventory",
+          "type": "contains_all",
+          "values": ["catalog.example.com", "workers.dev", "/product/"]
+        },
+        {
+          "name": "alternate-host-control-difference",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*workers\\.dev.{0,320}(?:not covered|outside|bypass|no|false).{0,220}(?:cache|zone cache|cache rule))(?=.*workers\\.dev.{0,320}(?:not covered|outside|bypass|no|false).{0,220}(?:WAF|firewall|zone rule)).*$"
+        },
+        {
+          "name": "alternate-host-control-no-contradiction",
+          "type": "not_regex",
+          "pattern": "(?is)(?:workers\\.dev.{0,180}(?:(?:not\\s+outside|inside|covered\\s+by|subject\\s+to).{0,80}(?:cache|WAF).{0,180}(?:not\\s+outside|inside|covered\\s+by|subject\\s+to).{0,80}(?:cache|WAF)|not covered.{0,60}(?:\\?|but|no[:;,]).{0,100}(?:cache|WAF).{0,100}(?:cover|apply|enabled|true))|(?:cache|WAF).{0,80}(?:cover|apply).{0,80}workers\\.dev)"
+        },
+        {
+          "name": "alternate-host-cost-path",
+          "type": "regex",
+          "pattern": "(?is)(?:workers\\.dev).{0,320}(?:60[, ]?000|60k|product).{0,320}(?:D1|lookup|query|row)"
+        },
+        {
+          "name": "alternate-host-accepted-keyspace",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:60[, ]?000|60k).{0,200}(?:known|valid|real|product|corpus))(?=.*(?:/product/|product route).{0,280}(?:arbitrary|unknown|invalid|unbounded|larger|accepted keyspace))(?=.*D1.{0,260}(?:before|prior to).{0,160}(?:exist|validat|404|reject))(?=.*(?:catalog\\.example\\.com|custom domain))(?=.*workers\\.dev).*$"
+        },
+        {
+          "name": "alternate-host-fix",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:(?:disable|turn off).{0,100}workers\\.dev|workers\\.dev.{0,220}(?:protect|equivalent|cache|WAF|Access)))(?=.*(?:reject|validat|allowlist|404).{0,260}(?:before|prior to).{0,220}D1).*$"
+        },
+        {
+          "name": "alternate-host-fix-no-contradiction",
+          "type": "not_regex",
+          "pattern": "(?is)(?:do not|don't|never).{0,60}(?:reject|validat|allowlist|gate).{0,160}(?:before|prior to).{0,100}D1"
+        },
+        {
+          "name": "alternate-host-official-source-basis",
+          "type": "regex",
+          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/workers/configuration/routing)(?=.*developers\\.cloudflare\\.com/d1/)"
+        },
+        {
+          "name": "alternate-host-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Builds host-specific graph nodes instead of assigning production controls to the Worker globally",
+            "Uses the supplied control export and does not infer traffic or unrelated dashboard state",
+            "Separates the known 60,000-product corpus from arbitrary accepted product keys that reach D1 before validity rejection on both hosts",
+            "Recommends disabling the unintended hostname or deliberately extending equivalent controls, plus rejecting invalid keys before D1",
+            "Uses current official Cloudflare documentation for host/control and D1 billing semantics"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 160000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": ["public-surface", "alternate-host", "fixture-backed"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-surface-unknown-route-metered-fallback",
+      "split": "holdout",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/unknown-route-metered-fallback/README.md",
+        "fixtures/benchmark/unknown-route-metered-fallback/wrangler.jsonc",
+        "fixtures/benchmark/unknown-route-metered-fallback/index.js",
+        "fixtures/benchmark/unknown-route-metered-fallback/public/assets/README.txt"
+      ],
+      "prompt_ref": "holdout/public-surface-unknown-route-metered-fallback.txt",
+      "expected_behavior": [
+        "Distinguish the roughly 3,500 discoverable handbook entries from three runtime families: exact existing assets served by the asset-first layer, missing `/assets/*` and `/favicon.ico` requests that enter the Worker but return through `ASSETS` before D1, and every other non-root path that reaches D1.",
+        "Show that an arbitrary unknown path outside the reserved asset namespace reaches the D1 lookup before the not-found response, while root has no D1 dependency and the configured asset-first layer serves `/assets/README.txt` before the Worker.",
+        "Recommend an early syntactic gate plus a publish-refreshed allowlist, static representation, or equivalent rejection boundary before D1, preserving valid handbook behavior and naming freshness ownership."
+      ],
+      "assertions": [
+        {
+          "name": "fallback-known-vs-accepted-keyspace",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:3[, ]?500|3\\.5k).{0,220}(?:known|valid|real|discoverable|handbook|corpus))(?=.*(?:arbitrary|unknown|non.asset|catch.all|fallback|unbounded).{0,220}(?:path|pathname|URL|keyspace|request))(?=.*D1.{0,260}(?:before|prior to).{0,180}(?:404|not found|exist|validat|reject)).*$",
+          "description": "The audit distinguishes the known corpus from the code's much larger accepted request surface and proves the rejection order."
+        },
+        {
+          "name": "fallback-zero-cost-exceptions",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:root|`/`).{0,220}(?:no D1|zero D1|static|HTML))(?=.*/assets/README\\.txt.{0,220}(?:asset.first|before.{0,80}Worker|without.{0,80}Worker))(?=.*(?:missing.{0,120}/assets/|/assets/\\*|favicon).{0,260}(?:ASSETS|asset binding).{0,200}(?:before D1|no D1|zero D1|without D1)).*$"
+        },
+        {
+          "name": "fallback-early-rejection-fix",
+          "type": "regex",
+          "pattern": "(?is)^(?=.*(?:syntactic|namespace|prefix|route|allowlist|manifest|static).{0,240}(?:reject|validat|gate|404))(?=.*(?:before|prior to).{0,180}D1)(?=.*(?:publish|content update|refresh|invalidat|owner|valid handbook|preserv)).*$"
+        },
+        {
+          "name": "fallback-fix-no-contradiction",
+          "type": "not_regex",
+          "pattern": "(?is)(?:do not|don't|never).{0,60}(?:allowlist|reject|validat|gate).{0,160}(?:before|prior to).{0,100}D1"
+        },
+        {
+          "name": "fallback-official-source-basis",
+          "type": "regex",
+          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/workers/static-assets/routing)(?=.*developers\\.cloudflare\\.com/d1/)"
+        },
+        {
+          "name": "fallback-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Derives the accepted route surface from Wrangler and runtime control flow rather than the incomplete sitemap or README corpus count",
+            "Separates the roughly 3,500 discoverable valid entries from arbitrary non-root paths outside the reserved asset namespace",
+            "Distinguishes exact assets served before the Worker, missing reserved asset paths returned through ASSETS before D1, root as zero-D1, and arbitrary other paths reaching D1 before not-found rejection",
+            "Places syntactic and publish-refreshed membership rejection before D1, preserves valid page behavior, and assigns refresh ownership",
+            "Uses current official Cloudflare documentation for the relevant routing, Static Assets, D1, and cache semantics without inventing deployed state"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 160000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": ["public-surface", "accepted-keyspace", "fixture-backed", "blind-generation"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
       "id": "pos-worker-kv-rate-limit",
       "split": "tune",
       "kind": "audit-output",
@@ -2102,18 +2721,61 @@
         "Record observation/effective dates and unresolved plan or volume assumptions."
       ],
       "assertions": [
-        {"name": "uses-effective-date", "type": "regex", "pattern": "(?is)(?:August|current).{0,160}(?:rate A|currently effective)|(?:rate A|currently effective).{0,160}(?:August|current)"},
-        {"name": "separates-future-rate", "type": "regex", "pattern": "(?is)(?:rate B|2026-10-01|future).{0,180}(?:separate|not yet|after|effective)"},
-        {"name": "records-source-bundle", "type": "regex", "pattern": "(?is)^(?=.{0,2000}(?:current official|observed|observation date))(?=.{0,2000}(?:effective|2026-10-01))(?=.{0,2000}(?:workload|usage|units|volume)).*$"},
-        {"name": "no-invented-dollar-total", "type": "not_regex", "pattern": "(?i)\\$[0-9]"},
-        {"name": "qualitative-review", "type": "judge", "rubric": ["Temporal pricing correctness", "No silent conflict resolution", "Assumptions are explicit"], "threshold": 0.85},
-        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 50000, "severity": "soft", "oracle": "strong"},
-        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 45, "severity": "soft", "oracle": "strong"}
+        {
+          "name": "uses-effective-date",
+          "type": "regex",
+          "pattern": "(?is)(?:August|current).{0,160}(?:rate A|currently effective)|(?:rate A|currently effective).{0,160}(?:August|current)"
+        },
+        {
+          "name": "separates-future-rate",
+          "type": "regex",
+          "pattern": "(?is)(?:rate B|2026-10-01|future).{0,180}(?:separate|not yet|after|effective)"
+        },
+        {
+          "name": "records-source-bundle",
+          "type": "regex",
+          "pattern": "(?is)^(?=.{0,2000}(?:current official|observed|observation date))(?=.{0,2000}(?:effective|2026-10-01))(?=.{0,2000}(?:workload|usage|units|volume)).*$"
+        },
+        {
+          "name": "no-invented-dollar-total",
+          "type": "not_regex",
+          "pattern": "(?i)\\$[0-9]"
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Temporal pricing correctness",
+            "No silent conflict resolution",
+            "Assumptions are explicit"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 50000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
+        }
       ],
-      "tags": ["pricing", "future-effective", "conflict"],
+      "tags": [
+        "pricing",
+        "future-effective",
+        "conflict"
+      ],
       "domain": "cloudflare-workers",
       "difficulty": "extended",
-      "success_goals": ["outcome"]
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pricing-enterprise-contract-conflict",
@@ -2125,17 +2787,56 @@
         "Use public pricing only as a dated comparison and preserve confidentiality."
       ],
       "assertions": [
-        {"name": "contract-governs-actual", "type": "regex", "pattern": "(?is)(?:(?:contract|order form|invoice|negotiated).{0,220}(?:govern|controls?|authoritative|actual charge)|(?:govern|controls?|authoritative|actual charge).{0,220}(?:contract|order form|invoice|negotiated))"},
-        {"name": "public-is-comparison", "type": "regex", "pattern": "(?is)public.{0,160}(?:comparison|baseline|not.*actual|does not govern)"},
-        {"name": "protects-contract-values", "type": "regex", "pattern": "(?is)(?:redact|confidential|do not (?:expose|publish|repeat)|avoid repeating).{0,180}(?:price|value|contract|invoice|amount|discount)"},
-        {"name": "qualitative-review", "type": "judge", "rubric": ["Contract hierarchy is correct", "Public pricing is not substituted for actual charges", "Sensitive terms remain private"], "threshold": 0.85},
-        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 45000, "severity": "soft", "oracle": "strong"},
-        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 40, "severity": "soft", "oracle": "strong"}
+        {
+          "name": "contract-governs-actual",
+          "type": "regex",
+          "pattern": "(?is)(?:(?:contract|order form|invoice|negotiated).{0,220}(?:govern|controls?|authoritative|actual charge)|(?:govern|controls?|authoritative|actual charge).{0,220}(?:contract|order form|invoice|negotiated))"
+        },
+        {
+          "name": "public-is-comparison",
+          "type": "regex",
+          "pattern": "(?is)public.{0,160}(?:comparison|baseline|not.*actual|does not govern)"
+        },
+        {
+          "name": "protects-contract-values",
+          "type": "regex",
+          "pattern": "(?is)(?:redact|confidential|do not (?:expose|publish|repeat)|avoid repeating).{0,180}(?:price|value|contract|invoice|amount|discount)"
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Contract hierarchy is correct",
+            "Public pricing is not substituted for actual charges",
+            "Sensitive terms remain private"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 45000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 40,
+          "severity": "soft",
+          "oracle": "strong"
+        }
       ],
-      "tags": ["pricing", "enterprise", "contract"],
+      "tags": [
+        "pricing",
+        "enterprise",
+        "contract"
+      ],
       "domain": "cloudflare-workers",
       "difficulty": "extended",
-      "success_goals": ["outcome"]
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pricing-compound-worker-bindings",
@@ -2147,19 +2848,66 @@
         "Refuse an exact total until current rates, meter semantics, plan, and missing usage assumptions are supplied."
       ],
       "assertions": [
-        {"name": "separate-meter-graph", "type": "regex", "pattern": "(?is)^(?=.{0,3000}Worker)(?=.{0,3000}D1)(?=.{0,3000}Queue)(?=.{0,3000}(?:logs|logging))(?=.{0,3000}(?:meter|usage shape|operations)).*$"},
-        {"name": "does-not-equate-calls-with-d1-rows", "type": "regex", "pattern": "(?is)(?:D1.{0,300}(?:rows|query).{0,300}(?:unknown|not supplied|cannot|need|not enough)|(?:unknown|not supplied|cannot|need|not enough).{0,300}D1.{0,300}(?:rows|query))"},
-        {"name": "requests-missing-assumptions", "type": "regex", "pattern": "(?is)^(?=.{0,5000}plan)(?=.{0,5000}batch\\w*)(?=.{0,5000}retention)(?=.{0,5000}region).*$"},
-        {"name": "no-exact-total", "type": "regex", "pattern": "(?is)(?:cannot|can't|do not|would not|not enough|insufficient).{0,180}(?:exact|dollar|total|bill|estimate)"},
-        {"name": "no-invented-dollar-total", "type": "not_regex", "pattern": "(?i)\\$[0-9]"},
-        {"name": "qualitative-review", "type": "judge", "rubric": ["Compound meters remain separate", "Unknown billing inputs are explicit", "No unsupported exact bill"], "threshold": 0.85},
-        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 55000, "severity": "soft", "oracle": "strong"},
-        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 45, "severity": "soft", "oracle": "strong"}
+        {
+          "name": "separate-meter-graph",
+          "type": "regex",
+          "pattern": "(?is)^(?=.{0,3000}Worker)(?=.{0,3000}D1)(?=.{0,3000}Queue)(?=.{0,3000}(?:logs|logging))(?=.{0,3000}(?:meter|usage shape|operations)).*$"
+        },
+        {
+          "name": "does-not-equate-calls-with-d1-rows",
+          "type": "regex",
+          "pattern": "(?is)(?:D1.{0,300}(?:rows|query).{0,300}(?:unknown|not supplied|cannot|need|not enough)|(?:unknown|not supplied|cannot|need|not enough).{0,300}D1.{0,300}(?:rows|query))"
+        },
+        {
+          "name": "requests-missing-assumptions",
+          "type": "regex",
+          "pattern": "(?is)^(?=.{0,5000}plan)(?=.{0,5000}batch\\w*)(?=.{0,5000}retention)(?=.{0,5000}region).*$"
+        },
+        {
+          "name": "no-exact-total",
+          "type": "regex",
+          "pattern": "(?is)(?:cannot|can't|do not|would not|not enough|insufficient).{0,180}(?:exact|dollar|total|bill|estimate)"
+        },
+        {
+          "name": "no-invented-dollar-total",
+          "type": "not_regex",
+          "pattern": "(?i)\\$[0-9]"
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Compound meters remain separate",
+            "Unknown billing inputs are explicit",
+            "No unsupported exact bill"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 55000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 45,
+          "severity": "soft",
+          "oracle": "strong"
+        }
       ],
-      "tags": ["pricing", "compound-bill", "bindings"],
+      "tags": [
+        "pricing",
+        "compound-bill",
+        "bindings"
+      ],
       "domain": "cloudflare-workers",
       "difficulty": "extended",
-      "success_goals": ["outcome"]
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-do-stub-cycle-rows-read-bill",
@@ -2175,21 +2923,101 @@
         "Pair the code fix with detection-latency and kill-switch mitigations."
       ],
       "assertions": [
-        {"name": "scanner-cycle-check-id", "type": "contains", "value": "DO-STUB-CALL-CYCLE", "description": "Requires the PR scanner's stable cycle finding rather than a prompt-primed generic diagnosis."},
-        {"name": "cycle-class-members", "type": "contains_all", "values": ["SessionCoordinator", "TaskRunner"], "description": "Requires identifying both actual classes in the attached source rather than a generic DO loop."},
-        {"name": "detect-rows-read-meter", "type": "regex", "pattern": "(?is)(rows\\s+read|storage\\s+rows|sqlite)", "description": "Requires naming the rows-read/SQLite storage meter rather than generic DO cost."},
-        {"name": "detect-cycle-mechanism", "type": "regex", "pattern": "(?is)(cycle|loop|re-?trigger|ping-?pong|call(?:s|ing)?\\s+each\\s+other)", "description": "Requires the DO-to-DO re-trigger mechanism, not just a product mention."},
-        {"name": "containment-mitigation", "type": "regex", "pattern": "(?is)(budget\\s+alert|billable\\s+usage|usage\\s+alert|daily\\s+(?:cost|usage|spend)|kill\\s*switch|hop\\s+(?:budget|depth|limit)|depth\\s+(?:budget|limit|guard)|idempoten)", "description": "Requires at least one concrete containment control, not only naming the cycle."},
-        {"name": "output-contract", "type": "contains_all", "values": ["Scope inspected:", "Scope not inspected:", "Docs refreshed:", "Evidence:", "Cost / trade-off:", "Verify:", "Source basis:", "Confidence:"]},
-        {"name": "fixture-script-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "pos-do-stub-cycle-rows-read-bill"], "pass_exit_code": 0, "timeout_s": 10, "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."},
-        {"name": "qualitative-review", "type": "judge", "rubric": ["Explains how reciprocal Durable Object calls form a runaway loop and how the growing SQLite read amplifies cost", "Recommends the smallest safe way to break the cycle plus a bounded containment control", "Treats static scanner output as a lead and separates repository evidence from uninspected runtime state"], "threshold": 0.85},
-        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"},
-        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 140, "severity": "soft", "oracle": "strong"}
+        {
+          "name": "scanner-cycle-check-id",
+          "type": "contains",
+          "value": "DO-STUB-CALL-CYCLE",
+          "description": "Requires the PR scanner's stable cycle finding rather than a prompt-primed generic diagnosis."
+        },
+        {
+          "name": "cycle-class-members",
+          "type": "contains_all",
+          "values": [
+            "SessionCoordinator",
+            "TaskRunner"
+          ],
+          "description": "Requires identifying both actual classes in the attached source rather than a generic DO loop."
+        },
+        {
+          "name": "detect-rows-read-meter",
+          "type": "regex",
+          "pattern": "(?is)(rows\\s+read|storage\\s+rows|sqlite)",
+          "description": "Requires naming the rows-read/SQLite storage meter rather than generic DO cost."
+        },
+        {
+          "name": "detect-cycle-mechanism",
+          "type": "regex",
+          "pattern": "(?is)(cycle|loop|re-?trigger|ping-?pong|call(?:s|ing)?\\s+each\\s+other)",
+          "description": "Requires the DO-to-DO re-trigger mechanism, not just a product mention."
+        },
+        {
+          "name": "containment-mitigation",
+          "type": "regex",
+          "pattern": "(?is)(budget\\s+alert|billable\\s+usage|usage\\s+alert|daily\\s+(?:cost|usage|spend)|kill\\s*switch|hop\\s+(?:budget|depth|limit)|depth\\s+(?:budget|limit|guard)|idempoten)",
+          "description": "Requires at least one concrete containment control, not only naming the cycle."
+        },
+        {
+          "name": "output-contract",
+          "type": "contains_all",
+          "values": [
+            "Scope inspected:",
+            "Scope not inspected:",
+            "Docs refreshed:",
+            "Evidence:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:"
+          ]
+        },
+        {
+          "name": "fixture-script-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "pos-do-stub-cycle-rows-read-bill"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Explains how reciprocal Durable Object calls form a runaway loop and how the growing SQLite read amplifies cost",
+            "Recommends the smallest safe way to break the cycle plus a bounded containment control",
+            "Treats static scanner output as a lead and separates repository evidence from uninspected runtime state"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 140000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 140,
+          "severity": "soft",
+          "oracle": "strong"
+        }
       ],
-      "tags": ["durable-objects", "cost-incident", "loops"],
+      "tags": [
+        "durable-objects",
+        "cost-incident",
+        "loops"
+      ],
       "domain": "cloudflare-workers",
       "difficulty": "core",
-      "success_goals": ["outcome"]
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-spend-limits-detection-latency",
@@ -2201,18 +3029,65 @@
         "Recommend daily billable-usage review plus in-code bounds and a kill switch, grounded in current Cloudflare billing docs."
       ],
       "assertions": [
-        {"name": "no-hard-cap-claim", "type": "regex", "pattern": "(?is)(informational\\s+only|do(?:es)?\\s+not\\s+(?:pause|cap|stop)|no\\s+(?:hard\\s+)?(?:spend(?:ing)?\\s+)?(?:cap|limit))", "description": "Requires the accurate platform posture: alerts notify, nothing caps usage."},
-        {"name": "daily-usage-review", "type": "regex", "pattern": "(?is)(billable\\s+usage|daily\\s+(?:cost|usage|spend)|usage\\s+(?:dashboard|api|export)|graphql)", "description": "Requires a concrete daily meter-watch mechanism, not just set an alert."},
-        {"name": "architectural-controls", "type": "regex", "pattern": "(?is)(kill\\s*switch|rate\\s*limit|backpressure|bound(?:ed|s)?|circuit\\s+breaker|idempoten)", "description": "Requires in-code/architectural spend controls beyond notifications."},
-        {"name": "cites-current-docs", "type": "regex", "pattern": "(?i)developers\\.cloudflare\\.com", "description": "Billing semantics are mutable; the answer must ground them in current official docs."},
-        {"name": "qualitative-review", "type": "judge", "rubric": ["Current docs over memory", "Confirmed vs suspected separation", "No dashboard inference"], "threshold": 0.85},
-        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 120000, "severity": "soft", "oracle": "strong"},
-        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 120, "severity": "soft", "oracle": "strong"}
+        {
+          "name": "no-hard-cap-claim",
+          "type": "regex",
+          "pattern": "(?is)(informational\\s+only|do(?:es)?\\s+not\\s+(?:pause|cap|stop)|no\\s+(?:hard\\s+)?(?:spend(?:ing)?\\s+)?(?:cap|limit))",
+          "description": "Requires the accurate platform posture: alerts notify, nothing caps usage."
+        },
+        {
+          "name": "daily-usage-review",
+          "type": "regex",
+          "pattern": "(?is)(billable\\s+usage|daily\\s+(?:cost|usage|spend)|usage\\s+(?:dashboard|api|export)|graphql)",
+          "description": "Requires a concrete daily meter-watch mechanism, not just set an alert."
+        },
+        {
+          "name": "architectural-controls",
+          "type": "regex",
+          "pattern": "(?is)(kill\\s*switch|rate\\s*limit|backpressure|bound(?:ed|s)?|circuit\\s+breaker|idempoten)",
+          "description": "Requires in-code/architectural spend controls beyond notifications."
+        },
+        {
+          "name": "cites-current-docs",
+          "type": "regex",
+          "pattern": "(?i)developers\\.cloudflare\\.com",
+          "description": "Billing semantics are mutable; the answer must ground them in current official docs."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Current docs over memory",
+            "Confirmed vs suspected separation",
+            "No dashboard inference"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
       ],
-      "tags": ["billing", "spend-controls", "budget-alerts"],
+      "tags": [
+        "billing",
+        "spend-controls",
+        "budget-alerts"
+      ],
       "domain": "cloudflare-workers",
       "difficulty": "core",
-      "success_goals": ["outcome"]
+      "success_goals": [
+        "outcome"
+      ]
     }
   ],
   "ablations": [
@@ -2348,6 +3223,50 @@
       "target": {
         "skill_root": "skills/cloudflare-doctor/SKILL.md",
         "patch": "evals/ablations/no-cost-tradeoff.patch"
+      }
+    },
+    {
+      "id": "no-public-surface-graph",
+      "removed_component": "bounded public-surface dependency and cost graph",
+      "expected_regressions": [
+        {
+          "summary": "Public cost audits collapse the declared corpus into the accepted keyspace, miss early-rejection order and compound meter/cache exposure, or stop at sitemap/query inspection.",
+          "cases": [
+            "crawlable-page-live-d1-cost",
+            "public-surface-framework-inherited-loader",
+            "public-surface-cache-regeneration-meter-shift",
+            "public-surface-dependency-cost-composition",
+            "public-surface-subresource-fanout",
+            "public-surface-alternate-host-control-gap",
+            "public-surface-unknown-route-metered-fallback"
+          ],
+          "assertions": [
+            "known-corpus-vs-accepted-keyspace",
+            "cold-miss-envelope",
+            "framework-accepted-keyspace",
+            "cache-known-vs-accepted-keyspace",
+            "dependency-accepted-keyspace-before-work",
+            "subresource-accepted-keyspaces",
+            "alternate-host-accepted-keyspace",
+            "fallback-known-vs-accepted-keyspace"
+          ]
+        }
+      ],
+      "applies_to_cases": [
+        "crawlable-page-live-d1-cost",
+        "public-surface-framework-inherited-loader",
+        "public-surface-cache-regeneration-meter-shift",
+        "public-surface-dependency-cost-composition",
+        "public-surface-subresource-fanout",
+        "public-surface-alternate-host-control-gap",
+        "public-surface-unknown-route-metered-fallback"
+      ],
+      "notes": "Patch ablation removes the public-surface graph and cache-envelope workflow while leaving the general audit workflow intact.",
+      "mechanism": "patch",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/cloudflare-doctor/SKILL.md",
+        "patch": "evals/ablations/no-public-surface-graph.patch"
       }
     },
     {

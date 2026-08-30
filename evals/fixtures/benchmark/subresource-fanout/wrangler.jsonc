@@ -1,0 +1,12 @@
+{
+  "name": "public-gallery",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "workers_dev": false,
+  "routes": [{ "pattern": "gallery.example.com/*", "zone_name": "example.com" }],
+  "r2_buckets": [{ "binding": "ORIGINALS", "bucket_name": "gallery-originals" }],
+  "images": { "binding": "IMAGES" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "gallery", "database_id": "00000000-0000-0000-0000-000000000024" }
+  ]
+}

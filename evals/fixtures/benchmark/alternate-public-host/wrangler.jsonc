@@ -1,0 +1,10 @@
+{
+  "name": "catalogue-origin",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "workers_dev": true,
+  "routes": [{ "pattern": "catalog.example.com/*", "zone_name": "example.com" }],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "catalogue", "database_id": "00000000-0000-0000-0000-000000000025" }
+  ]
+}

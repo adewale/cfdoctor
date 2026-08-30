@@ -1,0 +1,8 @@
+{
+  "name": "dependency-cost-composition-fixture",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@cloudflare/puppeteer": "1.4.0"
+  }
+}

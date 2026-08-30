@@ -1,0 +1,13 @@
+{
+  "name": "paper-browser-poc",
+  "main": "index.js",
+  "compatibility_date": "2026-08-01",
+  "routes": [{ "pattern": "papers.example.com/*", "zone_name": "example.com" }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "papers",
+      "database_id": "00000000-0000-0000-0000-000000000001"
+    }
+  ]
+}

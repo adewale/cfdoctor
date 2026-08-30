@@ -1,0 +1,88 @@
+===== FILE: src/app.html =====
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>
+
+===== FILE: src/routes/+layout.server.js =====
+export async function load({ platform }) {
+  const [products, categories] = await platform.env.DB.batch([
+    platform.env.DB.prepare("SELECT COUNT(id) AS total FROM products"),
+    platform.env.DB.prepare(
+      "SELECT category, COUNT(id) AS total FROM products GROUP BY category ORDER BY total DESC LIMIT 20"
+    ),
+  ]);
+  return { productCount: products.results[0].total, categories: categories.results };
+}
+
+===== FILE: src/routes/+layout.svelte =====
+<script>
+  let { data, children } = $props();
+</script>
+
+<header>
+  <a href="/">Catalogue</a>
+  <a href="/categories">Categories</a>
+  <a href="/about">About</a>
+  <span>{data.productCount} products</span>
+</header>
+
+{@render children()}
+
+===== FILE: src/routes/+page.svelte =====
+<h1>Public product catalogue</h1>
+<a href="/categories">Browse by category</a>
+
+===== FILE: src/routes/about/+page.svelte =====
+<h1>About the catalogue</h1>
+
+===== FILE: src/routes/categories/+page.server.js =====
+export async function load({ platform }) {
+  const featured = await platform.env.DB.prepare(
+    "SELECT slug, name FROM products ORDER BY published_at DESC LIMIT 50"
+  ).all();
+  return { featured: featured.results };
+}
+
+===== FILE: src/routes/categories/+page.svelte =====
+<script>
+  let { data } = $props();
+</script>
+
+<h1>Categories</h1>
+{#each data.featured as product}
+  <a href={`/product/${product.slug}`}>{product.name}</a>
+{/each}
+
+===== FILE: src/routes/product/[slug]/+page.server.js =====
+export async function load({ params, platform }) {
+  return platform.env.DB.prepare(
+    "SELECT slug, name, summary FROM products WHERE slug = ?1 LIMIT 1"
+  ).bind(params.slug).first();
+}
+
+===== FILE: src/routes/product/[slug]/+page.svelte =====
+<script>
+  let { data } = $props();
+</script>
+
+<h1>{data.name}</h1>
+<p>{data.summary}</p>
+
+===== FILE: src/routes/sitemap.xml/+server.js =====
+export function GET() {
+  return new Response(
+    '<?xml version="1.0"?><urlset>' +
+      '<url><loc>https://catalog.example.com/</loc></url>' +
+      '<url><loc>https://catalog.example.com/categories</loc></url>' +
+    '</urlset>',
+    { headers: { "content-type": "application/xml" } }
+  );
+}
