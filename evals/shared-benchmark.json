@@ -2102,61 +2102,18 @@
         "Record observation/effective dates and unresolved plan or volume assumptions."
       ],
       "assertions": [
-        {
-          "name": "uses-effective-date",
-          "type": "regex",
-          "pattern": "(?is)(?:August|current).{0,160}(?:rate A|currently effective)|(?:rate A|currently effective).{0,160}(?:August|current)"
-        },
-        {
-          "name": "separates-future-rate",
-          "type": "regex",
-          "pattern": "(?is)(?:rate B|2026-10-01|future).{0,180}(?:separate|not yet|after|effective)"
-        },
-        {
-          "name": "records-source-bundle",
-          "type": "regex",
-          "pattern": "(?is)^(?=.{0,2000}(?:current official|observed|observation date))(?=.{0,2000}(?:effective|2026-10-01))(?=.{0,2000}(?:workload|usage|units|volume)).*$"
-        },
-        {
-          "name": "no-invented-dollar-total",
-          "type": "not_regex",
-          "pattern": "(?i)\\$[0-9]"
-        },
-        {
-          "name": "qualitative-review",
-          "type": "judge",
-          "rubric": [
-            "Temporal pricing correctness",
-            "No silent conflict resolution",
-            "Assumptions are explicit"
-          ],
-          "threshold": 0.85
-        },
-        {
-          "name": "efficiency-total-tokens",
-          "type": "total_tokens_le",
-          "max": 50000,
-          "severity": "soft",
-          "oracle": "strong"
-        },
-        {
-          "name": "efficiency-elapsed-time",
-          "type": "elapsed_seconds_le",
-          "max": 45,
-          "severity": "soft",
-          "oracle": "strong"
-        }
+        {"name": "uses-effective-date", "type": "regex", "pattern": "(?is)(?:August|current).{0,160}(?:rate A|currently effective)|(?:rate A|currently effective).{0,160}(?:August|current)"},
+        {"name": "separates-future-rate", "type": "regex", "pattern": "(?is)(?:rate B|2026-10-01|future).{0,180}(?:separate|not yet|after|effective)"},
+        {"name": "records-source-bundle", "type": "regex", "pattern": "(?is)^(?=.{0,2000}(?:current official|observed|observation date))(?=.{0,2000}(?:effective|2026-10-01))(?=.{0,2000}(?:workload|usage|units|volume)).*$"},
+        {"name": "no-invented-dollar-total", "type": "not_regex", "pattern": "(?i)\\$[0-9]"},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Temporal pricing correctness", "No silent conflict resolution", "Assumptions are explicit"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 50000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 45, "severity": "soft", "oracle": "strong"}
       ],
-      "tags": [
-        "pricing",
-        "future-effective",
-        "conflict"
-      ],
+      "tags": ["pricing", "future-effective", "conflict"],
       "domain": "cloudflare-workers",
       "difficulty": "extended",
-      "success_goals": [
-        "outcome"
-      ]
+      "success_goals": ["outcome"]
     },
     {
       "id": "pricing-enterprise-contract-conflict",
@@ -2168,56 +2125,17 @@
         "Use public pricing only as a dated comparison and preserve confidentiality."
       ],
       "assertions": [
-        {
-          "name": "contract-governs-actual",
-          "type": "regex",
-          "pattern": "(?is)(?:(?:contract|order form|invoice|negotiated).{0,220}(?:govern|controls?|authoritative|actual charge)|(?:govern|controls?|authoritative|actual charge).{0,220}(?:contract|order form|invoice|negotiated))"
-        },
-        {
-          "name": "public-is-comparison",
-          "type": "regex",
-          "pattern": "(?is)public.{0,160}(?:comparison|baseline|not.*actual|does not govern)"
-        },
-        {
-          "name": "protects-contract-values",
-          "type": "regex",
-          "pattern": "(?is)(?:redact|confidential|do not (?:expose|publish|repeat)|avoid repeating).{0,180}(?:price|value|contract|invoice|amount|discount)"
-        },
-        {
-          "name": "qualitative-review",
-          "type": "judge",
-          "rubric": [
-            "Contract hierarchy is correct",
-            "Public pricing is not substituted for actual charges",
-            "Sensitive terms remain private"
-          ],
-          "threshold": 0.85
-        },
-        {
-          "name": "efficiency-total-tokens",
-          "type": "total_tokens_le",
-          "max": 45000,
-          "severity": "soft",
-          "oracle": "strong"
-        },
-        {
-          "name": "efficiency-elapsed-time",
-          "type": "elapsed_seconds_le",
-          "max": 40,
-          "severity": "soft",
-          "oracle": "strong"
-        }
+        {"name": "contract-governs-actual", "type": "regex", "pattern": "(?is)(?:(?:contract|order form|invoice|negotiated).{0,220}(?:govern|controls?|authoritative|actual charge)|(?:govern|controls?|authoritative|actual charge).{0,220}(?:contract|order form|invoice|negotiated))"},
+        {"name": "public-is-comparison", "type": "regex", "pattern": "(?is)public.{0,160}(?:comparison|baseline|not.*actual|does not govern)"},
+        {"name": "protects-contract-values", "type": "regex", "pattern": "(?is)(?:redact|confidential|do not (?:expose|publish|repeat)|avoid repeating).{0,180}(?:price|value|contract|invoice|amount|discount)"},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Contract hierarchy is correct", "Public pricing is not substituted for actual charges", "Sensitive terms remain private"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 45000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 40, "severity": "soft", "oracle": "strong"}
       ],
-      "tags": [
-        "pricing",
-        "enterprise",
-        "contract"
-      ],
+      "tags": ["pricing", "enterprise", "contract"],
       "domain": "cloudflare-workers",
       "difficulty": "extended",
-      "success_goals": [
-        "outcome"
-      ]
+      "success_goals": ["outcome"]
     },
     {
       "id": "pricing-compound-worker-bindings",
@@ -2229,66 +2147,19 @@
         "Refuse an exact total until current rates, meter semantics, plan, and missing usage assumptions are supplied."
       ],
       "assertions": [
-        {
-          "name": "separate-meter-graph",
-          "type": "regex",
-          "pattern": "(?is)^(?=.{0,3000}Worker)(?=.{0,3000}D1)(?=.{0,3000}Queue)(?=.{0,3000}(?:logs|logging))(?=.{0,3000}(?:meter|usage shape|operations)).*$"
-        },
-        {
-          "name": "does-not-equate-calls-with-d1-rows",
-          "type": "regex",
-          "pattern": "(?is)(?:D1.{0,300}(?:rows|query).{0,300}(?:unknown|not supplied|cannot|need|not enough)|(?:unknown|not supplied|cannot|need|not enough).{0,300}D1.{0,300}(?:rows|query))"
-        },
-        {
-          "name": "requests-missing-assumptions",
-          "type": "regex",
-          "pattern": "(?is)^(?=.{0,5000}plan)(?=.{0,5000}batch\\w*)(?=.{0,5000}retention)(?=.{0,5000}region).*$"
-        },
-        {
-          "name": "no-exact-total",
-          "type": "regex",
-          "pattern": "(?is)(?:cannot|can't|do not|would not|not enough|insufficient).{0,180}(?:exact|dollar|total|bill|estimate)"
-        },
-        {
-          "name": "no-invented-dollar-total",
-          "type": "not_regex",
-          "pattern": "(?i)\\$[0-9]"
-        },
-        {
-          "name": "qualitative-review",
-          "type": "judge",
-          "rubric": [
-            "Compound meters remain separate",
-            "Unknown billing inputs are explicit",
-            "No unsupported exact bill"
-          ],
-          "threshold": 0.85
-        },
-        {
-          "name": "efficiency-total-tokens",
-          "type": "total_tokens_le",
-          "max": 55000,
-          "severity": "soft",
-          "oracle": "strong"
-        },
-        {
-          "name": "efficiency-elapsed-time",
-          "type": "elapsed_seconds_le",
-          "max": 45,
-          "severity": "soft",
-          "oracle": "strong"
-        }
+        {"name": "separate-meter-graph", "type": "regex", "pattern": "(?is)^(?=.{0,3000}Worker)(?=.{0,3000}D1)(?=.{0,3000}Queue)(?=.{0,3000}(?:logs|logging))(?=.{0,3000}(?:meter|usage shape|operations)).*$"},
+        {"name": "does-not-equate-calls-with-d1-rows", "type": "regex", "pattern": "(?is)(?:D1.{0,300}(?:rows|query).{0,300}(?:unknown|not supplied|cannot|need|not enough)|(?:unknown|not supplied|cannot|need|not enough).{0,300}D1.{0,300}(?:rows|query))"},
+        {"name": "requests-missing-assumptions", "type": "regex", "pattern": "(?is)^(?=.{0,5000}plan)(?=.{0,5000}batch\\w*)(?=.{0,5000}retention)(?=.{0,5000}region).*$"},
+        {"name": "no-exact-total", "type": "regex", "pattern": "(?is)(?:cannot|can't|do not|would not|not enough|insufficient).{0,180}(?:exact|dollar|total|bill|estimate)"},
+        {"name": "no-invented-dollar-total", "type": "not_regex", "pattern": "(?i)\\$[0-9]"},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Compound meters remain separate", "Unknown billing inputs are explicit", "No unsupported exact bill"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 55000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 45, "severity": "soft", "oracle": "strong"}
       ],
-      "tags": [
-        "pricing",
-        "compound-bill",
-        "bindings"
-      ],
+      "tags": ["pricing", "compound-bill", "bindings"],
       "domain": "cloudflare-workers",
       "difficulty": "extended",
-      "success_goals": [
-        "outcome"
-      ]
+      "success_goals": ["outcome"]
     },
     {
       "id": "pos-do-stub-cycle-rows-read-bill",
@@ -2304,101 +2175,21 @@
         "Pair the code fix with detection-latency and kill-switch mitigations."
       ],
       "assertions": [
-        {
-          "name": "scanner-cycle-check-id",
-          "type": "contains",
-          "value": "DO-STUB-CALL-CYCLE",
-          "description": "Requires the PR scanner's stable cycle finding rather than a prompt-primed generic diagnosis."
-        },
-        {
-          "name": "cycle-class-members",
-          "type": "contains_all",
-          "values": [
-            "SessionCoordinator",
-            "TaskRunner"
-          ],
-          "description": "Requires identifying both actual classes in the attached source rather than a generic DO loop."
-        },
-        {
-          "name": "detect-rows-read-meter",
-          "type": "regex",
-          "pattern": "(?is)(rows\\s+read|storage\\s+rows|sqlite)",
-          "description": "Requires naming the rows-read/SQLite storage meter rather than generic DO cost."
-        },
-        {
-          "name": "detect-cycle-mechanism",
-          "type": "regex",
-          "pattern": "(?is)(cycle|loop|re-?trigger|ping-?pong|call(?:s|ing)?\\s+each\\s+other)",
-          "description": "Requires the DO-to-DO re-trigger mechanism, not just a product mention."
-        },
-        {
-          "name": "containment-mitigation",
-          "type": "regex",
-          "pattern": "(?is)(budget\\s+alert|billable\\s+usage|usage\\s+alert|daily\\s+(?:cost|usage|spend)|kill\\s*switch|hop\\s+(?:budget|depth|limit)|depth\\s+(?:budget|limit|guard)|idempoten)",
-          "description": "Requires at least one concrete containment control, not only naming the cycle."
-        },
-        {
-          "name": "output-contract",
-          "type": "contains_all",
-          "values": [
-            "Scope inspected:",
-            "Scope not inspected:",
-            "Docs refreshed:",
-            "Evidence:",
-            "Cost / trade-off:",
-            "Verify:",
-            "Source basis:",
-            "Confidence:"
-          ]
-        },
-        {
-          "name": "fixture-script-oracle",
-          "type": "script",
-          "command": [
-            "python3",
-            "oracles/fixture_oracle.py",
-            "{output_dir}",
-            "pos-do-stub-cycle-rows-read-bill"
-          ],
-          "pass_exit_code": 0,
-          "timeout_s": 10,
-          "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."
-        },
-        {
-          "name": "qualitative-review",
-          "type": "judge",
-          "rubric": [
-            "Explains how reciprocal Durable Object calls form a runaway loop and how the growing SQLite read amplifies cost",
-            "Recommends the smallest safe way to break the cycle plus a bounded containment control",
-            "Treats static scanner output as a lead and separates repository evidence from uninspected runtime state"
-          ],
-          "threshold": 0.85
-        },
-        {
-          "name": "efficiency-total-tokens",
-          "type": "total_tokens_le",
-          "max": 140000,
-          "severity": "soft",
-          "oracle": "strong"
-        },
-        {
-          "name": "efficiency-elapsed-time",
-          "type": "elapsed_seconds_le",
-          "max": 140,
-          "severity": "soft",
-          "oracle": "strong"
-        }
+        {"name": "scanner-cycle-check-id", "type": "contains", "value": "DO-STUB-CALL-CYCLE", "description": "Requires the PR scanner's stable cycle finding rather than a prompt-primed generic diagnosis."},
+        {"name": "cycle-class-members", "type": "contains_all", "values": ["SessionCoordinator", "TaskRunner"], "description": "Requires identifying both actual classes in the attached source rather than a generic DO loop."},
+        {"name": "detect-rows-read-meter", "type": "regex", "pattern": "(?is)(rows\\s+read|storage\\s+rows|sqlite)", "description": "Requires naming the rows-read/SQLite storage meter rather than generic DO cost."},
+        {"name": "detect-cycle-mechanism", "type": "regex", "pattern": "(?is)(cycle|loop|re-?trigger|ping-?pong|call(?:s|ing)?\\s+each\\s+other)", "description": "Requires the DO-to-DO re-trigger mechanism, not just a product mention."},
+        {"name": "containment-mitigation", "type": "regex", "pattern": "(?is)(budget\\s+alert|billable\\s+usage|usage\\s+alert|daily\\s+(?:cost|usage|spend)|kill\\s*switch|hop\\s+(?:budget|depth|limit)|depth\\s+(?:budget|limit|guard)|idempoten)", "description": "Requires at least one concrete containment control, not only naming the cycle."},
+        {"name": "output-contract", "type": "contains_all", "values": ["Scope inspected:", "Scope not inspected:", "Docs refreshed:", "Evidence:", "Cost / trade-off:", "Verify:", "Source basis:", "Confidence:"]},
+        {"name": "fixture-script-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "pos-do-stub-cycle-rows-read-bill"], "pass_exit_code": 0, "timeout_s": 10, "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Explains how reciprocal Durable Object calls form a runaway loop and how the growing SQLite read amplifies cost", "Recommends the smallest safe way to break the cycle plus a bounded containment control", "Treats static scanner output as a lead and separates repository evidence from uninspected runtime state"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 140, "severity": "soft", "oracle": "strong"}
       ],
-      "tags": [
-        "durable-objects",
-        "cost-incident",
-        "loops"
-      ],
+      "tags": ["durable-objects", "cost-incident", "loops"],
       "domain": "cloudflare-workers",
       "difficulty": "core",
-      "success_goals": [
-        "outcome"
-      ]
+      "success_goals": ["outcome"]
     },
     {
       "id": "pos-spend-limits-detection-latency",
@@ -2410,65 +2201,18 @@
         "Recommend daily billable-usage review plus in-code bounds and a kill switch, grounded in current Cloudflare billing docs."
       ],
       "assertions": [
-        {
-          "name": "no-hard-cap-claim",
-          "type": "regex",
-          "pattern": "(?is)(informational\\s+only|do(?:es)?\\s+not\\s+(?:pause|cap|stop)|no\\s+(?:hard\\s+)?(?:spend(?:ing)?\\s+)?(?:cap|limit))",
-          "description": "Requires the accurate platform posture: alerts notify, nothing caps usage."
-        },
-        {
-          "name": "daily-usage-review",
-          "type": "regex",
-          "pattern": "(?is)(billable\\s+usage|daily\\s+(?:cost|usage|spend)|usage\\s+(?:dashboard|api|export)|graphql)",
-          "description": "Requires a concrete daily meter-watch mechanism, not just set an alert."
-        },
-        {
-          "name": "architectural-controls",
-          "type": "regex",
-          "pattern": "(?is)(kill\\s*switch|rate\\s*limit|backpressure|bound(?:ed|s)?|circuit\\s+breaker|idempoten)",
-          "description": "Requires in-code/architectural spend controls beyond notifications."
-        },
-        {
-          "name": "cites-current-docs",
-          "type": "regex",
-          "pattern": "(?i)developers\\.cloudflare\\.com",
-          "description": "Billing semantics are mutable; the answer must ground them in current official docs."
-        },
-        {
-          "name": "qualitative-review",
-          "type": "judge",
-          "rubric": [
-            "Current docs over memory",
-            "Confirmed vs suspected separation",
-            "No dashboard inference"
-          ],
-          "threshold": 0.85
-        },
-        {
-          "name": "efficiency-total-tokens",
-          "type": "total_tokens_le",
-          "max": 120000,
-          "severity": "soft",
-          "oracle": "strong"
-        },
-        {
-          "name": "efficiency-elapsed-time",
-          "type": "elapsed_seconds_le",
-          "max": 120,
-          "severity": "soft",
-          "oracle": "strong"
-        }
+        {"name": "no-hard-cap-claim", "type": "regex", "pattern": "(?is)(informational\\s+only|do(?:es)?\\s+not\\s+(?:pause|cap|stop)|no\\s+(?:hard\\s+)?(?:spend(?:ing)?\\s+)?(?:cap|limit))", "description": "Requires the accurate platform posture: alerts notify, nothing caps usage."},
+        {"name": "daily-usage-review", "type": "regex", "pattern": "(?is)(billable\\s+usage|daily\\s+(?:cost|usage|spend)|usage\\s+(?:dashboard|api|export)|graphql)", "description": "Requires a concrete daily meter-watch mechanism, not just set an alert."},
+        {"name": "architectural-controls", "type": "regex", "pattern": "(?is)(kill\\s*switch|rate\\s*limit|backpressure|bound(?:ed|s)?|circuit\\s+breaker|idempoten)", "description": "Requires in-code/architectural spend controls beyond notifications."},
+        {"name": "cites-current-docs", "type": "regex", "pattern": "(?i)developers\\.cloudflare\\.com", "description": "Billing semantics are mutable; the answer must ground them in current official docs."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Current docs over memory", "Confirmed vs suspected separation", "No dashboard inference"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 120000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 120, "severity": "soft", "oracle": "strong"}
       ],
-      "tags": [
-        "billing",
-        "spend-controls",
-        "budget-alerts"
-      ],
+      "tags": ["billing", "spend-controls", "budget-alerts"],
       "domain": "cloudflare-workers",
       "difficulty": "core",
-      "success_goals": [
-        "outcome"
-      ]
+      "success_goals": ["outcome"]
     },
     {
       "id": "pos-do-module-scope-memory-resets",
@@ -2486,104 +2230,22 @@
         "Recommend measuring first (wrangler check startup, dry-run bundle/metafile, local heap probe, memory percentiles with deployment markers) and then the JSON Schema / tree-shaking fixes."
       ],
       "assertions": [
-        {
-          "name": "scanner-schema-weight-check-id",
-          "type": "contains",
-          "value": "CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT",
-          "description": "Requires the PR scanner's stable module-scope schema weight lead rather than a generic memory diagnosis."
-        },
-        {
-          "name": "names-durable-object-class",
-          "type": "contains",
-          "value": "AgentThread",
-          "description": "Requires identifying the attached Durable Object class."
-        },
-        {
-          "name": "detect-baseline-mechanism",
-          "type": "regex",
-          "pattern": "(?is)(module[- ]scope|module load|top[- ]level|baseline|before (?:the )?first request|at import time)",
-          "description": "Requires attributing the weight to load-time baseline rather than request payloads."
-        },
-        {
-          "name": "detect-shared-isolate-limit",
-          "type": "regex",
-          "pattern": "(?is)(128\\s*MB|per[- ]isolate|shared? (?:the )?(?:same )?isolate|same isolate|one isolate)",
-          "description": "Requires the per-isolate, shared-limit mechanism."
-        },
-        {
-          "name": "measurement-before-refactor",
-          "type": "regex",
-          "pattern": "(?is)(wrangler check startup|--dry-run|metafile|heap (?:probe|snapshot|profil)|startup_time_ms|memory (?:chart|percentile|usage|metric))",
-          "description": "Requires at least one concrete measurement step."
-        },
-        {
-          "name": "tree-shaking-or-schema-fix",
-          "type": "regex",
-          "pattern": "(?is)(json schema|sideEffects|named (?:re-)?exports?|static (?:named )?imports?|lazy|lazily|export \\*)",
-          "description": "Requires a concrete baseline fix, not only naming the limit."
-        },
-        {
-          "name": "output-contract",
-          "type": "contains_all",
-          "values": [
-            "Scope inspected:",
-            "Scope not inspected:",
-            "Docs refreshed:",
-            "Evidence:",
-            "Cost / trade-off:",
-            "Verify:",
-            "Source basis:",
-            "Confidence:"
-          ]
-        },
-        {
-          "name": "fixture-script-oracle",
-          "type": "script",
-          "command": [
-            "python3",
-            "oracles/fixture_oracle.py",
-            "{output_dir}",
-            "pos-do-module-scope-memory-resets"
-          ],
-          "pass_exit_code": 0,
-          "timeout_s": 10,
-          "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."
-        },
-        {
-          "name": "qualitative-review",
-          "type": "judge",
-          "rubric": [
-            "Explains that a flat, high memory line at idle points at module-scope baseline shared by every object in the isolate, not at request data",
-            "Separates Cloudflare-documented facts (128 MB per isolate, per-isolate measurement, startup validation) from the war story's measured figures",
-            "Recommends measuring the emitted bundle before refactoring and treats scanner output as a lead"
-          ],
-          "threshold": 0.85
-        },
-        {
-          "name": "efficiency-total-tokens",
-          "type": "total_tokens_le",
-          "max": 140000,
-          "severity": "soft",
-          "oracle": "strong"
-        },
-        {
-          "name": "efficiency-elapsed-time",
-          "type": "elapsed_seconds_le",
-          "max": 140,
-          "severity": "soft",
-          "oracle": "strong"
-        }
+        {"name": "scanner-schema-weight-check-id", "type": "contains", "value": "CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT", "description": "Requires the PR scanner's stable module-scope schema weight lead rather than a generic memory diagnosis."},
+        {"name": "names-durable-object-class", "type": "contains", "value": "AgentThread", "description": "Requires identifying the attached Durable Object class."},
+        {"name": "detect-baseline-mechanism", "type": "regex", "pattern": "(?is)(module[- ]scope|module load|top[- ]level|baseline|before (?:the )?first request|at import time)", "description": "Requires attributing the weight to load-time baseline rather than request payloads."},
+        {"name": "detect-shared-isolate-limit", "type": "regex", "pattern": "(?is)(128\\s*MB|per[- ]isolate|shared? (?:the )?(?:same )?isolate|same isolate|one isolate)", "description": "Requires the per-isolate, shared-limit mechanism."},
+        {"name": "measurement-before-refactor", "type": "regex", "pattern": "(?is)(wrangler check startup|--dry-run|metafile|heap (?:probe|snapshot|profil)|startup_time_ms|memory (?:chart|percentile|usage|metric))", "description": "Requires at least one concrete measurement step."},
+        {"name": "tree-shaking-or-schema-fix", "type": "regex", "pattern": "(?is)(json schema|sideEffects|named (?:re-)?exports?|static (?:named )?imports?|lazy|lazily|export \\*)", "description": "Requires a concrete baseline fix, not only naming the limit."},
+        {"name": "output-contract", "type": "contains_all", "values": ["Scope inspected:", "Scope not inspected:", "Docs refreshed:", "Evidence:", "Cost / trade-off:", "Verify:", "Source basis:", "Confidence:"]},
+        {"name": "fixture-script-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "pos-do-module-scope-memory-resets"], "pass_exit_code": 0, "timeout_s": 10, "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Explains that a flat, high memory line at idle points at module-scope baseline shared by every object in the isolate, not at request data", "Separates Cloudflare-documented facts (128 MB per isolate, per-isolate measurement, startup validation) from the war story's measured figures", "Recommends measuring the emitted bundle before refactoring and treats scanner output as a lead"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 140, "severity": "soft", "oracle": "strong"}
       ],
-      "tags": [
-        "durable-objects",
-        "memory",
-        "fixture-backed"
-      ],
+      "tags": ["durable-objects", "memory", "fixture-backed"],
       "domain": "cloudflare-workers",
       "difficulty": "core",
-      "success_goals": [
-        "outcome"
-      ]
+      "success_goals": ["outcome"]
     },
     {
       "id": "detection-fixture-do-schema-lazy-safe",
@@ -2601,57 +2263,15 @@
         "Point at the remaining evidence that would confirm or reject residual memory pressure (memory percentiles with deployment markers, exceededMemory counts, bundle size) instead of inventing a finding."
       ],
       "assertions": [
-        {
-          "name": "structural-fixture-oracle",
-          "type": "script",
-          "command": [
-            "python3",
-            "oracles/fixture_oracle.py",
-            "{output_dir}",
-            "detection-fixture-do-schema-lazy-safe"
-          ],
-          "pass_exit_code": 0,
-          "timeout_s": 10,
-          "description": "Structural near-miss oracle; run with --allow-scripts.",
-          "severity": "gate",
-          "oracle": "strong"
-        },
-        {
-          "name": "qualitative-review",
-          "type": "judge",
-          "rubric": [
-            "Resists the leading prompt and states plainly that the repo shows the mitigations already applied",
-            "Does not invent a module-scope schema weight or bundle finding",
-            "Frames residual memory risk as account/measurement evidence to request"
-          ],
-          "threshold": 0.85
-        },
-        {
-          "name": "efficiency-total-tokens",
-          "type": "total_tokens_le",
-          "max": 140000,
-          "severity": "soft",
-          "oracle": "strong"
-        },
-        {
-          "name": "efficiency-elapsed-time",
-          "type": "elapsed_seconds_le",
-          "max": 90,
-          "severity": "soft",
-          "oracle": "strong"
-        }
+        {"name": "structural-fixture-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "detection-fixture-do-schema-lazy-safe"], "pass_exit_code": 0, "timeout_s": 10, "description": "Structural near-miss oracle; run with --allow-scripts.", "severity": "gate", "oracle": "strong"},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Resists the leading prompt and states plainly that the repo shows the mitigations already applied", "Does not invent a module-scope schema weight or bundle finding", "Frames residual memory risk as account/measurement evidence to request"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 90, "severity": "soft", "oracle": "strong"}
       ],
-      "tags": [
-        "fixture-backed",
-        "durable-objects",
-        "memory",
-        "false-positive-guard"
-      ],
+      "tags": ["fixture-backed", "durable-objects", "memory", "false-positive-guard"],
       "domain": "cloudflare-workers",
       "difficulty": "core",
-      "success_goals": [
-        "outcome"
-      ]
+      "success_goals": ["outcome"]
     }
   ],
   "ablations": [

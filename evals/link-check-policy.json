@@ -3,116 +3,21 @@
   "verified_at": "2026-09-04",
   "review_due": "2026-11-06",
   "critical_sources": [
-    {
-      "url": "https://developers.cloudflare.com/workers/platform/pricing/",
-      "content_terms": [
-        "CPU time",
-        "subrequests"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/workers/cache/",
-      "content_terms": [
-        "Caching bills requests that are normally free",
-        "cache hit"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/d1/platform/pricing/",
-      "content_terms": [
-        "rows read",
-        "rows written"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/durable-objects/platform/pricing/",
-      "content_terms": [
-        "multi-key",
-        "billed the same",
-        "rows read"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/billing/manage/budget-alerts/",
-      "content_terms": [
-        "informational only",
-        "do not pause"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/billing/manage/billable-usage/",
-      "content_terms": [
-        "monthly invoice",
-        "usage-based"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/queues/reference/delivery-guarantees/",
-      "content_terms": [
-        "at least once"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/queues/configuration/batching-retries/",
-      "content_terms": [
-        "defaults to 3",
-        "additional read operation"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/queues/configuration/dead-letter-queues/",
-      "content_terms": [
-        "deleted permanently"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/workers/wrangler/configuration/",
-      "content_terms": [
-        "workers_dev",
-        "Defaults to true"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/workflows/reference/pricing/",
-      "content_terms": [
-        "Steps",
-        "August 10"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/",
-      "content_terms": [
-        "new key-value backed namespace",
-        "new_sqlite_classes"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/images/pricing/",
-      "content_terms": [
-        "unique transformations",
-        "Repeat requests"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/workers/platform/limits/",
-      "content_terms": [
-        "128 MB",
-        "per-isolate, not per-invocation",
-        "Script startup exceeded CPU time limit"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/",
-      "content_terms": [
-        "Memory is measured per isolate, not per Durable Object",
-        "memoryUsageBytes"
-      ]
-    },
-    {
-      "url": "https://developers.cloudflare.com/workers/observability/errors/",
-      "content_terms": [
-        "Script startup exceeded memory limit"
-      ]
-    }
+    {"url": "https://developers.cloudflare.com/workers/platform/pricing/", "content_terms": ["CPU time", "subrequests"]},
+    {"url": "https://developers.cloudflare.com/workers/cache/", "content_terms": ["Caching bills requests that are normally free", "cache hit"]},
+    {"url": "https://developers.cloudflare.com/d1/platform/pricing/", "content_terms": ["rows read", "rows written"]},
+    {"url": "https://developers.cloudflare.com/durable-objects/platform/pricing/", "content_terms": ["multi-key", "billed the same", "rows read"]},
+    {"url": "https://developers.cloudflare.com/billing/manage/budget-alerts/", "content_terms": ["informational only", "do not pause"]},
+    {"url": "https://developers.cloudflare.com/billing/manage/billable-usage/", "content_terms": ["monthly invoice", "usage-based"]},
+    {"url": "https://developers.cloudflare.com/queues/reference/delivery-guarantees/", "content_terms": ["at least once"]},
+    {"url": "https://developers.cloudflare.com/queues/configuration/batching-retries/", "content_terms": ["defaults to 3", "additional read operation"]},
+    {"url": "https://developers.cloudflare.com/queues/configuration/dead-letter-queues/", "content_terms": ["deleted permanently"]},
+    {"url": "https://developers.cloudflare.com/workers/wrangler/configuration/", "content_terms": ["workers_dev", "Defaults to true"]},
+    {"url": "https://developers.cloudflare.com/workflows/reference/pricing/", "content_terms": ["Steps", "August 10"]},
+    {"url": "https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/", "content_terms": ["new key-value backed namespace", "new_sqlite_classes"]},
+    {"url": "https://developers.cloudflare.com/images/pricing/", "content_terms": ["unique transformations", "Repeat requests"]},
+    {"url": "https://developers.cloudflare.com/workers/platform/limits/", "content_terms": ["128 MB", "per-isolate, not per-invocation", "Script startup exceeded CPU time limit"]},
+    {"url": "https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/", "content_terms": ["Memory is measured per isolate, not per Durable Object", "memoryUsageBytes"]},
+    {"url": "https://developers.cloudflare.com/workers/observability/errors/", "content_terms": ["Script startup exceeded memory limit"]}
   ]
 }
