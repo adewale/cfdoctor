@@ -17,7 +17,7 @@ ID_RE = re.compile(r"^CFDOC-EVD-[A-Z0-9-]+$")
 ALLOWED_CLASSES = {"incident", "official-guidance", "operator-note", "product-announcement"}
 ALLOWED_STATUS = {"accepted", "unverified", "superseded", "retracted"}
 CONFIDENCE_KEYS = {"authenticity", "mechanism", "independence", "applicability", "temporal"}
-SCENARIO_MAX = 24
+SCENARIO_MAX = 25
 
 
 def load_json(path: Path) -> dict:

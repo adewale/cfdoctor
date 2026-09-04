@@ -4,7 +4,7 @@ Use this checklist to turn public billing/failure horror stories into concrete C
 
 The canonical source/lineage/taxonomy record is the repo-only `research/incident-claim-ledger.json` in the [cfdoctor repository](https://github.com/adewale/cfdoctor/tree/main/research). Each scenario below carries an evidence ID; aggregators, mirrors, and discussions are aliases within one source cluster rather than independent corroboration. Incident observations, operator inferences, official guidance, and current product semantics remain distinct evidence classes.
 
-Link and claim status last verified: 2026-08-09 (`scripts/check_links.py` and `scripts/check_claim_ledger.py`).
+Link and claim status last verified: 2026-09-04 (`scripts/check_links.py` and `scripts/check_claim_ledger.py`).
 
 ## How to use
 
@@ -369,6 +369,21 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
   - A kill switch (config/KV/DO-storage flag checked inside every hop, plus `deleteAlarm()`/queue-pause/rollback paths) can stop detached loops without a deploy.
 - Evidence to request: Wrangler `durable_objects` bindings and migrations, DO class code and stub call graph, alarm/`waitUntil` usage, SQL/storage access patterns, budget alert configuration and notification history, billable usage export or API output for the affected cycle, and DO metrics (requests, duration, storage rows) for the loop window.
 
+### 25. Module-scope baseline memory resets Durable Objects; the isolate limit is shared per class and not configurable
+
+- Evidence ID: `CFDOC-EVD-POLYLANE-DO-MEMORY`
+
+- Story: Polylane runs one Durable Object per agent thread, all instances of one class. In August 2026 those objects were reset about 300 times a day for exceeding the memory limit while the namespace's median isolate memory sat near 140 MB and the 99th percentile near 190 MB, flat through quiet and busy hours alike. Request data was not the cause: the isolate was over the limit before it served a request. A local heap probe on the exact `wrangler deploy --dry-run` bundle attributed 78 MB to 250+ agent tool input schemas built with zod at module scope (about 134 KB per mid-sized schema) and roughly 66 MB to schema modules that reached the bundle only through `export *` package barrels, packages without `"sideEffects": false`, and `await import("@scope/package")` of package roots. Rewriting tool inputs as plain JSON Schema took local module-scope heap from 218.6 MB to 154.0 MB and resets from 40-110 an hour to 0-6; tree-shakeable barrels took it to 82.1 MB and resets to zero. Sources: Polylane engineering blog, Aleksandr Diamond and Boris Tane, 2026-08-26, https://polylane.com/blog/how-we-fixed-our-cloudflare-durable-objects-memory-exceeded-errors/; X article mirror, 2026-09-03, https://x.com/boristane/status/2095611344594555021
+- Source type: first-hand engineering post with production memory percentiles, a reproducible local heap probe, a bundler fixture matrix, and an ablation table; one source cluster; scenario source only. The per-schema heap figures are the authors' measurements for their zod version and bundle. Cite current Cloudflare docs for the 128 MB limit, per-isolate measurement, startup validation errors, and the memory metrics, and esbuild's docs for `sideEffects` semantics.
+- Mechanism: a V8 isolate has a fixed 128 MB limit on every plan; Durable Objects of one class share an isolate with the surrounding Worker code, memory is measured per isolate, and module-level state is shared across instances. Anything the bundle allocates at module evaluation (schema-library trees, eagerly built registries, large Wasm) is baseline that every co-located object pays before its first request, so the object reset for exceeding memory is often not the one that allocated it, the reset invalidates every stub to the object and discards in-flight in-memory work, and no stack trace appears because user code never threw. The same top-level weight surfaces on plain Workers as the deploy-time validation errors `Script startup exceeded memory limit` and `Script startup exceeded CPU time limit` (1 s), for which the docs name large top-level schema work as the common cause. There is no production heap profiler and `process.memoryUsage()` is a zeroed polyfill, so the diagnosis rests on the Workers/Durable Objects memory charts (flat and high at idle means baseline, not data) plus a local probe of the emitted bundle.
+- Cloudflare checks:
+  - `CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT`: schema-library builders evaluated at module scope stay below a measured budget; tool/LLM definitions that the model receives as JSON Schema are stored as JSON Schema data, not rebuilt from zod at load; package barrels use named re-exports, workspace packages declare `sideEffects`, and package roots are imported statically.
+  - `CFDOC-PERF-BODY-BUFFERING`: request/upstream bodies are streamed or size-bounded so per-request data does not stack on top of a heavy baseline in the shared isolate.
+  - `DO-IN-MEMORY-STATE-GROWTH` (prompt-only): class-property caches, maps, buffers, and non-hibernating sockets are bounded, because they persist until eviction and the memory chart trending upward at constant traffic is the leak signal.
+  - Measurement before refactoring: `wrangler check startup` and `wrangler deploy --dry-run --outdir --metafile` for bundle size and `startup_time_ms`; a local module-scope heap probe on that bundle (see `docs/recipes.md` in the cfdoctor repository); Durable Objects memory P50/P99 over a week with deployment markers and the `exceededMemory` counts.
+  - Agents SDK `maxOomRetries` (default 3) is a symptom budget for memory-limit resets, not a fix; if it is being consumed, the baseline or per-thread data must shrink.
+- Evidence to request: Wrangler config and `main` entry, the emitted bundle or its esbuild metafile, `package.json` files for workspace packages (`sideEffects`), barrel files, dynamic imports of package roots, tool/schema registry modules, Wasm module sizes, `wrangler deploy` output (`Total Upload`, `startup_time_ms`), Durable Objects memory chart or `durableObjectsPeriodicGroups` quantiles with deployment markers, `exceededMemory` invocation counts, and any Agents SDK recovery configuration.
+
 ## Scenario-to-check matrix
 
 | Scenario | Cloudflare products/configs to inspect |
@@ -389,6 +404,8 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 | Logging as a meter | Workers Logs, Logpush, Analytics Engine, destination retention/lifecycle, log sampling/redaction, error-storm alerts |
 | Public previews/review apps | Pages previews, Workers preview URLs, preview routes/domains, paid env bindings, crons, queues, cleanup/noindex policies |
 | Durable Object billing/lifecycle gotchas | DO WebSockets, hibernation, alarms, storage list/get/put patterns, shard keys, object cardinality, stub fanout, idempotency design, metrics |
+| Isolate baseline memory / startup load | Wrangler `main` and emitted bundle/metafile, module-scope schema/tool registries, Wasm size, package.json `sideEffects`, `export *` barrels, dynamic package-root imports, `wrangler check startup` and `startup_time_ms`, Workers/DO memory percentiles with deployment markers, `exceededMemory` counts, Agents SDK `maxOomRetries` |
+| Body buffering into isolate memory | `request.arrayBuffer()/blob()/text()` on uploads, upstream pass-through buffering, `clone()` without a read, node:fs temp files, Content-Length/byte budgets, R2 streaming/multipart, `Memory limit would be exceeded before EOF` in logs |
 | Dynamic Worker/code-as-tool sandbox | Dynamic Worker Loader, egress control, bindings/secrets, custom limits, code hashes, nested spawns, logs, Dynamic Workers pricing/usage |
 | Agents SDK autonomous loops/tools | Agent classes, scheduled tasks, queue tasks, sub-agents, retries, browser/sandbox tools, WebSockets/SSE, cancellation, observability |
 | Artifacts-backed app/firmware loaders | Artifacts namespaces/repos/tokens, signed releases, A-B/rollback flow, device/app update channels, token rotation |
@@ -419,6 +436,9 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - `DO-STORAGE-BATCHING`: Repeated DO writes need coalescing/transaction review; verify backend and rows/units changed before making a cost claim.
 - `DO-STUB-CALL-CYCLE`: DO classes call each other's stubs (or their own binding) in a cycle without a per-hop depth/budget guard, idempotency key, or in-loop kill switch.
 - `DO-SQL-SCAN-HOTPATH`: `storage.sql.exec` SELECT without WHERE/LIMIT on a request/alarm/loop path; SQLite-backed rows read compound with table growth.
+- `CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT`: many schema-library builders (zod/valibot/typebox/...) evaluated at module scope, amplified by `export *` barrels, missing `sideEffects`, or dynamic package-root imports; isolate baseline memory and the 1 s startup CPU limit are paid before the first request, and Durable Objects share the isolate across every object of the class.
+- `CFDOC-PERF-BODY-BUFFERING`: request upload or upstream body buffered in full (`arrayBuffer()`/`blob()`, node:fs temp files) with no size bound; the shared 128 MB fails with `Memory limit would be exceeded before EOF` or an `exceededMemory` outcome.
+- `DO-IN-MEMORY-STATE-GROWTH`: Durable Object class-property caches/maps/buffers or non-hibernating sockets grow without bounds; per-isolate memory trends upward at constant traffic until eviction or reset.
 - `DO-FANOUT-TAX`: One request/job fans out to many DO stubs without backpressure or urgency/cost budget.
 - `DO-WAITUNTIL-LIFECYCLE`: DO uses background lifecycle work without clear bounded duration, retries, or better Queue/Workflow/Agent fit.
 - `KV-VS-DO-STORAGE-FIT`: DO storage used for read-heavy/write-rare data that may fit KV/D1/R2 once consistency/query needs are known.

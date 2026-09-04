@@ -1,0 +1,12 @@
+{
+  // One Durable Object per agent thread; every tool schema is built at module
+  // load, so the isolate carries the whole registry before the first request.
+  "name": "agent-threads",
+  "main": "index.js",
+  "compatibility_date": "2026-08-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "THREAD", "class_name": "AgentThread" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AgentThread"] }]
+}

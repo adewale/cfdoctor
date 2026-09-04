@@ -1,0 +1,12 @@
+{
+  "description": "Upload/media-proxy Worker that buffers a whole request upload with request.arrayBuffer() and no size guard, and buffers an upstream response with arrayBuffer() before re-serving it. The scanner should report the body-buffering lead for both shapes and must not report R2 buffering (nothing reads from R2) or module-scope schema weight.",
+  "evidence_ids": ["CFDOC-EVD-CF-ISOLATE-MEMORY-MODEL"],
+  "required_check_ids": [
+    "CFDOC-PERF-BODY-BUFFERING"
+  ],
+  "forbidden_check_ids": [
+    "CFDOC-PERF-R2-BUFFERING",
+    "CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT"
+  ],
+  "expected_evidence_terms": ["arrayBuffer()"]
+}

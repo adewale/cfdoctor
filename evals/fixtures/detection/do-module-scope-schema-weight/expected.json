@@ -1,0 +1,11 @@
+{
+  "description": "Agent-thread Durable Object whose 26 tool input schemas are zod trees built at module scope, re-exported through an export * barrel from a package without sideEffects, and loaded via a dynamic import of the package root. The scanner should report the module-scope schema weight lead; no body-buffering finding is expected.",
+  "evidence_ids": ["CFDOC-EVD-POLYLANE-DO-MEMORY"],
+  "required_check_ids": [
+    "CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT"
+  ],
+  "forbidden_check_ids": [
+    "CFDOC-PERF-BODY-BUFFERING"
+  ],
+  "expected_evidence_terms": ["module-scope builders"]
+}

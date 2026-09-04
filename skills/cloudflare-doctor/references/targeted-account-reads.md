@@ -32,6 +32,8 @@ Use an existing pinned product CLI when it exposes the field. Otherwise ask the 
 | A cost estimate needs entitlement | Plan/contract name and only the relevant product entitlement/line item, with negotiated values redacted when possible | Full invoice/account contract |
 | A meter is running away right now | Billable usage for the current cycle (dashboard export or the account billable-usage API), filtered to the suspect product/meter and date range | Full invoice history or unrelated products |
 | Billing alerts could not have caught this | Budget alert configuration (thresholds, recipients, enabled state — note the auto-created $10 default) and the notification history for the affected cycle | All account notification settings |
+| Durable Objects are reset for memory because of baseline, not data | The namespace's memory usage chart or `durableObjectsPeriodicGroups` quantiles (`memoryUsageBytesP50`/`P99`) over a week with deployment markers, plus the exceeded-memory/reset count per bucket for the same window; flat-at-idle means baseline | Every namespace, per-object dumps, or request logs |
+| A Worker is near its memory or startup limits | The Worker's memory usage chart (P50–P999) around the suspect deployment, `exceededMemory` invocation counts, and the `startup_time_ms` / `Total Upload` lines from the last `wrangler deploy` or `versions upload` output | Full analytics exports or raw Logpush |
 
 ## API command-shape examples
 
@@ -49,6 +51,13 @@ curl --fail-with-body --silent --show-error \
 curl --fail-with-body --silent --show-error \
   "https://api.cloudflare.com/client/v4/zones/<ZONE_ID>/rulesets/phases/<PHASE>/entrypoint" \
   --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+
+# Durable Objects memory percentiles for one namespace (GraphQL; verify field names against the current schema)
+curl --fail-with-body --silent --show-error \
+  "https://api.cloudflare.com/client/v4/graphql" \
+  --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{"query":"query($account:String!,$from:Time!,$to:Time!,$ns:String!){viewer{accounts(filter:{accountTag:$account}){durableObjectsPeriodicGroups(limit:1000,filter:{datetime_geq:$from,datetime_leq:$to,namespaceId:$ns}){dimensions{datetimeFifteenMinutes}quantiles{memoryUsageBytesP50 memoryUsageBytesP99}}}}}","variables":{"account":"<ACCOUNT_ID>","from":"<ISO_START>","to":"<ISO_END>","ns":"<NAMESPACE_ID>"}}'
 
 # Current-cycle billable usage for a runaway-meter hypothesis (data updates daily)
 curl --fail-with-body --silent --show-error \
@@ -70,6 +79,8 @@ For products whose current Wrangler version has an exact `list`/`get`/`info` com
 - R2 API: https://developers.cloudflare.com/api/resources/r2/
 - Queues API: https://developers.cloudflare.com/api/resources/queues/
 - GraphQL Analytics API: https://developers.cloudflare.com/analytics/graphql-api/
+- Durable Objects memory usage metric and `durableObjectsPeriodicGroups` dataset: https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/#memory-usage
+- Workers memory usage chart and `exceededMemory` outcome: https://developers.cloudflare.com/workers/observability/metrics-and-analytics/ and https://developers.cloudflare.com/workers/platform/limits/#memory
 - Billable usage dashboard/data source: https://developers.cloudflare.com/billing/manage/billable-usage/
 - Budget alerts (informational only; no pause/cap): https://developers.cloudflare.com/billing/manage/budget-alerts/
 

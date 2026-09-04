@@ -101,11 +101,14 @@ Footguns:
 - DO used as a generic database with many trivial object invocations.
 - DO storage chosen for read-heavy/write-rare data that could use KV/D1/R2 once consistency/query requirements are clear; remember DO duration/requests are part of the total cost, not just storage ops.
 - In-memory-only state causes recovery/retry loops after object eviction/restart or hibernation.
+- Memory is the duration billing unit: Durable Objects duration bills the full 128 MB allocation regardless of actual usage, and co-located objects of one class that share an isolate are each billed as if they had the full allocation. Objects pinned in memory by non-hibernating WebSockets, outbound `connect()`/WebSocket connections (up to 15 minutes each), timers, or polling keep paying duration.
+- Module-scope baseline (tool schema registries, eagerly built validators, large Wasm) in a Durable Object class turns into memory-limit resets that discard in-flight agent turns; each reset re-runs the model call, the retry, and the upstream work, so the bill for the retried work follows the reset count even though nothing is billed for the reset itself. The Agents SDK's `maxOomRetries` budget makes that retry cost explicit.
 
 Better patterns:
 - Validate and rate-limit before obtaining/calling DO stubs; reject malformed/unauthorized requests in the Worker where possible.
 - Shard by natural key or bounded hash/time buckets, use hibernation for WebSockets, close/cleanup sockets, persist state intentionally, coalesce redundant writes, use transactions/multi-key APIs for correctness and latency rather than assumed billing savings, only reschedule alarms when work remains, offload heavy/background work to Queues/Workflows, and use D1/KV/R2 for data that does not need per-key coordination.
 - For any DO-to-DO or self re-trigger path, pass an explicit hop/depth budget and check it in every hop, add an idempotency/turn key so replays cannot restart the chain, and bound hot SQL with WHERE/LIMIT plus indexes. Watch the Durable Objects rows-read meter after deploys that touch storage access; requests and duration alone can look harmless while rows read dominate.
+- Keep the isolate baseline small (JSON Schema tool definitions, lazily built validators, `sideEffects: false` plus named re-exports, static package imports) and watch the Durable Objects memory chart with deployment markers; a flat line above the limit at idle is baseline that every object pays.
 
 ## Queues and Workflows
 

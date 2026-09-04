@@ -1,0 +1,10 @@
+{
+  "description": "Agent-thread Durable Object whose tools describe inputs as plain JSON Schema, build a zod validator only inside the call path, live in a package with sideEffects: false behind a named re-export barrel, and are imported statically by name. False-positive guard for the module-scope schema weight lead: zero findings total.",
+  "evidence_ids": ["CFDOC-EVD-POLYLANE-DO-MEMORY"],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT",
+    "CFDOC-PERF-BODY-BUFFERING"
+  ],
+  "max_findings": 0
+}

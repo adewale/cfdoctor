@@ -49,6 +49,7 @@ Wrong-primitive smells:
 - WebSockets handled without Durable Object WebSocket hibernation when connections can be long-lived. Hibernation can reduce duration billing and survivability issues.
 - DO storage used for read-heavy, write-rare session/preference/config data that tolerates eventual consistency. KV or D1 may fit better once consistency and query needs are explicit.
 - Class renamed or new class added without Wrangler migrations.
+- A class whose module-scope baseline is large (hundreds of schema-library tool definitions, eagerly loaded registries, big Wasm) or whose per-object working set approaches the isolate limit. There is no larger Durable Object: memory is a fixed per-isolate budget shared by every object of the class, so the fix is a smaller bundle (JSON Schema data, lazy validators, tree-shakeable barrels), a split across Workers via Service bindings, or a Container (which has instance types) for the heavy part.
 
 ## R2
 

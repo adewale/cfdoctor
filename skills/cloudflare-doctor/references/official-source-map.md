@@ -9,6 +9,14 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Workers pricing: https://developers.cloudflare.com/workers/platform/pricing/
 - Workers CPU profiling: https://developers.cloudflare.com/workers/observability/dev-tools/cpu-usage/
 - Workers metrics and analytics: https://developers.cloudflare.com/workers/observability/metrics-and-analytics/
+- Workers memory limit (per isolate; Error 1102, `exceededMemory`, "Memory limit would be exceeded before EOF"): https://developers.cloudflare.com/workers/platform/limits/#memory
+- Workers startup time and Worker size limits (`Script startup exceeded ...`, `startup_time_ms`, dry-run bundle size): https://developers.cloudflare.com/workers/platform/limits/#worker-startup-time and https://developers.cloudflare.com/workers/platform/limits/#worker-size
+- Workers errors and exceptions (validation errors incl. `Script startup exceeded memory limit`): https://developers.cloudflare.com/workers/observability/errors/
+- Workers memory profiling (local DevTools heap snapshots): https://developers.cloudflare.com/workers/observability/dev-tools/memory-usage/
+- `wrangler check startup` (startup CPU profile): https://developers.cloudflare.com/workers/wrangler/commands/workers/
+- Workers streams (avoid buffering large bodies): https://developers.cloudflare.com/workers/runtime-apis/streams/
+- Workers best practices (streaming, buffering crashes on large payloads): https://developers.cloudflare.com/workers/best-practices/workers-best-practices/
+- Node.js `fs` in Workers (memory-backed virtual file system counts toward the limit): https://developers.cloudflare.com/workers/runtime-apis/nodejs/fs/
 - Wrangler configuration: https://developers.cloudflare.com/workers/wrangler/configuration/
 - Workers secrets: https://developers.cloudflare.com/workers/configuration/secrets/
 - Workers Static Assets: https://developers.cloudflare.com/workers/static-assets/
@@ -42,6 +50,7 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Artifacts pricing/limits: https://developers.cloudflare.com/artifacts/platform/pricing/ and https://developers.cloudflare.com/artifacts/platform/limits/
 - Containers docs: https://developers.cloudflare.com/containers/
 - Containers pricing/limits: https://developers.cloudflare.com/containers/pricing/ and https://developers.cloudflare.com/containers/platform-details/limits/
+- Containers instance types and OOM behavior (restart on OOM, no swap, memory billed on provisioned instance): https://developers.cloudflare.com/containers/platform/limits/ and https://developers.cloudflare.com/containers/faq/
 - Pipelines docs: https://developers.cloudflare.com/pipelines/
 - Pipelines pricing/limits: https://developers.cloudflare.com/pipelines/platform/pricing/ and https://developers.cloudflare.com/pipelines/platform/limits/
 - Workers VPC docs: https://developers.cloudflare.com/workers-vpc/
@@ -83,6 +92,11 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Durable Object pricing: https://developers.cloudflare.com/durable-objects/platform/pricing/
 - Durable Object error handling: https://developers.cloudflare.com/durable-objects/best-practices/error-handling/
 - Durable Object metrics and analytics: https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/
+- Durable Object memory usage (measured per isolate, not per object; `durableObjectsPeriodicGroups`): https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/#memory-usage
+- Durable Object in-memory state (instances may share global memory; observe in-memory state size): https://developers.cloudflare.com/durable-objects/reference/in-memory-state/
+- Durable Object lifecycle (hibernation, eviction, pinned connections): https://developers.cloudflare.com/durable-objects/concepts/durable-object-lifecycle/
+- Durable Object troubleshooting (reset messages refer to in-memory state): https://developers.cloudflare.com/durable-objects/observability/troubleshooting/
+- Agents SDK durable recovery (`maxOomRetries` budget for memory-limit resets): https://developers.cloudflare.com/agents/harnesses/think/recovery/
 - Queues docs: https://developers.cloudflare.com/queues/
 - Queues delivery guarantees: https://developers.cloudflare.com/queues/reference/delivery-guarantees/
 - Queues batching/retries: https://developers.cloudflare.com/queues/configuration/batching-retries/
@@ -191,6 +205,9 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Analytics Engine pricing: https://developers.cloudflare.com/analytics/analytics-engine/pricing/
 - Analytics Engine sampling: https://developers.cloudflare.com/analytics/analytics-engine/sampling/
 - R2 metrics: https://developers.cloudflare.com/r2/platform/metrics-analytics/
+- D1 debugging (`D1 DB's isolate exceeded its memory limit and was reset`): https://developers.cloudflare.com/d1/observability/debug-d1/
+- Snippets limits and errors (2 MB memory, Error 1204): https://developers.cloudflare.com/rules/snippets/ and https://developers.cloudflare.com/rules/snippets/errors/
+- esbuild tree shaking and `sideEffects` (bundler semantics behind Worker baseline size): https://esbuild.github.io/api/#tree-shaking
 - Cloudflare public plans: https://www.cloudflare.com/plans/
 
 ## Billing visibility and spend controls

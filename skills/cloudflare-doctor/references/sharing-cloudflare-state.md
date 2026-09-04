@@ -77,6 +77,7 @@ Ask only for relevant sections; do not request everything by default.
 - Worker routes/custom domains/workers.dev status, deployments, previews, rollbacks/gradual deployments.
 - Cron triggers by environment.
 - Observability/log settings, tail/logpush/traces, top routes by CPU/subrequests/errors.
+- Memory usage chart (P50–P999) with deployment markers, `Exceeded Memory`/`exceededMemory` counts, and the `startup_time_ms` and `Total Upload` lines from the last deploy when baseline memory or startup limits are in question.
 - Pages preview deployment settings and project environment variables/bindings.
 
 ### Storage, data, sandbox, and orchestration products
@@ -84,7 +85,7 @@ Ask only for relevant sections; do not request everything by default.
 - KV namespaces per environment, TTL/key lifecycle strategy, operation counts.
 - D1 databases, migrations, backups/time travel, rows read/written, slow/hot queries.
 - R2 buckets, public access/custom domains, CORS, lifecycle rules, multipart cleanup, operation counts.
-- Durable Objects namespaces/classes, metrics, hot objects, WebSocket hibernation evidence.
+- Durable Objects namespaces/classes, metrics, hot objects, WebSocket hibernation evidence, and the per-isolate memory chart (or `durableObjectsPeriodicGroups` quantiles) with reset counts over a week when memory-limit resets are suspected.
 - Queues producers/consumers, retry settings, DLQs, backlog, poison-message evidence.
 - Dynamic Worker loader bindings, egress policy, custom limits, unique Dynamic Worker counts, code-hash/audit logs.
 - Agents SDK usage: Agent classes, scheduled tasks, sub-agents, retries, queue tasks, durable execution, browser/sandbox tools, cancellation/observability evidence.
