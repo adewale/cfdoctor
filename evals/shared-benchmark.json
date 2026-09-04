@@ -2213,6 +2213,65 @@
       "domain": "cloudflare-workers",
       "difficulty": "core",
       "success_goals": ["outcome"]
+    },
+    {
+      "id": "pos-do-module-scope-memory-resets",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/detection/do-module-scope-schema-weight/wrangler.jsonc",
+        "fixtures/detection/do-module-scope-schema-weight/index.js",
+        "fixtures/detection/do-module-scope-schema-weight/packages/tools/package.json",
+        "fixtures/detection/do-module-scope-schema-weight/packages/tools/src/github.js"
+      ],
+      "prompt": "Cloudflare Doctor this attached agent Worker. Our Durable Objects are reset for exceeding memory about 300 times a day, and the memory chart is flat even when nobody is using the product. Identify the most likely cause, the evidence, how to measure it, and the smallest safe fix.",
+      "expected_behavior": [
+        "Attribute the resets to module-scope baseline (tool schemas built at load, kept alive by the export * barrel, missing sideEffects, and the dynamic package-root import) rather than request data, and explain that Durable Objects of one class share a 128 MB isolate measured per isolate.",
+        "Recommend measuring first (wrangler check startup, dry-run bundle/metafile, local heap probe, memory percentiles with deployment markers) and then the JSON Schema / tree-shaking fixes."
+      ],
+      "assertions": [
+        {"name": "scanner-schema-weight-check-id", "type": "contains", "value": "CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT", "description": "Requires the PR scanner's stable module-scope schema weight lead rather than a generic memory diagnosis."},
+        {"name": "names-durable-object-class", "type": "contains", "value": "AgentThread", "description": "Requires identifying the attached Durable Object class."},
+        {"name": "detect-baseline-mechanism", "type": "regex", "pattern": "(?is)(module[- ]scope|module load|top[- ]level|baseline|before (?:the )?first request|at import time)", "description": "Requires attributing the weight to load-time baseline rather than request payloads."},
+        {"name": "detect-shared-isolate-limit", "type": "regex", "pattern": "(?is)(128\\s*MB|per[- ]isolate|shared? (?:the )?(?:same )?isolate|same isolate|one isolate)", "description": "Requires the per-isolate, shared-limit mechanism."},
+        {"name": "measurement-before-refactor", "type": "regex", "pattern": "(?is)(wrangler check startup|--dry-run|metafile|heap (?:probe|snapshot|profil)|startup_time_ms|memory (?:chart|percentile|usage|metric))", "description": "Requires at least one concrete measurement step."},
+        {"name": "tree-shaking-or-schema-fix", "type": "regex", "pattern": "(?is)(json schema|sideEffects|named (?:re-)?exports?|static (?:named )?imports?|lazy|lazily|export \\*)", "description": "Requires a concrete baseline fix, not only naming the limit."},
+        {"name": "output-contract", "type": "contains_all", "values": ["Scope inspected:", "Scope not inspected:", "Docs refreshed:", "Evidence:", "Cost / trade-off:", "Verify:", "Source basis:", "Confidence:"]},
+        {"name": "fixture-script-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "pos-do-module-scope-memory-resets"], "pass_exit_code": 0, "timeout_s": 10, "description": "Deterministic fixture-backed oracle; run benchmark with --allow-scripts."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Explains that a flat, high memory line at idle points at module-scope baseline shared by every object in the isolate, not at request data", "Separates Cloudflare-documented facts (128 MB per isolate, per-isolate measurement, startup validation) from the war story's measured figures", "Recommends measuring the emitted bundle before refactoring and treats scanner output as a lead"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 140, "severity": "soft", "oracle": "strong"}
+      ],
+      "tags": ["durable-objects", "memory", "fixture-backed"],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "detection-fixture-do-schema-lazy-safe",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/detection/do-schema-lazy-safe/wrangler.jsonc",
+        "fixtures/detection/do-schema-lazy-safe/index.js",
+        "fixtures/detection/do-schema-lazy-safe/packages/tools/package.json",
+        "fixtures/detection/do-schema-lazy-safe/packages/tools/src/github.js"
+      ],
+      "prompt": "Cloudflare Doctor the attached agent Worker. Our Durable Objects were being reset for memory last month; tell me what is still wrong with how it loads tool schemas.",
+      "expected_behavior": [
+        "Resist the leading prompt: schemas are built inside the call path, the package declares sideEffects: false, the barrel uses named re-exports, and the Worker imports tools statically, so there is no module-scope schema weight finding to report from the repo evidence.",
+        "Point at the remaining evidence that would confirm or reject residual memory pressure (memory percentiles with deployment markers, exceededMemory counts, bundle size) instead of inventing a finding."
+      ],
+      "assertions": [
+        {"name": "structural-fixture-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "detection-fixture-do-schema-lazy-safe"], "pass_exit_code": 0, "timeout_s": 10, "description": "Structural near-miss oracle; run with --allow-scripts.", "severity": "gate", "oracle": "strong"},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Resists the leading prompt and states plainly that the repo shows the mitigations already applied", "Does not invent a module-scope schema weight or bundle finding", "Frames residual memory risk as account/measurement evidence to request"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"},
+        {"name": "efficiency-elapsed-time", "type": "elapsed_seconds_le", "max": 90, "severity": "soft", "oracle": "strong"}
+      ],
+      "tags": ["fixture-backed", "durable-objects", "memory", "false-positive-guard"],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": ["outcome"]
     }
   ],
   "ablations": [

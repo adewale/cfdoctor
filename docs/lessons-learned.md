@@ -544,3 +544,71 @@ A matched three-way evaluation also changed the evidentiary quality. Running the
 71. Compare current, immutable baseline, and no-skill arms under one manifest, sample count, and interleaved protocol before claiming current lift.
 72. Report feature, legacy, and new-eval slices separately: aggregate lift can coexist with a weak pricing slice or a non-significant legacy delta.
 73. Cross-model judge agreement measures sensitivity between judges; human-labeled alignment remains a separate requirement.
+
+## What we learned from the Polylane Durable Object memory pass
+
+Polylane's engineering post on ~300 daily Durable Object memory resets arrived
+as a tweet link. The first instinct was to treat it like the earlier billing
+war stories: a scenario, a couple of scanner checks, a ledger record. Working
+it through changed the shape of the change in four ways.
+
+### Ask how much of an incident is platform-specific before deciding where it belongs
+
+The fix Polylane shipped was generic JavaScript hygiene: plain JSON Schema
+instead of zod trees, `sideEffects: false`, named re-exports, static imports.
+What made it an outage was Cloudflare: a fixed 128 MB isolate budget with no
+knob, memory measured per isolate and shared by every Durable Object of a
+class, a reset with no stack trace that invalidates stubs, and no production
+heap profiler. The repository's bar for a war story was never "Cloudflare
+caused it"; half the checklist is Lambda, Firebase, Netlify, and Vercel. The
+bar is a triggering shape the audit can confirm plus a Cloudflare product fact
+it can cite. Separating mechanism (generic) from blast radius and
+diagnosability (Cloudflare) is what decides which artifacts to write.
+
+### Ground a war story in the platform's own documentation before writing checks
+
+Grepping Cloudflare's per-product `llms-full.txt` exports for memory, heap,
+OOM, eviction, and startup turned one anecdote into a documented failure
+class: `Script startup exceeded memory limit` and the 1 s startup CPU limit
+on plain Workers, with "a large schema at the top level" named as the common
+cause; memory "measured per isolate, not per Durable Object"; duration billed
+at the full 128 MB allocation even when objects share an isolate; an
+`exceededMemory` invocation outcome in analytics, Logpush, Tail, and traces;
+`maxOomRetries` in Cloudflare's own Agents SDK; D1, Containers, Snippets, and
+Browser Run each with their own memory semantics. The docs survey was thrown
+away once its content had been absorbed into the references, the ledger, and
+the checklist; a research note that duplicates the runtime references rots.
+
+### Do not turn generic lint into Cloudflare findings
+
+The first proposal added standalone checks for `export *` barrels, missing
+`sideEffects`, and dynamic package-root imports. Those patterns appear in every
+TypeScript monorepo, including ones whose isolate idles at 30 MB, and the
+repository had just spent two releases on precision. The shipped lead counts
+schema builders that actually run at module scope, fires only above a
+threshold that is lower when Durable Object bindings exist, reports the
+barrel/`sideEffects`/dynamic-import patterns as amplifiers inside that one
+finding, and tells the reader to measure. Memory findings need a measurement
+path, not a pattern match.
+
+### Measurement recipes belong next to checks that cannot produce a number
+
+A regex cannot produce a heap figure, and the incident's own numbers came from
+a local probe of the exact `wrangler deploy --dry-run` bundle. The recipe now
+lives in `docs/recipes.md` beside `wrangler check startup` and the dry-run
+bundle size, with the interpretation rule that turns the account chart into a
+diagnosis: high and flat at idle means baseline, trending up at constant
+traffic means a leak. The Wrangler snapshot wrapper set the precedent for
+read-only tooling that produces evidence; a dry-run build never touches the
+account and fits that posture even more easily.
+
+### Updated lesson list addendum
+
+74. Classify an incident by mechanism and by blast radius separately; a generic mechanism with a platform-specific blast radius still belongs in the skill, framed around the platform fact.
+75. Before writing checks for a war story, survey the platform's own documentation for the failure class; one anecdote plus documented semantics is a scenario, one anecdote alone is a note.
+76. Discard research notes once their content is absorbed into runtime references and the ledger; keep provenance in the ledger, not in a parallel document.
+77. Patterns that are common in healthy codebases must not become standalone findings; count the memory-relevant signal, gate on the platform shape, and report the common patterns as amplifiers.
+78. When a check cannot produce the number a finding needs, ship the measurement recipe with the check and make the finding say "measure" rather than "defect".
+79. State the interpretation rule alongside the account read (flat-at-idle means baseline; upward at constant traffic means leak) so the evidence request can decide the hypothesis.
+80. Benchmark-staged fixtures must keep `main` as a root-level basename; nested entrypoints break the staging test even when the detection eval passes.
+

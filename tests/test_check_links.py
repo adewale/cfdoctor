@@ -46,7 +46,7 @@ class CheckLinksTests(unittest.TestCase):
 
     def test_overdue_content_policy_fails(self) -> None:
         policy = json.loads((ROOT / "evals/link-check-policy.json").read_text())
-        self.assertTrue(any("overdue" in error for error in module.validate_content_policy(policy, dt.date(2026, 10, 12))))
+        self.assertTrue(any("overdue" in error for error in module.validate_content_policy(policy, dt.date(2026, 11, 7))))
 
     def test_ledger_only_url_is_extracted(self) -> None:
         urls = module.extract_urls(ROOT, module.DEFAULT_TARGETS)

@@ -23,7 +23,7 @@ class ClaimLedgerTests(unittest.TestCase):
         cls.ledger = json.loads((ROOT / "research/incident-claim-ledger.json").read_text())
 
     def test_current_ledger_is_valid_and_superseded_source_is_resolved(self) -> None:
-        errors, warnings = module.validate(copy.deepcopy(self.ledger), dt.date(2026, 8, 9))
+        errors, warnings = module.validate(copy.deepcopy(self.ledger), dt.date(2026, 9, 4))
         self.assertEqual([], errors)
         self.assertEqual([], warnings)
         record = next(item for item in self.ledger["records"] if item["id"] == "CFDOC-EVD-AWS-S3-HOTLINK")

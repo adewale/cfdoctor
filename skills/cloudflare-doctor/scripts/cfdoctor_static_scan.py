@@ -114,7 +114,30 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.4.0"
+TEST_FILE_PATH_RE = re.compile(r"(?:^|/)(?:__tests__|__mocks__|tests?|spec|e2e|fixtures)/|\.(?:test|spec|stories)\.[cm]?[jt]sx?$")
+# Container-level schema builders from common validation libraries. Leaf builders such as
+# z.string() are deliberately not counted so the number approximates "schemas defined".
+SCHEMA_BUILDER_RE = re.compile(
+    r"\b(?:z|v|t|Type|yup|Joi|S|Schema)\s*\.\s*"
+    r"(?:object|strictObject|looseObject|enum|union|discriminatedUnion|array|tuple|record|intersection|"
+    r"Object|Union|Array|Tuple|Record|Struct|Enum|Literal)\s*\("
+)
+BARE_SCHEMA_BUILDER_RE = re.compile(r"(?<![\w.$])(?:object|strictObject|looseObject|variant|picklist|type)\s*\(")
+SCHEMA_LIBRARY_IMPORT_RE = re.compile(
+    r"""from\s+['"](?:zod|zod/v4|zod/v3|valibot|superstruct|arktype|@sinclair/typebox|yup|joi|effect|effect/Schema)['"]"""
+)
+BARREL_FILE_RE = re.compile(r"(?:^|/)index\.[cm]?[jt]sx?$")
+EXPORT_STAR_RE = re.compile(r"^\s*export\s+\*\s+from\s+['\"]", re.MULTILINE)
+DYNAMIC_PACKAGE_ROOT_IMPORT_RE = re.compile(
+    r"""\bimport\s*\(\s*['"](?:@[\w.-]+/)?[\w.-]+['"]\s*\)"""
+)
+BODY_SIZE_GUARD_RE = re.compile(r"content-length|MAX_(?:BODY|UPLOAD|PAYLOAD)|max(?:Body|Upload|Payload|Bytes)|byteLength\s*[<>]", re.IGNORECASE)
+SIGNATURE_VERIFICATION_RE = re.compile(
+    r"crypto\.subtle\.verify|hmac|x-hub-signature|stripe-signature|svix-signature|x-signature|timingSafeEqual|webhook",
+    re.IGNORECASE,
+)
+
+SCANNER_VERSION = "0.5.0"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -173,6 +196,8 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("DO-FANOUT-TAX", "COST", "medium", "low", "Fan-out to Durable Objects lacks obvious backpressure", "Waking many DOs from one request concentrates latency and duration without caps."),
     ("DO-STUB-CALL-CYCLE", "COST", "high", "low", "Durable Object classes appear to call each other's stubs in a cycle", "DO-to-DO stub calls that form a cycle can detach into runaway loops; per-invocation limits reset on every hop while request, duration, and storage rows-read meters keep billing."),
     ("DO-SQL-SCAN-HOTPATH", "COST", "medium", "medium", "Durable Object SQL query has no obvious WHERE/LIMIT bound", "Unbounded SELECTs via storage.sql.exec re-read every row; SQLite-backed Durable Object storage rows read are billed and can dominate cost on hot or looping paths."),
+    ("CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT", "PERF", "medium", "low", "Many schema-library objects are built at module scope", "Schema builders evaluated at module load are heap and startup CPU every isolate pays before its first request; Workers validate startup CPU (1 s) and memory (128 MB) at deploy, and Durable Objects share one isolate across every object of the class."),
+    ("CFDOC-PERF-BODY-BUFFERING", "PERF", "medium", "low", "Request or upstream body is buffered into isolate memory", "Reading a whole request/upstream body with arrayBuffer()/blob() or writing node:fs temp files shares the isolate's 128 MB with every concurrent request; large payloads hit 'Memory limit would be exceeded before EOF' or an exceededMemory reset."),
     ("CFDOC-PERF-AWAITED-CACHE-PUT", "PERF", "low", "medium", "Cache put awaited in request path", "Awaiting cache writes adds user-visible latency when waitUntil would do."),
     ("CFDOC-PERF-PUBLIC-SERVICE-URL", "PERF", "medium", "medium", "Public Cloudflare service URL fetch; consider service bindings", "Public URLs between same-account Workers add routing overhead and auth ambiguity."),
     ("CFDOC-COST-THIRD-PARTY-ORIGIN", "COST", "medium", "medium", "Worker fetches a public third-party/serverless origin hostname", "Cloudflare-fronted third-party origins still bill on cache misses or direct hostname access."),
@@ -1113,6 +1138,159 @@ def do_stub_invocations(masked_span: str, binding: str) -> list[tuple[int, int]]
     return calls
 
 
+LITERAL_BRACE_PREV_CHARS = set("=:,([?|&!~+-*/%^<")
+LITERAL_BRACE_PREV_WORDS = {"return", "yield", "await", "typeof", "in", "of", "case", "default", "delete", "void", "throw"}
+
+
+def module_scope_depth_map(masked: str) -> list[bool]:
+    """Return, per character, whether the position sits inside a lazily evaluated body.
+
+    A brace opens a *body* (function, class, control block, arrow body) when the
+    previous significant token is `)`, `=>`, `else/try/finally/do`, or another
+    identifier such as `class Name`; it opens an object literal after `=`, `:`,
+    `,`, `(`, `[`, `return`, and similar. A parenthesis directly after `=>`
+    (an arrow returning an expression such as `=> ({...})`) is also a body.
+    Everything outside every body runs at module evaluation, which is what
+    isolate baseline memory and Workers startup validation pay for. Strings and
+    comments must already be masked.
+    """
+    inside_body = [False] * (len(masked) + 1)
+    stack: list[tuple[str, bool]] = []
+    depth_body = 0
+
+    def previous_significant(index: int) -> int:
+        back = index - 1
+        while back >= 0 and masked[back].isspace():
+            back -= 1
+        return back
+
+    for index, char in enumerate(masked):
+        inside_body[index] = depth_body > 0
+        if char == "{":
+            back = previous_significant(index)
+            is_literal = False
+            if back >= 0:
+                if masked[back] == ">" and back > 0 and masked[back - 1] == "=":
+                    is_literal = False
+                elif masked[back] in LITERAL_BRACE_PREV_CHARS:
+                    is_literal = True
+                elif masked[back].isalnum() or masked[back] in "_$":
+                    start = back
+                    while start >= 0 and (masked[start].isalnum() or masked[start] in "_$"):
+                        start -= 1
+                    is_literal = masked[start + 1:back + 1] in LITERAL_BRACE_PREV_WORDS
+            stack.append(("{", not is_literal))
+            if not is_literal:
+                depth_body += 1
+        elif char == "(":
+            back = previous_significant(index)
+            is_body = back >= 1 and masked[back] == ">" and masked[back - 1] == "="
+            stack.append(("(", is_body))
+            if is_body:
+                depth_body += 1
+        elif char in "})":
+            wanted = "{" if char == "}" else "("
+            while stack:
+                opener, is_body = stack.pop()
+                if is_body:
+                    depth_body = max(0, depth_body - 1)
+                if opener == wanted:
+                    break
+    inside_body[len(masked)] = depth_body > 0
+    return inside_body
+
+def module_scope_schema_builders(text: str) -> list[int]:
+    """Return character offsets of schema-library builder calls evaluated at module load."""
+    masked = mask_javascript_non_code(text)
+    inside_body = module_scope_depth_map(masked)
+    offsets = [m.start() for m in SCHEMA_BUILDER_RE.finditer(masked) if not inside_body[m.start()]]
+    if SCHEMA_LIBRARY_IMPORT_RE.search(text):
+        offsets.extend(m.start() for m in BARE_SCHEMA_BUILDER_RE.finditer(masked) if not inside_body[m.start()])
+    return sorted(set(offsets))
+
+
+def add_module_scope_schema_findings(
+    root: Path,
+    files: list[tuple[Path, str]],
+    has_durable_objects: bool,
+    findings: list[Finding],
+) -> None:
+    """Flag projects that build many validation schemas at module scope (baseline memory/startup lead)."""
+    per_file: list[tuple[Path, str, list[int]]] = []
+    for path, text in files:
+        rpath = rel(path, root).replace(os.sep, "/")
+        if path.suffix not in {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts"}:
+            continue
+        if TEST_FILE_PATH_RE.search(rpath):
+            continue
+        offsets = module_scope_schema_builders(text)
+        if offsets:
+            per_file.append((path, text, offsets))
+    total = sum(len(offsets) for _, _, offsets in per_file)
+    threshold = 25 if has_durable_objects else 50
+    if total < threshold:
+        return
+    per_file.sort(key=lambda item: len(item[2]), reverse=True)
+    top_path, top_text, top_offsets = per_file[0]
+    line_no = top_text.count("\n", 0, top_offsets[0]) + 1
+    line_text = top_text.splitlines()[line_no - 1] if top_text.splitlines() else ""
+
+    packages_without_side_effects = 0
+    for path, text in files:
+        if path.name != "package.json" or "node_modules" in path.parts:
+            continue
+        try:
+            data = json.loads(text)
+        except ValueError:
+            continue
+        if isinstance(data, dict) and "sideEffects" not in data:
+            packages_without_side_effects += 1
+    export_star_barrels = sum(
+        1
+        for path, text in files
+        if BARREL_FILE_RE.search(rel(path, root).replace(os.sep, "/")) and EXPORT_STAR_RE.search(text)
+    )
+    dynamic_root_imports = sum(
+        len(DYNAMIC_PACKAGE_ROOT_IMPORT_RE.findall(text))
+        for path, text in files
+        if path.suffix in {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts"}
+    )
+    amplifiers: list[str] = []
+    if packages_without_side_effects:
+        amplifiers.append(f"{packages_without_side_effects} package.json file(s) without a sideEffects field")
+    if export_star_barrels:
+        amplifiers.append(f"{export_star_barrels} index barrel(s) using export *")
+    if dynamic_root_imports:
+        amplifiers.append(f"{dynamic_root_imports} dynamic import(s) of a bare package root")
+    amplifier_text = ("; tree-shaking amplifiers: " + ", ".join(amplifiers)) if amplifiers else ""
+
+    if has_durable_objects:
+        why = (
+            f"{total} schema-library builders across {len(per_file)} file(s) run at module load, before any request. "
+            "Durable Objects share one V8 isolate per class with a fixed 128 MB limit measured per isolate, so baseline "
+            "weight is paid by every co-located object and an exceededMemory reset hits whichever object is present; "
+            "large top-level schema work is also the documented common cause of the 1 s startup CPU limit"
+            f"{amplifier_text}."
+        )
+    else:
+        why = (
+            f"{total} schema-library builders across {len(per_file)} file(s) run at module load, before any request. "
+            "Workers validate top-level work at deploy (`Script startup exceeded CPU time limit` at 1 s, "
+            "`Script startup exceeded memory limit` at 128 MB), and the docs name large top-level schema work as the "
+            f"common cause; the isolate's 128 MB is shared by every concurrent request{amplifier_text}."
+        )
+    findings.append(Finding(
+        "CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT",
+        "medium",
+        "Many schema-library objects are built at module scope",
+        "missed optimization / reliability",
+        f"{rel(top_path, root)}:{line_no}: {excerpt(line_text)} (largest file: {len(top_offsets)} module-scope builders; project total {total})",
+        why,
+        "Measure before refactoring: `npx wrangler check startup` and `wrangler deploy --dry-run --outdir --metafile` for bundle size and startup_time_ms, then a local module-scope heap probe on the emitted bundle (docs/recipes.md). If baseline is material: build schemas lazily inside handlers or as plain JSON Schema when the consumer already receives JSON Schema, add `sideEffects: false` and named re-exports to package barrels, and replace dynamic imports of package roots with static named imports.",
+        "low",
+    ))
+
+
 def add_do_cycle_findings(
     root: Path,
     source_files: list[tuple[Path, str]],
@@ -1302,6 +1480,8 @@ def add_code_findings(
             "Verify signatures before side effects, persist a provider delivery/event idempotency key, make handlers replay-safe, and bound downstream retries/fan-out.",
             "low",
         ))
+
+    add_module_scope_schema_findings(root, files, bool(bindings.get("Durable Objects")), findings)
 
     for path, text in files:
         rpath = rel(path, root)
@@ -1624,6 +1804,63 @@ def add_code_findings(
                     f"{rpath}:{hit[0]}: {hit[1][:160]}",
                     "Buffering large R2 objects in a Worker increases memory/CPU pressure and delays first byte.",
                     "Return the R2 object's stream/body directly when possible and support range requests for large media/downloads.",
+                    "low",
+                ))
+
+        # Whole-body buffering into isolate memory (request uploads, upstream pass-through, node:fs temp files).
+        if is_source_like and path.suffix not in {".tf", ".sql"} and not TEST_FILE_PATH_RE.search(rpath.replace(os.sep, "/")):
+            masked_text = mask_javascript_non_code(text)
+            already_r2 = any(f.check_id == "CFDOC-PERF-R2-BUFFERING" and f.evidence.startswith(f"{rpath}:") for f in findings)
+            guarded = bool(BODY_SIZE_GUARD_RE.search(text))
+            request_buffer = re.search(r"\b(?:request|req)\s*\.\s*(?:arrayBuffer|blob)\s*\(", masked_text)
+            upstream_call = re.search(r"(?:\bawait|=|\breturn|\(|,)\s*fetch\s*\(|\.\s*fetch\s*\(", masked_text)
+            upstream_buffers = [
+                m for m in re.finditer(r"(?:([A-Za-z_$][\w$]*)|\))\s*\.\s*(?:arrayBuffer|blob)\s*\(\s*\)", masked_text)
+                if m.group(1) not in {"request", "req"}
+            ]
+            if request_buffer and not guarded and not SIGNATURE_VERIFICATION_RE.search(text):
+                hit = line_for(text, re.compile(r"\b(?:request|req)\s*\.\s*(?:arrayBuffer|blob)\s*\(")) or (1, "")
+                findings.append(Finding(
+                    "CFDOC-PERF-BODY-BUFFERING",
+                    "medium",
+                    "Request or upstream body is buffered into isolate memory",
+                    "missed optimization / reliability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "The whole request body is read into memory with no visible size guard. Workers share one 128 MB isolate across concurrent requests; a large upload can fail with `Memory limit would be exceeded before EOF` or an exceededMemory outcome that also affects other in-flight requests.",
+                    "Enforce a Content-Length/byte budget before reading, and stream the body (`request.body.pipeTo`/`pipeThrough`, R2 multipart, TransformStream) instead of buffering it; keep large payloads in R2 rather than Worker memory.",
+                    "low",
+                ))
+            elif (
+                not already_r2
+                and not guarded
+                and upstream_call
+                and upstream_buffers
+                and re.search(r"new\s+Response\s*\(|\.put\s*\(", masked_text)
+            ):
+                line_no = text.count("\n", 0, upstream_buffers[0].start()) + 1
+                line_text = text.splitlines()[line_no - 1] if text.splitlines() else ""
+                findings.append(Finding(
+                    "CFDOC-PERF-BODY-BUFFERING",
+                    "medium",
+                    "Request or upstream body is buffered into isolate memory",
+                    "missed optimization / reliability",
+                    f"{rpath}:{line_no}: {excerpt(line_text)}",
+                    "An upstream response body is buffered in full before being re-served or stored. Buffering multi-megabyte bodies competes for the isolate's shared 128 MB and delays first byte; the runtime error `Memory limit would be exceeded before EOF` is the documented failure.",
+                    "Pass the upstream body through as a stream (`new Response(upstream.body, ...)`, `bucket.put(key, upstream.body)`), or chunk/limit it when transformation is required.",
+                    "low",
+                ))
+            if re.search(r"""from\s+['"](?:node:)?fs(?:/promises)?['"]""", text) and re.search(
+                r"\b(?:writeFile|writeFileSync|appendFile|appendFileSync|createWriteStream|mkdtemp|mkdtempSync)\s*\(", masked_text
+            ):
+                hit = line_for(text, re.compile(r"\b(?:writeFile|writeFileSync|appendFile|appendFileSync|createWriteStream|mkdtemp|mkdtempSync)\s*\(")) or (1, "")
+                findings.append(Finding(
+                    "CFDOC-PERF-BODY-BUFFERING",
+                    "low",
+                    "Request or upstream body is buffered into isolate memory",
+                    "missed optimization / reliability",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                    "The Workers virtual file system is memory-backed: every temporary file counts toward the isolate's 128 MB limit, and exceeding it terminates and restarts the Worker instance.",
+                    "Keep temporary files small and short-lived, stream to R2 instead of writing to disk, and bound the size of anything written under the Workers VFS.",
                     "low",
                 ))
 

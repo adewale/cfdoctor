@@ -722,5 +722,243 @@ class StaticScannerTests(unittest.TestCase):
         self.assertEqual([], self.do_sql_ids(report))
 
 
+    # --- Isolate memory leads: module-scope schema weight and body buffering ---
+
+    DO_MEMORY_CONFIG = """{
+      "name": "agent-threads",
+      "main": "src/index.js",
+      "compatibility_date": "2026-08-01",
+      "observability": {"enabled": true},
+      "durable_objects": {"bindings": [{"name": "THREAD", "class_name": "Thread"}]},
+      "migrations": [{"tag": "v1", "new_sqlite_classes": ["Thread"]}]
+    }"""
+    PLAIN_MEMORY_CONFIG = """{
+      "name": "api",
+      "main": "src/index.js",
+      "compatibility_date": "2026-08-01",
+      "observability": {"enabled": true}
+    }"""
+
+    def memory_findings(self, report: dict) -> list[dict]:
+        return [
+            f for f in report["findings"]
+            if f["check_id"] in {"CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT", "CFDOC-PERF-BODY-BUFFERING"}
+        ]
+
+    @staticmethod
+    def module_scope_tool_files(count: int, prefix: str = "src/tools") -> dict[str, str]:
+        files: dict[str, str] = {}
+        for index in range(count):
+            files[f"{prefix}/tool{index}.ts"] = "\n".join([
+                "import { z } from 'zod';",
+                f"export const parameters{index} = z.object({{",
+                "  owner: z.string().describe('Repository owner'),",
+                "  repo: z.string().describe('Repository name'),",
+                "});",
+            ])
+        return files
+
+    def test_module_scope_schema_weight_is_reported_for_durable_object_project(self) -> None:
+        files = {"wrangler.jsonc": self.DO_MEMORY_CONFIG, "src/index.js": "export class Thread {}"}
+        files.update(self.module_scope_tool_files(25))
+        report = scan(files)
+        found = self.memory_findings(report)
+        self.assertEqual(["CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT"], [f["check_id"] for f in found])
+        self.assertIn("project total 25", found[0]["evidence"])
+        self.assertIn("128 MB", found[0]["message"])
+        self.assertIn("Durable Objects share one V8 isolate", found[0]["message"])
+        self.assertEqual("low", found[0]["confidence"])
+
+    def test_module_scope_schema_weight_threshold_is_higher_without_durable_objects(self) -> None:
+        files = {"wrangler.jsonc": self.PLAIN_MEMORY_CONFIG, "src/index.js": "export default { fetch() { return new Response('ok') } }"}
+        files.update(self.module_scope_tool_files(30))
+        self.assertEqual([], self.memory_findings(scan(files)))
+        files.update(self.module_scope_tool_files(50))
+        found = self.memory_findings(scan(files))
+        self.assertEqual(["CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT"], [f["check_id"] for f in found])
+        self.assertIn("Script startup exceeded", found[0]["message"])
+
+    def test_schemas_built_inside_functions_are_not_module_scope(self) -> None:
+        files = {"wrangler.jsonc": self.DO_MEMORY_CONFIG, "src/index.js": "export class Thread {}"}
+        for index in range(30):
+            files[f"src/tools/tool{index}.ts"] = "\n".join([
+                "import { z } from 'zod';",
+                f"export function parameters{index}() {{",
+                "  return z.object({ owner: z.string(), repo: z.string() });",
+                "}",
+                f"export const lazy{index} = () => ({{ parameters: z.object({{ owner: z.string() }}) }});",
+                f"export class Tool{index} {{ params = z.object({{}}); run() {{ return z.object({{}}); }} }}",
+            ])
+        self.assertEqual([], self.memory_findings(scan(files)))
+
+    def test_module_scope_object_literals_and_route_registrations_count(self) -> None:
+        files = {"wrangler.jsonc": self.DO_MEMORY_CONFIG, "src/index.js": "export class Thread {}"}
+        for index in range(13):
+            files[f"src/tools/tool{index}.ts"] = "\n".join([
+                "import { z } from 'zod';",
+                f"export const tool{index} = defineTool({{",
+                "  description: 'Read a pull request',",
+                "  parameters: z.object({ owner: z.string(), repo: z.string() }),",
+                "  execute: async (input) => { return z.object({}).parse(input); },",
+                "});",
+                f"app.post('/tool{index}', zValidator('json', z.object({{ id: z.string() }})), (c) => c.json({{}}));",
+            ])
+        found = self.memory_findings(scan(files))
+        self.assertEqual(["CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT"], [f["check_id"] for f in found])
+        self.assertIn("project total 26", found[0]["evidence"])
+
+    def test_test_files_and_string_mentions_do_not_count_toward_schema_weight(self) -> None:
+        files = {"wrangler.jsonc": self.DO_MEMORY_CONFIG, "src/index.js": "export class Thread {}"}
+        files.update(self.module_scope_tool_files(20, prefix="src/__tests__"))
+        files.update(self.module_scope_tool_files(10, prefix="test"))
+        files["src/notes.ts"] = "\n".join(["const doc = 'z.object( ' + 'z.object(';"] * 30)
+        self.assertEqual([], self.memory_findings(scan(files)))
+
+    def test_schema_weight_evidence_names_tree_shaking_amplifiers(self) -> None:
+        files = {"wrangler.jsonc": self.DO_MEMORY_CONFIG, "src/index.js": "export class Thread {}"}
+        files.update(self.module_scope_tool_files(25, prefix="packages/tools/src"))
+        files["packages/tools/package.json"] = '{"name": "@scope/tools", "version": "1.0.0"}'
+        files["packages/tools/src/index.ts"] = "export * from './zod';\nexport * from './tool0';\n"
+        files["src/agent.ts"] = "export async function load() { const { run } = await import('@scope/tools'); return run; }"
+        found = self.memory_findings(scan(files))
+        self.assertEqual(1, len(found))
+        self.assertIn("1 package.json file(s) without a sideEffects field", found[0]["message"])
+        self.assertIn("1 index barrel(s) using export *", found[0]["message"])
+        self.assertIn("1 dynamic import(s) of a bare package root", found[0]["message"])
+
+    def test_valibot_and_typebox_builders_count_toward_schema_weight(self) -> None:
+        files = {"wrangler.jsonc": self.DO_MEMORY_CONFIG, "src/index.js": "export class Thread {}"}
+        for index in range(13):
+            files[f"src/v/tool{index}.ts"] = "import { object, string } from 'valibot';\nexport const S = object({ a: string() });\n"
+            files[f"src/t/tool{index}.ts"] = "import { Type } from '@sinclair/typebox';\nexport const T = Type.Object({ a: Type.String() });\n"
+        found = self.memory_findings(scan(files))
+        self.assertEqual(["CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT"], [f["check_id"] for f in found])
+        self.assertIn("project total 26", found[0]["evidence"])
+
+    R2_UPLOAD_CONFIG = """{
+      "name": "uploads",
+      "main": "src/index.js",
+      "compatibility_date": "2026-08-01",
+      "observability": {"enabled": true},
+      "r2_buckets": [{"binding": "BUCKET", "bucket_name": "uploads"}]
+    }"""
+
+    def test_request_array_buffer_without_size_guard_is_reported(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.R2_UPLOAD_CONFIG,
+            "src/index.js": "\n".join([
+                "export default {",
+                "  async fetch(request, env) {",
+                "    const bytes = await request.arrayBuffer();",
+                "    await env.BUCKET.put(crypto.randomUUID(), bytes);",
+                "    return new Response('stored');",
+                "  },",
+                "};",
+            ]),
+        })
+        found = self.memory_findings(report)
+        self.assertEqual(["CFDOC-PERF-BODY-BUFFERING"], [f["check_id"] for f in found])
+        self.assertIn("request.arrayBuffer()", found[0]["evidence"])
+        self.assertIn("Memory limit would be exceeded before EOF", found[0]["message"])
+
+    def test_request_array_buffer_with_content_length_guard_is_not_reported(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.R2_UPLOAD_CONFIG,
+            "src/index.js": "\n".join([
+                "const MAX_BYTES = 5 * 1024 * 1024;",
+                "export default {",
+                "  async fetch(request, env) {",
+                "    const length = Number(request.headers.get('content-length') || 0);",
+                "    if (!length || length > MAX_BYTES) return new Response('too large', { status: 413 });",
+                "    const bytes = await request.arrayBuffer();",
+                "    await env.BUCKET.put(crypto.randomUUID(), bytes);",
+                "    return new Response('stored');",
+                "  },",
+                "};",
+            ]),
+        })
+        self.assertEqual([], self.memory_findings(report))
+
+    def test_webhook_signature_verification_array_buffer_is_not_reported(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.PLAIN_MEMORY_CONFIG,
+            "src/index.js": "\n".join([
+                "export default {",
+                "  async fetch(request, env) {",
+                "    const body = await request.arrayBuffer();",
+                "    const signature = request.headers.get('x-hub-signature-256');",
+                "    const ok = await crypto.subtle.verify('HMAC', env.KEY, hexToBytes(signature), body);",
+                "    return new Response(ok ? 'ok' : 'bad', { status: ok ? 200 : 401 });",
+                "  },",
+                "};",
+            ]),
+        })
+        self.assertEqual([], self.memory_findings(report))
+
+    def test_upstream_buffered_passthrough_is_reported_but_streamed_passthrough_is_not(self) -> None:
+        buffered = scan({
+            "wrangler.jsonc": self.PLAIN_MEMORY_CONFIG,
+            "src/index.js": "\n".join([
+                "export default {",
+                "  async fetch(request) {",
+                "    const upstream = await fetch('https://origin.example.com' + new URL(request.url).pathname);",
+                "    const bytes = await upstream.arrayBuffer();",
+                "    return new Response(bytes, { headers: upstream.headers });",
+                "  },",
+                "};",
+            ]),
+        })
+        found = self.memory_findings(buffered)
+        self.assertEqual(["CFDOC-PERF-BODY-BUFFERING"], [f["check_id"] for f in found])
+        self.assertIn("upstream.arrayBuffer()", found[0]["evidence"])
+        streamed = scan({
+            "wrangler.jsonc": self.PLAIN_MEMORY_CONFIG,
+            "src/index.js": "\n".join([
+                "export default {",
+                "  async fetch(request) {",
+                "    const upstream = await fetch('https://origin.example.com' + new URL(request.url).pathname);",
+                "    return new Response(upstream.body, { headers: upstream.headers });",
+                "  },",
+                "};",
+            ]),
+        })
+        self.assertEqual([], self.memory_findings(streamed))
+
+    def test_r2_buffering_file_is_not_double_reported_as_body_buffering(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.R2_UPLOAD_CONFIG,
+            "src/index.js": "\n".join([
+                "export default {",
+                "  async fetch(request, env) {",
+                "    const object = await env.BUCKET.get('report.pdf');",
+                "    const bytes = await object.arrayBuffer();",
+                "    await fetch('https://hooks.example.com', { method: 'POST' });",
+                "    return new Response(bytes);",
+                "  },",
+                "};",
+            ]),
+        })
+        ids = sorted(f["check_id"] for f in report["findings"] if f["check_id"] in {"CFDOC-PERF-R2-BUFFERING", "CFDOC-PERF-BODY-BUFFERING"})
+        self.assertEqual(["CFDOC-PERF-R2-BUFFERING"], ids)
+
+    def test_node_fs_temp_file_write_is_reported_as_low_severity(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.PLAIN_MEMORY_CONFIG.replace('"observability"', '"compatibility_flags": ["nodejs_compat"], "observability"'),
+            "src/index.js": "\n".join([
+                "import { writeFile } from 'node:fs/promises';",
+                "export default {",
+                "  async fetch(request) {",
+                "    await writeFile('/tmp/upload.bin', new Uint8Array(await request.clone().arrayBuffer()));",
+                "    return new Response('ok');",
+                "  },",
+                "};",
+            ]),
+        })
+        found = [f for f in self.memory_findings(report) if "virtual file system" in f["message"]]
+        self.assertEqual(1, len(found))
+        self.assertEqual("low", found[0]["severity"])
+        self.assertIn("writeFile(", found[0]["evidence"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,8 @@
+{
+  // Upload and media-proxy Worker that reads whole bodies into isolate memory.
+  "name": "media-gateway",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-01",
+  "observability": { "enabled": true },
+  "r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "media-uploads" }]
+}

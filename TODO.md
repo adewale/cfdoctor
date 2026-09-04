@@ -54,6 +54,14 @@ the plan doc and the git history, not repeated here.
 - [ ] Consider a separate composed async-loop graph for DO -> Queue -> consumer Worker -> DO and DO -> service-binding Worker -> DO only after representative fixtures establish binding resolution and acceptable precision. Existing queue re-enqueue, self-fetch, service-binding, and DO-cycle leads cover components but must not be presented as end-to-end detection.
 - [ ] Confirm the Billable Usage API response shape against the API schema docs (the endpoint template in `targeted-account-reads.md` came from the launch blog) before relying on it in an approved read.
 
+## Isolate memory follow-ups (2026-09-04)
+
+- [ ] Confirm against the GraphQL schema whether `durableObjectsPeriodicGroups` (or a sibling dataset) exposes an exceeded-memory/reset count per bucket; the DO metrics page documents the memory quantiles, and the per-bucket reset count is so far operator observation from the Polylane post. Update `targeted-account-reads.md` once the field name is verified.
+- [ ] Re-review `CFDOC-EVD-POLYLANE-DO-MEMORY` by 2026-10-04: look for independent corroboration of "multiple teams" hitting the same resets and for any Cloudflare docs change (Durable Objects limits page gaining a memory row, Wrangler bundling page mentioning tree shaking) that would let the doc-gap wording in scenario 25 be retired.
+- [ ] Consider a Wasm baseline lead (large `.wasm` modules bundled into a Durable Object class) once a representative fixture exists; today Wasm weight is measurement-only.
+- [ ] Consider a bounded static lead for `DO-IN-MEMORY-STATE-GROWTH` (class-property `Map`/array that only grows inside a Durable Object class) only if a fixture set shows acceptable precision; prompt-only until then.
+- [ ] Content-anchor drift seen on 2026-09-04: the Durable Objects migrations page no longer contains the phrase "new key-value backed namespace" (the other 15 anchors, including the three new memory anchors, passed). Re-read the page, update `CFDOC-CONFIG-DO-NEW-KV-RESTRICTED` guidance if the restriction wording changed, and refresh the anchor in `evals/link-check-policy.json`.
+
 ## Research backlog (new patterns and experience reports)
 
 The 29-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios and 25 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.

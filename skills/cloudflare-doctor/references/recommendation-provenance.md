@@ -94,6 +94,19 @@ Use these as starting points, then fetch the current Markdown pages at audit tim
 - Durable Objects pricing: https://developers.cloudflare.com/durable-objects/platform/pricing/
 - Durable Objects metrics/analytics: https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/
 
+### Isolate memory, startup validation, and body buffering
+
+- Workers memory limit and error outcomes: https://developers.cloudflare.com/workers/platform/limits/#memory
+- Workers startup time and Worker size: https://developers.cloudflare.com/workers/platform/limits/#worker-startup-time and https://developers.cloudflare.com/workers/platform/limits/#worker-size
+- Workers validation errors (`Script startup exceeded memory limit`): https://developers.cloudflare.com/workers/observability/errors/
+- Workers memory metrics: https://developers.cloudflare.com/workers/observability/metrics-and-analytics/
+- Workers memory profiling (local only): https://developers.cloudflare.com/workers/observability/dev-tools/memory-usage/
+- Workers streams and best practices (do not buffer large bodies): https://developers.cloudflare.com/workers/runtime-apis/streams/ and https://developers.cloudflare.com/workers/best-practices/workers-best-practices/
+- Durable Objects memory usage (per isolate, not per object): https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/#memory-usage
+- Durable Objects in-memory state and shared global memory: https://developers.cloudflare.com/durable-objects/reference/in-memory-state/
+- Durable Objects duration billing denominated in the 128 MB allocation: https://developers.cloudflare.com/durable-objects/platform/pricing/
+- esbuild `sideEffects`/tree shaking semantics (bundler, not Cloudflare, authority): https://esbuild.github.io/api/#tree-shaking
+
 ### Queues, hot retries, DLQs, poison messages, and rate limits
 
 - Queues delivery guarantees: https://developers.cloudflare.com/queues/reference/delivery-guarantees/

@@ -61,6 +61,38 @@ SPECS = {
         ],
         "require_core": True,
     },
+    "pos-do-module-scope-memory-resets": {
+        "all": [
+            "wrangler.jsonc",
+            "index.js",
+            "CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT",
+            "AgentThread",
+            "Evidence:",
+            "Why it matters:",
+            "Fix:",
+            "Cost / trade-off:",
+            "Verify:",
+            "Source basis:",
+            "Confidence:",
+        ],
+        "any": [
+            ["module-scope", "module scope", "module load", "top-level", "top level", "baseline", "before the first request"],
+            ["128 MB", "per isolate", "per-isolate", "same isolate", "shared isolate", "one isolate"],
+            ["wrangler check startup", "--dry-run", "metafile", "heap probe", "heap snapshot", "heap profil", "startup_time_ms", "memory chart", "memory percentile"],
+        ],
+        "require_core": True,
+    },
+    "detection-fixture-do-schema-lazy-safe": {
+        "all": ["wrangler.jsonc"],
+        "any": [
+            ["sideEffects", "named re-export", "named export", "static import", "lazily", "per call", "inside the call", "JSON Schema"],
+            ["not inspected", "cannot inspect", "no dashboard access", "memory chart", "memory percentile", "exceededMemory", "deployment marker"],
+        ],
+        "forbid": [r"(?im)^\s*###\s*Severity:\s*(?:critical|high)\b"],
+        "require_core": True,
+        "allow_no_findings": True,
+        "max_findings": 0,
+    },
     "detection-fixture-clean-baseline-precision": {
         "any": [["not inspected", "cannot inspect", "no dashboard access"]],
         "require_core": True,

@@ -1,0 +1,12 @@
+{
+  // One Durable Object per agent thread; tool schemas are built lazily per call.
+  // False-positive guard: the scanner must emit zero findings here.
+  "name": "agent-threads",
+  "main": "index.js",
+  "compatibility_date": "2026-08-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "THREAD", "class_name": "AgentThread" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AgentThread"] }]
+}

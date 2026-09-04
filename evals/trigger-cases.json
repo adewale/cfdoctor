@@ -367,5 +367,31 @@
     "prompt": "Why did my AWS budget alert fire late? Explain how AWS Budgets evaluates thresholds.",
     "expected": "no_trigger",
     "category": "non-cloudflare billing"
+  },
+  {
+    "id": "durable-objects-exceeded-memory-resets",
+    "prompt": "Our Cloudflare Durable Objects keep getting reset with exceededMemory even when traffic is idle. Audit the Worker bundle for module-scope memory weight.",
+    "expected": "trigger",
+    "category": "durable objects memory",
+    "description_terms": [
+      "Durable Objects",
+      "exceededMemory"
+    ]
+  },
+  {
+    "id": "worker-startup-cpu-limit-review",
+    "prompt": "Wrangler rejected our deploy with 'Script startup exceeded CPU time limit'. Review what our Worker does at the top level and how big the bundle is.",
+    "expected": "trigger",
+    "category": "startup limit / bundle size",
+    "description_terms": [
+      "startup-time",
+      "bundle-size"
+    ]
+  },
+  {
+    "id": "node-heap-leak-generic",
+    "prompt": "My Node.js API on EC2 leaks memory over a few days; help me take a heap snapshot and find the leak.",
+    "expected": "no_trigger",
+    "category": "non-cloudflare memory"
   }
 ]

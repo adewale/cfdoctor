@@ -32,6 +32,41 @@ npx @acoyfellow/deadlint . --check dead-rpc --json
 
 Treat its output as reachability leads. Before deleting a method, check for dynamic dispatch, frontend companion files, API docs, old deployed versions, and callers in other repositories.
 
+## Isolate memory and startup baseline probe
+
+```text
+Cloudflare Doctor this repo for isolate memory load. Our Durable Objects are reset for exceeding memory (or: Wrangler rejects deploys with "Script startup exceeded CPU time limit"). Separate module-scope baseline from request data, check request-path buffering, tell me what to measure before refactoring, and give me the smallest safe fix.
+```
+
+Pair with the Wrangler config, the tool/schema registry modules, workspace `package.json` files, barrel files, and (if available) the Workers or Durable Objects memory chart with deployment markers. The scanner leads `CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT` and `CFDOC-PERF-BODY-BUFFERING` are counts and patterns, not heap figures; the audit should ask for a measurement before recommending a rewrite.
+
+Cheap first pass (no account access, no third-party code):
+
+```bash
+# Emit the exact bundle a deploy would upload, with its module graph, and report compressed size
+npx wrangler deploy --dry-run --outdir /tmp/cfdoctor-bundle --metafile /tmp/cfdoctor-bundle/meta.json
+# Profile the global scope against the 1 s startup limit (writes a .cpuprofile for DevTools/VS Code)
+npx wrangler check startup
+```
+
+`wrangler deploy` and `versions upload` also print `startup_time_ms` and `Total Upload` on every run; keep them in the deploy log so regressions show up next to the commit that caused them.
+
+Module-scope heap probe on the emitted bundle (adapted from the Polylane write-up; Node-only, no dependencies beyond Node and Wrangler; compare deltas between runs, not absolutes against production):
+
+1. Build with the dry-run command above. If the import graph is fully static, esbuild emits no lazy `__esm` wrappers and per-module attribution is impossible; build from a probe entry that reaches the real entry through a dynamic import and exports a placeholder Durable Object class so Wrangler's export check passes:
+   ```js
+   // probe-entry.ts
+   export default { fetch: () => new Response("probe") };
+   export class YourDurableObjectClassName {}
+   export const probeLoad = () => import("./src/index");
+   ```
+2. Rewrite the bundle's `__esm` helper so each module initialiser records `v8.getHeapStatistics().used_heap_size` before and after itself and subtracts its children's cost (exclusive heap per module). Guard the rewrite with a check that the helper regex matched; esbuild's output shape can change.
+3. Run the instrumented bundle under `node --expose-gc` with a loader shim (`module.registerHooks`) that resolves `cloudflare:*` imports to stubs and mirrors any Wrangler text rules (for example `.sql` as text). `process.memoryUsage()` is an unenv polyfill that reports zeros in Workers-targeted bundles, so read `v8.getHeapStatistics()` directly.
+4. Print heap after module evaluation, the top modules by exclusive heap, and per-package totals. Rank, fix the top row, re-profile, repeat.
+5. Classify every surviving schema module by why it is in the bundle (used at runtime; reached through `export *` in a barrel; reached through a dynamic import of a package root; kept because the package lacks `"sideEffects": false`), using the metafile's `imports` graph to print one import chain from the entry.
+6. Apply fixes in order and re-profile after each: `"sideEffects": false` (or a side-effect file list) after grepping for top-level `globalThis` writes and `addEventListener`; named re-export lists generated with the TypeScript compiler API rather than regex; static named imports in place of dynamic package-root imports, after checking the import was not lazy for another reason (circular imports, Node-only test loading). Convert schema-library tool definitions to plain JSON Schema only once the ranking shows what it saves.
+7. Add a CI assertion that reads the metafile of the memory-sensitive Worker and fails when a schema module survives tree shaking into it, printing the import chain. After deploy, compare memory P50/P99 and reset counts across the deployment marker.
+
 ## Dashboard/account evidence request
 
 ```text

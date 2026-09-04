@@ -1,0 +1,11 @@
+import { handleUpload } from "./upload.js";
+import { handleProxy } from "./proxy.js";
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (url.pathname === "/upload" && request.method === "PUT") return handleUpload(request, env);
+    if (url.pathname.startsWith("/media/")) return handleProxy(request, env);
+    return new Response("not found", { status: 404 });
+  },
+};

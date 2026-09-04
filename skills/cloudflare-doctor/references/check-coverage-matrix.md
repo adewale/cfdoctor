@@ -60,8 +60,10 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §2, §19; proposed in §"Checks to add or strengthen" | Webhook-shaped projects with side effects and no repo-visible delivery/event dedupe key produce a low-confidence lead. Signature-verification ordering remains semantic review work. |
 | CFDOC-FIT-KV-COORDINATION | scanner-lead | FIT | high | [`product-fit-rubric.md`](product-fit-rubric.md) (KV consistency limits) | KV read-modify-write smell for coordination/counters. |
 | CFDOC-PERF-AWAITED-CACHE-PUT | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Cache put awaited in request path. |
+| CFDOC-PERF-BODY-BUFFERING | scanner-lead | PERF | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (isolate memory); [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §25; proposed in §"Checks to add or strengthen" | `request.arrayBuffer()/blob()` with no visible Content-Length/byte guard and no signature-verification context, an upstream `fetch` body buffered with `arrayBuffer()/blob()` before `new Response`/`.put`, or node:fs write APIs; R2 `get` buffering stays under `CFDOC-PERF-R2-BUFFERING`. Body size limits enforced elsewhere (gateway, WAF) remain evidence questions. |
 | CFDOC-PERF-D1-N-PLUS-ONE | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Many D1 prepared statements in one file; check for N+1 queries. |
 | CFDOC-PERF-D1-SELECT-STAR | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Projection/schema-coupling review only; `SELECT *` does not itself prove a full scan or extra billed rows. |
+| CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT | scanner-lead | PERF | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (isolate memory); [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §25; proposed in §"Checks to add or strengthen" | Counts container-level schema-library builders (zod/valibot/typebox/yup/joi/effect) outside every function, class, control, and arrow body across non-test source files; fires at 25 builders when Durable Object bindings exist, 50 otherwise, and names `sideEffects`-less package.json files, `export *` barrels, and dynamic package-root imports as amplifiers. It is a lead to measure (`wrangler check startup`, dry-run bundle, local heap probe), never a heap figure; schemas reached only via unused imports and Wasm baseline remain measurement work. |
 | CFDOC-PERF-PUBLIC-SERVICE-URL | scanner-lead | PERF | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (service bindings) | Public Cloudflare service URL fetch; consider service bindings. |
 | CFDOC-PERF-R2-BUFFERING | scanner-lead | PERF | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (streaming) | R2 object may be buffered instead of streamed. |
 | CFDOC-REL-QUEUE-NO-DLQ | scanner-lead | REL | medium | [`performance-and-reliability.md`](performance-and-reliability.md); current Queues retry/DLQ docs | No DLQ means permanent deletion after the configured limit (currently three retries by default), not unbounded platform retries. |
@@ -76,6 +78,7 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | DO-ALARM-RECURSION | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14, §15; proposed in §"Checks to add or strengthen" | Alarm handler reschedules without obvious idle guard. |
 | DO-EPHEMERAL-IDEMPOTENCY-OBJECTS | scanner-lead | FIT | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Durable Object key appears tied to an ephemeral id/request. |
 | DO-FANOUT-TAX | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Fan-out to Durable Objects lacks obvious backpressure. |
+| DO-IN-MEMORY-STATE-GROWTH | skill-prompt-only | REL | — | [`performance-and-reliability.md`](performance-and-reliability.md) (isolate memory); [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §25; proposed in §"Checks to add or strengthen" | Unbounded class-property caches/maps/buffers or non-hibernating sockets in a Durable Object accumulate until eviction or reset; whether a map is bounded is semantic, so the signal is the per-isolate memory chart trending upward at constant traffic plus code review of eviction paths. |
 | DO-SHARDING-HOTSPOT | scanner-lead | COST | high | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Durable Object idFromName uses a global/singleton key. |
 | DO-SOCKET-CLOSE-HYGIENE | scanner-lead | REL | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | WebSocket path lacks obvious close/error cleanup. |
 | DO-SQL-SCAN-HOTPATH | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §24; proposed in §"Checks to add or strengthen" | `storage.sql.exec` SELECT without structural WHERE/LIMIT in a literal statement; SQL comments and quoted values/identifiers do not count as clauses. Variable/constructed SQL remains semantic review work. |
@@ -158,3 +161,34 @@ known-bad and false-positive-guard fixtures:
   with neither WHERE nor LIMIT, in source files only, so reference prose and
   docs cannot trip it. Variable/constructed SQL and index quality remain
   semantic review work backed by rows-read metrics.
+
+Scanner 0.5.0 added two isolate-memory leads motivated by the 2026-08 Polylane
+Durable Object memory resets (`CFDOC-EVD-POLYLANE-DO-MEMORY`) and the
+documented Workers memory model (`CFDOC-EVD-CF-ISOLATE-MEMORY-MODEL`), each
+with known-bad and false-positive-guard fixtures:
+
+- `CFDOC-PERF-MODULE-SCOPE-SCHEMA-WEIGHT` masks strings/comments, tracks
+  which braces open a lazily evaluated body (function, class, control block,
+  arrow body, `=> (...)`) versus an object literal, and counts container-level
+  schema builders (`z.object`, `v.object`, `Type.Object`, `yup.object`,
+  `Joi.object`, effect `S.Struct`, bare `object(`/`type(` when the file imports
+  a schema library) outside every body across non-test source files. The lead
+  fires at 25 builders when the project declares Durable Object bindings and
+  50 otherwise, reports the heaviest file and project total, and names
+  `sideEffects`-less package.json files, `export *` barrels, and dynamic
+  imports of bare package roots as tree-shaking amplifiers. It is a lead to
+  measure, not a heap figure: code inside `try`/`if` blocks at module scope is
+  conservatively not counted, unused-import reachability and Wasm baseline are
+  invisible, and only `wrangler check startup`, the dry-run bundle, and a local
+  heap probe can turn the count into a number.
+- `CFDOC-PERF-BODY-BUFFERING` reports `request.arrayBuffer()/blob()` with no
+  visible Content-Length/byte guard and no signature-verification context, an
+  upstream `fetch` call whose body is read with `arrayBuffer()/blob()` before
+  `new Response`/`.put`, and node:fs write APIs (memory-backed VFS). R2 `get`
+  buffering stays with `CFDOC-PERF-R2-BUFFERING` and is not double-reported.
+  Size limits enforced upstream (gateway, WAF, provider payload caps) remain
+  account-evidence questions, and `text()`/`json()` on requests is deliberately
+  not flagged because small JSON bodies are the normal case.
+- `DO-IN-MEMORY-STATE-GROWTH` stays prompt-only: whether a class-property map
+  is bounded is semantic, so the signal is the per-isolate memory chart
+  trending upward at constant traffic plus review of eviction paths.

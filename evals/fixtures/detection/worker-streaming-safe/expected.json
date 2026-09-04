@@ -1,0 +1,10 @@
+{
+  "description": "Upload/media-proxy Worker that bounds uploads by Content-Length, streams request bodies into R2, passes upstream bodies through as streams, and reads only small signed webhook payloads in full for HMAC verification. False-positive guard for the body-buffering lead: zero findings total.",
+  "evidence_ids": ["CFDOC-EVD-CF-ISOLATE-MEMORY-MODEL"],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-PERF-BODY-BUFFERING",
+    "CFDOC-PERF-R2-BUFFERING"
+  ],
+  "max_findings": 0
+}
