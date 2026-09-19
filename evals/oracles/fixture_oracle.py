@@ -245,7 +245,14 @@ def public_gate_failures(case_id: str, text: str) -> tuple[list[str], int]:
         if not re.search(r"(?is)^(?=.*request)(?=.*(?:×|\bx\b|times|multipl))(?=.*(?:rows?.read|product units?|units?)).*$", exposure):
             failures.append("uncached exposure must preserve request count × units per request")
         checks += 1
-        if re.search(r"(?is)(?:only|equals?)\s+distinct\s+(?:cache\s+)?keys?\s*(?:×|x)", exposure):
+        collapses_repeated_hits = re.search(
+            r"(?is)distinct\s+(?:cache\s+)?keys?.{0,180}(?:repeated|repeat|same[- ]URL).{0,100}(?:no|none|without|do\s+not|doesn't|does not).{0,100}(?:further|additional|more|add|cost|D1|rows?)",
+            exposure,
+        )
+        if (
+            re.search(r"(?is)(?:only|equals?|total.{0,40}(?:=|is))\s+distinct\s+(?:cache\s+)?keys?\s*(?:×|x)", exposure)
+            or collapses_repeated_hits
+        ):
             failures.append("uncached exposure incorrectly collapses repeated hits to distinct keys")
 
     if case_id == "crawlable-page-live-d1-cost":
@@ -265,9 +272,39 @@ def public_gate_failures(case_id: str, text: str) -> tuple[list[str], int]:
         checks += 1
         if not all(term in discovery.casefold() for term in ("sitemap", "/abstract", "/about")):
             failures.append("discovery gaps do not explain the off-sitemap route families and their evidence")
+        closure_fix = r"(?:mov|remov|materializ|precomput|publish|static|must\s+not\s+run)"
+        closure_clauses = [
+            clause for clause in re.split(r"(?:[.;]\s+|\n+)", closure)
+            if not re.search(r"(?is)(?:leave|retain|keep).{0,120}(?:live|request[- ]time|request path)", clause)
+        ]
+        closes_all_broad_work = any(
+            re.search(
+                rf"(?is)(?:{closure_fix}.{{0,180}}(?:(?:all|every).{{0,80}}(?:shared\s+)?(?:corpus\s+)?aggregates?|(?:shared\s+)?aggregate.{{0,100}}(?:all|every)\s+(?:public\s+)?request)|(?:(?:all|every).{{0,80}}(?:shared\s+)?(?:corpus\s+)?aggregates?|(?:shared\s+)?aggregate.{{0,100}}(?:all|every)\s+(?:public\s+)?request).{{0,180}}{closure_fix})",
+                clause,
+            )
+            for clause in closure_clauses
+        )
         checks += 1
-        if not re.search(r"(?is)(remov|materializ|precomput|publish|static|must\s+not\s+run).{0,180}(count|aggregate|broad|corpus)|(?:count|aggregate|broad|corpus).{0,180}(remov|materializ|precomput|publish|static|must\s+not\s+run)", closure):
-            failures.append("closure does not remove the shared broad query from request-time execution")
+        if not closes_all_broad_work and not any(
+            re.search(
+                rf"(?is)(?:{closure_fix}.{{0,180}}(?:shared\s+)?(?:total|count(?:\(\*\))?)|(?:shared\s+)?(?:total|count(?:\(\*\))?).{{0,180}}{closure_fix})",
+                clause,
+            )
+            for clause in closure_clauses
+        ):
+            failures.append("closure does not remove the shared COUNT/total from request-time execution")
+        checks += 1
+        if not closes_all_broad_work and not any(
+            re.search(
+                rf"(?is)(?:{closure_fix}.{{0,180}}(?:homepage|field|group(?:\s+by)?)|(?:homepage|field|group(?:\s+by)?).{{0,180}}{closure_fix})",
+                clause,
+            )
+            for clause in closure_clauses
+        ):
+            failures.append("closure does not remove the homepage GROUP BY/field aggregate from request-time execution")
+        checks += 1
+        if re.search(r"(?is)(?:leave|retain|keep).{0,120}(?:count|group\s+by|aggregate).{0,100}(?:live|request[- ]time|request path)|(?:count|group\s+by|aggregate).{0,100}(?:remain|stay).{0,80}(?:live|request[- ]time|request path)", closure):
+            failures.append("closure explicitly leaves broad aggregate work on a public request path")
         checks += 1
         if not re.search(r"(?is)(malformed|noncanonical|syntax).{0,120}(before|prior).{0,100}(D1|meter|depend)", closure):
             failures.append("closure does not reject malformed/noncanonical keys before metered work")
@@ -288,8 +325,8 @@ def public_gate_failures(case_id: str, text: str) -> tuple[list[str], int]:
         checks += 1
         if not (
             re.search(r"(?is)(articles_slug_unique|SEARCH.{0,100}INDEX|unique.{0,80}index|indexed lookup)", text)
-            and re.search(r"(?is)(known|existing).{0,100}(?:exactly\s+)?(?:`?1`?)\s+row", text)
-            and re.search(r"(?is)(unknown|miss).{0,100}(?:(?:`?0`?).{0,3}rows?|zero[- ]rows?)", text)
+            and re.search(r"(?is)(known|existing).{0,180}(?:exactly\s+)?(?:`?1`?|one)\s+row", text)
+            and re.search(r"(?is)(unknown|miss).{0,180}(?:read(?:s)?\s+)?(?:`?0`?|zero)(?:[- ]rows?)?", text)
         ):
             failures.append("PASS does not tie the bounded residual lookup to supplied plan and measurement evidence")
         checks += 1
@@ -310,8 +347,15 @@ def public_gate_failures(case_id: str, text: str) -> tuple[list[str], int]:
     if case_id == "public-route-timeline-holdout":
         checks += 1
         timeline_row = next((item for item in data_rows if route_cell_matches(item, "/timeline")), "")
-        if not all(term in timeline_row.casefold() for term in ("count", "group")) or not re.search(r"(?is)(every|per|anonymous).{0,100}request|request.{0,100}(every|per|anonymous)", exposure):
+        timeline_work = timeline_row.casefold()
+        if not (("count" in timeline_work and "group" in timeline_work) or "aggregate" in timeline_work) or not re.search(r"(?is)(every|per|anonymous).{0,100}request|request.{0,100}(every|per|anonymous)", exposure):
             failures.append("holdout does not connect the off-sitemap timeline route to the repeated broad query")
+        checks += 1
+        if not (
+            re.search(r"(?is)(?:timeline|year\s+counts?|aggregate|group\s+by).{0,180}(?:remov|materializ|publish|static|must\s+not\s+run)", closure)
+            or re.search(r"(?is)(?:remov|materializ|publish|static|must\s+not\s+run).{0,180}(?:timeline|year\s+counts?|aggregate|group\s+by)", closure)
+        ):
+            failures.append("holdout closure does not remove or materialize the timeline aggregate")
 
     preworker_claim = re.search(r"(?is)(?:before|bypass(?:es|ing)?)\s+(?:(?:executing|invoking)\s+)?(?:the\s+)?Worker|without\s+(?:executing|invoking)\s+(?:the\s+)?Worker", text)
     if preworker_claim:
@@ -326,6 +370,10 @@ def public_gate_failures(case_id: str, text: str) -> tuple[list[str], int]:
         checks += 1
         if not re.search(r"(?is)cache api.{0,180}(inside|within).{0,80}worker", text):
             failures.append("Cache API is mentioned without stating that it runs inside the Worker")
+    if re.search(r"(?is)(?:render|publish|serve)(?:ed|ing)?\b.{0,80}\bstatic asset", text):
+        checks += 1
+        if not re.search(r"developers\.cloudflare\.com/workers/static-assets/(?:routing/worker-script|binding)", text, re.IGNORECASE):
+            failures.append("Static Assets recommendation lacks a directly relevant official source")
 
     return failures, checks
 

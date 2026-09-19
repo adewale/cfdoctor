@@ -1,35 +1,61 @@
 ## Cloudflare Doctor focused triage
 
-Scope inspected: [inputs/README.md](/private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ytkxzatz/inputs/README.md), [inputs/wrangler.jsonc](/private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ytkxzatz/inputs/wrangler.jsonc), [inputs/index.js](/private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ytkxzatz/inputs/index.js), static scanner.
-
-Scope not inspected: deployed configuration, account plan, traffic history, query plan, measured `rows_read`, cache status, DNS/WAF/rate limits.
-
-Docs refreshed: [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Workers Caching configuration](https://developers.cloudflare.com/workers/cache/configuration/), [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/).
+Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js`, plus one static-scan attempt (scanner unavailable).
+Scope not inspected: deployed traffic, account plan, D1 query plan/`rows_read`, cache state, schema, indexes, and account exports.
+Docs refreshed: [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Workers Caching configuration](https://developers.cloudflare.com/workers/cache/configuration/), [Static Assets Worker routing](https://developers.cloudflare.com/workers/static-assets/routing/worker-script/), [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/).
 
 Release verdict: BLOCK
 
 | host + route family | discovery evidence | known valid corpus | accepted keyspace | first rejection/validation | inherited work | route-specific work | per-hit product unit | first prevention boundary |
-|---|---|---|---|---|---|---|---|---|
-| `chronicle.example/` | Homepage in sitemap; timeline footer link | `/` | Exact `/` | None | Worker invocation | Static HTML response | Worker request; no D1 | Static delivery or pre-Worker cache |
-| `chronicle.example/sitemap.xml` | Supplied sitemap URL | `/sitemap.xml` | Exact `/sitemap.xml` | None | Worker invocation | Static XML response | Worker request; no D1 | Static delivery or pre-Worker cache |
-| `chronicle.example/timeline` | Homepage footer link | `/timeline` | Exact `/timeline` | No method validation; path matches at line 6 | Worker invocation | D1 `COUNT`/`GROUP BY` over `entries` at [index.js:7-10](/private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ytkxzatz/inputs/index.js:7) | D1 rows read per query; Worker request/CPU | Publish-time materialization/static delivery before Worker/D1 |
-| `chronicle.example/*` other paths | Wrangler wildcard route; not linked by supplied discovery | None evidenced | Any non-matching path | Path rejection at [index.js:6](/private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ytkxzatz/inputs/index.js:6) | Worker invocation | 404 response | Worker request | Static delivery or pre-Worker cache |
+|---|---|---:|---|---|---|---|---|---|
+| `chronicle.example/*` → `/` | Sitemap seed; homepage footer links `/timeline` | 1 homepage | Exact `/` | Path check at line 5 | URL parsing | Returns HTML; no D1 | Worker request/CPU only | Current path check |
+| `chronicle.example/*` → `/timeline` | Linked from `/`; omitted from sitemap | Growing 80,000-entry `entries` corpus | Exact `/timeline`; no key | Path check at line 6, after no dependency work | URL parsing | Unconditional `GROUP BY` + `COUNT(*)` over `entries` | D1 rows read per request; exact count unmeasured, but corpus-scale by query shape | None before D1 execution |
+| `chronicle.example/*` → `/sitemap.xml` | Explicit route in code | 1 generated document | Exact `/sitemap.xml` | Path check at line 4 | URL parsing | Returns inline XML; no D1 | Worker request/CPU only | Current path check |
+| `chronicle.example/*` → other paths | Wrangler wildcard route; arbitrary paths can reach Worker | None | All other path strings | Exact-path rejection at line 6 | URL parsing | 404; no D1 | Worker request/CPU only | Current path check |
 
-Discovery gaps: the sitemap omits `/timeline`; it was found through the homepage footer. No other generated route families are evidenced. Hostnames beyond `chronicle.example` and any deployment-specific routes are unknown.
+Discovery gaps: `/timeline` is a public route found through the homepage footer but absent from the sitemap. The wildcard route also exposes generated/unknown paths that are not represented by the sitemap, though they currently reject before D1.
 
-Exposure scenario: this is an uncached, unbounded public-request path based on supplied configuration: `anonymous request count × D1 rows_read per request`. The exact `rows_read` value is unknown because no query plan or measurement was supplied, but the aggregate has no filter and runs against the growing 80,000-entry corpus on every `/timeline` request. D1 bills by rows read; Workers requests remain billed independently. On the paid plan, D1 includes 25 billion rows read monthly, then charges per additional million; Workers includes 10 million requests monthly, then charges per additional million. ([D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/))
+Exposure scenario: the route is uncached in supplied configuration. The relevant equation is:
 
-Closure conditions: remove the aggregate from the request path by materializing the year counts at publish/update time and serving the result as a static artifact or bounded lookup. Add pre-Worker caching for `/timeline` if freshness permits, with an explicit key, TTL, and invalidation owner. Workers Caching checks before invoking the Worker; cache hits bypass Worker CPU but retain the documented request charge. ([Workers Caching configuration](https://developers.cloudflare.com/workers/cache/configuration/), [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/))
+`anonymous request count × D1 rows_read per request`
 
-### Severity: critical — Public timeline performs corpus-scale D1 work per request
+The aggregate has no filter and computes a corpus-wide yearly count on every `/timeline` request. With an 80,000-entry corpus, the logical work is corpus-proportional; the exact billed `rows_read` value requires D1 metadata or measurement. D1 bills queries by rows read, and full scans count scanned rows. Workers request/CPU usage is additional. See [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/) and [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/).
+
+Closure conditions:
+
+- Move the yearly aggregate to publish/update time and serve a bounded materialized result, preferably a static JSON/asset or a small maintained table.
+- Ensure every public request path avoids the broad aggregate, including future route variants and alternate public hosts if any exist.
+- If retaining a live D1 lookup, provide a query plan and measured `rows_read` proving bounded work per request.
+- A cache may reduce repeated origin executions only if placed before the Worker/dependency and its fill, expiry, purge, bypass, location, and concurrent-miss behavior are bounded. It is not sufficient by itself to close this broad-query finding.
+- If Workers Caching is used, configure an explicit TTL/invalidation owner and account for the documented request charge on cache hits; cache hits bypass Worker execution and CPU, but do not eliminate the Worker request charge. See [Workers Caching configuration](https://developers.cloudflare.com/workers/cache/configuration/) and [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/).
+- Static delivery is the cleaner boundary for the materialized timeline; Cloudflare serves matching Static Assets before invoking the Worker by default. See [Static Assets Worker routing](https://developers.cloudflare.com/workers/static-assets/routing/worker-script/).
+
+### Severity: critical — Public corpus-scale D1 aggregate on every timeline request
 
 - Category: cost footgun
-- Evidence: [README.md:3](/private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ytkxzatz/inputs/README.md:3) identifies a growing 80,000-entry corpus; [index.js:5-10](/private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ytkxzatz/inputs/index.js:5) exposes `/timeline` from the homepage and runs an unfiltered `COUNT`/`GROUP BY` query. Supporting scanner output: `CFDOC-CONFIG-NO-OBSERVABILITY`; no cache block exists in [wrangler.jsonc:1-7](/private/var/folders/58/zrc_1j8n0f74krswfhmrtkrw0000gn/T/codex-ws-ytkxzatz/inputs/wrangler.jsonc:1).
-- Why it matters: every anonymous hit can cause corpus-proportional D1 reads before any cache or materialization boundary. D1 counts scanned rows, not merely returned rows. Repeated crawler or bot traffic can therefore amplify both D1 row usage and Worker request/CPU usage.
-- Fix: precompute the yearly counts when entries are published or updated, then serve a static `/timeline` artifact or bounded stored result. Add an explicit pre-Worker cache as a secondary recrawl shield, with a defined TTL and invalidation process.
-- Cost / trade-off: removes recurring corpus-scale D1 reads from public traffic; retains a small publish-time write/materialization cost. Caching reduces Worker/D1 execution on hits but still incurs the documented Worker request charge and has miss/refill costs.
-- Verify: inspect the deployed query’s D1 `meta.rows_read`; verify `/timeline` has zero D1 calls in request handling; issue repeated requests from multiple cache locations and confirm cache hits do not invoke the Worker; test materialization after an entry update.
-- Source basis: [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Workers Caching configuration](https://developers.cloudflare.com/workers/cache/configuration/), [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/).
+- Evidence: `inputs/index.js:7-10`; `inputs/README.md` identifies a growing 80,000-entry corpus; `inputs/wrangler.jsonc:5-6` exposes the Worker publicly with a D1 binding.
+- Why it matters: anonymous requests to `/timeline` repeatedly execute `SELECT ... COUNT(*) ... GROUP BY` across the entire corpus. D1 bills rows read, so request volume multiplies corpus-scale database work. There is no cache or materialization boundary in the supplied configuration.
+- Fix: materialize the yearly counts during publish/update operations and serve the result as a static asset or bounded record. Do not rely on crawler controls, sitemap omission, or post-execution caching as the primary fix.
+- Cost / trade-off: removes recurring corpus-proportional D1 reads and reduces Worker CPU; adds publish/update complexity and an explicit freshness/invalidation owner. Exact current bill cannot be estimated without request volume, plan, and measured `rows_read`.
+- Verify: deploy the materialized path, request `/timeline` repeatedly, confirm no D1 query executes on reads, and inspect D1 row metrics/`meta.rows_read`.
+- Source basis: [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/); [Static Assets Worker routing](https://developers.cloudflare.com/workers/static-assets/routing/worker-script/).
 - Confidence: high
 
-No other launch-blocking cost finding is confirmed from the supplied files.
+## Run summary with cost proxies
+
+- Hot paths: `/timeline`, homepage, sitemap, wildcard 404s.
+- Expensive primitives per user action: `/timeline` performs one corpus-scale D1 aggregate; exact `rows_read` unknown.
+- Retry/fanout/circuit-breaker posture: no retries or fanout shown.
+- Cache map: no cache configuration or response cache headers supplied; `/timeline` is uncached by evidence.
+
+## Recommended next actions
+
+1. Block launch until the aggregate is materialized or otherwise proven bounded and removed from the anonymous request path.
+2. Measure D1 `rows_read` for the current query and record expected request-volume scenarios.
+3. Add `/timeline` to discovery metadata only after its cost-safe implementation is deployed.
+
+## Questions / evidence needed
+
+- What is the D1 schema/query plan, including indexes?
+- What are the expected anonymous requests per day/month and the Workers plan?
+- What freshness requirement determines the materialization update cadence?

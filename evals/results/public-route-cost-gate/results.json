@@ -1,11 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "recorded_at": "2026-09-19",
   "harness_revision": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
   "inputs": {
-    "skill_sha256": "5bbc2e352c02db5df9b0732b76ca928a583463fe09989863696d86ce54546b13",
-    "oracle_sha256": "124fd4ed691f3e1d31e927a0efa6a455891762ee4b94f6b349a99bf376951d6d",
-    "manifest_sha256": "c6bdb1fca7eefca15674e6d56d740ece256789d8f56c38d75e17520892c37024",
+    "skill_sha256": "b770f503569af8a6b5b813c497f19111edd9d7f8d7ae1bbeff90af3c3cc889ee",
+    "oracle_sha256": "f26f5872c0fd7d0b9465a958c8720b640acf5c3f4df27768a08926ac167a265c",
+    "manifest_sha256": "7fd6a9cf78db29a1ec5334bbe86076ebe880398274d486b8bf703c2be613617a",
     "focus_script_sha256": "87e977756c9c7b8a012ee6ec50facf808277c41ee21d3d7d20861b693e0025af"
   },
   "tune": {
@@ -19,36 +19,61 @@
     "runs_per_case_model_variant": 1,
     "baseline_variant": "ablation:no-public-route-cost-gate",
     "current_variant": "with_skill",
-    "baseline_objective": {"passed": 0, "total": 16},
-    "current_objective": {"passed": 16, "total": 16},
-    "current_soft_efficiency": {"passed": 1, "total": 2, "note": "Terra's core run exceeded the optional 140000-token ceiling (200143 total tokens); no behavior gate failed."},
+    "execution_validity": {
+      "baseline": {"valid": 8, "total": 8},
+      "current": {"valid": 8, "total": 8}
+    },
+    "format_contract": {
+      "baseline": {"passed": 0, "total": 8},
+      "current": {"passed": 8, "total": 8}
+    },
+    "semantic_oracle": {
+      "baseline": {"passed": 0, "total": 8},
+      "current": {"passed": 8, "total": 8}
+    },
+    "same_rubric_qualitative_judge": {
+      "judge_model": "codex/gpt-5.6-terra",
+      "threshold": 0.85,
+      "baseline": {"passed": 6, "total": 8, "mean_score": 0.81125},
+      "current": {"passed": 8, "total": 8, "mean_score": 0.97375},
+      "records": "judgments.json"
+    },
+    "current_soft_efficiency": {
+      "passed": 2,
+      "total": 2,
+      "note": "Both core runs stayed under the optional 140000-token ceiling; efficiency is reported separately from correctness."
+    },
     "runs": [
-      {"case_id": "crawlable-page-live-d1-cost", "model": "gpt-5.6-luna", "baseline": "0/2", "current": "2/2", "current_total_tokens": 135918},
-      {"case_id": "crawlable-page-live-d1-cost", "model": "gpt-5.6-terra", "baseline": "0/2", "current": "2/2", "current_total_tokens": 200143},
-      {"case_id": "public-route-fixed-scan", "model": "gpt-5.6-luna", "baseline": "0/2", "current": "2/2", "current_total_tokens": 105487},
-      {"case_id": "public-route-fixed-scan", "model": "gpt-5.6-terra", "baseline": "0/2", "current": "2/2", "current_total_tokens": 155385},
-      {"case_id": "public-route-safe-bounded-lookup", "model": "gpt-5.6-luna", "baseline": "0/2", "current": "2/2", "current_total_tokens": 64146},
-      {"case_id": "public-route-safe-bounded-lookup", "model": "gpt-5.6-terra", "baseline": "0/2", "current": "2/2", "current_total_tokens": 179200},
-      {"case_id": "public-route-missing-plan", "model": "gpt-5.6-luna", "baseline": "0/2", "current": "2/2", "current_total_tokens": 139365},
-      {"case_id": "public-route-missing-plan", "model": "gpt-5.6-terra", "baseline": "0/2", "current": "2/2", "current_total_tokens": 154822}
+      {"case_id": "crawlable-page-live-d1-cost", "model": "gpt-5.6-luna", "baseline_format": false, "baseline_semantic": false, "current_format": true, "current_semantic": true, "current_qualitative": true, "current_total_tokens": 81003},
+      {"case_id": "crawlable-page-live-d1-cost", "model": "gpt-5.6-terra", "baseline_format": false, "baseline_semantic": false, "current_format": true, "current_semantic": true, "current_qualitative": true, "current_total_tokens": 125884},
+      {"case_id": "public-route-fixed-scan", "model": "gpt-5.6-luna", "baseline_format": false, "baseline_semantic": false, "current_format": true, "current_semantic": true, "current_qualitative": true, "current_total_tokens": 137263},
+      {"case_id": "public-route-fixed-scan", "model": "gpt-5.6-terra", "baseline_format": false, "baseline_semantic": false, "current_format": true, "current_semantic": true, "current_qualitative": true, "current_total_tokens": 188411},
+      {"case_id": "public-route-safe-bounded-lookup", "model": "gpt-5.6-luna", "baseline_format": false, "baseline_semantic": false, "current_format": true, "current_semantic": true, "current_qualitative": true, "current_total_tokens": 110841},
+      {"case_id": "public-route-safe-bounded-lookup", "model": "gpt-5.6-terra", "baseline_format": false, "baseline_semantic": false, "current_format": true, "current_semantic": true, "current_qualitative": true, "current_total_tokens": 130846},
+      {"case_id": "public-route-missing-plan", "model": "gpt-5.6-luna", "baseline_format": false, "baseline_semantic": false, "current_format": true, "current_semantic": true, "current_qualitative": true, "current_total_tokens": 164236},
+      {"case_id": "public-route-missing-plan", "model": "gpt-5.6-terra", "baseline_format": false, "baseline_semantic": false, "current_format": true, "current_semantic": true, "current_qualitative": true, "current_total_tokens": 102954}
     ]
   },
-  "holdout": {
-    "skill_frozen_before_generation": true,
+  "timeline_regression": {
+    "manifest_split": "holdout",
     "case_id": "public-route-timeline-holdout",
-    "objective": {"passed": 4, "total": 4},
+    "execution_validity": {"valid": 2, "total": 2},
+    "format_contract": {"passed": 2, "total": 2},
+    "semantic_oracle": {"passed": 2, "total": 2},
+    "qualitative_judge": {"passed": 2, "total": 2, "mean_score": 1.0},
     "runs": [
-      {"model": "gpt-5.6-luna", "objective": "2/2", "total_tokens": 191325},
-      {"model": "gpt-5.6-terra", "objective": "2/2", "total_tokens": 181630}
+      {"model": "gpt-5.6-luna", "format": true, "semantic": true, "qualitative": true, "total_tokens": 91158},
+      {"model": "gpt-5.6-terra", "format": true, "semantic": true, "qualitative": true, "total_tokens": 157692}
     ],
-    "note": "The expected behavior was frozen before generation. Afterward, the parser accepted 'excluding' as a synonym for an already-present wildcard fallback row; this did not change the skill, fixture, verdict, or expected behavior."
+    "independence_note": "The fixture and expected behavior were frozen for the final runs, but an earlier review of this scenario caused oracle hardening. It is therefore reported as a regression scenario, not as a pristine unseen holdout."
   },
   "artifacts": {
-    "artifacts/core-luna-gate-removed.md": "33aa84d2d6da0a1aa23253d84606f5fa6185f6260e7ff7c2c5e29fcfb118eb28",
-    "artifacts/core-terra-gate-removed.md": "7507e81f036534abe8742feae61bd31b6b4866060d74581d5dabace197bb7520",
-    "artifacts/core-luna-with-skill.md": "1fda3fb0edba8715c86b718ea4e6d1597748ce93ae558de76c3882ced9c1359a",
-    "artifacts/core-terra-with-skill.md": "219a01efc6519e93bd5eab48e7fe1898f82fe052f33af549ead2e42e302ac6bf",
-    "artifacts/holdout-luna-with-skill.md": "cda42487571e80d893438f31c1a0720bf20c6da76a3e5dccf1c5de2c62b53102",
-    "artifacts/holdout-terra-with-skill.md": "edf272c92928f29668615711fffa3081ef205aa4628e8ef44c441f3636756a30"
+    "artifacts/core-luna-gate-removed.md": "f54e4c94cec83ed6f46238c8a2b6008e1784eaa6f9977b915458b5e8a1da4900",
+    "artifacts/core-terra-gate-removed.md": "a2ab59c11c2a1d5e2e3aa31fef6db2fa1cf7d966e180c43b8615731c6993eba9",
+    "artifacts/core-luna-with-skill.md": "300b31a2ebbb458cbfcf55fdf115851f662dfb7454eb21cb1ffa4b1652c8cd21",
+    "artifacts/core-terra-with-skill.md": "83721bcdcf2208f33cf07312e3f333763c633f9a18c750a1baeb5036fda8bf68",
+    "artifacts/holdout-luna-with-skill.md": "4e777aba58808520c636abac68a3784d98199e8ae96a9b6112139039692f9264",
+    "artifacts/holdout-terra-with-skill.md": "abe6f1fd3a918c2e624003790cfbfeb031099f1fb0ec683eaf9b424eae4368c0",
+    "judgments.json": "eab9f109a8fb71746acd7ae0f02cce9091767931c2edd6bda1932d2fccdaea14"
   }
 }

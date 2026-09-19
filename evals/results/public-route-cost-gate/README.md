@@ -31,48 +31,49 @@ The focused tune set contains four fixture-backed decisions:
 3. `PASS` a materialized aggregate plus measured indexed lookup, including a bounded valid-shaped miss.
 4. `CONDITIONAL` when a normal lookup lacks the query plan and measured rows needed to distinguish bounded work from a scan.
 
-Each answer has two hard gates: an output-contract check and a structural semantic oracle. The oracle parses the route matrix and verifies the verdict, public families, uncached cost equation, prevention boundary, plan/measurement calibration, and claim-to-official-source pairing. Unit tests reject keyword stuffing, the wrong cost branch, Cache API presented as a pre-Worker boundary, and Workers Caching without the Workers pricing source.
+Each answer has two deterministic gates that are reported separately: an output-contract check and a structural semantic oracle. The oracle parses the route matrix and verifies the verdict, public families, uncached cost equation, prevention boundary, plan/measurement calibration, and claim-to-official-source pairing. It is structural evidence, not proof that arbitrary prose is semantically correct. Negative regression tests specifically reject an uncached equation that collapses repeated requests to distinct keys, a fix that materializes only the dynamic detail route while leaving shared aggregates live, crawler controls presented as closure, Cache API presented as a pre-Worker boundary, and unsourced Workers Caching or Static Assets recommendations.
 
-The before variant removes only the public-route cost gate from the same skill. Luna and Terra each ran every tune case once with model-default reasoning. The harness is pinned to `abd8d7d57aae788658bc293abac1dab80dfb24ac`.
+The before variant removes only the public-route cost gate from the same skill. Luna and Terra each ran every tune case once with model-default reasoning. All 16 before/after invocations completed successfully; no failed execution is counted as a behavioral miss. The harness is pinned to `abd8d7d57aae788658bc293abac1dab80dfb24ac`.
 
-| Answer model | Gate removed | Final skill |
+| Evidence layer | Gate removed | Final skill |
 | --- | ---: | ---: |
-| Luna | 0/8 hard checks | 8/8 |
-| Terra | 0/8 hard checks | 8/8 |
-| **Total** | **0/16** | **16/16** |
+| Valid executions | 8/8 | 8/8 |
+| Output-contract checks | 0/8 | 8/8 |
+| Structural semantic checks | 0/8 | 8/8 |
+| Same-rubric qualitative judgments | 6/8 (mean 0.811) | 8/8 (mean 0.974) |
 
-Terra's core final run exceeded the optional 140,000-token efficiency ceiling (200,143 total tokens), so the soft efficiency result is 1/2. No behavioral gate failed.
+The qualitative result matters because the baseline can still answer the simpler fixed-route, safe-lookup, and missing-evidence cases. Its two failures are both models on the Mulvany-shaped core: they fail to map the full public graph or give a complete prevention boundary. Terra judged the before and after answers against the same per-case rubrics and 0.85 threshold. [`judgments.json`](judgments.json) preserves every compact verdict, score, and rationale for review. Both core final runs stayed below the optional 140,000-token efficiency ceiling; efficiency remains separate from correctness.
 
-## Fresh holdout
+## Timeline regression scenario
 
-After the skill wording was frozen, a replacement holdout introduced an off-sitemap `/timeline` link whose request handler runs `GROUP BY`/`COUNT` over a growing 80,000-entry D1 corpus. It also requires explicit zero-D1 rows for the sitemap and wildcard fallback.
+The `holdout` manifest split also contains an off-sitemap `/timeline` link whose request handler runs `GROUP BY`/`COUNT` over a growing 80,000-entry D1 corpus. It requires explicit zero-D1 rows for the sitemap and wildcard fallback.
 
-| Answer model | Fresh holdout |
-| --- | ---: |
-| Luna | 2/2 hard checks |
-| Terra | 2/2 hard checks |
+| Answer model | Format | Semantic | Qualitative |
+| --- | ---: | ---: | ---: |
+| Luna | 1/1 | 1/1 | 1/1 |
+| Terra | 1/1 | 1/1 | 1/1 |
 
-The fixture and expected behavior did not drive another skill edit. After generation, the parser accepted “excluding” as a synonym for an already-present wildcard fallback row; the raw answer shows that the route was not missing. This changed neither the expected behavior nor the skill.
+This is now described as a regression scenario, not a pristine unseen holdout. Its fixture and expected behavior were frozen for the final runs, but an earlier audit of this case exposed weaknesses that caused the semantic oracle to be hardened. That history makes it useful regression coverage without overstating its independence.
 
 ## Reproduce
 
 From the repository root:
 
 ```bash
-python3 scripts/focus_public_route_eval.py --split tune --out /tmp/public-route-tune.json
-python3 scripts/focus_public_route_eval.py --split holdout --out /tmp/public-route-holdout.json
+python3 scripts/focus_public_route_eval.py --split tune --out .public-route-tune.json
+python3 scripts/focus_public_route_eval.py --split holdout --out .public-route-holdout.json
 
 uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
-  skill-benchmark validate /tmp/public-route-tune.json --strict-leakage --leakage-min-chars 1 --check-ablations
+  skill-benchmark validate .public-route-tune.json --strict-leakage --leakage-min-chars 1 --check-ablations
 
 uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
-  skill-benchmark prepare /tmp/public-route-tune.json --split tune --models gpt-5.6-luna,gpt-5.6-terra \
+  skill-benchmark prepare .public-route-tune.json --split tune --models gpt-5.6-luna,gpt-5.6-terra \
   --include-ablations --ablation-dir /tmp/public-route-ablations --out /tmp/public-route-tasks.jsonl
 
 # Run the prepared with_skill and ablation:no-public-route-cost-gate rows, then:
 uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
-  skill-benchmark grade /tmp/public-route-tune.json --runs <runs-dir> --split tune \
+  skill-benchmark grade .public-route-tune.json --runs <runs-dir> --split tune \
   --variant with_skill --allow-scripts --write-grading-files
 ```
 
-[`results.json`](results.json) records the per-case totals and SHA-256 hashes. To keep the PR reviewable, the checked-in raw artifacts are limited to both core before/after answers and both fresh holdout answers in [`artifacts/`](artifacts/). The remaining cases are reproducible from the fixtures, focused-manifest script, pinned harness, and semantic oracle in this PR.
+[`results.json`](results.json) records the per-case totals and SHA-256 hashes. To keep the PR reviewable, the checked-in raw artifacts are limited to both core before/after answers and both timeline-regression answers in [`artifacts/`](artifacts/); [`judgments.json`](judgments.json) records the reviewer-verifiable qualitative decisions. The remaining cases are reproducible from the fixtures, focused-manifest script, pinned harness, and semantic oracle in this PR.

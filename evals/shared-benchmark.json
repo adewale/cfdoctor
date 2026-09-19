@@ -2223,12 +2223,12 @@
       "expected_behavior": [
         "BLOCK because anonymous requests to the public route graph repeatedly execute broad D1 work; route cardinality amplifies but does not create the risk.",
         "Discover /about, /abstract/:id, and the metered fallback from code and rendered links rather than treating the sitemap as exhaustive; include the zero-D1 sitemap branch and map inherited versus route-specific work per family.",
-        "For the uncached path preserve request count times rows read per request; close by materializing shared aggregates, rejecting malformed keys before D1, measuring the residual indexed lookup, and using a correctly sourced pre-dependency cache only if freshness permits."
+        "For the uncached path preserve request count times rows read per request; close by materializing shared aggregates, rejecting malformed keys before D1, and measuring the residual indexed lookup; if recommending a pre-dependency cache, source it correctly and use it only when freshness permits."
       ],
       "assertions": [
         {"name": "release-block-format", "type": "contains_all", "values": ["Release verdict: BLOCK", "Discovery gaps:", "Exposure scenario:", "Closure conditions:"], "description": "Format gate only; semantic correctness is checked separately."},
         {"name": "public-route-semantic-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "crawlable-page-live-d1-cost"], "pass_exit_code": 0, "timeout_s": 10, "oracle": "strong", "description": "Structural route, cost-model, closure, and claim-to-source oracle; run with --allow-scripts."},
-        {"name": "qualitative-review", "type": "judge", "rubric": ["Finds the bounded public surface from all supplied discovery edges", "Attributes inherited and route-specific work without collapsing distinct dependency sets", "Uses request volume for uncached cost and gives the smallest complete prevention boundary", "Grounds billing and cache semantics in directly relevant official Cloudflare documentation"], "threshold": 0.85},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Finds the bounded public surface from all supplied discovery edges", "Attributes inherited and route-specific work without collapsing distinct dependency sets", "Uses request volume for uncached cost and gives the smallest complete prevention boundary", "Grounds D1 billing and any cache or static-delivery semantics it recommends in directly relevant official Cloudflare documentation"], "threshold": 0.85},
         {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"}
       ],
       "tags": ["crawlable-page-cost", "public-route-release-gate"],

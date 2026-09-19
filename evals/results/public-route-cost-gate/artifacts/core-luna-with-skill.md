@@ -2,37 +2,34 @@ Release verdict: BLOCK
 
 | host + route family | discovery evidence | known valid corpus | accepted keyspace | first rejection/validation | inherited work | route-specific work | per-hit product unit | first prevention boundary |
 |---|---|---:|---|---|---|---|---|---|
-| `catalogue.example/*` → `/` | Sitemap | 35,000 abstracts | Fixed path | None before D1 | `COUNT(*)` | `GROUP BY field` | D1 rows read; corpus-proportional | None |
-| `catalogue.example/*` → `/browse` | Sitemap, navigation | 35,000 abstracts | Any `field` query is accepted but ignored | None before D1 | `COUNT(*)` | 50-row ordered query | D1 rows read; exact plan unknown | None |
-| `catalogue.example/*` → `/about` | Shared navigation | 35,000 abstracts | Fixed path | None before D1 | `COUNT(*)` | None | D1 rows read; corpus-proportional | None |
-| `catalogue.example/*` → `/abstract/:id` | Browse links, route code | 35,000 abstracts | Arbitrary suffix, including malformed/unknown IDs | No syntax/canonical validation | `COUNT(*)` | ID lookup | D1 rows read; exact plan/index unknown | None |
-| `catalogue.example/*` → `/sitemap.xml` | Explicit route | N/A | Fixed path | Worker route check | None | Static response | Zero D1 reads | Early Worker branch |
-| `catalogue.example/*` → all other paths | Route fallback | N/A | Unbounded paths | None before D1 | `COUNT(*)` | 404 | D1 rows read; corpus-proportional | None |
+| `catalogue.example /` | sitemap | 1 page | exact `/` | none | D1 `COUNT(*)` | D1 `GROUP BY field` | corpus-scale D1 rows read | publish-time materialization |
+| `catalogue.example /browse` | sitemap, navigation | 1 page | exact `/browse` | none | D1 `COUNT(*)` | ordered `LIMIT 50` query | corpus-scale inherited read | publish-time materialization |
+| `catalogue.example /about` | shared navigation | 1 page | exact `/about` | none | D1 `COUNT(*)` | none | corpus-scale D1 rows read | publish-time materialization |
+| `catalogue.example /abstract/:id` | browse-result links | 35,000 known abstracts | any suffix after `/abstract/` | none; arbitrary IDs reach D1 | D1 `COUNT(*)` | point lookup | corpus-scale inherited read plus lookup | reject/normalize before D1 |
+| `catalogue.example other paths` | generated/unknown requests | none | any pathname | none | D1 `COUNT(*)` | 404 | corpus-scale D1 rows read | route before shared work |
+| `catalogue.example /sitemap.xml` | direct config/code | 1 page | exact `/sitemap.xml` | before D1 | none | static response | zero D1 rows | already safe |
 
-Discovery gaps: `/about` is absent from the sitemap but exposed by shared navigation; `/abstract/:id` is absent but exposed by browse-result links; arbitrary unknown paths also reach the shared query before the 404.
+Discovery gaps: `/about` is linked from shared navigation; `/abstract/:id` is linked by rendered browse results. The sitemap is not a complete boundary.
 
-Exposure scenario: supplied evidence shows no Workers cache configuration. For uncached traffic, exposure is:
+Exposure scenario: with no pre-Worker cache and anonymous traffic, exposure is `request count × D1 rows read per request`. The shared `COUNT(*)` executes for every HTML request, including invalid paths. With 35,000 abstracts, it is corpus-proportional work; `/` adds another corpus-scale `GROUP BY`. Exact `rows_read` must be confirmed from D1 query metadata, but D1 bills by rows scanned, not rows returned. [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/) documents this meter and the returned `rows_read` metadata.
 
-`anonymous requests × (rows read by COUNT + route-specific rows read)`
+Closure conditions: remove corpus-wide aggregates from request handling on every route; route and reject invalid/malformed abstract keys before D1; materialize the total and field groups during catalogue publishing/import; verify any remaining queries with `EXPLAIN QUERY PLAN` and D1 `rows_read`.
 
-At the current 35,000-record size, the shared `COUNT(*)` is corpus-scale work on every HTML request; `/` adds another corpus-wide `GROUP BY`. Exact billed rows require D1 query-plan or `meta.rows_read` measurements. D1 bills by rows scanned, not rows returned. [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/) [D1 index/query-plan guidance](https://developers.cloudflare.com/d1/best-practices/use-indexes/)
-
-Closure conditions:
-
-- Remove the shared `COUNT(*)` and homepage `GROUP BY` from every public request path by materializing catalogue metadata at publish/update time.
-- Reject malformed/noncanonical abstract IDs before any D1 call.
-- Verify the remaining browse and abstract queries with `EXPLAIN QUERY PLAN` and `meta.rows_read`; confirm appropriate indexes.
-- Optionally enable pre-Worker Workers Caching with explicit freshness/invalidation behavior. Workers Caching checks cache before invoking the Worker; cache hits bypass Worker execution/CPU but retain the documented request charge. [Workers Caching configuration](https://developers.cloudflare.com/workers/cache/configuration/) [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/)
-
-### Severity: high — Corpus-wide D1 aggregates on every public HTML request
+### Severity: high — Corpus-wide D1 aggregation on every public request
 
 - Category: cost footgun
-- Evidence: `inputs/index.js:12-16`; shared `COUNT(*)` runs before routing, and `/` runs `GROUP BY field`. README states 35,000 abstracts and no cache configuration.
-- Why it matters: `/about`, `/browse`, every abstract page, unknown paths, and the homepage all trigger the aggregate. Anonymous repeated requests therefore multiply corpus-scale D1 row reads and can exhaust free daily limits or create paid usage. The exact scan count is not supplied, so the dollar impact is not estimated.
-- Fix: At publish/update time, generate a small immutable metadata object containing the total and field groups. Replace lines 13 and 15 with reads from that object; do not query D1 for shared layout metadata. Preserve D1 only for the browse listing and validated abstract lookup.
-- Cost / trade-off: Smallest behavior-preserving complete fix; removes the corpus-proportional per-request meter and reduces latency. It adds a publish/update step and requires metadata refresh whenever abstracts change.
-- Verify: Deploy a build with metadata materialized; confirm `/`, `/about`, `/browse`, `/abstract/:id`, and unknown paths issue no aggregate D1 queries. Inspect D1 `meta.rows_read` and run query plans for the remaining lookups.
-- Source basis: [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/); [D1 index and query-plan guidance](https://developers.cloudflare.com/d1/best-practices/use-indexes/)
+- Evidence: `inputs/index.js:12-15`; `COUNT(*)` runs before routing, and `/` also runs `GROUP BY field`. `inputs/README.md:3` states the catalogue contains 35,000 abstracts and has no cache configuration.
+- Why it matters: a crawler or ordinary repeated traffic can repeatedly scan the growing corpus. Invalid and unknown routes also incur the shared scan. D1 charges by rows read; the current code supplies no bounded request-path protection.
+- Fix: move the shared `COUNT(*)` and `/` `GROUP BY` into publish/update-time materialization, such as a small metadata table or generated static JSON. Route before database access and reject malformed/noncanonical `/abstract/:id` values first. Keep only bounded lookups in the request path.
+- Cost / trade-off: removes the dominant per-request corpus multiplier. Requires a publish step and explicit refresh ownership for metadata; exact remaining D1 cost depends on indexes and query plans. Adding cache alone is not a complete fix because misses, expiry, bypasses, and refills can still execute the broad query.
+- Verify: publish a catalogue update, then confirm all HTML routes avoid full-table aggregates. Run `EXPLAIN QUERY PLAN` for remaining D1 queries and inspect returned `meta.rows_read`; load-test repeated valid, invalid, and unknown URLs.
+- Source basis: [D1 pricing and row-read billing](https://developers.cloudflare.com/d1/platform/pricing/), [D1 index/query-plan guidance](https://developers.cloudflare.com/d1/best-practices/use-indexes/).
 - Confidence: high
 
-The scanner requested by the skill was not present at the referenced path, so no scanner result is included. Account, traffic, WAF, bot, billing, and deployed-cache state were not inspected.
+Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js`, and the Cloudflare Doctor static scanner.
+
+Scope not inspected: deployed traffic, account plan, billing, query plans, indexes/schema, WAF, rate limits, and deployment state.
+
+Docs refreshed: current official Cloudflare D1 pricing, billing metadata, and indexing guidance.
+
+No files were modified.
