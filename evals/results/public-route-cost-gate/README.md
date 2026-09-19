@@ -65,15 +65,62 @@ python3 scripts/focus_public_route_eval.py --split holdout --out .public-route-h
 
 uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
   skill-benchmark validate .public-route-tune.json --strict-leakage --leakage-min-chars 1 --check-ablations
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark validate .public-route-holdout.json --strict-leakage --leakage-min-chars 1
 
 uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
   skill-benchmark prepare .public-route-tune.json --split tune --models gpt-5.6-luna,gpt-5.6-terra \
   --include-ablations --ablation-dir /tmp/public-route-ablations --out /tmp/public-route-tasks.jsonl
-
-# Run the prepared with_skill and ablation:no-public-route-cost-gate rows, then:
 uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
-  skill-benchmark grade .public-route-tune.json --runs <runs-dir> --split tune \
-  --variant with_skill --allow-scripts --write-grading-files
+  skill-benchmark prepare .public-route-holdout.json --split holdout --models gpt-5.6-luna,gpt-5.6-terra \
+  --out /tmp/public-route-holdout-tasks.jsonl
+
+# Keep the exact variants used in the receipt.
+jq -c 'select(.variant == "with_skill" or .variant == "ablation:no-public-route-cost-gate")' \
+  /tmp/public-route-tasks.jsonl > /tmp/public-route-comparison-tasks.jsonl
+jq -c 'select(.variant == "with_skill")' \
+  /tmp/public-route-holdout-tasks.jsonl > /tmp/public-route-holdout-current-tasks.jsonl
+
+# Execute Luna and Terra. These commands call the configured Codex models.
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark run-codex --tasks /tmp/public-route-comparison-tasks.jsonl \
+  --runs /tmp/public-route-tune-runs --timeout 600
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark run-codex --tasks /tmp/public-route-holdout-current-tasks.jsonl \
+  --runs /tmp/public-route-holdout-runs --timeout 600
+
+# Grade the output contract and structural semantic oracle separately by variant.
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark grade .public-route-tune.json --runs /tmp/public-route-tune-runs --split tune \
+  --variant ablation:no-public-route-cost-gate --allow-scripts --write-grading-files \
+  --out /tmp/public-route-baseline-grade.json
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark grade .public-route-tune.json --runs /tmp/public-route-tune-runs --split tune \
+  --variant with_skill --allow-scripts --write-grading-files \
+  --out /tmp/public-route-current-grade.json
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark grade .public-route-holdout.json --runs /tmp/public-route-holdout-runs --split holdout \
+  --variant with_skill --allow-scripts --write-grading-files \
+  --out /tmp/public-route-holdout-grade.json
+
+# Apply the same per-case qualitative rubric to baseline and final tune answers.
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark judge .public-route-tune.json --runs /tmp/public-route-tune-runs --split tune \
+  --variant ablation:no-public-route-cost-gate --judge-backend codex --judge-model gpt-5.6-terra \
+  --strict-judge-schema --out /tmp/public-route-baseline-judge.jsonl \
+  --transcripts /tmp/public-route-baseline-judge-transcripts
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark judge .public-route-tune.json --runs /tmp/public-route-tune-runs --split tune \
+  --variant with_skill --judge-backend codex --judge-model gpt-5.6-terra \
+  --strict-judge-schema --out /tmp/public-route-current-judge.jsonl \
+  --transcripts /tmp/public-route-current-judge-transcripts
+uvx --from git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac \
+  skill-benchmark judge .public-route-holdout.json --runs /tmp/public-route-holdout-runs --split holdout \
+  --variant with_skill --judge-backend codex --judge-model gpt-5.6-terra \
+  --strict-judge-schema --out /tmp/public-route-holdout-judge.jsonl \
+  --transcripts /tmp/public-route-holdout-judge-transcripts
 ```
+
+The execution and judge commands require an authenticated Codex CLI with access to the named Luna and Terra models.
 
 [`results.json`](results.json) records the per-case totals and SHA-256 hashes. To keep the PR reviewable, the checked-in raw artifacts are limited to both core before/after answers and both timeline-regression answers in [`artifacts/`](artifacts/); [`judgments.json`](judgments.json) records the reviewer-verifiable qualitative decisions. The remaining cases are reproducible from the fixtures, focused-manifest script, pinned harness, and semantic oracle in this PR.
