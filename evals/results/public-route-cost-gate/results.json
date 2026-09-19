@@ -4,7 +4,7 @@
   "harness_revision": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
   "inputs": {
     "skill_sha256": "5bbc2e352c02db5df9b0732b76ca928a583463fe09989863696d86ce54546b13",
-    "oracle_sha256": "382ed012397015439b01cbcec33c3e3d3c16946e97e3e87f1b046b70d4883ccd",
+    "oracle_sha256": "124fd4ed691f3e1d31e927a0efa6a455891762ee4b94f6b349a99bf376951d6d",
     "manifest_sha256": "c6bdb1fca7eefca15674e6d56d740ece256789d8f56c38d75e17520892c37024",
     "focus_script_sha256": "87e977756c9c7b8a012ee6ec50facf808277c41ee21d3d7d20861b693e0025af"
   },
@@ -44,11 +44,11 @@
     "note": "The expected behavior was frozen before generation. Afterward, the parser accepted 'excluding' as a synonym for an already-present wildcard fallback row; this did not change the skill, fixture, verdict, or expected behavior."
   },
   "artifacts": {
-    "artifacts/core-luna-gate-removed.md": "09270732450a5cbd9fe3c152b40d926e067f058b4e387e98ea0ab1396dcf94ee",
-    "artifacts/core-terra-gate-removed.md": "070efd296a19ed51fb555c2a6a08c097a0be5e8df9fdc95723be7a012e232fad",
+    "artifacts/core-luna-gate-removed.md": "33aa84d2d6da0a1aa23253d84606f5fa6185f6260e7ff7c2c5e29fcfb118eb28",
+    "artifacts/core-terra-gate-removed.md": "7507e81f036534abe8742feae61bd31b6b4866060d74581d5dabace197bb7520",
     "artifacts/core-luna-with-skill.md": "1fda3fb0edba8715c86b718ea4e6d1597748ce93ae558de76c3882ced9c1359a",
-    "artifacts/core-terra-with-skill.md": "c7fe08c1980c0eadf0ba5f6d5a5088a3c24062720e037820cd2b99c966b58c68",
+    "artifacts/core-terra-with-skill.md": "219a01efc6519e93bd5eab48e7fe1898f82fe052f33af549ead2e42e302ac6bf",
     "artifacts/holdout-luna-with-skill.md": "cda42487571e80d893438f31c1a0720bf20c6da76a3e5dccf1c5de2c62b53102",
-    "artifacts/holdout-terra-with-skill.md": "fcd2cf326a120cd452676e4733cc70ffd59d287a9bc2fb23a306e5d10b65099e"
+    "artifacts/holdout-terra-with-skill.md": "edf272c92928f29668615711fffa3081ef205aa4628e8ef44c441f3636756a30"
   }
 }

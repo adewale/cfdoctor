@@ -1,7 +1,7 @@
 ## Cloudflare Doctor focused triage
 
-Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js`, plus the Cloudflare Doctor static scanner.  
-Scope not inspected: deployed traffic, D1 query metrics, plan, billing, WAF, bot management, rate limits, and cache settings.  
+Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js`, plus the Cloudflare Doctor static scanner.
+Scope not inspected: deployed traffic, D1 query metrics, plan, billing, WAF, bot management, rate limits, and cache settings.
 Docs refreshed: [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [D1 metrics](https://developers.cloudflare.com/d1/observability/metrics-analytics/), [D1 return metadata](https://developers.cloudflare.com/d1/worker-api/return-object/).
 
 ### High: Per-request full-table count can amplify D1 cost

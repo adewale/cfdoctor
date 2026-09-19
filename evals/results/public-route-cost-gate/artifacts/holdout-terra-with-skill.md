@@ -1,5 +1,5 @@
-Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js`; static scan (`CFDOC-CONFIG-D1-NO-MIGRATIONS`, `CFDOC-CONFIG-NO-OBSERVABILITY`) treated as non-cost leads only.  
-Scope not inspected: deployed cache/rules, traffic, D1 query plan and `rows_read` measurements, schema/indexes, billing plan/account settings.  
+Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js`; static scan (`CFDOC-CONFIG-D1-NO-MIGRATIONS`, `CFDOC-CONFIG-NO-OBSERVABILITY`) treated as non-cost leads only.
+Scope not inspected: deployed cache/rules, traffic, D1 query plan and `rows_read` measurements, schema/indexes, billing plan/account settings.
 Docs refreshed: [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Workers Static Assets routing](https://developers.cloudflare.com/workers/static-assets/binding/).
 
 Release verdict: BLOCK

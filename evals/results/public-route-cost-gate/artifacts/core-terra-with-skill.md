@@ -1,5 +1,5 @@
-Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js` (plus one static scan).  
-Scope not inspected: D1 schema/indexes, query plans/`rows_read` measurements, deployed cache headers, traffic, WAF/bot/rate-limit, and billing-plan settings.  
+Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js` (plus one static scan).
+Scope not inspected: D1 schema/indexes, query plans/`rows_read` measurements, deployed cache headers, traffic, WAF/bot/rate-limit, and billing-plan settings.
 Docs refreshed: [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Workers Caching configuration](https://developers.cloudflare.com/workers/cache/configuration/), [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/).
 
 Release verdict: BLOCK
@@ -17,7 +17,7 @@ Discovery gaps: `/about` is absent from the sitemap but appears in shared naviga
 
 Exposure scenario: There is no cache configuration. Every non-sitemap request executes `COUNT(*)` before routing. Thus repeated exposure is:
 
-`anonymous request count × rows_read of shared COUNT(*)`  
+`anonymous request count × rows_read of shared COUNT(*)`
 plus the home page’s `GROUP BY` rows, and each route’s own query.
 
 With 35,000 abstracts, the shared aggregate is explicitly corpus-scale work on every hit, including arbitrary 404s. Exact D1 rows read still needs `meta.rows_read` or a query plan; D1 bills rows scanned/read, not just returned rows. [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)

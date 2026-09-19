@@ -316,7 +316,7 @@ def public_gate_failures(case_id: str, text: str) -> tuple[list[str], int]:
     preworker_claim = re.search(r"(?is)(?:before|bypass(?:es|ing)?)\s+(?:(?:executing|invoking)\s+)?(?:the\s+)?Worker|without\s+(?:executing|invoking)\s+(?:the\s+)?Worker", text)
     if preworker_claim:
         checks += 1
-        if not re.search(r"developers\.cloudflare\.com/workers/(?:cache/configuration|static-assets/(?:routing/worker-script|binding))", text, re.I):
+        if not re.search(r"developers\.cloudflare\.com/workers/(?:cache/configuration|static-assets/(?:routing/worker-script|binding))", text, re.IGNORECASE):
             failures.append("pre-Worker claim lacks the Workers Caching or Static Assets routing source")
     if re.search(r"(?i)(?:workers caching|cache\.enabled)", text):
         checks += 1

@@ -1,7 +1,7 @@
 ## Cloudflare Doctor — focused triage
 
-Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js`; static scan (`CFDOC-PERF-D1-SELECT-STAR` reviewed and not treated as a cost finding).  
-Scope not inspected: deployed traffic, bot/WAF/rate-limit settings, D1 schema/query plans, cache headers/rules, plan and billing data.  
+Scope inspected: `inputs/README.md`, `inputs/wrangler.jsonc`, `inputs/index.js`; static scan (`CFDOC-PERF-D1-SELECT-STAR` reviewed and not treated as a cost finding).
+Scope not inspected: deployed traffic, bot/WAF/rate-limit settings, D1 schema/query plans, cache headers/rules, plan and billing data.
 Docs refreshed: [Workers Cache](https://developers.cloudflare.com/workers/cache/), [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/), [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/).
 
 ### Severity: high — Every public HTML hit repeats D1 work, including a catalogue-wide count
