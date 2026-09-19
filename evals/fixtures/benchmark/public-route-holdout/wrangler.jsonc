@@ -1,0 +1,7 @@
+{
+  "name": "chronicle-timeline",
+  "main": "index.js",
+  "compatibility_date": "2026-08-01",
+  "routes": [{ "pattern": "chronicle.example/*", "zone_name": "chronicle.example" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "chronicle", "database_id": "00000000-0000-0000-0000-000000000005" }]
+}

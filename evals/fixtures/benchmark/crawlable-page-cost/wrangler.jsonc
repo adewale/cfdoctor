@@ -1,0 +1,7 @@
+{
+  "name": "research-catalogue",
+  "main": "index.js",
+  "compatibility_date": "2026-08-01",
+  "routes": [{ "pattern": "catalogue.example/*", "zone_name": "catalogue.example" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "catalogue", "database_id": "00000000-0000-0000-0000-000000000001" }]
+}

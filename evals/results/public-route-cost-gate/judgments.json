@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "judge_model": "codex/gpt-5.6-terra",
+  "strict_schema": true,
+  "comparison_note": "Baseline and final tune answers use the same per-case rubric and threshold. Invalid executions are not counted as behavioral failures.",
+  "tune": {
+    "baseline": {
+      "valid": 8,
+      "total": 8,
+      "passed": 6,
+      "mean_score": 0.81125,
+      "records": [
+        {
+          "judge_task_id": "crawlable-page-live-d1-cost::gpt-5.6-luna::ablation:no-public-route-cost-gate::run-1::qualitative-review",
+          "target_model": "gpt-5.6-luna",
+          "passed": false,
+          "score": 0.35,
+          "threshold": 0.85,
+          "evidence": "Correctly identifies the inherited pre-dispatch COUNT(*) and quantifies request-volume amplification, with relevant Cloudflare D1 sources. However, it does not fully map the public route graph (including sitemap/static zero-D1 behavior and rendered discovery edges), omits route-specific dependency sets, and proposes only moving the expensive count to / and /about rather than the complete prevention boundary: materialize the shared aggregate, reject malformed keys before D1, and measure residual indexed lookups. It therefore leaves a public high-cost path and does not meet the required BLOCK-level recommendation.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "crawlable-page-live-d1-cost::gpt-5.6-terra::ablation:no-public-route-cost-gate::run-1::qualitative-review",
+          "target_model": "gpt-5.6-terra",
+          "passed": false,
+          "score": 0.35,
+          "threshold": 0.85,
+          "evidence": "It identifies repeated unconditional D1 COUNT work and rows-read amplification, but does not fully map the discovered public route families or distinguish inherited from route-specific dependencies. Its primary fix is an unsupported/overbroad cache recommendation rather than the smallest complete boundary: materialize the shared aggregate, reject malformed abstract keys before D1, and measure the residual indexed lookup. It also omits the zero-D1 sitemap branch and the metered fallback analysis, and treats cache configuration/semantics imprecisely.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-fixed-scan::gpt-5.6-luna::ablation:no-public-route-cost-gate::run-1::qualitative-review",
+          "target_model": "gpt-5.6-luna",
+          "passed": true,
+          "score": 0.98,
+          "threshold": 0.85,
+          "evidence": "Clearly blocks public launch: it identifies the homepage aggregation as repeated for every anonymous/crawler request and explains D1 rows_read scales with traffic and table size. It correctly bases risk on per-request work multiplied by request volume, not distinct URL cardinality.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-fixed-scan::gpt-5.6-terra::ablation:no-public-route-cost-gate::run-1::qualitative-review",
+          "target_model": "gpt-5.6-terra",
+          "passed": true,
+          "score": 0.98,
+          "threshold": 0.85,
+          "evidence": "The candidate explicitly blocks launch for a fixed public route, identifies anonymous crawler/repeat traffic, and correctly models cost as public requests × rows scanned rather than distinct URL cardinality.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-safe-bounded-lookup::gpt-5.6-luna::ablation:no-public-route-cost-gate::run-1::qualitative-review",
+          "target_model": "gpt-5.6-luna",
+          "passed": true,
+          "score": 1.0,
+          "threshold": 0.85,
+          "evidence": "It passes the evidenced D1 surface using only the supplied query plan and rows-read measurements, accepts valid-shaped unknown misses without requiring an allowlist, and explicitly limits conclusions where account controls and traffic data were not supplied.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-safe-bounded-lookup::gpt-5.6-terra::ablation:no-public-route-cost-gate::run-1::qualitative-review",
+          "target_model": "gpt-5.6-terra",
+          "passed": true,
+          "score": 1.0,
+          "threshold": 0.85,
+          "evidence": "Passes strictly on the supplied indexed-plan and rows-read evidence, accepts valid-shaped unknown misses without an allowlist, and explicitly preserves uninspected account-level controls as unknown.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-missing-plan::gpt-5.6-luna::ablation:no-public-route-cost-gate::run-1::qualitative-review",
+          "target_model": "gpt-5.6-luna",
+          "passed": true,
+          "score": 0.9,
+          "threshold": 0.85,
+          "evidence": "It correctly holds the release gate because plan and rows-read evidence are absent, states a scan only as a possibility, and asks for targeted plan and measured bounded-read verification. The schema/migration and cache requests are somewhat broader than the absolute minimum, but do not undermine the core discriminating evidence request.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-missing-plan::gpt-5.6-terra::ablation:no-public-route-cost-gate::run-1::qualitative-review",
+          "target_model": "gpt-5.6-terra",
+          "passed": true,
+          "score": 0.93,
+          "threshold": 0.85,
+          "evidence": "It correctly withholds release rather than treating missing plan/measurement evidence as PASS, describes a full scan only as a possibility, preserves unknown per-request cost, and requests the minimal discriminating evidence: the exact EXPLAIN QUERY PLAN plus representative meta.rows_read.",
+          "returncode": 0
+        }
+      ]
+    },
+    "final": {
+      "valid": 8,
+      "total": 8,
+      "passed": 8,
+      "mean_score": 0.9737500000000001,
+      "records": [
+        {
+          "judge_task_id": "crawlable-page-live-d1-cost::gpt-5.6-luna::with_skill::run-1::qualitative-review",
+          "target_model": "gpt-5.6-luna",
+          "passed": true,
+          "score": 0.96,
+          "threshold": 0.85,
+          "evidence": "Correctly blocks release, maps all discovery edges including navigation and rendered abstract links, identifies the zero-D1 sitemap branch and the metered unknown-path fallback, and distinguishes shared COUNT work from route-specific queries. It states uncached cost as requests × rows read, recommends materialization plus pre-D1 routing/key validation, and cites relevant official Cloudflare D1 billing and index guidance.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "crawlable-page-live-d1-cost::gpt-5.6-terra::with_skill::run-1::qualitative-review",
+          "target_model": "gpt-5.6-terra",
+          "passed": true,
+          "score": 0.92,
+          "threshold": 0.85,
+          "evidence": "The review correctly blocks launch, discovers the sitemap-excluded /about and rendered /abstract/:id surface plus catch-all fallback, separates inherited COUNT(*) from route-specific work, preserves the uncached request-count × rows-read model, and proposes the smallest complete boundary: materialized shared stats plus pre-D1 path/key validation. It also cites relevant official Cloudflare D1 pricing/index and static-routing documentation. Minor limitation: it mentions caching generically without a dedicated cache-documentation citation, but does not rely on a specific unsupported cache semantic.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-fixed-scan::gpt-5.6-luna::with_skill::run-1::qualitative-review",
+          "target_model": "gpt-5.6-luna",
+          "passed": true,
+          "score": 0.98,
+          "threshold": 0.85,
+          "evidence": "The response explicitly issues a BLOCK verdict for the fixed anonymous homepage, identifies its per-request corpus-wide D1 GROUP BY, and explains amplification as anonymous request count × D1 rows read per request. It correctly avoids relying on route cardinality.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-fixed-scan::gpt-5.6-terra::with_skill::run-1::qualitative-review",
+          "target_model": "gpt-5.6-terra",
+          "passed": true,
+          "score": 0.99,
+          "threshold": 0.85,
+          "evidence": "Explicitly blocks the fixed anonymous homepage route and identifies its repeated corpus-wide D1 GROUP BY. It correctly frames exposure as anonymous request count × D1 rows read per request, explicitly noting that a single fixed URL can repeat the work.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-safe-bounded-lookup::gpt-5.6-luna::with_skill::run-1::qualitative-review",
+          "target_model": "gpt-5.6-luna",
+          "passed": true,
+          "score": 0.98,
+          "threshold": 0.85,
+          "evidence": "Passes the evidenced surface using the supplied aggregate, early malformed-key rejection, and measured indexed lookup rows. It correctly accepts valid-shaped unknown misses without requiring an allowlist, and explicitly limits conclusions to the inspected surface without inferring account controls.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-safe-bounded-lookup::gpt-5.6-terra::with_skill::run-1::qualitative-review",
+          "target_model": "gpt-5.6-terra",
+          "passed": true,
+          "score": 1.0,
+          "threshold": 0.85,
+          "evidence": "Passes the evidenced surface based on the supplied plan and measurements: materialized aggregate, pre-D1 malformed-key rejection, and bounded indexed lookup for valid-shaped unknown keys. It appropriately does not require an allowlist and explicitly avoids inferring account-level controls.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-missing-plan::gpt-5.6-luna::with_skill::run-1::qualitative-review",
+          "target_model": "gpt-5.6-luna",
+          "passed": true,
+          "score": 0.98,
+          "threshold": 0.85,
+          "evidence": "The response correctly gives a CONDITIONAL verdict, explicitly treats rows-read units as unknown, and does not infer either an index or a full scan. It requests the smallest key discriminators—EXPLAIN QUERY PLAN and production-like meta.rows_read measurements—to decide whether public-request work is bounded.",
+          "returncode": 0
+        },
+        {
+          "judge_task_id": "public-route-missing-plan::gpt-5.6-terra::with_skill::run-1::qualitative-review",
+          "target_model": "gpt-5.6-terra",
+          "passed": true,
+          "score": 0.98,
+          "threshold": 0.85,
+          "evidence": "Correctly returns CONDITIONAL, retains unknown per-request D1 read cost, avoids claiming a full scan as fact, and requests focused plan plus rows_read evidence for representative hit and valid-shaped miss cases.",
+          "returncode": 0
+        }
+      ]
+    }
+  },
+  "timeline_regression": {
+    "valid": 2,
+    "total": 2,
+    "passed": 2,
+    "mean_score": 1,
+    "records": [
+      {
+        "judge_task_id": "public-route-timeline-holdout::gpt-5.6-luna::with_skill::run-1::qualitative-review",
+        "target_model": "gpt-5.6-luna",
+        "passed": true,
+        "score": 1.0,
+        "threshold": 0.85,
+        "evidence": "It explicitly discovers `/timeline` via the rendered homepage footer while noting sitemap omission, ties anonymous repeated requests to an unconditional corpus-wide D1 GROUP BY/COUNT, and uses the uncached request-volume × rows-read cost model.",
+        "returncode": 0
+      },
+      {
+        "judge_task_id": "public-route-timeline-holdout::gpt-5.6-terra::with_skill::run-1::qualitative-review",
+        "target_model": "gpt-5.6-terra",
+        "passed": true,
+        "score": 1.0,
+        "threshold": 0.85,
+        "evidence": "It finds /timeline via the rendered homepage footer despite sitemap absence, ties each anonymous repeated request to the corpus-wide D1 GROUP BY/COUNT, and explicitly uses the uncached request-count × rows-read cost branch while preserving repeated same-URL volume.",
+        "returncode": 0
+      }
+    ]
+  }
+}

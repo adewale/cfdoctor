@@ -1,0 +1,7 @@
+Release evidence captured against the 35,000-row production-shaped database:
+EXPLAIN QUERY PLAN SELECT title, body FROM articles WHERE slug = ? LIMIT 1;
+SEARCH articles USING INDEX articles_slug_unique (slug=?)
+
+D1 query metrics, 1,000 known slugs: rows_read min=1 max=1
+D1 query metrics, 1,000 valid-shaped unknown slugs: rows_read min=0 max=0
+Malformed and noncanonical slugs are rejected before DB.prepare.

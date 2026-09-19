@@ -26,6 +26,181 @@ class FixtureOracleTests(unittest.TestCase):
         self.assertEqual(1, proc.returncode)
         self.assertIn("missing core audit marker", proc.stdout)
 
+    def test_public_route_gate_rejects_keyword_stuffing_and_wrong_cost_branch(self) -> None:
+        stuffing = """Release verdict: BLOCK
+Discovery gaps: sitemap /about /abstract/
+Exposure scenario: distinct keys × one fill
+Closure conditions: materialize validate query plan
+/ /browse /abstract/ /about COUNT GROUP lookup shared
+https://developers.cloudflare.com/d1/platform/pricing/
+"""
+        proc = self.run_oracle("crawlable-page-live-d1-cost", stuffing)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("route matrix", proc.stdout)
+        self.assertIn("request count", proc.stdout)
+
+    def test_uncached_gate_rejects_distinct_keys_as_total_exposure(self) -> None:
+        text = self.public_gate_output(
+            "public-route-fixed-scan",
+            "BLOCK",
+            ["| landing.example / | router | 1 | 1 | route match | none | GROUP BY count | D1 rows read | materialize |"],
+            "No off-sitemap route was evidenced.",
+            "For anonymous requests, total D1 rows read = distinct keys × rows_read per first fill; repeated requests add no further D1 cost.",
+            "Materialize the GROUP BY outside request handling.",
+        )
+        proc = self.run_oracle("public-route-fixed-scan", text)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("collapses repeated hits", proc.stdout)
+
+    def test_core_gate_rejects_partial_dynamic_route_only_closure(self) -> None:
+        text = self.public_gate_output(
+            "crawlable-page-live-d1-cost",
+            "BLOCK",
+            [
+                "| catalogue.example / | sitemap | 1 | 1 | route | shared COUNT | GROUP query | D1 rows read | none |",
+                "| catalogue.example /browse | sitemap | 1 | query values | route | shared COUNT | SELECT browse | D1 rows read | none |",
+                "| catalogue.example /abstract/:id | rendered links | 35,000 | arbitrary suffix | after D1 | shared COUNT | bounded lookup | D1 rows read | materialize lookup |",
+                "| catalogue.example /about | navigation | 1 | 1 | route | shared COUNT | shared only | D1 rows read | none |",
+                "| catalogue.example /sitemap.xml | code | 1 | exact path | before D1 | none | static response | 0 D1 rows | existing branch |",
+                "| catalogue.example/* excluding named paths | wildcard route | none | arbitrary paths | after D1 | shared COUNT | 404 response | D1 rows read | route before D1 |",
+            ],
+            "The sitemap omits /abstract/:id and /about.",
+            "Anonymous request count × D1 rows read per request; repeated hits remain included.",
+            "Materialize only the /abstract/:id lookup; leave COUNT live on / and /about. Reject malformed keys before D1 and use EXPLAIN QUERY PLAN with measured rows_read.",
+        )
+        proc = self.run_oracle("crawlable-page-live-d1-cost", text)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("shared COUNT/total", proc.stdout)
+        self.assertIn("homepage GROUP BY", proc.stdout)
+
+    def test_holdout_rejects_crawler_controls_as_closure(self) -> None:
+        text = self.public_gate_output(
+            "public-route-timeline-holdout",
+            "BLOCK",
+            [
+                "| history.example / | router | 1 | 1 | route | none | static page | 0 D1 rows | existing |",
+                "| history.example /timeline | rendered link | 1 | exact path | route | none | GROUP BY year COUNT | D1 rows read | none |",
+                "| history.example /sitemap.xml | code | 1 | exact path | route | none | static response | 0 D1 rows | existing |",
+                "| history.example/* excluding named paths | wildcard | none | arbitrary | route | none | 404 response | 0 D1 rows | existing |",
+            ],
+            "The sitemap omits /timeline, which is exposed by a rendered link.",
+            "Every anonymous request to /timeline × D1 rows read per request; repeated requests remain included.",
+            "Add robots.txt, rate limits, and billing alerts while retaining the live GROUP BY.",
+        )
+        proc = self.run_oracle("public-route-timeline-holdout", text)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("timeline aggregate", proc.stdout)
+
+    def test_public_route_gate_rejects_cache_api_as_pre_worker_source(self) -> None:
+        text = self.public_gate_output(
+            "public-route-fixed-scan",
+            "BLOCK",
+            ["| landing.example / | router | 1 | 1 | route match | none | GROUP BY count | D1 rows read | materialize |"],
+            "No off-sitemap route was evidenced.",
+            "Anonymous request count × D1 rows read per request; both request count and rows are unknown.",
+            "Materialize the GROUP BY outside request handling.",
+            "This single fixed URL is unsafe. Use the Cache API before the Worker executes.\n"
+            "Source basis: https://developers.cloudflare.com/workers/runtime-apis/cache/",
+        )
+        proc = self.run_oracle("public-route-fixed-scan", text)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("pre-Worker claim lacks", proc.stdout)
+
+    def test_public_route_gate_requires_workers_pricing_for_workers_caching(self) -> None:
+        text = self.public_gate_output(
+            "public-route-fixed-scan",
+            "BLOCK",
+            ["| landing.example / | router | 1 | 1 | route match | none | GROUP BY count | D1 rows read | materialize |"],
+            "No off-sitemap route was evidenced.",
+            "Anonymous request count × D1 rows read per request; repeated requests to the same / remain included.",
+            "Materialize the GROUP BY outside request handling.",
+            "This fixed route is unsafe. Use Workers Caching before invoking the Worker.\n"
+            "Source basis: https://developers.cloudflare.com/workers/cache/configuration/",
+        )
+        proc = self.run_oracle("public-route-fixed-scan", text)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("residual request billing source", proc.stdout)
+
+    def test_public_route_gate_requires_source_for_static_asset_recommendation(self) -> None:
+        text = self.public_gate_output(
+            "public-route-fixed-scan",
+            "BLOCK",
+            ["| landing.example / | router | 1 | 1 | route match | none | GROUP BY count | D1 rows read | materialize |"],
+            "No off-sitemap route was evidenced.",
+            "Anonymous request count × D1 rows read per request; repeated requests to the same / remain included.",
+            "Materialize the GROUP BY outside request handling and render it as a static asset.",
+        )
+        proc = self.run_oracle("public-route-fixed-scan", text)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("Static Assets recommendation", proc.stdout)
+
+    def test_public_route_semantic_oracle_accepts_block_pass_and_conditional(self) -> None:
+        core = self.public_gate_output(
+            "crawlable-page-live-d1-cost",
+            "BLOCK",
+            [
+                "| catalogue.example / | sitemap | 1 | 1 | route | shared COUNT | GROUP query | D1 rows read | materialize |",
+                "| catalogue.example /browse | sitemap | 1 | query values | route | shared COUNT | SELECT browse | D1 rows read | materialize |",
+                "| catalogue.example /abstract/:id | rendered links | 35,000 | arbitrary suffix | after D1 | shared COUNT | bounded lookup | D1 rows read | syntax reject then materialize |",
+                "| catalogue.example /about | navigation | 1 | 1 | route | shared COUNT | shared only | D1 rows read | materialize |",
+                "| catalogue.example /sitemap.xml | code | 1 | exact path | before D1 | none | static response | 0 D1 rows | existing branch |",
+                "| catalogue.example/* excluding named paths | wildcard route | none | arbitrary paths | after D1 | shared COUNT | 404 response | D1 rows read | route before D1 |",
+            ],
+            "The sitemap omits /abstract/:id (rendered browse links) and /about (navigation).",
+            "Anonymous request count × D1 rows read per request; request count is unknown and repeated hits remain included.",
+            "Move the total and field counts to publish-time materialized data on every route; reject malformed keys before D1; use EXPLAIN QUERY PLAN and measured rows_read to prove the residual lookup bounded.",
+        )
+        self.assertEqual(0, self.run_oracle("crawlable-page-live-d1-cost", core).returncode)
+
+        passed = self.public_gate_output(
+            "public-route-safe-bounded-lookup",
+            "PASS",
+            [
+                "| safe.example / | rendered root | 1 | 1 | route | none | materialized count | 0 D1 rows | already prevented |",
+                "| safe.example /article/:slug | rendered link | 35,000 | canonical slugs | syntax before D1 | none | indexed lookup | 0-1 rows read | early reject |",
+            ],
+            "No evidenced route family is absent from the supplied router and links.",
+            "Anonymous request count × 0-1 D1 rows read per request; request volume remains unknown.",
+            "The supplied prevention boundaries already satisfy PASS for the evidenced surface.",
+            "query-plan.txt shows SEARCH articles USING INDEX articles_slug_unique; a known slug reads exactly 1 row. "
+            "Malformed or noncanonical keys are rejected before D1. A valid-shaped unknown slug is a bounded indexed zero-row miss.",
+        )
+        proc = self.run_oracle("public-route-safe-bounded-lookup", passed)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        conditional = self.public_gate_output(
+            "public-route-missing-plan",
+            "CONDITIONAL",
+            ["| categories.example /category/:slug | router | 50,000 | canonical slugs | syntax before D1 | none | category query | unknown rows read | obtain plan |"],
+            "No additional family is evidenced, but deployed routes are not inspected.",
+            "Anonymous request count × unknown D1 rows per request; both request volume and per-request rows are unknown.",
+            "Supply the missing EXPLAIN query plan and measured rows_read before deciding PASS or BLOCK.",
+        )
+        self.assertEqual(0, self.run_oracle("public-route-missing-plan", conditional).returncode)
+
+    @staticmethod
+    def public_gate_output(
+        case_id: str,
+        verdict: str,
+        rows: list[str],
+        discovery: str,
+        exposure: str,
+        closure: str,
+        extra: str = "",
+    ) -> str:
+        del case_id
+        return "\n".join([
+            f"Release verdict: {verdict}",
+            "| host + route family | discovery evidence | known valid corpus | accepted keyspace | first rejection/validation | inherited work | route-specific work | per-hit product unit | first prevention boundary |",
+            "|---|---|---|---|---|---|---|---|---|",
+            *rows,
+            f"Discovery gaps: {discovery}",
+            f"Exposure scenario: {exposure}",
+            f"Closure conditions: {closure}",
+            extra,
+            "Source basis: https://developers.cloudflare.com/d1/platform/pricing/",
+        ])
+
     def test_dashboard_claim_oracle_allows_quoted_claim_but_rejects_assertion(self) -> None:
         quoted = """Scope inspected: README.md and wrangler.toml
 Scope not inspected: account state

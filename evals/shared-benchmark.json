@@ -2213,6 +2213,96 @@
       "domain": "cloudflare-workers",
       "difficulty": "core",
       "success_goals": ["outcome"]
+    },
+    {
+      "id": "crawlable-page-live-d1-cost",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": ["fixtures/benchmark/crawlable-page-cost/README.md", "fixtures/benchmark/crawlable-page-cost/wrangler.jsonc", "fixtures/benchmark/crawlable-page-cost/index.js"],
+      "prompt": "Cloudflare Doctor the attached public Worker before launch. Identify the material cost risk and recommend the smallest safe fix.",
+      "expected_behavior": [
+        "BLOCK because anonymous requests to the public route graph repeatedly execute broad D1 work; route cardinality amplifies but does not create the risk.",
+        "Discover /about, /abstract/:id, and the metered fallback from code and rendered links rather than treating the sitemap as exhaustive; include the zero-D1 sitemap branch and map inherited versus route-specific work per family.",
+        "For the uncached path preserve request count times rows read per request; close by materializing shared aggregates, rejecting malformed keys before D1, and measuring the residual indexed lookup; if recommending a pre-dependency cache, source it correctly and use it only when freshness permits."
+      ],
+      "assertions": [
+        {"name": "release-block-format", "type": "contains_all", "values": ["Release verdict: BLOCK", "Discovery gaps:", "Exposure scenario:", "Closure conditions:"], "description": "Format gate only; semantic correctness is checked separately."},
+        {"name": "public-route-semantic-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "crawlable-page-live-d1-cost"], "pass_exit_code": 0, "timeout_s": 10, "oracle": "strong", "description": "Structural route, cost-model, closure, and claim-to-source oracle; run with --allow-scripts."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Finds the bounded public surface from all supplied discovery edges", "Attributes inherited and route-specific work without collapsing distinct dependency sets", "Uses request volume for uncached cost and gives the smallest complete prevention boundary", "Grounds D1 billing and any cache or static-delivery semantics it recommends in directly relevant official Cloudflare documentation"], "threshold": 0.85},
+        {"name": "efficiency-total-tokens", "type": "total_tokens_le", "max": 140000, "severity": "soft", "oracle": "strong"}
+      ],
+      "tags": ["crawlable-page-cost", "public-route-release-gate"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-route-fixed-scan",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": ["fixtures/benchmark/public-route-fixed-scan/README.md", "fixtures/benchmark/public-route-fixed-scan/wrangler.jsonc", "fixtures/benchmark/public-route-fixed-scan/index.js"],
+      "prompt": "Cloudflare Doctor this public Worker before launch. Decide whether its public-route cost posture is safe.",
+      "expected_behavior": ["BLOCK the fixed homepage because repeated anonymous requests execute a broad D1 GROUP BY; do not require high route cardinality."],
+      "assertions": [
+        {"name": "release-block-format", "type": "contains_all", "values": ["Release verdict: BLOCK", "Exposure scenario:"], "description": "Format gate only."},
+        {"name": "public-route-semantic-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "public-route-fixed-scan"], "pass_exit_code": 0, "timeout_s": 10, "oracle": "strong", "description": "Checks fixed-route verdict and uncached request-volume model."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Blocks a fixed public route whose anonymous request volume repeats high-unit work", "Uses request count times rows per request rather than distinct URL count"], "threshold": 0.85}
+      ],
+      "tags": ["crawlable-page-cost", "fixed-route"],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-route-safe-bounded-lookup",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": ["fixtures/benchmark/public-route-safe/README.md", "fixtures/benchmark/public-route-safe/wrangler.jsonc", "fixtures/benchmark/public-route-safe/index.js", "fixtures/benchmark/public-route-safe/query-plan.txt"],
+      "prompt": "Cloudflare Doctor this public Worker before launch. Apply the public-route cost release gate and state what the supplied plan and measurements prove.",
+      "expected_behavior": ["PASS the evidenced surface: the aggregate is materialized, malformed keys are rejected before D1, and valid-shaped unknown keys perform only the supplied measured indexed lookup."],
+      "assertions": [
+        {"name": "release-pass-format", "type": "contains_all", "values": ["Release verdict: PASS", "Exposure scenario:"], "description": "Format gate only."},
+        {"name": "public-route-semantic-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "public-route-safe-bounded-lookup"], "pass_exit_code": 0, "timeout_s": 10, "oracle": "strong", "description": "Checks that PASS is tied to prevention plus measured bounded residual work."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Passes only on supplied plan and rows-read evidence", "Does not demand an allowlist for a valid-shaped miss after the expensive shape is removed", "Preserves unknown scope rather than inferring account controls"], "threshold": 0.85}
+      ],
+      "tags": ["crawlable-page-cost", "precision", "pass"],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-route-missing-plan",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": ["fixtures/benchmark/public-route-uncertain/README.md", "fixtures/benchmark/public-route-uncertain/wrangler.jsonc", "fixtures/benchmark/public-route-uncertain/index.js"],
+      "prompt": "Cloudflare Doctor this public Worker before launch. Apply the public-route cost release gate without assuming an index or cache that is not supplied.",
+      "expected_behavior": ["CONDITIONAL because the query plan and measured rows read are missing; retain request volume with unknown per-request units and request the smallest evidence needed to decide."],
+      "assertions": [
+        {"name": "release-conditional-format", "type": "contains_all", "values": ["Release verdict: CONDITIONAL", "Exposure scenario:"], "description": "Format gate only."},
+        {"name": "public-route-semantic-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "public-route-missing-plan"], "pass_exit_code": 0, "timeout_s": 10, "oracle": "strong", "description": "Checks calibrated missing-evidence verdict and cost model."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Does not convert missing plan or measurement evidence into PASS", "Does not assert a full scan as fact without a plan", "Requests the smallest discriminating evidence"], "threshold": 0.85}
+      ],
+      "tags": ["crawlable-page-cost", "precision", "conditional"],
+      "domain": "cloudflare-workers",
+      "difficulty": "core",
+      "success_goals": ["outcome"]
+    },
+    {
+      "id": "public-route-timeline-holdout",
+      "split": "holdout",
+      "kind": "audit-output",
+      "files": ["fixtures/benchmark/public-route-holdout/README.md", "fixtures/benchmark/public-route-holdout/wrangler.jsonc", "fixtures/benchmark/public-route-holdout/index.js"],
+      "prompt": "Audit the attached Cloudflare Worker for launch-blocking cost exposure. Follow the public surface from supplied discovery evidence into its dependencies.",
+      "expected_behavior": ["BLOCK the off-sitemap timeline because every uncached request runs a corpus-wide GROUP BY/COUNT; include the zero-D1 sitemap and fallback branches, and preserve repeated request volume even for the same URL."],
+      "assertions": [
+        {"name": "release-block-format", "type": "contains_all", "values": ["Release verdict: BLOCK", "Discovery gaps:", "Exposure scenario:"], "description": "Format gate only."},
+        {"name": "public-route-semantic-oracle", "type": "script", "command": ["python3", "oracles/fixture_oracle.py", "{output_dir}", "public-route-timeline-holdout"], "pass_exit_code": 0, "timeout_s": 10, "oracle": "strong", "description": "Frozen structural holdout oracle."},
+        {"name": "qualitative-review", "type": "judge", "rubric": ["Discovers the timeline from the rendered homepage footer, not only the sitemap", "Connects anonymous repeated requests to the broad D1 work", "Uses the uncached request-volume cost branch"], "threshold": 0.85}
+      ],
+      "tags": ["crawlable-page-cost", "holdout"],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": ["outcome"]
     }
   ],
   "ablations": [
@@ -2348,6 +2438,25 @@
       "target": {
         "skill_root": "skills/cloudflare-doctor/SKILL.md",
         "patch": "evals/ablations/no-cost-tradeoff.patch"
+      }
+    },
+    {
+      "id": "no-public-route-cost-gate",
+      "removed_component": "public-route dependency and cost release gate",
+      "expected_regressions": [
+        {
+          "summary": "The audit misses or mis-models anonymous request amplification across the bounded public surface.",
+          "cases": ["crawlable-page-live-d1-cost", "public-route-fixed-scan", "public-route-safe-bounded-lookup", "public-route-missing-plan"],
+          "assertions": ["public-route-semantic-oracle"]
+        }
+      ],
+      "applies_to_cases": ["crawlable-page-live-d1-cost", "public-route-fixed-scan", "public-route-safe-bounded-lookup", "public-route-missing-plan"],
+      "notes": "Patch ablation removes only the public-route release-gate instructions while leaving the general audit workflow intact.",
+      "mechanism": "patch",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/cloudflare-doctor/SKILL.md",
+        "patch": "evals/ablations/no-public-route-cost-gate.patch"
       }
     },
     {
