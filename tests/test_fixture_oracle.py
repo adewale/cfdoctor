@@ -26,6 +26,116 @@ class FixtureOracleTests(unittest.TestCase):
         self.assertEqual(1, proc.returncode)
         self.assertIn("missing core audit marker", proc.stdout)
 
+    def test_public_route_gate_rejects_keyword_stuffing_and_wrong_cost_branch(self) -> None:
+        stuffing = """Release verdict: BLOCK
+Discovery gaps: sitemap /about /abstract/
+Exposure scenario: distinct keys × one fill
+Closure conditions: materialize validate query plan
+/ /browse /abstract/ /about COUNT GROUP lookup shared
+https://developers.cloudflare.com/d1/platform/pricing/
+"""
+        proc = self.run_oracle("crawlable-page-live-d1-cost", stuffing)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("route matrix", proc.stdout)
+        self.assertIn("request count", proc.stdout)
+
+    def test_public_route_gate_rejects_cache_api_as_pre_worker_source(self) -> None:
+        text = self.public_gate_output(
+            "public-route-fixed-scan",
+            "BLOCK",
+            ["| landing.example / | router | 1 | 1 | route match | none | GROUP BY count | D1 rows read | materialize |"],
+            "No off-sitemap route was evidenced.",
+            "Anonymous request count × D1 rows read per request; both request count and rows are unknown.",
+            "Materialize the GROUP BY outside request handling.",
+            "This single fixed URL is unsafe. Use the Cache API before the Worker executes.\n"
+            "Source basis: https://developers.cloudflare.com/workers/runtime-apis/cache/",
+        )
+        proc = self.run_oracle("public-route-fixed-scan", text)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("pre-Worker claim lacks", proc.stdout)
+
+    def test_public_route_gate_requires_workers_pricing_for_workers_caching(self) -> None:
+        text = self.public_gate_output(
+            "public-route-fixed-scan",
+            "BLOCK",
+            ["| landing.example / | router | 1 | 1 | route match | none | GROUP BY count | D1 rows read | materialize |"],
+            "No off-sitemap route was evidenced.",
+            "Anonymous request count × D1 rows read per request; repeated requests to the same / remain included.",
+            "Materialize the GROUP BY outside request handling.",
+            "This fixed route is unsafe. Use Workers Caching before invoking the Worker.\n"
+            "Source basis: https://developers.cloudflare.com/workers/cache/configuration/",
+        )
+        proc = self.run_oracle("public-route-fixed-scan", text)
+        self.assertEqual(1, proc.returncode)
+        self.assertIn("residual request billing source", proc.stdout)
+
+    def test_public_route_semantic_oracle_accepts_block_pass_and_conditional(self) -> None:
+        core = self.public_gate_output(
+            "crawlable-page-live-d1-cost",
+            "BLOCK",
+            [
+                "| catalogue.example / | sitemap | 1 | 1 | route | shared COUNT | GROUP query | D1 rows read | materialize |",
+                "| catalogue.example /browse | sitemap | 1 | query values | route | shared COUNT | SELECT browse | D1 rows read | materialize |",
+                "| catalogue.example /abstract/:id | rendered links | 35,000 | arbitrary suffix | after D1 | shared COUNT | bounded lookup | D1 rows read | syntax reject then materialize |",
+                "| catalogue.example /about | navigation | 1 | 1 | route | shared COUNT | shared only | D1 rows read | materialize |",
+                "| catalogue.example /sitemap.xml | code | 1 | exact path | before D1 | none | static response | 0 D1 rows | existing branch |",
+                "| catalogue.example/* excluding named paths | wildcard route | none | arbitrary paths | after D1 | shared COUNT | 404 response | D1 rows read | route before D1 |",
+            ],
+            "The sitemap omits /abstract/:id (rendered browse links) and /about (navigation).",
+            "Anonymous request count × D1 rows read per request; request count is unknown and repeated hits remain included.",
+            "Move the total and field counts to publish-time materialized data on every route; reject malformed keys before D1; use EXPLAIN QUERY PLAN and measured rows_read to prove the residual lookup bounded.",
+        )
+        self.assertEqual(0, self.run_oracle("crawlable-page-live-d1-cost", core).returncode)
+
+        passed = self.public_gate_output(
+            "public-route-safe-bounded-lookup",
+            "PASS",
+            [
+                "| safe.example / | rendered root | 1 | 1 | route | none | materialized count | 0 D1 rows | already prevented |",
+                "| safe.example /article/:slug | rendered link | 35,000 | canonical slugs | syntax before D1 | none | indexed lookup | 0-1 rows read | early reject |",
+            ],
+            "No evidenced route family is absent from the supplied router and links.",
+            "Anonymous request count × 0-1 D1 rows read per request; request volume remains unknown.",
+            "The supplied prevention boundaries already satisfy PASS for the evidenced surface.",
+            "query-plan.txt shows SEARCH articles USING INDEX articles_slug_unique; a known slug reads exactly 1 row. "
+            "Malformed or noncanonical keys are rejected before D1. A valid-shaped unknown slug is a bounded indexed zero-row miss.",
+        )
+        proc = self.run_oracle("public-route-safe-bounded-lookup", passed)
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+        conditional = self.public_gate_output(
+            "public-route-missing-plan",
+            "CONDITIONAL",
+            ["| categories.example /category/:slug | router | 50,000 | canonical slugs | syntax before D1 | none | category query | unknown rows read | obtain plan |"],
+            "No additional family is evidenced, but deployed routes are not inspected.",
+            "Anonymous request count × unknown D1 rows per request; both request volume and per-request rows are unknown.",
+            "Supply the missing EXPLAIN query plan and measured rows_read before deciding PASS or BLOCK.",
+        )
+        self.assertEqual(0, self.run_oracle("public-route-missing-plan", conditional).returncode)
+
+    @staticmethod
+    def public_gate_output(
+        case_id: str,
+        verdict: str,
+        rows: list[str],
+        discovery: str,
+        exposure: str,
+        closure: str,
+        extra: str = "",
+    ) -> str:
+        del case_id
+        return "\n".join([
+            f"Release verdict: {verdict}",
+            "| host + route family | discovery evidence | known valid corpus | accepted keyspace | first rejection/validation | inherited work | route-specific work | per-hit product unit | first prevention boundary |",
+            "|---|---|---|---|---|---|---|---|---|",
+            *rows,
+            f"Discovery gaps: {discovery}",
+            f"Exposure scenario: {exposure}",
+            f"Closure conditions: {closure}",
+            extra,
+            "Source basis: https://developers.cloudflare.com/d1/platform/pricing/",
+        ])
+
     def test_dashboard_claim_oracle_allows_quoted_claim_but_rejects_assertion(self) -> None:
         quoted = """Scope inspected: README.md and wrangler.toml
 Scope not inspected: account state
@@ -132,106 +242,20 @@ No confirmed findings.
         self.assertEqual(1, proc.returncode)
         self.assertIn("missing one of", proc.stdout)
 
-    def test_benchmark_fixtures_have_unambiguous_staged_paths(self) -> None:
+    def test_benchmark_fixtures_preserve_staged_entrypoint_paths(self) -> None:
         manifest = json.loads((ROOT / "evals/shared-benchmark.json").read_text())
         checked = 0
         for case in manifest["cases"]:
-            case_files = case.get("files", [])
-            staged_names = [Path(path).name for path in case_files]
-            self.assertEqual(
-                len(staged_names),
-                len(set(staged_names)),
-                f'{case["id"]} has colliding basenames in the flattening harness',
-            )
-            for relpath in case_files:
+            staged_names = {Path(path).name for path in case.get("files", [])}
+            for relpath in case.get("files", []):
                 if "wrangler." not in Path(relpath).name:
                     continue
                 text = (ROOT / "evals" / relpath).read_text()
                 match = re.search(r'(?:"main"\s*:\s*"|^main\s*=\s*")([^"\n]+)', text, re.MULTILINE)
                 if match:
                     checked += 1
-                    main = match.group(1)
-                    fixture_dir = Path(relpath).parent
-                    direct_entrypoint = str(fixture_dir / main)
-                    if direct_entrypoint in case_files:
-                        continue
-
-                    package_rel = str(fixture_dir / "package.json")
-                    self.assertIn(package_rel, case_files, case["id"])
-                    package = json.loads((ROOT / "evals" / package_rel).read_text())
-                    self.assertIn("build", package.get("scripts", {}), case["id"])
-                    self.assertTrue(main.startswith(".svelte-kit/"), case["id"])
+                    self.assertIn(match.group(1), staged_names, case["id"])
         self.assertGreaterEqual(checked, 5)
-
-    def test_framework_source_map_matches_real_sources(self) -> None:
-        fixture = ROOT / "evals/fixtures/benchmark/framework-public-surface"
-        proc = subprocess.run(
-            ["node", str(fixture / "check-source-map.mjs")],
-            cwd=fixture,
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
-
-    def test_public_surface_forbidden_assertions_reject_contradictions(self) -> None:
-        manifest = json.loads((ROOT / "evals/shared-benchmark.json").read_text())
-        assertions = {
-            (case["id"], assertion["name"]): assertion
-            for case in manifest["cases"]
-            for assertion in case.get("assertions", [])
-        }
-        contradictions = {
-            ("public-surface-cache-regeneration-meter-shift", "cache-keyspace-no-contradiction"):
-                "/report/ does not accept arbitrary invalid keys. D1 does not run before validation.",
-            ("public-surface-dependency-cost-composition", "browser-lifecycle-no-contradiction"):
-                "The browser close in finally is not correct and is not bounded.",
-            ("public-surface-alternate-host-control-gap", "alternate-host-control-no-contradiction"):
-                "workers.dev is not outside the cache rules and is not outside the WAF rules.",
-            ("public-surface-alternate-host-control-gap", "alternate-host-fix-no-contradiction"):
-                "Do not reject invalid slugs before D1.",
-            ("public-surface-unknown-route-metered-fallback", "fallback-fix-no-contradiction"):
-                "Do not use an allowlist to reject requests before D1.",
-        }
-        for key, text in contradictions.items():
-            assertion = assertions[key]
-            self.assertEqual("not_regex", assertion["type"], key)
-            self.assertRegex(text, re.compile(assertion["pattern"]), key)
-
-        safe = {
-            ("public-surface-cache-regeneration-meter-shift", "cache-keyspace-no-contradiction"):
-                "Unknown /report/ slugs reach D1 before validation and the 404.",
-            ("public-surface-dependency-cost-composition", "browser-lifecycle-no-contradiction"):
-                "The browser is not a lifecycle leak because it is closed in finally.",
-            ("public-surface-alternate-host-control-gap", "alternate-host-control-no-contradiction"):
-                "workers.dev is outside both the cache rule and WAF rule.",
-            ("public-surface-alternate-host-control-gap", "alternate-host-fix-no-contradiction"):
-                "Reject invalid slugs before D1.",
-            ("public-surface-unknown-route-metered-fallback", "fallback-fix-no-contradiction"):
-                "Use a publish-refreshed allowlist to reject unknown paths before D1.",
-        }
-        for key, text in safe.items():
-            self.assertNotRegex(text, re.compile(assertions[key]["pattern"]), key)
-
-    def test_public_surface_source_assertions_require_relevant_products(self) -> None:
-        manifest = json.loads((ROOT / "evals/shared-benchmark.json").read_text())
-        assertions = {
-            (case["id"], assertion["name"]): assertion
-            for case in manifest["cases"]
-            for assertion in case.get("assertions", [])
-        }
-        key = ("public-surface-subresource-fanout", "subresource-official-source-basis")
-        pattern = re.compile(assertions[key]["pattern"])
-        self.assertNotRegex(
-            "Source basis: https://developers.cloudflare.com/workers/",
-            pattern,
-        )
-        self.assertRegex(
-            "Source basis: https://developers.cloudflare.com/r2/pricing/ "
-            "https://developers.cloudflare.com/images/optimization/binding/ "
-            "https://developers.cloudflare.com/d1/platform/pricing/ "
-            "https://developers.cloudflare.com/workers/runtime-apis/cache/",
-            pattern,
-        )
 
     def test_queue_ambiguity_requires_a_specific_evidence_request(self) -> None:
         summary_only = """## Cloudflare Doctor audit

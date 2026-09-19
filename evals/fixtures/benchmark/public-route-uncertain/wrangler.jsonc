@@ -1,0 +1,7 @@
+{
+  "name": "category-pages",
+  "main": "index.js",
+  "compatibility_date": "2026-08-01",
+  "routes": [{ "pattern": "categories.example/*", "zone_name": "categories.example" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "articles", "database_id": "00000000-0000-0000-0000-000000000004" }]
+}

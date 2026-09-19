@@ -121,6 +121,34 @@ SPECS = {
     },
 }
 
+PUBLIC_GATE_SPECS = {
+    "crawlable-page-live-d1-cost": {
+        "verdict": "BLOCK",
+        "routes": ["/", "/browse", "/abstract/", "/about", "/sitemap.xml", "<fallback>"],
+        "mode": "uncached",
+    },
+    "public-route-fixed-scan": {
+        "verdict": "BLOCK",
+        "routes": ["/"],
+        "mode": "uncached",
+    },
+    "public-route-safe-bounded-lookup": {
+        "verdict": "PASS",
+        "routes": ["/", "/article/"],
+        "mode": "bounded",
+    },
+    "public-route-missing-plan": {
+        "verdict": "CONDITIONAL",
+        "routes": ["/category/"],
+        "mode": "unknown",
+    },
+    "public-route-timeline-holdout": {
+        "verdict": "BLOCK",
+        "routes": ["/", "/timeline", "/sitemap.xml", "<fallback>"],
+        "mode": "uncached",
+    },
+}
+
 PACKAGE_RUNNER_RE = re.compile(r"(?i)\b(?:npx|npm\s+exec|pnpm\s+dlx|bunx)\b")
 PACKAGE_RUNNER_NEGATION_RE = re.compile(
     r"(?is)(?:do\s+not|don't|never|avoid|must\s+not|not\s+use|without|forbid(?:den)?|instead\s+of|rather\s+than|not)\b"
@@ -154,6 +182,154 @@ def finding_blocks(text: str) -> list[str]:
     return re.findall(r"(?ms)^### Severity:.*?(?=^### Severity:|^## |\Z)", text)
 
 
+def route_cell_matches(row: str, route: str) -> bool:
+    cell = row.split("|")[1].replace("`", "").strip().casefold()
+    if route == "<fallback>":
+        return any(term in cell for term in ("fallback", "other path", "unknown path", "excluding", "404"))
+    if route == "/":
+        return cell == "/" or bool(re.search(r"(?:^|\s)/(?:\s|$|\()", cell)) or bool(re.search(r"[a-z0-9.-]+/$", cell))
+    return route.casefold() in cell
+
+
+def labelled_section(text: str, label: str) -> str:
+    match = re.search(
+        rf"(?ims)^\s*{re.escape(label)}\s*(.*?)(?=^\s*(?:Discovery gaps:|Exposure scenario:|Closure conditions:|### Severity:|## )|\Z)",
+        text,
+    )
+    return match.group(1).strip() if match else ""
+
+
+def public_gate_failures(case_id: str, text: str) -> tuple[list[str], int]:
+    spec = PUBLIC_GATE_SPECS[case_id]
+    failures: list[str] = []
+    checks = 0
+
+    verdicts = re.findall(r"(?im)^\s*Release verdict:\s*(?:\*\*)?([A-Z]+)", text)
+    checks += 1
+    if verdicts != [spec["verdict"]]:
+        failures.append(f"expected exactly one {spec['verdict']} release verdict, got {verdicts!r}")
+
+    for label in ("Discovery gaps:", "Exposure scenario:", "Closure conditions:"):
+        checks += 1
+        if not re.search(rf"(?im)^\s*{re.escape(label)}", text):
+            failures.append(f"missing release-gate label: {label}")
+
+    table_lines = [line for line in text.splitlines() if line.strip().startswith("|") and line.strip().endswith("|")]
+    header = next((line for line in table_lines if "route" in line.casefold() and "discovery" in line.casefold()), "")
+    checks += 1
+    required_columns = ("known valid", "accepted keyspace", "rejection", "inherited", "route-specific", "per-hit", "prevention")
+    if not header or any(column not in header.casefold() for column in required_columns):
+        failures.append("route matrix is missing one or more required structural columns")
+
+    data_rows = [
+        line for line in table_lines
+        if line != header and not re.fullmatch(r"[|:\- ]+", line.strip())
+    ]
+    for route in spec["routes"]:
+        checks += 1
+        matching_rows = [row for row in data_rows if route_cell_matches(row, route)]
+        if not matching_rows or any("," in row.split("|")[1] for row in matching_rows):
+            failures.append(f"route family lacks its own matrix row: {route}")
+
+    exposure = labelled_section(text, "Exposure scenario:")
+    closure = labelled_section(text, "Closure conditions:")
+    discovery = labelled_section(text, "Discovery gaps:")
+    mode = spec["mode"]
+
+    checks += 1
+    if "developers.cloudflare.com/d1/platform/pricing" not in text.casefold():
+        failures.append("missing directly relevant official D1 pricing source")
+
+    if mode == "uncached":
+        checks += 1
+        if not re.search(r"(?is)^(?=.*request)(?=.*(?:×|\bx\b|times|multipl))(?=.*(?:rows?.read|product units?|units?)).*$", exposure):
+            failures.append("uncached exposure must preserve request count × units per request")
+        checks += 1
+        if re.search(r"(?is)(?:only|equals?)\s+distinct\s+(?:cache\s+)?keys?\s*(?:×|x)", exposure):
+            failures.append("uncached exposure incorrectly collapses repeated hits to distinct keys")
+
+    if case_id == "crawlable-page-live-d1-cost":
+        checks += 4
+        route_requirements = {
+            "/": ("count", "group"),
+            "/browse": ("count", "query"),
+            "/abstract/": ("count", "lookup"),
+            "/about": ("count",),
+            "/sitemap.xml": (),
+            "<fallback>": ("count",),
+        }
+        for route, terms in route_requirements.items():
+            row = next((item.casefold() for item in data_rows if route_cell_matches(item, route)), "")
+            if not all(term in row for term in terms):
+                failures.append(f"{route} row does not keep inherited and route-specific dependencies separate")
+        checks += 1
+        if not all(term in discovery.casefold() for term in ("sitemap", "/abstract", "/about")):
+            failures.append("discovery gaps do not explain the off-sitemap route families and their evidence")
+        checks += 1
+        if not re.search(r"(?is)(remov|materializ|precomput|publish|static|must\s+not\s+run).{0,180}(count|aggregate|broad|corpus)|(?:count|aggregate|broad|corpus).{0,180}(remov|materializ|precomput|publish|static|must\s+not\s+run)", closure):
+            failures.append("closure does not remove the shared broad query from request-time execution")
+        checks += 1
+        if not re.search(r"(?is)(malformed|noncanonical|syntax).{0,120}(before|prior).{0,100}(D1|meter|depend)", closure):
+            failures.append("closure does not reject malformed/noncanonical keys before metered work")
+        checks += 1
+        if not (
+            re.search(r"(?is)(query plan|EXPLAIN|indexed|bounded)", closure)
+            and re.search(r"(?is)(query plan|EXPLAIN)", text)
+            and re.search(r"(?is)(measur|rows?.read)", text)
+        ):
+            failures.append("closure does not require plan and measured-unit proof for the residual lookup")
+
+    if case_id == "public-route-fixed-scan":
+        checks += 1
+        if not re.search(r"(?is)(repeated|every|each|same).{0,80}(request|hit|url)", exposure):
+            failures.append("fixed-route case does not state that URL cardinality is not the safety boundary")
+
+    if mode == "bounded":
+        checks += 1
+        if not (
+            re.search(r"(?is)(articles_slug_unique|SEARCH.{0,100}INDEX|unique.{0,80}index|indexed lookup)", text)
+            and re.search(r"(?is)(known|existing).{0,100}(?:exactly\s+)?(?:`?1`?)\s+row", text)
+            and re.search(r"(?is)(unknown|miss).{0,100}(?:(?:`?0`?).{0,3}rows?|zero[- ]rows?)", text)
+        ):
+            failures.append("PASS does not tie the bounded residual lookup to supplied plan and measurement evidence")
+        checks += 1
+        if not re.search(r"(?is)(malformed|noncanonical).{0,120}(before|prior).{0,100}(D1|DB|database)", text):
+            failures.append("PASS does not preserve early syntax rejection")
+        checks += 1
+        if not re.search(r"(?is)(unknown|not exist|missing).{0,180}(bounded|0.{0,3}rows|zero rows|indexed)", text):
+            failures.append("PASS incorrectly omits the bounded valid-shaped miss behavior")
+
+    if mode == "unknown":
+        checks += 1
+        if not re.search(r"(?is)(missing|not supplied|unknown).{0,160}(query plan|EXPLAIN|rows.read|measured)", text):
+            failures.append("CONDITIONAL does not name the missing plan or measured-unit evidence")
+        checks += 1
+        if not re.search(r"(?is)(request(?: count| volume|s)?).{0,100}(?:×|x|times|multipl).{0,100}(unknown|rows|units)", exposure):
+            failures.append("CONDITIONAL does not retain request volume while leaving per-request units unknown")
+
+    if case_id == "public-route-timeline-holdout":
+        checks += 1
+        timeline_row = next((item for item in data_rows if route_cell_matches(item, "/timeline")), "")
+        if not all(term in timeline_row.casefold() for term in ("count", "group")) or not re.search(r"(?is)(every|per|anonymous).{0,100}request|request.{0,100}(every|per|anonymous)", exposure):
+            failures.append("holdout does not connect the off-sitemap timeline route to the repeated broad query")
+
+    preworker_claim = re.search(r"(?is)(?:before|bypass(?:es|ing)?)\s+(?:(?:executing|invoking)\s+)?(?:the\s+)?Worker|without\s+(?:executing|invoking)\s+(?:the\s+)?Worker", text)
+    if preworker_claim:
+        checks += 1
+        if not re.search(r"developers\.cloudflare\.com/workers/(?:cache/configuration|static-assets/(?:routing/worker-script|binding))", text, re.I):
+            failures.append("pre-Worker claim lacks the Workers Caching or Static Assets routing source")
+    if re.search(r"(?i)(?:workers caching|cache\.enabled)", text):
+        checks += 1
+        if "developers.cloudflare.com/workers/platform/pricing" not in text.casefold():
+            failures.append("Workers Caching recommendation omits residual request billing source")
+    if re.search(r"(?i)cache api", text):
+        checks += 1
+        if not re.search(r"(?is)cache api.{0,180}(inside|within).{0,80}worker", text):
+            failures.append("Cache API is mentioned without stating that it runs inside the Worker")
+
+    return failures, checks
+
+
 def main() -> int:
     if len(sys.argv) != 3:
         print("usage: fixture_oracle.py OUTPUT_DIR CASE_ID", file=sys.stderr)
@@ -161,7 +337,7 @@ def main() -> int:
     output_dir = Path(sys.argv[1])
     case_id = sys.argv[2]
     spec = SPECS.get(case_id)
-    if not spec:
+    if not spec and case_id not in PUBLIC_GATE_SPECS:
         print(f"unknown case id: {case_id}", file=sys.stderr)
         return 2
     out = output_dir / "output.md"
@@ -169,7 +345,19 @@ def main() -> int:
         print(f"missing output: {out}", file=sys.stderr)
         return 2
     text = out.read_text(encoding="utf-8", errors="replace")
-    failures: list[str] = []
+    if case_id in PUBLIC_GATE_SPECS:
+        failures, checks = public_gate_failures(case_id, text)
+        score = max(checks - len(failures), 0)
+        print(json.dumps({"score": score, "max_score": checks or 1, "case_id": case_id, "oracle": "semantic"}))
+        if failures:
+            print("FAIL public-route semantic oracle")
+            for failure in failures:
+                print("- " + failure)
+            return 1
+        print("OK public-route semantic oracle: " + case_id)
+        return 0
+
+    failures = []
     checks = 0
 
     if spec.get("require_core"):

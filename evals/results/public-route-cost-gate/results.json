@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-19",
+  "harness_revision": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+  "inputs": {
+    "skill_sha256": "5bbc2e352c02db5df9b0732b76ca928a583463fe09989863696d86ce54546b13",
+    "oracle_sha256": "382ed012397015439b01cbcec33c3e3d3c16946e97e3e87f1b046b70d4883ccd",
+    "manifest_sha256": "c6bdb1fca7eefca15674e6d56d740ece256789d8f56c38d75e17520892c37024",
+    "focus_script_sha256": "87e977756c9c7b8a012ee6ec50facf808277c41ee21d3d7d20861b693e0025af"
+  },
+  "tune": {
+    "models": ["gpt-5.6-luna", "gpt-5.6-terra"],
+    "cases": [
+      "crawlable-page-live-d1-cost",
+      "public-route-fixed-scan",
+      "public-route-safe-bounded-lookup",
+      "public-route-missing-plan"
+    ],
+    "runs_per_case_model_variant": 1,
+    "baseline_variant": "ablation:no-public-route-cost-gate",
+    "current_variant": "with_skill",
+    "baseline_objective": {"passed": 0, "total": 16},
+    "current_objective": {"passed": 16, "total": 16},
+    "current_soft_efficiency": {"passed": 1, "total": 2, "note": "Terra's core run exceeded the optional 140000-token ceiling (200143 total tokens); no behavior gate failed."},
+    "runs": [
+      {"case_id": "crawlable-page-live-d1-cost", "model": "gpt-5.6-luna", "baseline": "0/2", "current": "2/2", "current_total_tokens": 135918},
+      {"case_id": "crawlable-page-live-d1-cost", "model": "gpt-5.6-terra", "baseline": "0/2", "current": "2/2", "current_total_tokens": 200143},
+      {"case_id": "public-route-fixed-scan", "model": "gpt-5.6-luna", "baseline": "0/2", "current": "2/2", "current_total_tokens": 105487},
+      {"case_id": "public-route-fixed-scan", "model": "gpt-5.6-terra", "baseline": "0/2", "current": "2/2", "current_total_tokens": 155385},
+      {"case_id": "public-route-safe-bounded-lookup", "model": "gpt-5.6-luna", "baseline": "0/2", "current": "2/2", "current_total_tokens": 64146},
+      {"case_id": "public-route-safe-bounded-lookup", "model": "gpt-5.6-terra", "baseline": "0/2", "current": "2/2", "current_total_tokens": 179200},
+      {"case_id": "public-route-missing-plan", "model": "gpt-5.6-luna", "baseline": "0/2", "current": "2/2", "current_total_tokens": 139365},
+      {"case_id": "public-route-missing-plan", "model": "gpt-5.6-terra", "baseline": "0/2", "current": "2/2", "current_total_tokens": 154822}
+    ]
+  },
+  "holdout": {
+    "skill_frozen_before_generation": true,
+    "case_id": "public-route-timeline-holdout",
+    "objective": {"passed": 4, "total": 4},
+    "runs": [
+      {"model": "gpt-5.6-luna", "objective": "2/2", "total_tokens": 191325},
+      {"model": "gpt-5.6-terra", "objective": "2/2", "total_tokens": 181630}
+    ],
+    "note": "The expected behavior was frozen before generation. Afterward, the parser accepted 'excluding' as a synonym for an already-present wildcard fallback row; this did not change the skill, fixture, verdict, or expected behavior."
+  },
+  "artifacts": {
+    "artifacts/core-luna-gate-removed.md": "09270732450a5cbd9fe3c152b40d926e067f058b4e387e98ea0ab1396dcf94ee",
+    "artifacts/core-terra-gate-removed.md": "070efd296a19ed51fb555c2a6a08c097a0be5e8df9fdc95723be7a012e232fad",
+    "artifacts/core-luna-with-skill.md": "1fda3fb0edba8715c86b718ea4e6d1597748ce93ae558de76c3882ced9c1359a",
+    "artifacts/core-terra-with-skill.md": "c7fe08c1980c0eadf0ba5f6d5a5088a3c24062720e037820cd2b99c966b58c68",
+    "artifacts/holdout-luna-with-skill.md": "cda42487571e80d893438f31c1a0720bf20c6da76a3e5dccf1c5de2c62b53102",
+    "artifacts/holdout-terra-with-skill.md": "fcd2cf326a120cd452676e4733cc70ffd59d287a9bc2fb23a306e5d10b65099e"
+  }
+}
