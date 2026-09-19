@@ -45,13 +45,29 @@
         "fixtures/benchmark/crawlable-page-cost/wrangler.jsonc",
         "fixtures/benchmark/crawlable-page-cost/index.js"
       ],
-      "prompt": "Cloudflare Doctor the attached public Worker before launch. Identify crawler-driven cost risks and recommend the smallest safe fix.",
+      "prompt": "Cloudflare Doctor the attached public Worker before launch. Identify cost risks and recommend the smallest safe fix.",
       "expected_behavior": [
-        "Build a bounded public-surface inventory from the host, router, sitemap, and rendered links; include the off-sitemap `/abstract/:id` and `/about` routes without enumerating URLs, and distinguish the 35,000 known abstracts from the larger syntactically accepted `/abstract/*` keyspace.",
+        "Activate the public-route cost release gate from the anonymous public routes and D1 binding even though the prompt does not mention crawlers, emit `Release verdict: BLOCK`, and build a bounded public-surface inventory from the host, router, sitemap, and rendered links; include the off-sitemap `/abstract/:id` and `/about` routes without enumerating URLs, distinguish the 35,000 known abstracts from the larger syntactically accepted `/abstract/*` keyspace, and state the discovery gaps, exposure scenario, and closure conditions before the finding.",
         "Attribute the shared layout COUNT query to every content route before adding the homepage aggregate, browse query, and bounded detail lookup, while marking deployed traffic and controls as not inspected.",
-        "Rank route-family cost multiplied by observed or bounded crawl volume; present one fill per distinct key as a corpus-covering crawl scenario because complete request coverage is not supplied, then account for location and refill multipliers; reject invalid abstract keys before live work, remove or materialize shared aggregates outside the high-cardinality request path, verify the residual lookup is bounded, and cache recrawls when freshness permits."
+        "Rank route-family cost multiplied by observed or bounded crawl volume; present one fill per distinct key as a corpus-covering crawl scenario because complete request coverage is not supplied, then account for location and refill multipliers; reject invalid abstract keys before live work, remove or materialize shared aggregates outside every public request path, verify the residual lookup is bounded, and cache recrawls when freshness permits."
       ],
       "assertions": [
+        {
+          "name": "public-route-release-block",
+          "type": "regex",
+          "pattern": "(?im)^Release verdict:\\s*(?:\\*\\*)?BLOCK\\b",
+          "description": "The audit activates structurally and blocks launch rather than treating the unsafe public D1 path as optional advice."
+        },
+        {
+          "name": "release-gate-evidence-block",
+          "type": "contains_all",
+          "values": [
+            "Discovery gaps:",
+            "Exposure scenario:",
+            "Closure conditions:"
+          ],
+          "description": "The release decision includes discovery, exposure, and closure evidence rather than only a verdict label."
+        },
         {
           "name": "bounded-public-surface-inventory",
           "type": "contains_all",
@@ -65,8 +81,8 @@
         {
           "name": "sitemap-is-not-the-boundary",
           "type": "regex",
-          "pattern": "(?is)^(?=.*sitemap)(?=.*(?:not.{0,100}(?:bound|complete|exhaustive|contain)|outside.{0,100}sitemap|sitemap.{0,120}(?:omit|only|incomplete|seed))).*$",
-          "description": "The audit treats the sitemap as one discovery source rather than the complete public surface."
+          "pattern": "(?is)^(?=.*sitemap)(?=.*(?:navigation|rendered link|internal link|/abstract/|/about)).*$",
+          "description": "The audit uses both the sitemap and another discovery edge to build the public surface."
         },
         {
           "name": "bounded-dynamic-family",
@@ -77,7 +93,7 @@
         {
           "name": "known-corpus-vs-accepted-keyspace",
           "type": "regex",
-          "pattern": "(?is)^(?=.*(?:35[, ]?000|35k).{0,220}(?:known|valid|real|corpus|content))(?=.*(?:/abstract/|abstract route).{0,260}(?:arbitrary|unknown|invalid|malformed|unbounded|larger|syntactically accepted))(?=.*(?:shared|COUNT|D1).{0,300}(?:before|prior to).{0,180}(?:404|reject|validat|existence)).*$",
+          "pattern": "(?is)^(?=.*(?:35[, ]?000|35k))(?=.*(?:known valid corpus|known corpus|valid corpus|real corpus|content corpus))(?=.*(?:/abstract/|abstract route).{0,260}(?:arbitrary|any suffix|unknown|invalid|malformed|unbounded|larger|syntactically accepted))(?=.*(?:(?:shared|COUNT|D1).{0,300}(?:before|prior to).{0,180}(?:404|reject|validat|existence)|(?:404|reject|validat|existence).{0,180}(?:after|following).{0,180}(?:shared|COUNT|D1))).*$",
           "description": "The audit does not substitute the known content count for the larger accepted route keyspace and locates metered work before rejection."
         },
         {
@@ -89,8 +105,8 @@
         {
           "name": "prevents-shared-broad-work",
           "type": "regex",
-          "pattern": "(?is)(?:precomput|materializ|cache.{0,160}(?:before|ahead of).{0,120}(?:D1|quer)|(?:before|ahead of).{0,120}(?:D1|quer).{0,160}cache|(?:move|remove|only execute).{0,220}(?:COUNT|corpus|shared).{0,320}(?:abstract|dynamic|high.cardinality))",
-          "description": "The fix removes the corpus-scale shared work from the high-cardinality request path rather than merely caching after it executes."
+          "pattern": "(?is)(?:precomput|materializ|static(?:ally| generation)?|generated).{0,320}(?:COUNT|aggregate|corpus|entity).{0,360}(?:publish|update|ingest|build|generated|static)|(?:publish|update|ingest|build).{0,320}(?:precomput|materializ|COUNT|aggregate|corpus|entity)",
+          "description": "The fix moves corpus-scale shared work to a publish/update/static path instead of leaving it on any public request path."
         },
         {
           "name": "cold-miss-envelope",
@@ -101,20 +117,21 @@
         {
           "name": "official-source-basis",
           "type": "regex",
-          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/d1/)(?=.*developers\\.cloudflare\\.com/workers/(?:cache|runtime-apis/cache))",
+          "pattern": "(?is)Source basis(?=.*developers\\.cloudflare\\.com/d1/)(?=.*developers\\.cloudflare\\.com/(?:workers/(?:cache|runtime-apis/cache|static-assets)|cache/))",
           "description": "The D1 billing and cache behavior are grounded in their directly relevant official documentation."
         },
         {
           "name": "scenario-qualitative-review",
           "type": "judge",
           "rubric": [
+            "Activates from the anonymous public route plus D1 evidence without needing the prompt to mention crawlers and emits `Release verdict: BLOCK` before the finding",
             "Builds a bounded public-surface graph from host routes, router code, sitemap, and internal links rather than treating the sitemap as exhaustive",
             "Models dynamic routes as families and attributes shared layout dependencies before route-specific work",
             "Treats query shape as one multiplier rather than the whole problem",
             "Does not infer deployed traffic, cache hit ratio, WAF, bot, rate-limit, Access, or billing state",
             "Separates the known content corpus from the larger accepted keyspace and identifies whether invalid keys reach metered work before rejection",
             "Labels one fill per distinct key as a corpus-covering scenario because complete request coverage is not supplied, then considers independent locations, expiry/eviction/revalidation, and concurrent fills",
-            "Prevents corpus-scale/shared D1 work on each crawl; any residual lookup is explicitly bounded and recrawls are cached",
+            "Prevents corpus-scale/shared D1 work on every public route, including fixed `/`, `/browse`, and `/about` routes; does not call moving the aggregate off only `/abstract/*` a complete fix; any residual lookup is explicitly bounded and recrawls are cached",
             "Uses current official Cloudflare documentation that directly supports cache and billing semantics"
           ],
           "threshold": 0.85

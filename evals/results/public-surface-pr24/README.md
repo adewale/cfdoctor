@@ -1,5 +1,9 @@
 # PR 24 public-surface evaluation receipt
 
+This receipt covers the earlier broad public-surface implementation. The
+focused release-gate follow-up, evaluated after the final skill tightening, is
+recorded in [`../public-surface-release-gate/`](../public-surface-release-gate/).
+
 This receipt evaluates implementation `0bc463a4a394d3b885ec68bcabf194058711de4f`
 against the skill at pinned base `72a57e9372ec65a28cfcb9edd201d57a3aed8148`.
 The harness was pinned to `abd8d7d57aae788658bc293abac1dab80dfb24ac`;
