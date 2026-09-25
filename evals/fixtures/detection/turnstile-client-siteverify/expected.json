@@ -1,0 +1,7 @@
+{
+  "description": "Siteverify is called from a static-asset script and the Turnstile secret is read through a Vite public (VITE_) variable, so the secret is published to browsers and no backend validates the token.",
+  "evidence_ids": ["CFDOC-EVD-CF-TURNSTILE-SPIN"],
+  "required_check_ids": ["CFDOC-SEC-TURNSTILE-CLIENT-SITEVERIFY"],
+  "forbidden_check_ids": ["CFDOC-SEC-TURNSTILE-NO-SITEVERIFY", "CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT"],
+  "expected_evidence_terms": ["public/contact.js", "VITE_TURNSTILE_SECRET_KEY"]
+}

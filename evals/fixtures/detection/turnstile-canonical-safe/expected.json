@@ -1,0 +1,13 @@
+{
+  "description": "Turnstile Spin canonical integration: explicit data-action widget, backend Siteverify with a token-size guard, remoteip, a 10s timeout, fail-closed handling, and success/action/hostname-allowlist checks; dummy keys appear only in a dev Wrangler environment and tests. False-positive guard: zero findings.",
+  "evidence_ids": ["CFDOC-EVD-CF-TURNSTILE-SPIN"],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-SEC-TURNSTILE-NO-SITEVERIFY",
+    "CFDOC-SEC-TURNSTILE-CLIENT-SITEVERIFY",
+    "CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT",
+    "CFDOC-SEC-TURNSTILE-VERIFY-HARDENING",
+    "CFDOC-SEC-TURNSTILE-TEST-KEY"
+  ],
+  "max_findings": 0
+}

@@ -15,6 +15,8 @@
     {"url": "https://developers.cloudflare.com/workers/wrangler/configuration/", "content_terms": ["workers_dev", "Defaults to true"]},
     {"url": "https://developers.cloudflare.com/workflows/reference/pricing/", "content_terms": ["Steps", "August 10"]},
     {"url": "https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/", "content_terms": ["new key-value backed namespace", "new_sqlite_classes"]},
-    {"url": "https://developers.cloudflare.com/images/pricing/", "content_terms": ["unique transformations", "Repeat requests"]}
+    {"url": "https://developers.cloudflare.com/images/pricing/", "content_terms": ["unique transformations", "Repeat requests"]},
+    {"url": "https://developers.cloudflare.com/turnstile/get-started/server-side-validation/", "content_terms": ["Maximum length: 2048 characters", "Only call the Siteverify API in your backend environment", "timeout-or-duplicate"]},
+    {"url": "https://developers.cloudflare.com/turnstile/troubleshooting/testing/", "content_terms": ["Always passes validation"]}
   ]
 }

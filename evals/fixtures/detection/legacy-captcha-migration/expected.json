@@ -1,0 +1,7 @@
+{
+  "description": "A Worker contact form protected by reCAPTCHA v2 (widget, g-recaptcha-response field, and Google siteverify). The Turnstile Spin migration signals are present, so the scanner should emit the low-severity migration lead and no Turnstile misconfiguration leads.",
+  "evidence_ids": ["CFDOC-EVD-CF-TURNSTILE-SPIN"],
+  "required_check_ids": ["CFDOC-FIT-LEGACY-CAPTCHA"],
+  "forbidden_check_ids": ["CFDOC-SEC-TURNSTILE-NO-SITEVERIFY", "CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT"],
+  "max_findings": 1
+}

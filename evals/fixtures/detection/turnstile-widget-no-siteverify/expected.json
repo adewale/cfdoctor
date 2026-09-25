@@ -1,0 +1,7 @@
+{
+  "description": "Turnstile widget recovery case: the page renders a cf-turnstile widget and the Worker only checks that a cf-turnstile-response field is present before writing to KV. No Siteverify call exists, so any string passes. Turnstile Spin's widget-recovery mode exists for exactly this setup.",
+  "evidence_ids": ["CFDOC-EVD-CF-TURNSTILE-SPIN"],
+  "required_check_ids": ["CFDOC-SEC-TURNSTILE-NO-SITEVERIFY"],
+  "forbidden_check_ids": ["CFDOC-SEC-TURNSTILE-CLIENT-SITEVERIFY", "CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT"],
+  "max_findings": 1
+}

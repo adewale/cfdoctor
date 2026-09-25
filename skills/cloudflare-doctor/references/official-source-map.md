@@ -163,6 +163,13 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Rate limiting rules: https://developers.cloudflare.com/waf/rate-limiting-rules/
 - WAF security events: https://developers.cloudflare.com/waf/analytics/security-events/
 - Turnstile: https://developers.cloudflare.com/turnstile/
+- Turnstile server-side validation (Siteverify contract, token limits, error codes): https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
+- Turnstile Spin (agent/dashboard/Wrangler setup and repair flow): https://developers.cloudflare.com/turnstile/spin/
+- Turnstile Spin skill (canonical agent behavior): https://github.com/cloudflare/skills/tree/main/skills/turnstile-spin
+- Turnstile test keys: https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+- Turnstile migration from reCAPTCHA/hCaptcha: https://developers.cloudflare.com/turnstile/migration/
+- Turnstile token validation analytics: https://developers.cloudflare.com/turnstile/turnstile-analytics/token-validation/
+- Turnstile pre-clearance: https://developers.cloudflare.com/turnstile/additional-configuration/hostname-management/pre-clearance/
 - Bot Management / bot products: https://developers.cloudflare.com/bots/
 - API Shield: https://developers.cloudflare.com/api-shield/
 - API Shield mTLS: https://developers.cloudflare.com/api-shield/security/mtls/

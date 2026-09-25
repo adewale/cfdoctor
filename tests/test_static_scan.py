@@ -721,6 +721,149 @@ class StaticScannerTests(unittest.TestCase):
         })
         self.assertEqual([], self.do_sql_ids(report))
 
+    # Cloudflare's documented always-pass Turnstile dummy keys, built here so the literal
+    # values stay out of repository text.
+    PASS_SECRET = "1x" + "0" * 31 + "AA"
+    PASS_SITEKEY = "1x" + "0" * 20 + "AA"
+    SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+
+    def turnstile_findings(self, report: dict) -> list[tuple[str, str]]:
+        return sorted(
+            (f["check_id"], f["severity"]) for f in report["findings"]
+            if "TURNSTILE" in f["check_id"] or "CAPTCHA" in f["check_id"]
+        )
+
+    def test_turnstile_widget_in_component_without_siteverify_is_reported(self) -> None:
+        report = scan({
+            "src/components/Signup.tsx": "\n".join([
+                "import { Turnstile } from '@marsidev/react-turnstile';",
+                "export const Signup = () => <Turnstile siteKey='0x4AAAAAAAexample' />;",
+            ]),
+            "src/worker.ts": "export default { fetch: () => new Response('ok') };",
+        })
+        self.assertEqual([("CFDOC-SEC-TURNSTILE-NO-SITEVERIFY", "high")], self.turnstile_findings(report))
+
+    def test_turnstile_pages_plugin_counts_as_server_validation(self) -> None:
+        report = scan({
+            "public/index.html": '<div class="cf-turnstile" data-sitekey="0x4AAAAAAAexample"></div>',
+            "functions/_middleware.ts": 'import turnstilePlugin from "@cloudflare/pages-plugin-turnstile";\nexport const onRequestPost = turnstilePlugin({ secret: "" });',
+        })
+        self.assertEqual([], self.turnstile_findings(report))
+
+    def test_turnstile_siteverify_only_in_tests_does_not_count(self) -> None:
+        report = scan({
+            "public/index.html": '<div class="cf-turnstile" data-sitekey="0x4AAAAAAAexample"></div>',
+            "tests/verify.test.js": f'fetchMock.post("{self.SITEVERIFY}", {{ success: true }});',
+        })
+        self.assertEqual([("CFDOC-SEC-TURNSTILE-NO-SITEVERIFY", "high")], self.turnstile_findings(report))
+
+    def test_turnstile_python_worker_contract_is_read_from_py_sources(self) -> None:
+        report = scan({
+            "src/main.py": "\n".join([
+                f'VERIFY_URL = "{self.SITEVERIFY}"',
+                'ACTION = "run-example"',
+                "async def verify(request, token):",
+                '    payload = {"secret": secret, "response": token, "remoteip": request.headers.get("CF-Connecting-IP")}',
+                "    result = await post(VERIFY_URL, payload)",
+                '    return result.get("success") is True and result.get("action") == ACTION and result.get("hostname", "") == expected_hostname',
+            ]),
+        })
+        self.assertEqual([("CFDOC-SEC-TURNSTILE-VERIFY-HARDENING", "low")], self.turnstile_findings(report))
+        finding = next(f for f in report["findings"] if f["check_id"] == "CFDOC-SEC-TURNSTILE-VERIFY-HARDENING")
+        self.assertIn("timeout", finding["evidence"])
+        self.assertIn("token size guard", finding["evidence"])
+        self.assertNotIn("remoteip]", finding["evidence"])
+
+    def test_turnstile_success_checked_but_action_and_hostname_missing_is_medium(self) -> None:
+        report = scan({
+            "src/index.js": "\n".join([
+                "export async function verify(token, ip, secret) {",
+                "  if (typeof token !== 'string' || token.length > 2048) return false;",
+                f"  const r = await fetch('{self.SITEVERIFY}', {{ method: 'POST', signal: AbortSignal.timeout(10000),",
+                "    body: new URLSearchParams({ secret, response: token, remoteip: ip }) });",
+                "  const data = await r.json();",
+                "  return data.success === true;",
+                "}",
+            ]),
+        })
+        self.assertEqual([("CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT", "medium")], self.turnstile_findings(report))
+        finding = next(f for f in report["findings"] if f["check_id"] == "CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT")
+        self.assertIn("no visible check: action, hostname", finding["evidence"])
+
+    def test_turnstile_siteverify_in_configured_asset_directory_is_client_side(self) -> None:
+        report = scan({
+            "wrangler.jsonc": '{"name": "spa", "compatibility_date": "2026-09-01", "observability": {"enabled": true}, "assets": {"directory": "./dist-web"}}',
+            "dist-web/app.js": f"fetch('{self.SITEVERIFY}', {{ method: 'POST' }});",
+        })
+        self.assertEqual([("CFDOC-SEC-TURNSTILE-CLIENT-SITEVERIFY", "high")], self.turnstile_findings(report))
+
+    def test_turnstile_dummy_keys_are_scoped_by_wrangler_environment(self) -> None:
+        config = f"""{{
+          "name": "signup",
+          "compatibility_date": "2026-09-01",
+          "vars": {{"TURNSTILE_SECRET": "{self.PASS_SECRET}"}},
+          "env": {{
+            "dev": {{"vars": {{"TURNSTILE_SECRET": "{self.PASS_SECRET}"}}}},
+            "production": {{"vars": {{"TURNSTILE_SITEKEY": "{self.PASS_SITEKEY}"}}}}
+          }}
+        }}"""
+        report = scan({"wrangler.jsonc": config})
+        evidence = sorted(
+            f["evidence"] for f in report["findings"] if f["check_id"] == "CFDOC-SEC-TURNSTILE-TEST-KEY"
+        )
+        self.assertEqual(2, len(evidence))
+        self.assertTrue(any("[env.production]" in e for e in evidence))
+        self.assertFalse(any("[env.dev]" in e for e in evidence))
+
+    def test_turnstile_top_level_dummy_key_overridden_in_production_is_not_reported(self) -> None:
+        config = f"""{{
+          "name": "signup",
+          "compatibility_date": "2026-09-01",
+          "vars": {{"TURNSTILE_SITEKEY": "{self.PASS_SITEKEY}", "TURNSTILE_SECRET": "{self.PASS_SECRET}"}},
+          "env": {{"production": {{"vars": {{"TURNSTILE_SITEKEY": "0x4AAAAAAAexampleSitekey"}}}}}}
+        }}"""
+        report = scan({"wrangler.jsonc": config, "playwright.config.ts": f"export const sitekey = '{self.PASS_SITEKEY}';"})
+        evidence = [f["evidence"] for f in report["findings"] if f["check_id"] == "CFDOC-SEC-TURNSTILE-TEST-KEY"]
+        self.assertEqual(1, len(evidence))
+        self.assertIn("vars TURNSTILE_SECRET", evidence[0])
+        self.assertNotIn("TURNSTILE_SITEKEY", evidence[0])
+
+    def test_turnstile_dummy_secret_is_not_a_committed_credential(self) -> None:
+        report = scan({
+            ".env.development": f"TURNSTILE_SECRET_KEY={self.PASS_SECRET}\n",
+            ".env": f"TURNSTILE_SECRET_KEY={self.PASS_SECRET}\n",
+        })
+        self.assertEqual([], self.secret_assignment_ids(report))
+        leads = [f["evidence"] for f in report["findings"] if f["check_id"] == "CFDOC-SEC-TURNSTILE-TEST-KEY"]
+        self.assertEqual(1, len(leads))
+        self.assertTrue(leads[0].startswith(".env:"))
+
+    def test_turnstile_widgets_in_saved_third_party_pages_are_ignored(self) -> None:
+        report = scan({
+            "wiki/sources/post.attachments/page.html": "\n".join([
+                '<script src="https://www.google.com/recaptcha/api.js"></script>',
+                '<div class="cf-turnstile" data-sitekey="0x4AAAAAAAexample"></div>',
+            ]),
+            "data/raw/export.html": '<div class="g-recaptcha"></div>',
+            "public/vendor.min.js": "turnstile.render('#x', {});",
+        })
+        self.assertEqual([], self.turnstile_findings(report))
+
+    def test_recaptcha_enterprise_migration_lead_calls_out_enterprise(self) -> None:
+        report = scan({
+            "public/login.html": '<script src="https://www.google.com/recaptcha/enterprise.js?render=6LcExample"></script>',
+        })
+        self.assertEqual([("CFDOC-FIT-LEGACY-CAPTCHA", "low")], self.turnstile_findings(report))
+        finding = next(f for f in report["findings"] if f["check_id"] == "CFDOC-FIT-LEGACY-CAPTCHA")
+        self.assertIn("reCAPTCHA Enterprise", finding["message"])
+
+    def test_markup_and_python_files_do_not_change_other_checks(self) -> None:
+        report = scan({
+            "public/index.html": '<script>const apiKey = "live-9f8a7b6c5d4e3f21";</script>',
+            "src/tool.py": 'API_KEY = "live-9f8a7b6c5d4e3f21"',
+        })
+        self.assertEqual([], [f["check_id"] for f in report["findings"]])
+
 
 if __name__ == "__main__":
     unittest.main()

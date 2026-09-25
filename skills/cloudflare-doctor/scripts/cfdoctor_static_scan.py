@@ -114,7 +114,72 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.4.0"
+# Turnstile leads follow the Turnstile Spin skill's canonical contract and the official
+# server-side validation docs. Widgets and verifiers often live in markup, framework
+# components, or Python Workers, so these extensions are read for the Turnstile checks
+# only; every other check keeps its existing file coverage.
+TURNSTILE_EXTRA_EXTS = {".html", ".htm", ".astro", ".svelte", ".vue", ".py", ".php", ".rb", ".erb", ".ejs", ".hbs", ".njk", ".liquid"}
+TURNSTILE_MARKUP_EXTS = {".html", ".htm"}
+# `[y]` keeps this scanner's own source from matching its Siteverify patterns during self-scans.
+TURNSTILE_SITEVERIFY_RE = re.compile(r"turnstile/v0/siteverif[y]")
+TURNSTILE_WIDGET_RE = re.compile(
+    r"challenges\.cloudflare\.com/turnstile/v0/api\.js"
+    r"|class(?:Name)?\s*=\s*[\"'{`][^\"'}`\n]*\bcf-turnstile\b"
+    r"|\bturnstile\.(?:render|execute)\s*\("
+    r"|from\s+['\"](?:@marsidev/react-turnstile|react-turnstile|svelte-turnstile|vue-turnstile|@nuxtjs/turnstile|astro-turnstile)['\"]"
+)
+# Server-side verification that does not spell out the Siteverify URL in this repository.
+TURNSTILE_SERVER_HELPER_RE = re.compile(r"@cloudflare/pages-plugin-turnstile|\bverifyTurnstileToken\s*\(")
+TURNSTILE_PUBLIC_SECRET_RE = re.compile(
+    r"\b(?:NEXT_PUBLIC|VITE|PUBLIC|REACT_APP|EXPO_PUBLIC|GATSBY|NUXT_PUBLIC)_[A-Z0-9_]*TURNSTILE[A-Z0-9_]*SECRET[A-Z0-9_]*\b"
+)
+# Documented dummy keys that always pass (https://developers.cloudflare.com/turnstile/troubleshooting/testing/).
+TURNSTILE_PASS_SECRET_RE = re.compile(r"\b1x0{31}AA\b")
+TURNSTILE_PASS_SITEKEY_RE = re.compile(r"\b1x0{20}(?:AA|BB)\b")
+TURNSTILE_DUMMY_KEY_RE = re.compile(r"^[123]x0{20}(?:AA|AB|BB|FF)$|^[123]x0{31}AA$")
+TURNSTILE_RESULT_SUCCESS_RE = re.compile(
+    r"\.success\b|\[\s*['\"]success['\"]\s*\]|\.get\(\s*['\"]success['\"]|\{[^{}]*\bsuccess\b[^{}]*\}\s*=",
+)
+
+
+def turnstile_field_check_re(field: str) -> re.Pattern[str]:
+    """Match a siteverify response field that is compared, allowlisted, or read for comparison."""
+    access = rf"(?:\.{field}\b|\[\s*['\"]{field}['\"]\s*\]|\.get\(\s*['\"]{field}['\"][^)\n]*\))"
+    return re.compile(
+        rf"{access}[^\n;]{{0,80}}?(?:!==?|===?|\bnot\s+in\b|\bin\b)"
+        rf"|(?:!==?|===?|\bin\b)[^\n;]{{0,80}}?{access}"
+        rf"|\b(?:has|includes)\(\s*[^)\n]{{0,60}}{access}"
+        rf"|\b(?:expected|allowed)_?{field}s?\b",
+        re.IGNORECASE,
+    )
+
+
+TURNSTILE_ACTION_CHECK_RE = turnstile_field_check_re("action")
+TURNSTILE_HOSTNAME_CHECK_RE = turnstile_field_check_re("hostname")
+TURNSTILE_TIMEOUT_RE = re.compile(r"AbortSignal\.timeout|AbortController|\bsignal\s*[:=]|\btimeout\s*[:=]|\btimeout\s*\(|\bwait_for\s*\(")
+TURNSTILE_TOKEN_SIZE_RE = re.compile(r"\b2048\b|max[_-]?token|token\w*\.length\s*>|len\(\s*\w*token\w*\s*\)\s*>", re.IGNORECASE)
+LEGACY_CAPTCHA_RE = re.compile(
+    r"(?:google|recaptcha)\.(?:com|net)/recaptcha/(?:api|enterprise)\.js|\bg-recaptcha\b|\bgrecaptcha\.(?:execute|render|ready)\b"
+    r"|/recaptcha/api/siteverif[y]|recaptchaenterprise\.googleapis\.com"
+    r"|js\.hcaptcha\.com/1/api\.js|\bh-captcha\b|hcaptcha\.com/siteverify|\bhcaptcha\.(?:render|execute)\s*\(",
+    re.IGNORECASE,
+)
+RECAPTCHA_ENTERPRISE_RE = re.compile(r"recaptcha/enterprise\.js|recaptchaenterprise\.googleapis\.com|grecaptcha\.enterprise", re.IGNORECASE)
+TEST_PATH_RE = re.compile(
+    r"(?:^|/)(?:tests?|__tests__|__mocks__|mocks?|specs?|e2e|cypress|playwright|fixtures?)(?:/|$)"
+    r"|\.(?:test|spec)\.[A-Za-z0-9]+$|(?:^|/)test_[^/]+\.py$|_test\.py$"
+    r"|(?:^|/)(?:playwright|vitest|jest|cypress)\.config\.[A-Za-z0-9]+$",
+    re.IGNORECASE,
+)
+# Saved/scraped pages and vendored bundles embed other sites' widgets; they are not this app's integration.
+THIRD_PARTY_CONTENT_RE = re.compile(
+    r"(?:^|/)(?:[^/]*[._-])?(?:vendor|third[_-]party|attachments|raw|scraped|crawl(?:ed)?|snapshots?|archives?|corpus)(?:/|$)|\.min\.js$",
+    re.IGNORECASE,
+)
+DEV_ENV_FILE_RE = re.compile(r"^\.(?:dev\.vars|env\.(?:dev|development|local|test|testing|example|sample|ci)(?:\..*)?)$", re.IGNORECASE)
+NON_PRODUCTION_ENV_RE = re.compile(r"dev|local|test|e2e|\bci\b|stag|preview|demo|sandbox", re.IGNORECASE)
+
+SCANNER_VERSION = "0.5.0"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -153,6 +218,12 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY", "COST", "medium", "low", "Webhook side effects lack obvious repo-visible idempotency", "Provider retries and duplicate deliveries can repeat downstream writes, fan-out, and paid work."),
     ("CFDOC-SEC-CORS-WILDCARD-CREDS", "SEC", "high", "medium", "Wildcard CORS appears near credentialed responses", "Access-Control-Allow-Origin * combined with credentials breaks browser auth safety."),
     ("CFDOC-SEC-SPOOFABLE-IP-HEADER", "SEC", "medium", "medium", "Code reads spoofable client-IP header", "x-forwarded-for/x-real-ip can be spoofed unless ingress is guaranteed through Cloudflare."),
+    ("CFDOC-SEC-TURNSTILE-NO-SITEVERIFY", "SEC", "high", "medium", "Turnstile widget is rendered but no server-side Siteverify call is visible", "The widget alone does not protect a form; without backend Siteverify any string is accepted as a token."),
+    ("CFDOC-SEC-TURNSTILE-CLIENT-SITEVERIFY", "SEC", "high", "high", "Turnstile Siteverify or secret appears in browser-delivered code", "Calling Siteverify from the browser exposes the secret and lets attackers skip the check; only the backend may call it."),
+    ("CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT", "SEC", "medium", "low", "Siteverify result is not checked for success, action, and hostname", "An HTTP 200 from Siteverify can carry success=false; tokens minted for another action or hostname (including localhost) must be rejected."),
+    ("CFDOC-SEC-TURNSTILE-VERIFY-HARDENING", "SEC", "low", "low", "Siteverify call lacks a timeout, token-size guard, or remoteip", "Spin's canonical call bounds the token at 2048 characters, sends remoteip, and fails closed after a timeout instead of waiting indefinitely."),
+    ("CFDOC-SEC-TURNSTILE-TEST-KEY", "SEC", "high", "medium", "Turnstile always-pass test key outside test/dev scope", "Dummy secret 1x...AA accepts every dummy token, so production verification silently passes for bots."),
+    ("CFDOC-FIT-LEGACY-CAPTCHA", "FIT", "low", "high", "reCAPTCHA or hCaptcha integration is a Turnstile migration candidate", "Existing third-party CAPTCHA can be replaced with Turnstile; v3 score thresholds and reCAPTCHA Enterprise need explicit migration decisions."),
     ("CFDOC-COST-KV-LIST-HOTPATH", "COST", "medium", "medium", "KV list operation appears in application code", "KV list/prefix scans on hot paths add latency and operation costs."),
     ("CFDOC-FIT-KV-COORDINATION", "FIT", "high", "medium", "KV read-modify-write smell for coordination/counters", "Eventually consistent KV is unsafe for locks, counters, inventory, or rate-limit state."),
     ("CFDOC-COST-R2-LIST-HOTPATH", "COST", "medium", "medium", "R2 bucket list appears in application code", "R2 listing is a storage operation and a poor metadata query path at volume."),
@@ -210,12 +281,12 @@ def rel(path: Path, root: Path) -> str:
         return str(path)
 
 
-def iter_files(root: Path) -> Iterable[Path]:
+def iter_files(root: Path, extra_exts: frozenset[str] | set[str] = frozenset()) -> Iterable[Path]:
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
         for name in filenames:
             path = Path(dirpath) / name
-            if name in CONFIG_NAMES or path.suffix in TEXT_EXTS or name.startswith(".env"):
+            if name in CONFIG_NAMES or path.suffix in TEXT_EXTS or name.startswith(".env") or path.suffix.lower() in extra_exts:
                 if path.stat().st_size <= 1_500_000:
                     yield path
 
@@ -345,6 +416,10 @@ def is_sensitive_assignment(match: re.Match[str], in_code_file: bool = False) ->
     if NON_SECRET_ASSIGNMENT_NAMES_RE.search(name):
         return False
     if PLACEHOLDER_SECRET_RE.search(value):
+        return False
+    # Turnstile's documented dummy keys are public test values; CFDOC-SEC-TURNSTILE-TEST-KEY
+    # judges whether one is placed where production traffic would use it.
+    if TURNSTILE_DUMMY_KEY_RE.match(value.rstrip(";,)")):
         return False
     if re.match(r"(?:re\.compile|RegExp)\(", value):
         return False
@@ -2025,6 +2100,248 @@ def add_code_findings(
                 ))
 
 
+def static_asset_dirs(root: Path, configs: list[tuple[Path, str, dict[str, Any]]]) -> set[str]:
+    """Root-relative directories that Wrangler serves to browsers as static assets."""
+    dirs: set[str] = set()
+    pending = [(path, data) for path, _, data in configs if data]
+    while pending:
+        path, data = pending.pop()
+        candidates: list[Any] = [data.get("pages_build_output_dir")]
+        assets = data.get("assets")
+        if isinstance(assets, dict):
+            candidates.append(assets.get("directory"))
+        site = data.get("site")
+        if isinstance(site, dict):
+            candidates.append(site.get("bucket"))
+        for candidate in candidates:
+            if isinstance(candidate, str) and candidate.strip():
+                directory = (path.parent / candidate.strip()).resolve()
+                dirs.add(Path(rel(directory, root)).as_posix().rstrip("/"))
+        envs = data.get("env")
+        if isinstance(envs, dict):
+            pending.extend((path, value) for value in envs.values() if isinstance(value, dict))
+    return {d for d in dirs if d and d != "."}
+
+
+def turnstile_is_client_file(rpath: str, text: str, asset_dirs: set[str]) -> bool:
+    if Path(rpath).suffix.lower() in TURNSTILE_MARKUP_EXTS:
+        return True
+    if any(rpath == d or rpath.startswith(d + "/") for d in asset_dirs):
+        return True
+    if re.match(r"\s*['\"]use client['\"]", text):
+        return True
+    return any(part in {"public", "static"} for part in Path(rpath).parts[:-1])
+
+
+def turnstile_test_key_scope_is_production(env_name: str | None) -> bool:
+    return env_name is None or not NON_PRODUCTION_ENV_RE.search(env_name)
+
+
+def add_turnstile_findings(
+    root: Path,
+    files: list[tuple[Path, str]],
+    configs: list[tuple[Path, str, dict[str, Any]]],
+    findings: list[Finding],
+) -> None:
+    """Turnstile leads derived from the Turnstile Spin contract and server-side validation docs."""
+    asset_dirs = static_asset_dirs(root, configs)
+    code_like = CODE_EXTS | TURNSTILE_EXTRA_EXTS
+    entries: list[tuple[Path, str, str, bool]] = []  # path, root-relative path, text, is_client
+    for path, text in files:
+        rpath = Path(rel(path, root)).as_posix()
+        if path.suffix.lower() not in code_like or TEST_PATH_RE.search(rpath) or THIRD_PARTY_CONTENT_RE.search(rpath):
+            continue
+        entries.append((path, rpath, text, turnstile_is_client_file(rpath, text, asset_dirs)))
+
+    siteverify_client = [(p, r, t) for p, r, t, client in entries if client and TURNSTILE_SITEVERIFY_RE.search(t)]
+    siteverify_server = [(p, r, t) for p, r, t, client in entries if not client and TURNSTILE_SITEVERIFY_RE.search(t)]
+    server_helper = any(not client and TURNSTILE_SERVER_HELPER_RE.search(t) for _, _, t, client in entries)
+
+    for _, rpath, text in siteverify_client:
+        hit = line_for(text, TURNSTILE_SITEVERIFY_RE) or (1, "")
+        findings.append(Finding(
+            "CFDOC-SEC-TURNSTILE-CLIENT-SITEVERIFY",
+            "high",
+            "Turnstile Siteverify or secret appears in browser-delivered code",
+            "security",
+            f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+            "Cloudflare requires the backend to be the sole Siteverify caller. A browser-side call ships the secret to every visitor and the protected endpoint never sees proof that a challenge was solved.",
+            "Send the `cf-turnstile-response` token to the existing backend handler and call Siteverify there with the secret from a Worker secret; rotate the secret if it was ever shipped to browsers.",
+            "high",
+        ))
+    env_files = [
+        (path, Path(rel(path, root)).as_posix(), text) for path, text in files
+        if path.name.startswith(".env") and not TEST_PATH_RE.search(Path(rel(path, root)).as_posix())
+    ]
+    for _, rpath, text in [(p, r, t) for p, r, t, _ in entries] + env_files:
+        hit = line_for(text, TURNSTILE_PUBLIC_SECRET_RE)
+        if hit:
+            findings.append(Finding(
+                "CFDOC-SEC-TURNSTILE-CLIENT-SITEVERIFY",
+                "high",
+                "Turnstile Siteverify or secret appears in browser-delivered code",
+                "security",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                "Framework-public environment prefixes are inlined into client bundles, so a Turnstile secret with that prefix is published to every visitor.",
+                "Rename the variable without the public prefix, read it only in server code, and rotate the exposed Turnstile secret.",
+                "high",
+            ))
+
+    if not siteverify_client and not siteverify_server and not server_helper:
+        widget_hits = [(r, line_for(t, TURNSTILE_WIDGET_RE)) for _, r, t, _ in entries if TURNSTILE_WIDGET_RE.search(t)]
+        if widget_hits:
+            rpath, hit = widget_hits[0]
+            more = f" (+{len(widget_hits) - 1} more widget files)" if len(widget_hits) > 1 else ""
+            findings.append(Finding(
+                "CFDOC-SEC-TURNSTILE-NO-SITEVERIFY",
+                "high",
+                "Turnstile widget is rendered but no server-side Siteverify call is visible",
+                "security / misconfiguration",
+                f"{rpath}:{hit[0] if hit else 1}: {excerpt(hit[1] if hit else '')}{more}",
+                "The client-side widget alone does not protect a form: attackers can post any string as the token. This is the incomplete setup Turnstile Spin's widget-recovery mode repairs.",
+                "Gate, don't replace: in the handler that receives the form, call Siteverify with the token, the Worker-secret key, and `CF-Connecting-IP`, then require `success`, the expected action, and an allowlisted hostname before existing logic runs. If the backend lives in another repository, confirm it there.",
+                "medium",
+            ))
+
+    if siteverify_server:
+        context = "\n".join(
+            t for _, _, t, client in entries
+            if not client and (TURNSTILE_SITEVERIFY_RE.search(t) or re.search(r"turnstile", t, re.IGNORECASE))
+        )
+        for _, rpath, text in siteverify_server:
+            hit = line_for(text, TURNSTILE_SITEVERIFY_RE) or (1, "")
+            evidence = f"{rpath}:{hit[0]}: {excerpt(hit[1])}"
+            missing_fields = [
+                name for name, pattern in (
+                    ("success", TURNSTILE_RESULT_SUCCESS_RE),
+                    ("action", TURNSTILE_ACTION_CHECK_RE),
+                    ("hostname", TURNSTILE_HOSTNAME_CHECK_RE),
+                )
+                if not pattern.search(context)
+            ]
+            if missing_fields:
+                findings.append(Finding(
+                    "CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT",
+                    "high" if "success" in missing_fields else "medium",
+                    "Siteverify result is not checked for success, action, and hostname",
+                    "security",
+                    f"{evidence} [no visible check: {', '.join(missing_fields)}]",
+                    "Siteverify answers HTTP 200 for failed tokens, so only `success === true` proves a solve. Spin's canonical handler also rejects tokens minted for another action or for a hostname outside the deployment allowlist (never localhost in production).",
+                    "Require `success === true`, `action` equal to the surface's action, and `hostname` in a deployment-specific allowlist before the existing handler logic runs; fail closed with 403 otherwise.",
+                    "low",
+                ))
+            missing_hardening = [
+                name for name, pattern in (
+                    ("timeout", TURNSTILE_TIMEOUT_RE),
+                    ("token size guard (<=2048)", TURNSTILE_TOKEN_SIZE_RE),
+                    ("remoteip", re.compile(r"remoteip", re.IGNORECASE)),
+                )
+                if not pattern.search(text) and not (name != "timeout" and pattern.search(context))
+            ]
+            if missing_hardening:
+                findings.append(Finding(
+                    "CFDOC-SEC-TURNSTILE-VERIFY-HARDENING",
+                    "low",
+                    "Siteverify call lacks a timeout, token-size guard, or remoteip",
+                    "security / reliability",
+                    f"{evidence} [missing: {', '.join(missing_hardening)}]",
+                    "Tokens are at most 2048 characters and single-use. Rejecting malformed tokens before the subrequest, bounding the Siteverify wait, and sending the visitor IP are part of Spin's canonical call; an unbounded wait holds the request open when Siteverify is slow.",
+                    "Reject non-string or >2048-character tokens with 403, pass `remoteip` from `CF-Connecting-IP`, and use `AbortSignal.timeout(10_000)` (or the runtime equivalent) with a fail-closed catch.",
+                    "low",
+                ))
+
+    for path, rpath, text, _ in entries:
+        for pattern, severity, label in (
+            (TURNSTILE_PASS_SECRET_RE, "high", "always-pass secret"),
+            (TURNSTILE_PASS_SITEKEY_RE, "medium", "always-pass sitekey"),
+        ):
+            hit = line_for(text, pattern)
+            if hit:
+                findings.append(Finding(
+                    "CFDOC-SEC-TURNSTILE-TEST-KEY",
+                    severity,
+                    "Turnstile always-pass test key outside test/dev scope",
+                    "security / misconfiguration",
+                    f"{rpath}:{hit[0]}: {excerpt(hit[1])} [{label}]",
+                    "Cloudflare's dummy keys always pass. A dummy secret reachable by production code (including as a fallback when the real secret is unset) accepts bots; a dummy sitekey on a production page never challenges anyone.",
+                    "Keep dummy keys in tests, `.dev.vars`, or dev/test environments only; make production fail closed when `TURNSTILE_SECRET` is missing instead of falling back to a test key.",
+                    "medium",
+                ))
+                break
+    for path, rpath, text in env_files:
+        if DEV_ENV_FILE_RE.match(path.name):
+            continue
+        hit = line_for(text, TURNSTILE_PASS_SECRET_RE)
+        if hit:
+            findings.append(Finding(
+                "CFDOC-SEC-TURNSTILE-TEST-KEY",
+                "high",
+                "Turnstile always-pass test key outside test/dev scope",
+                "security / misconfiguration",
+                f"{rpath}:{hit[0]}: {excerpt(hit[1])} [always-pass secret]",
+                "A dotenv file that is not scoped to development supplies an always-pass Turnstile secret, so verification accepts every dummy token.",
+                "Move the dummy secret to a development-only env file or `.dev.vars` and supply the real secret from secret storage.",
+                "medium",
+            ))
+    for path, text, data in configs:
+        if not data:
+            continue
+        scopes: list[tuple[str | None, Any]] = [(None, data.get("vars"))]
+        envs = data.get("env")
+        if isinstance(envs, dict):
+            scopes.extend((name, env.get("vars")) for name, env in envs.items() if isinstance(env, dict))
+        # Top-level vars often serve `wrangler dev`; a production-named env that overrides the
+        # same key with a real value means the dummy key never reaches that deployment.
+        prod_overrides: set[str] = set()
+        if isinstance(envs, dict):
+            for name, env in envs.items():
+                if isinstance(env, dict) and re.search(r"prod", str(name), re.IGNORECASE) and isinstance(env.get("vars"), dict):
+                    prod_overrides.update(
+                        key for key, value in env["vars"].items()
+                        if isinstance(value, str) and not TURNSTILE_DUMMY_KEY_RE.match(value.strip())
+                    )
+        for env_name, env_vars in scopes:
+            if not isinstance(env_vars, dict) or not turnstile_test_key_scope_is_production(env_name):
+                continue
+            leaked = [
+                key for key, value in env_vars.items()
+                if isinstance(value, str) and (TURNSTILE_PASS_SECRET_RE.search(value) or TURNSTILE_PASS_SITEKEY_RE.search(value))
+                and not (env_name is None and key in prod_overrides)
+            ]
+            if leaked:
+                is_secret = any(TURNSTILE_PASS_SECRET_RE.search(str(env_vars[key])) for key in leaked)
+                hit = line_for(text, TURNSTILE_PASS_SECRET_RE if is_secret else TURNSTILE_PASS_SITEKEY_RE) or (1, "")
+                scope = f" [env.{env_name}]" if env_name else ""
+                findings.append(Finding(
+                    "CFDOC-SEC-TURNSTILE-TEST-KEY",
+                    "high" if is_secret else "medium",
+                    "Turnstile always-pass test key outside test/dev scope",
+                    "security / misconfiguration",
+                    f"{rel(path, root)}:{hit[0]}: vars {', '.join(sorted(leaked))}{scope}",
+                    "Wrangler vars in a production-shaped scope carry a Turnstile dummy key, so deployed verification either always passes (secret) or never challenges (sitekey).",
+                    "Scope dummy keys to a dev/test Wrangler environment or `.dev.vars`; store the real secret with `wrangler secret put` and the real sitekey in production vars.",
+                    "medium",
+                ))
+
+    captcha_hits = [(r, t) for _, r, t, _ in entries if LEGACY_CAPTCHA_RE.search(t)]
+    if captcha_hits:
+        rpath, text = captcha_hits[0]
+        hit = line_for(text, LEGACY_CAPTCHA_RE) or (1, "")
+        more = f" (+{len(captcha_hits) - 1} more files)" if len(captcha_hits) > 1 else ""
+        enterprise = any(RECAPTCHA_ENTERPRISE_RE.search(t) for _, t in captcha_hits)
+        findings.append(Finding(
+            "CFDOC-FIT-LEGACY-CAPTCHA",
+            "low",
+            "reCAPTCHA or hCaptcha integration is a Turnstile migration candidate",
+            "missed optimization / product fit",
+            f"{rpath}:{hit[0]}: {excerpt(hit[1])}{more}",
+            "Turnstile can replace reCAPTCHA/hCaptcha with the same widget-plus-Siteverify shape. Turnstile has no score, so reCAPTCHA v3 thresholds become a pass/fail decision"
+            + ("; reCAPTCHA Enterprise usage should follow Cloudflare's migration guide rather than an automatic swap." if enterprise else "."),
+            "Plan the swap per protected surface: script and widget class, `cf-turnstile-response` field, backend Siteverify URL and secret, and a validated `action`. Turnstile Spin's migration mode performs this substitution.",
+            "high",
+        ))
+
+
 def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings: dict[str, set[str]], findings: list[Finding], files_scanned: int) -> str:
     products = sorted(product for product, names in bindings.items() if names)
     config_paths = [rel(path, root) for path, _, _ in configs]
@@ -2134,10 +2451,14 @@ def main(argv: list[str]) -> int:
     file_texts: list[tuple[Path, str]] = []
     configs: list[tuple[Path, str, dict[str, Any]]] = []
     parse_errors: list[tuple[Path, str]] = []
-    for path in iter_files(root):
+    turnstile_only_texts: list[tuple[Path, str]] = []
+    for path in iter_files(root, TURNSTILE_EXTRA_EXTS):
         if excludes and any(Path(rel(path, root)).as_posix().startswith(e) for e in excludes):
             continue
         text = read_text(path)
+        if path.name not in CONFIG_NAMES and path.suffix not in TEXT_EXTS and not path.name.startswith(".env"):
+            turnstile_only_texts.append((path, text))
+            continue
         file_texts.append((path, text))
         if path.name in CONFIG_NAMES:
             try:
@@ -2168,10 +2489,11 @@ def main(argv: list[str]) -> int:
         queue_consumer_names=queue_consumer_names,
         do_scopes=durable_object_scopes(configs, cycle_source_files),
     )
+    add_turnstile_findings(root, file_texts + turnstile_only_texts, configs, findings)
     if args.json:
         print(render_json(root, bindings, findings))
     else:
-        print(render(root, configs, bindings, findings, len(file_texts)))
+        print(render(root, configs, bindings, findings, len(file_texts) + len(turnstile_only_texts)))
     return 0
 
 

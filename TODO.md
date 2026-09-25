@@ -54,6 +54,12 @@ the plan doc and the git history, not repeated here.
 - [ ] Consider a separate composed async-loop graph for DO -> Queue -> consumer Worker -> DO and DO -> service-binding Worker -> DO only after representative fixtures establish binding resolution and acceptable precision. Existing queue re-enqueue, self-fetch, service-binding, and DO-cycle leads cover components but must not be presented as end-to-end detection.
 - [ ] Confirm the Billable Usage API response shape against the API schema docs (the endpoint template in `targeted-account-reads.md` came from the launch blog) before relying on it in an approved read.
 
+## Turnstile Spin follow-ups (2026-09-25)
+
+- [ ] Re-review `CFDOC-EVD-CF-TURNSTILE-SPIN` by 2026-12-25: re-read the `cloudflare/skills` `turnstile-spin` SKILL.md and the server-side validation page, and update the leads if the canonical contract changes (for example, if hostname allowlists or `remoteip` become mandatory).
+- [ ] Consider a scanner arm for in-page submits that reuse one cached token without `turnstile.reset`/`remove` (Spin's single-use lifecycle rule) once a representative SPA fixture can show acceptable precision; today the lifecycle rule is prompt-only guidance.
+- [ ] Consider resolving the `CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT` context through imports rather than every Turnstile-related server file, if portfolio runs show false suppressions from unrelated `hostname` comparisons.
+
 ## Research backlog (new patterns and experience reports)
 
 The 29-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios and 25 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.

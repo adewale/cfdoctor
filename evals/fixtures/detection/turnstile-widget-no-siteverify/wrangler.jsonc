@@ -1,0 +1,8 @@
+{
+  "name": "newsletter",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+  "assets": { "directory": "./public" },
+  "kv_namespaces": [{ "binding": "SUBSCRIBERS", "id": "0123456789abcdef0123456789abcdef" }]
+}

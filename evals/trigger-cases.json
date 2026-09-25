@@ -367,5 +367,27 @@
     "prompt": "Why did my AWS budget alert fire late? Explain how AWS Budgets evaluates thresholds.",
     "expected": "no_trigger",
     "category": "non-cloudflare billing"
+  },
+  {
+    "id": "turnstile-siteverify-audit",
+    "prompt": "Audit our Turnstile widget and siteverify handling in this Worker for bypasses before launch.",
+    "expected": "trigger",
+    "category": "turnstile audit",
+    "description_terms": [
+      "Turnstile",
+      "security gaps"
+    ]
+  },
+  {
+    "id": "turnstile-setup-belongs-to-spin",
+    "prompt": "Set up Cloudflare Turnstile on my signup form.",
+    "expected": "no_trigger",
+    "category": "turnstile setup (turnstile-spin skill)"
+  },
+  {
+    "id": "turnstile-physical-false-friend",
+    "prompt": "Review the turnstile throughput at our stadium entrance gates.",
+    "expected": "no_trigger",
+    "category": "generic phrase false friend"
   }
 ]

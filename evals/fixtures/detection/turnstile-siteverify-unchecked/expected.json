@@ -1,0 +1,11 @@
+{
+  "description": "Siteverify is called but the handler trusts the HTTP status (Siteverify answers 200 for failed tokens), never checks success, action, or hostname, has no timeout, token-size guard, or remoteip, and falls back to Cloudflare's always-pass dummy secret when TURNSTILE_SECRET is unset.",
+  "evidence_ids": ["CFDOC-EVD-CF-TURNSTILE-SPIN"],
+  "required_check_ids": [
+    "CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT",
+    "CFDOC-SEC-TURNSTILE-VERIFY-HARDENING",
+    "CFDOC-SEC-TURNSTILE-TEST-KEY"
+  ],
+  "forbidden_check_ids": ["CFDOC-SEC-TURNSTILE-NO-SITEVERIFY", "CFDOC-SEC-SECRET-ASSIGNMENT"],
+  "expected_evidence_terms": ["no visible check: success, action, hostname", "always-pass secret"]
+}

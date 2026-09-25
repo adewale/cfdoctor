@@ -53,6 +53,10 @@ TRIGGER_PATTERNS = [
     r"\baccess\s+polic(?:y|ies)\b",
     r"\bcloudflare\s+dns\b",
     r"\bwaf\b",
+    r"\bcloudflare\s+turnstile\b",
+    r"\bturnstile\s+(?:widgets?|sitekeys?|secrets?|tokens?|integration)\b",
+    r"\bsiteverify\b",
+    r"\bcf-turnstile-response\b",
 ]
 
 INTENT_PATTERNS = [

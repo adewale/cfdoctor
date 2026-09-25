@@ -33,6 +33,8 @@ The list below was discovered from official Cloudflare `llms.txt` product indexe
 - [Terraform Best practices](https://developers.cloudflare.com/terraform/advanced-topics/best-practices/index.md) — Recommended directory structure, state management, and workflow practices for Cloudflare Terraform.
 - [Get started with API Shield](https://developers.cloudflare.com/api-shield/get-started/index.md) — Set up API Shield to identify and address API security best practices.
 - [Rate limiting best practices](https://developers.cloudflare.com/waf/rate-limiting-rules/best-practices/index.md) — Typical rate limiting configurations for login protection, API abuse, and more.
+- [Validate the Turnstile token](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/index.md) — Mandatory server-side Siteverify, token limits and lifecycle, action/hostname checks, and security/performance best practices.
+- [Turnstile Spin](https://developers.cloudflare.com/turnstile/spin/index.md) — Canonical end-to-end setup and repair flow (widget plus backend Siteverify) from the dashboard, Wrangler, or an AI coding agent.
 - [Proactive DDoS defense](https://developers.cloudflare.com/ddos-protection/best-practices/proactive-defense/index.md) — Strengthen your application against DDoS attacks before they happen.
 - [Third-party services and DDoS protection](https://developers.cloudflare.com/ddos-protection/best-practices/third-party/index.md) — DDoS rule interactions with third-party services.
 - [Deploy content security rules in production](https://developers.cloudflare.com/client-side-security/best-practices/deploy-rules-in-production/index.md) — Safe practices for deploying and updating content security rules.

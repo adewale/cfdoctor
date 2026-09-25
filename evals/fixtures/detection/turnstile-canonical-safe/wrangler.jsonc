@@ -1,0 +1,21 @@
+{
+  "name": "signup",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "signup.example.com", "custom_domain": true }],
+  "assets": { "directory": "./public" },
+  "vars": {
+    "TURNSTILE_SITEKEY": "0x4AAAAAAAexampleSitekey",
+    "TURNSTILE_HOSTNAMES": "signup.example.com"
+  },
+  "env": {
+    "dev": {
+      "assets": { "directory": "./public" },
+      "vars": {
+        "TURNSTILE_SITEKEY": "1x00000000000000000000AA",
+        "TURNSTILE_HOSTNAMES": "localhost,127.0.0.1"
+      }
+    }
+  }
+}

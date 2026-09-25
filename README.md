@@ -1,6 +1,6 @@
 # Cloudflare Doctor
 
-Cloudflare Doctor is an Agent Skill plus read-only scanner for auditing Cloudflare projects. It helps an AI coding agent find best-practice drift, wrong primitives, misconfiguration, security/reliability risk, missed optimizations, and cost footguns across Workers, Pages, Static Assets, KV, D1, R2, Durable Objects, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Containers, Pipelines, Workers VPC, Email bindings, Secrets Store, Agents SDK, Artifacts, CDN/cache, DNS, WAF, Access/Zero Trust, and Cloudflare account/IaC surfaces.
+Cloudflare Doctor is an Agent Skill plus read-only scanner for auditing Cloudflare projects. It helps an AI coding agent find best-practice drift, wrong primitives, misconfiguration, security/reliability risk, missed optimizations, and cost footguns across Workers, Pages, Static Assets, KV, D1, R2, Durable Objects, Queues, Workflows, Workers AI, AI Gateway, Vectorize, Images, Stream, Browser Run, Dynamic Workers, Containers, Pipelines, Workers VPC, Email bindings, Secrets Store, Agents SDK, Artifacts, CDN/cache, DNS, WAF, Turnstile, Access/Zero Trust, and Cloudflare account/IaC surfaces.
 
 The skill is intentionally source-driven: Cloudflare product behavior, pricing, limits, and best practices must be refreshed from current official Cloudflare docs before final recommendations. War stories are used as scenario prompts, not pricing authority.
 
@@ -11,7 +11,7 @@ Use it as a **read-only audit partner** when you want Cloudflare-specific judgme
 - **Repo/config audit** — inspect Wrangler config (`wrangler.jsonc` for new projects; JSON/TOML also supported), bindings, Workers/Pages code, IaC, tests, and docs before launch or review.
 - **Product-fit review** — ask whether KV, D1, R2, Durable Objects, Queues, Workflows, Vectorize, Workers AI, etc. match the access pattern.
 - **Cost and surprise-billing review** — identify billing meters, fanout, retries, AI/browser/media/vector usage, cache misses, and missing cost proxies.
-- **Security/reliability posture** — check auth boundaries, preview exposure, WAF/rate-limit evidence, queue/DLQ behavior, cron/loop bounds, and observability.
+- **Security/reliability posture** — check auth boundaries, preview exposure, WAF/rate-limit evidence, Turnstile widget/Siteverify wiring (against Cloudflare's Turnstile Spin contract), queue/DLQ behavior, cron/loop bounds, and observability.
 - **Dashboard/account evidence review** — provide screenshots, API exports, Terraform, `cf-terraforming`, or approved read-only command output for state that is not in the repo.
 - **Scanner triage** — run the static scanner for leads, then use the skill to confirm or suppress findings with source context and current docs.
 
@@ -206,12 +206,12 @@ python3 scripts/check_links.py --validate-policy
 
 Run `npm run update-results` when the checked-in proof reports should change.
 
-Current proof from the latest validation run (2026-08-09; model-graded results pinned from 2026-07-11):
+Current proof from the latest validation run (deterministic checks 2026-09-25; full link network check 2026-08-09; model-graded results pinned from 2026-07-11):
 
-- Trigger eval: `43/43 = 100%` (`evals/results/latest.md`).
-- Detection eval: `30/30` fixtures pass, including valid/malformed JSONC, Queue-DLQ controls, deeper DO sharding, per-consumer Queue matching, alarm guard precision, linked Stream preload, indirect self-fetch, full observability sampling, DO stub-call cycles with chain/guarded false-positive controls, and unbounded DO SQL scans (`evals/results/detection/latest.md`).
-- Coverage matrix: consistent with the 62-check scanner registry.
-- Evidence ledger: 31 structured records cover all 24 checklist scenarios and 30 detection fixtures with reciprocal lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, three first-party Cloudflare outage postmortems, an explicit superseded-evidence disposition, the 2026-08 StandardAgents DO runaway-loop bill, and Cloudflare budget-alert/billable-usage semantics.
+- Trigger eval: `46/46 = 100%` (`evals/results/latest.md`).
+- Detection eval: `35/35` fixtures pass, including valid/malformed JSONC, Queue-DLQ controls, deeper DO sharding, per-consumer Queue matching, alarm guard precision, linked Stream preload, indirect self-fetch, full observability sampling, DO stub-call cycles with chain/guarded false-positive controls, unbounded DO SQL scans, and Turnstile widget/Siteverify/test-key/migration leads with a canonical-Spin zero-finding control (`evals/results/detection/latest.md`).
+- Coverage matrix: consistent with the 68-check scanner registry.
+- Evidence ledger: 32 structured records cover all 24 checklist scenarios and 35 detection fixtures with reciprocal lineage; newer records add direct D1 cost, Durable Object alarm, product-fit, three first-party Cloudflare outage postmortems, an explicit superseded-evidence disposition, the 2026-08 StandardAgents DO runaway-loop bill, Cloudflare budget-alert/billable-usage semantics, and the Turnstile Spin Siteverify contract.
 - Wrangler snapshot wrapper: 14 offline tests cover explicit approval/planning, exact Worker/Pages command shapes, profile forwarding, metadata-only-by-default behavior, opt-in Worker config/source and Pages config capture, active-version metadata, environment isolation, version/active-state failure gates, symlink removal, recursive private permissions, and Git-worktree refusal. Approved private live runs completed against `readability-worker` (Wrangler 4.71.0), `atlas` (4.94.0), and `keyboardia-staging` (4.53.0); only sanitized shapes were retained.
 - Skill Eval Harness: v0.6.0 strict leakage/ablation validation and manifest audit pass across 39 cases / 6 ablations.
 - Matched GPT-5.5 three-way eval (2026-07-11): 31 visible answer cases × 3 variants × 3 runs = 279 fresh answers and 243 primary judgments. Current PR scored 89.15% objective / 89.69% combined, versus pinned `origin/main` 81.79% / 83.00% and no skill 72.97% / 69.24%. Paired objective lift was +7.36 points versus main (`p=0.000270`) and +16.17 versus no skill (`p=0.000010`). The Wrangler slice scored 93.01% versus 63.96% main and 60.53% no skill; legacy current/main remained compatible (`p=0.107439`). A 27-case Claude judge sample agreed with GPT on 26/27 pass decisions. The one-shot private release guard passed 2/2 with a 0.925 blind-judge mean. See `evals/results/gpt-5.5-current-threeway/latest.md` and `evals/results/private-release-2026-07-11.md`; earlier reports under `gpt-5.5-value/` are pinned historical evidence.

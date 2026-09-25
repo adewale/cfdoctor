@@ -59,6 +59,7 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | CFDOC-COST-WORKFLOW-STEPS | skill-prompt-only | COST | — | [`cost-footguns.md`](cost-footguns.md) and [`performance-and-reliability.md`](performance-and-reliability.md) (Workflows) | Review step count, state retention, retries, and child fan-out using code plus Workflow analytics; raw `step.do` counts are not sufficient for a static finding. |
 | CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §2, §19; proposed in §"Checks to add or strengthen" | Webhook-shaped projects with side effects and no repo-visible delivery/event dedupe key produce a low-confidence lead. Signature-verification ordering remains semantic review work. |
 | CFDOC-FIT-KV-COORDINATION | scanner-lead | FIT | high | [`product-fit-rubric.md`](product-fit-rubric.md) (KV consistency limits) | KV read-modify-write smell for coordination/counters. |
+| CFDOC-FIT-LEGACY-CAPTCHA | scanner-lead | FIT | low | [`config-and-security-checks.md`](config-and-security-checks.md) (Turnstile bot verification); `CFDOC-EVD-CF-TURNSTILE-SPIN` | reCAPTCHA/hCaptcha widget, response field, or siteverify markers (Turnstile Spin's migration signals) in app code; saved third-party pages and minified bundles are ignored. Enterprise usage is called out for guided migration. |
 | CFDOC-PERF-AWAITED-CACHE-PUT | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Cache put awaited in request path. |
 | CFDOC-PERF-D1-N-PLUS-ONE | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Many D1 prepared statements in one file; check for N+1 queries. |
 | CFDOC-PERF-D1-SELECT-STAR | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Projection/schema-coupling review only; `SELECT *` does not itself prove a full scan or extra billed rows. |
@@ -72,6 +73,13 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | CFDOC-SEC-SECRET-IN-CONFIG | scanner-lead | SEC | high | [`config-and-security-checks.md`](config-and-security-checks.md) (secret handling) | Possible secret stored in Wrangler vars. |
 | CFDOC-SEC-SECRET-VALUE | scanner-lead | SEC | critical | [`config-and-security-checks.md`](config-and-security-checks.md) (secret handling) | Credential-shaped value appears in repository text. |
 | CFDOC-SEC-SPOOFABLE-IP-HEADER | scanner-lead | SEC | medium | [`config-and-security-checks.md`](config-and-security-checks.md) (ingress trust) | Code reads spoofable client-IP header. |
+| CFDOC-SEC-TURNSTILE-CLEARANCE-AMPLIFY | skill-prompt-only | SEC | — | [`config-and-security-checks.md`](config-and-security-checks.md) (Turnstile bot verification); `CFDOC-EVD-CF-TURNSTILE-SPIN` | App-issued clearance cookie or session after one Siteverify pass that exempts later costly requests without binding, a short lifetime, a dedicated signing key, or a rate limit; needs semantic review of the gate. |
+| CFDOC-SEC-TURNSTILE-CLIENT-SITEVERIFY | scanner-lead | SEC | high | [`config-and-security-checks.md`](config-and-security-checks.md) (Turnstile bot verification); `CFDOC-EVD-CF-TURNSTILE-SPIN` | Siteverify URL in browser-delivered code (HTML, Wrangler asset directories, `public/`/`static/`, `"use client"`), or a Turnstile secret behind a framework-public env prefix. |
+| CFDOC-SEC-TURNSTILE-NO-SITEVERIFY | scanner-lead | SEC | high | [`config-and-security-checks.md`](config-and-security-checks.md) (Turnstile bot verification); `CFDOC-EVD-CF-TURNSTILE-SPIN` | Widget markers (api.js, `cf-turnstile`, `turnstile.render`, framework wrappers) with no non-test backend Siteverify call, Pages Turnstile plugin, or known server helper. The backend may live elsewhere, so confidence is medium. |
+| CFDOC-SEC-TURNSTILE-TEST-KEY | scanner-lead | SEC | high | [`config-and-security-checks.md`](config-and-security-checks.md) (Turnstile bot verification); `CFDOC-EVD-CF-TURNSTILE-SPIN` | Always-pass dummy secret (high) or sitekey (medium) in non-test code, production-shaped Wrangler vars, or non-development dotenv files. Dev/test environments and `tests/` are exempt. |
+| CFDOC-SEC-TURNSTILE-UNCHECKED-RESULT | scanner-lead | SEC | medium | [`config-and-security-checks.md`](config-and-security-checks.md) (Turnstile bot verification); `CFDOC-EVD-CF-TURNSTILE-SPIN` | Backend Siteverify with no visible `success` check (high) or no `action`/`hostname` comparison (medium) across Turnstile-related server files. Low confidence: checks in unrelated helpers are invisible. |
+| CFDOC-SEC-TURNSTILE-UNPROTECTED-FORM | skill-prompt-only | SEC | — | [`config-and-security-checks.md`](config-and-security-checks.md) (Turnstile bot verification); `CFDOC-EVD-CF-TURNSTILE-SPIN` | Anonymous browser-triggered write/spend surface (signup, contact, comment, create/share, AI/browser/email/Dynamic Worker run) with no Turnstile, rate limit, WAF, or auth; fit depends on who calls the endpoint. |
+| CFDOC-SEC-TURNSTILE-VERIFY-HARDENING | scanner-lead | SEC | low | [`config-and-security-checks.md`](config-and-security-checks.md) (Turnstile bot verification); `CFDOC-EVD-CF-TURNSTILE-SPIN` | Siteverify file lacks a timeout, a <=2048-character token guard, or `remoteip` from Spin's canonical call. |
 | CFDOC-SEC-TLS-FLEXIBLE | scanner-lead | SEC | high | [`config-and-security-checks.md`](config-and-security-checks.md) (SSL/TLS mode) | Terraform sets SSL/TLS mode to Flexible. |
 | DO-ALARM-RECURSION | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14, §15; proposed in §"Checks to add or strengthen" | Alarm handler reschedules without obvious idle guard. |
 | DO-EPHEMERAL-IDEMPOTENCY-OBJECTS | scanner-lead | FIT | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Durable Object key appears tied to an ephemeral id/request. |
@@ -133,6 +141,23 @@ The five follow-up gaps were hardened in scanner 0.3.5:
 - `CFDOC-COST-ASYNC-LOOP` follows bounded same-file URL aliases derived from
   the incoming request. Cross-module/runtime URL construction remains outside
   static reach.
+
+Scanner 0.5.0 added Turnstile leads derived from Cloudflare's Turnstile Spin skill and
+the server-side validation docs (`CFDOC-EVD-CF-TURNSTILE-SPIN`), each backed by a
+known-bad fixture or the `turnstile-canonical-safe` zero-finding control:
+
+- Markup (`.html`, `.astro`, `.svelte`, `.vue`, templates) and Python sources are read
+  for the Turnstile leads only, so earlier checks keep their file coverage.
+- Test paths, saved/scraped third-party pages (`*attachments/`, `raw/`, `archive/`,
+  `vendor/`, ...), and `*.min.js` bundles are ignored, because they embed other sites'
+  widgets.
+- Result and hardening checks are lexical. They look for comparisons on the response
+  fields and for timeout/size/`remoteip` markers; they cannot prove the checks sit on
+  every request path. When a finding is clean, confirm the real contract by exercising
+  the endpoint with a fresh token and a replayed token, as Spin's validation step does.
+- Whether an unprotected surface *should* use Turnstile (browser human vs. API, CLI,
+  webhook, or already-authenticated caller), and whether an app-issued clearance
+  cookie amplifies one solve, remain semantic review work.
 
 Scanner 0.4.0 added two Durable Object leads motivated by the 2026-08
 StandardAgents runaway-loop bill (`CFDOC-EVD-STDAGENTS-DO-LOOP`), each with

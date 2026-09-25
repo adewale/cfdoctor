@@ -13,5 +13,10 @@ scanner's own Turnstile server-side-validation guidance asks contributors to wri
 this control existed the scanner reported the first two as high-severity committed
 credentials, so following its advice produced a new finding.
 
+The Turnstile verifier follows the Turnstile Spin canonical contract (token-size guard,
+`remoteip`, a timeout, fail-closed handling, and `success`/`action`/hostname-allowlist checks),
+so it also pins the Turnstile result and hardening leads quiet on the shape they recommend
+(evidence `CFDOC-EVD-CF-TURNSTILE-SPIN`).
+
 Expected: no findings at all (`max_findings: 0`). Committed literals are still covered as a
 positive case by `secret-in-wrangler-vars`.

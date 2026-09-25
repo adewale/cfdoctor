@@ -201,6 +201,15 @@ If recommending a specific circuit-breaker or kill-switch pattern beyond these d
 - KV how it works: https://developers.cloudflare.com/kv/concepts/how-kv-works/
 - AI Gateway caching: https://developers.cloudflare.com/ai-gateway/features/caching/
 
+### Turnstile bot verification and form abuse
+
+- Turnstile server-side validation (mandatory Siteverify, 300-second single-use tokens, 2048-character limit, error codes, action/hostname checks, backend-only calls, timeouts): https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
+- Turnstile Spin (canonical setup/repair flow and hostname guidance): https://developers.cloudflare.com/turnstile/spin/
+- Turnstile Spin skill (canonical agent contract: gate, don't replace; migration signals): https://github.com/cloudflare/skills/tree/main/skills/turnstile-spin
+- Turnstile test keys: https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+- Turnstile migration from reCAPTCHA/hCaptcha: https://developers.cloudflare.com/turnstile/migration/
+- Rate limiting best practices (first control for non-browser or GET abuse): https://developers.cloudflare.com/waf/rate-limiting-rules/best-practices/
+
 ## Audit-time source checklist
 
 Before final answer:
