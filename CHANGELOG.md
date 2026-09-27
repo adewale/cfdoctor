@@ -4,6 +4,10 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
+- Verification hygiene (2026-09 verification audit):
+  - CI now runs `npm test` and `npm run eval:validate` instead of a hand-copied command list, so `package.json` is the single source of truth for the gate (the copies had drifted: CI did not compile `scripts/focus_public_route_eval.py`). The duplicate `install-boundary.yml` workflow is removed; `npm test` already runs `check_install_boundary.py`.
+  - `scripts/check_claim_ledger.py` now fails on overdue non-accepted evidence (unverified, superseded, retracted) once it is more than `NON_ACCEPTED_REVIEW_GRACE_DAYS` (30) days past `review_due`; before that it warns with the date it will start failing. Accepted evidence still fails as soon as review is due.
+  - Per-run timestamped eval reports (`evals/results/trigger-eval-*.md`, `evals/results/detection/detection-eval-*.md`) are gitignored; only `latest.md` is committed going forward.
 - Added coverage for the 2026-08 StandardAgents Durable Object runaway-loop bill ($8,846.78, 98.5% "Durable Objects Storage Rows Read"; first-hand X threads from Justin Schroeder and Boyd with billing screenshots), grounded in current Cloudflare docs:
   - New evidence records `CFDOC-EVD-STDAGENTS-DO-LOOP` (incident, scenario 24) and `CFDOC-EVD-CF-BUDGET-ALERTS` (official guidance: budget alerts are informational only — no pause/cap, $10 auto-created default on eligible Pay-as-you-go accounts; billable usage dashboard/API is the daily meter watch). Refreshed `CFDOC-EVD-DO-ALARM-34K` with the corroborated mechanism class; the ledger now has 31 records covering 24 scenarios, and the ledger validator's scenario range moved from 23 to 24.
   - New war-story scenario #24 (DO-to-DO re-trigger loops, the rows-read-dominated bill signature, and alert scope/latency), a strengthened scenario #9 with Cloudflare-native budget-alert semantics, and scenario-matrix rows for DO-to-DO loops and budget-alert detection latency.

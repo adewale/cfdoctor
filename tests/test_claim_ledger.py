@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import contextlib
 import copy
 import datetime as dt
 import importlib.util
+import io
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -47,6 +50,41 @@ class ClaimLedgerTests(unittest.TestCase):
         ledger["records"][0]["review_due"] = "2026-07-10"
         errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("review due" in error for error in errors))
+
+    def _non_accepted_record_due(self, review_due: str) -> tuple[dict, str]:
+        ledger = copy.deepcopy(self.ledger)
+        record = next(item for item in ledger["records"] if item["status"] != "accepted")
+        record["verified_at"] = "2026-07-01"
+        record["review_due"] = review_due
+        return ledger, record["id"]
+
+    def test_overdue_non_accepted_record_warns_during_grace_period(self) -> None:
+        ledger, rid = self._non_accepted_record_due("2026-07-10")
+        as_of = dt.date(2026, 7, 10) + dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS)
+        errors, warnings = module.validate(ledger, as_of)
+        self.assertFalse(any(rid in error for error in errors), errors)
+        overdue = [warning for warning in warnings if rid in warning]
+        self.assertEqual(1, len(overdue), warnings)
+        self.assertIn("evidence review due since 2026-07-10", overdue[0])
+        self.assertIn(f"fails after {as_of.isoformat()}", overdue[0])
+
+    def test_overdue_non_accepted_record_fails_after_grace_period(self) -> None:
+        ledger, rid = self._non_accepted_record_due("2026-07-10")
+        as_of = dt.date(2026, 7, 10) + dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS + 1)
+        errors, warnings = module.validate(ledger, as_of)
+        self.assertTrue(any(f"{rid}: evidence review due since 2026-07-10" in error for error in errors), errors)
+        self.assertFalse(any(rid in warning for warning in warnings), warnings)
+
+    def test_overdue_non_accepted_record_fails_cli(self) -> None:
+        ledger, rid = self._non_accepted_record_due("2026-07-10")
+        as_of = dt.date(2026, 7, 10) + dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS + 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ledger.json"
+            path.write_text(json.dumps(ledger), encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
+                code = module.main(["--ledger", str(path), "--as-of", as_of.isoformat()])
+        self.assertEqual(1, code)
+        self.assertIn(f"FAIL: {rid}: evidence review due since 2026-07-10", err.getvalue())
 
     def test_review_due_cannot_exceed_declared_cadence(self) -> None:
         ledger = copy.deepcopy(self.ledger)
