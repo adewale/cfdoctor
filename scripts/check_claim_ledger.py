@@ -18,6 +18,10 @@ ALLOWED_CLASSES = {"incident", "official-guidance", "operator-note", "product-an
 ALLOWED_STATUS = {"accepted", "unverified", "superseded", "retracted"}
 CONFIDENCE_KEYS = {"authenticity", "mechanism", "independence", "applicability", "temporal"}
 SCENARIO_MAX = 24
+# Accepted evidence fails validation as soon as its review is due. Non-accepted
+# evidence (unverified, superseded, retracted) warns for this many days after
+# review_due and then fails, so an overdue review cannot stay a warning forever.
+NON_ACCEPTED_REVIEW_GRACE_DAYS = 30
 
 
 def load_json(path: Path) -> dict:
@@ -151,7 +155,11 @@ def validate(ledger: dict, as_of: dt.date) -> tuple[list[str], list[str]]:
                 errors.append(f"{rid}: review_due exceeds {cadence}-day ledger cadence")
             if due <= as_of:
                 message = f"{rid}: evidence review due since {due.isoformat()}"
-                (errors if record.get("status") == "accepted" else warnings).append(message)
+                fail_after = due + dt.timedelta(days=NON_ACCEPTED_REVIEW_GRACE_DAYS)
+                if record.get("status") == "accepted" or as_of > fail_after:
+                    errors.append(message)
+                else:
+                    warnings.append(f"{message}; fails after {fail_after.isoformat()} unless reviewed")
         except (KeyError, TypeError, ValueError):
             errors.append(f"{rid}: verified_at and review_due must be ISO dates")
 
