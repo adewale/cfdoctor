@@ -43,6 +43,14 @@ contract, or near-miss control and declares required/forbidden check IDs plus
 optional diagnostic evidence terms in `expected.json`. Clean/near-miss fixtures
 use `max_findings: 0` where appropriate.
 
+A `max_findings: 0` fixture only guards the detectors its content nearly
+triggers. `tests/test_detector_near_misses.py` holds minimal pairs for detectors
+without a forbidden-ID fixture: a positive project that must fire and a
+near-miss, differing only in the detector's guard, that must not. When you
+widen or add a detector guard, add a pair there or a near-miss fixture here.
+`tests/test_eval_detection.py` shows each rule of this runner (required,
+forbidden, `max_findings`, evidence terms, exit code) can fail.
+
 Fixture `evidence_ids` resolve through `research/incident-claim-ledger.json`.
 `scripts/check_claim_ledger.py` validates source-cluster deduplication,
 evidence class, confidence/freshness, scenario/check lineage, and reciprocal
