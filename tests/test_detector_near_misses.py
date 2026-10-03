@@ -159,17 +159,17 @@ CASES = [
         ),
         worker(
             "export default { async fetch(request, env) {\n"
-            '  return Response.json(await env.DB.prepare("SELECT COUNT(*) AS n FROM posts").first());\n'
+            '  return Response.json(await env.DB.prepare("SELECT COUNT(*) AS n FROM posts WHERE id = ?").bind(1).first());\n'
             "} };\n",
             d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
         ),
     ),
     (
         "CFDOC-PERF-D1-N-PLUS-ONE",
-        "a handler with one read and one write",
+        "a handler with a read, a write and an audit insert",
         worker(
             "export default { async fetch(request, env) {\n"
-            + "".join(f'  await env.DB.prepare("SELECT id FROM t{i} WHERE id = ?").bind(1).first();\n' for i in range(6))
+            + "".join(f'  await env.DB.prepare("SELECT id FROM t{i} WHERE id = ?").bind(1).first();\n' for i in range(10))
             + '  return new Response("ok");\n} };\n',
             d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
         ),
@@ -177,6 +177,7 @@ CASES = [
             "export default { async fetch(request, env) {\n"
             '  const row = await env.DB.prepare("SELECT id FROM posts WHERE id = ?").bind(1).first();\n'
             '  await env.DB.prepare("UPDATE posts SET views = views + 1 WHERE id = ?").bind(row.id).run();\n'
+            '  await env.DB.prepare("INSERT INTO audit (post_id) VALUES (?)").bind(row.id).run();\n'
             '  return new Response("ok");\n} };\n',
             d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
         ),
@@ -263,8 +264,7 @@ CASES = [
         durable_object(
             "  async fetch() {\n"
             "    const [client, server] = Object.values(new WebSocketPair());\n"
-            "    if (this.legacy) server.accept();\n"
-            "    else this.ctx.acceptWebSocket(server);\n"
+            "    this.ctx.acceptWebSocket(server);\n"
             "    return new Response(null, { status: 101, webSocket: client });\n"
             "  }\n"
         ),
@@ -272,7 +272,7 @@ CASES = [
     (
         "CFDOC-COST-ASYNC-LOOP",
         "fetching a path on a configured origin, not the incoming URL",
-        worker('export default { async fetch(request) { return fetch(new URL("/api", request.url)); } };\n'),
+        worker('export default { async fetch(request, env) { return fetch(new URL("/api", request.url)); } };\n'),
         worker('export default { async fetch(request, env) { return fetch(new URL("/api", env.ORIGIN_URL)); } };\n'),
     ),
 ]

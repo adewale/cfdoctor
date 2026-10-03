@@ -73,6 +73,21 @@ class EvaluateFixtureTests(unittest.TestCase):
         self.assertEqual(["*/5"], result.missing_evidence_terms)
 
 
+    def test_evidence_terms_must_come_from_required_findings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = make_fixture(Path(tmp), "case", {
+                "required_check_ids": ["CFDOC-COST-CRON-EVERY-MINUTE"],
+                "expected_evidence_terms": ["*/*"],
+            })
+            config = json.loads((fixture / "wrangler.jsonc").read_text())
+            config["routes"] = ["*/*"]
+            (fixture / "wrangler.jsonc").write_text(json.dumps(config))
+            result = eval_detection.evaluate_fixture(fixture)
+        self.assertIn("CFDOC-COST-BROAD-ROUTE", result.found_ids)
+        self.assertFalse(result.passed)
+        self.assertEqual(["*/*"], result.missing_evidence_terms)
+
+
 class MainExitCodeTests(unittest.TestCase):
     def run_main(self, fixtures: list[tuple[str, dict]]) -> int:
         with tempfile.TemporaryDirectory() as tmp:
