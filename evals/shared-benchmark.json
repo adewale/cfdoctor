@@ -1005,6 +1005,7 @@
       "id": "trig-cf-audit",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": true,
       "prompt": "Trigger decision eval. User prompt: Cloudflare Doctor this repo\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return TRIGGER for this skill."
@@ -1031,6 +1032,7 @@
       "id": "trig-cost",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": true,
       "prompt": "Trigger decision eval. User prompt: find Cloudflare cost footguns\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return TRIGGER for this skill."
@@ -1057,6 +1059,7 @@
       "id": "trig-dns-generic",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": false,
       "prompt": "Trigger decision eval. User prompt: teach me DNS basics\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return NO_TRIGGER for this skill."
@@ -1083,6 +1086,7 @@
       "id": "trig-status",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": false,
       "prompt": "Trigger decision eval. User prompt: is Cloudflare status green?\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return NO_TRIGGER for this skill."
@@ -1118,6 +1122,7 @@
         {
           "name": "qualitative-review",
           "type": "judge",
+          "gate": true,
           "rubric": [
             "Docs freshness",
             "Contract completeness"
@@ -1146,6 +1151,7 @@
         {
           "name": "private-holdback-review",
           "type": "judge",
+          "gate": true,
           "rubric": [
             "Use the private answer key; do not rely on public manifest wording."
           ],

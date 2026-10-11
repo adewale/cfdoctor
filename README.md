@@ -35,7 +35,7 @@ Interpret the output as an evidence-backed risk review: findings should include 
 - `scripts/eval_skill_trigger.py` — deterministic trigger/description eval for the skill.
 - `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
 - `scripts/check_coverage.py` — consistency check between `skills/cloudflare-doctor/references/check-coverage-matrix.md` and the scanner's check registry.
-- `scripts/check_claim_ledger.py` — validates stable evidence/source-cluster IDs, source quality, confidence dimensions, scenario/check/fixture lineage, and freshness in `research/incident-claim-ledger.json`.
+- `scripts/check_claim_ledger.py` — validates stable evidence/source-cluster IDs, source quality, confidence dimensions, scenario/check/fixture lineage, and freshness in `research/incident-claim-ledger.json`. Accepted evidence fails once its review is due; unverified, superseded, or retracted evidence warns for 30 days past `review_due` and then fails.
 - `scripts/capture_wrangler_snapshot.py` — explicitly approved, private Wrangler snapshot wrapper for deployed Worker/Pages config and secret names, Worker active versions/bindings/limits, and Pages deployments; it never installs Wrangler or mutates Cloudflare state.
 - `scripts/check_links.py` — checks the installable runtime references plus current research/docs, excluding historical generated reports; optional semantic anchors detect critical official-doc content drift.
 - `docs/` — recipes, lessons learned, and the ranked improvement plan with per-change risk analysis.
@@ -141,7 +141,9 @@ python3 scripts/check_links.py --validate-policy
 git diff --check -- . ':(exclude)evals/results'
 ```
 
-Use `npm run update-results` only when you intentionally want to refresh the checked-in eval report artifacts under `evals/results/`.
+Use `npm run update-results` only when you intentionally want to refresh the checked-in eval report artifacts under `evals/results/`. Only `latest.md` is committed; the timestamped per-run copies the scripts also write are gitignored.
+
+CI runs exactly `npm test` and `npm run eval:validate` (plus `git diff --check`), so add new gate commands to `package.json` rather than to the workflow.
 
 The shared benchmark manifest is for maintainers who want paired with-skill/without-skill and ablation evaluation. Hidden holdout/holdback prompts are intentionally private and are not required for normal users.
 

@@ -23,46 +23,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Validate JSON manifests
-        run: |
-          python3 -m json.tool package.json >/dev/null
-          find evals research -name '*.json' -print0 | xargs -0 -I{} python3 -m json.tool {} >/dev/null
+      - name: Set up uv (for npm run eval:validate)
+        uses: astral-sh/setup-uv@v9.0.0
 
-      - name: Compile Python helpers
-        run: python3 -m py_compile skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py scripts/eval_skill_trigger.py scripts/eval_detection.py scripts/check_coverage.py scripts/check_claim_ledger.py scripts/capture_wrangler_snapshot.py scripts/check_links.py scripts/check_install_boundary.py evals/oracles/fixture_oracle.py
-
-      - name: Run offline unit tests
-        run: python3 -m unittest discover -s tests
-
-      - name: Run trigger eval
-        run: python3 scripts/eval_skill_trigger.py --out-dir /tmp/cfdoctor-trigger-eval
-
-      - name: Run static self-scan (fixtures excluded, must be clean)
-        run: |
-          ./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures --json \
-            | python3 -c "import json,sys; d=json.load(sys.stdin); f=d['findings']; assert not f, f; print('self-scan clean')"
-
-      - name: Run detection eval against fixtures
-        run: python3 scripts/eval_detection.py --out-dir /tmp/cfdoctor-detection-eval
-
-      - name: Check coverage matrix consistency
-        run: python3 scripts/check_coverage.py
-
-      - name: Check evidence ledger and link policy
-        run: |
-          python3 scripts/check_claim_ledger.py
-          python3 scripts/check_links.py --validate-policy
+      # package.json is the single source of truth for the gate: CI runs the same
+      # `npm test` maintainers run locally (JSON validation, py_compile, unit tests,
+      # trigger eval, self-scan, detection eval, coverage matrix, evidence ledger,
+      # link policy, install boundary).
+      - name: Run npm test
+        run: npm test
 
       - name: Validate shared benchmark with Skill Eval Harness v0.6.0
-        run: |
-          python3 -m pip install 'git+https://github.com/adewale/skill-eval-harness.git@abd8d7d57aae788658bc293abac1dab80dfb24ac'
-          skill-benchmark validate evals/shared-benchmark.json --strict-leakage --leakage-min-chars 1 --check-ablations
-          skill-benchmark audit-manifest evals/shared-benchmark.json --fail-on-blockers
-
-      - name: Check installable skill boundary
-        run: |
-          find skills/cloudflare-doctor -type d -name __pycache__ -prune -exec rm -rf {} +
-          python3 scripts/check_install_boundary.py
+        run: npm run eval:validate
 
       - name: Check whitespace in committed diff
         env:

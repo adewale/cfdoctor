@@ -2,3 +2,7 @@ eval-runs/
 evals/holdout/
 evals/holdback/
 __pycache__/
+# Eval runs write a timestamped report plus latest.md. Commit only latest.md;
+# the per-run copies are local history (or CI artifacts), not review material.
+evals/results/trigger-eval-*.md
+evals/results/detection/detection-eval-*.md
