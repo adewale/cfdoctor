@@ -5,7 +5,8 @@
   ],
   "required_check_ids": [
     "CFDOC-PERF-D1-N-PLUS-ONE",
-    "CFDOC-PERF-D1-SELECT-STAR"
+    "CFDOC-PERF-D1-SELECT-STAR",
+    "CFDOC-COST-D1-NO-INDEXES"
   ],
   "forbidden_check_ids": []
 }
