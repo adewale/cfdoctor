@@ -24,10 +24,9 @@ class ClaimLedgerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.ledger = json.loads((ROOT / "research/incident-claim-ledger.json").read_text())
-        cls.as_of = dt.date.fromisoformat(cls.ledger["as_of"])
 
     def test_current_ledger_is_valid_and_superseded_source_is_resolved(self) -> None:
-        errors, warnings = module.validate(copy.deepcopy(self.ledger), self.as_of)
+        errors, warnings = module.validate(copy.deepcopy(self.ledger), dt.date(2026, 8, 9))
         self.assertEqual([], errors)
         self.assertEqual([], warnings)
         record = next(item for item in self.ledger["records"] if item["id"] == "CFDOC-EVD-AWS-S3-HOTLINK")
@@ -37,107 +36,104 @@ class ClaimLedgerTests(unittest.TestCase):
     def test_duplicate_evidence_id_is_rejected(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"].append(copy.deepcopy(ledger["records"][0]))
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("duplicate evidence id" in error for error in errors))
 
     def test_accepted_incident_requires_first_hand_primary_source(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][0]["sources"][0]["first_hand"] = False
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("first-hand primary source" in error for error in errors))
 
     def test_overdue_accepted_record_fails_closed(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][0]["review_due"] = "2026-07-10"
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("review due" in error for error in errors))
 
-    def _non_accepted_record_due(self, review_due: dt.date) -> tuple[dict, str]:
+    def _non_accepted_record_due(self, review_due: str) -> tuple[dict, str]:
         ledger = copy.deepcopy(self.ledger)
         record = next(item for item in ledger["records"] if item["status"] != "accepted")
-        record["verified_at"] = (review_due - dt.timedelta(days=1)).isoformat()
-        record["review_due"] = review_due.isoformat()
+        record["verified_at"] = "2026-07-01"
+        record["review_due"] = review_due
         return ledger, record["id"]
 
     def test_overdue_non_accepted_record_warns_during_grace_period(self) -> None:
-        review_due = self.as_of - dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS)
-        ledger, rid = self._non_accepted_record_due(review_due)
-        as_of = self.as_of
+        ledger, rid = self._non_accepted_record_due("2026-07-10")
+        as_of = dt.date(2026, 7, 10) + dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS)
         errors, warnings = module.validate(ledger, as_of)
         self.assertFalse(any(rid in error for error in errors), errors)
         overdue = [warning for warning in warnings if rid in warning]
         self.assertEqual(1, len(overdue), warnings)
-        self.assertIn(f"evidence review due since {review_due.isoformat()}", overdue[0])
+        self.assertIn("evidence review due since 2026-07-10", overdue[0])
         self.assertIn(f"fails after {as_of.isoformat()}", overdue[0])
 
     def test_overdue_non_accepted_record_fails_after_grace_period(self) -> None:
-        review_due = self.as_of - dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS)
-        ledger, rid = self._non_accepted_record_due(review_due)
-        as_of = self.as_of + dt.timedelta(days=1)
+        ledger, rid = self._non_accepted_record_due("2026-07-10")
+        as_of = dt.date(2026, 7, 10) + dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS + 1)
         errors, warnings = module.validate(ledger, as_of)
-        self.assertTrue(any(f"{rid}: evidence review due since {review_due.isoformat()}" in error for error in errors), errors)
+        self.assertTrue(any(f"{rid}: evidence review due since 2026-07-10" in error for error in errors), errors)
         self.assertFalse(any(rid in warning for warning in warnings), warnings)
 
     def test_overdue_non_accepted_record_fails_cli(self) -> None:
-        review_due = self.as_of - dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS)
-        ledger, rid = self._non_accepted_record_due(review_due)
-        as_of = self.as_of + dt.timedelta(days=1)
+        ledger, rid = self._non_accepted_record_due("2026-07-10")
+        as_of = dt.date(2026, 7, 10) + dt.timedelta(days=module.NON_ACCEPTED_REVIEW_GRACE_DAYS + 1)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "ledger.json"
             path.write_text(json.dumps(ledger), encoding="utf-8")
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
                 code = module.main(["--ledger", str(path), "--as-of", as_of.isoformat()])
         self.assertEqual(1, code)
-        self.assertIn(f"FAIL: {rid}: evidence review due since {review_due.isoformat()}", err.getvalue())
+        self.assertIn(f"FAIL: {rid}: evidence review due since 2026-07-10", err.getvalue())
 
     def test_review_due_cannot_exceed_declared_cadence(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][0]["review_due"] = "2099-01-01"
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("exceeds 92-day ledger cadence" in error for error in errors))
 
     def test_top_level_freshness_metadata_is_validated(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["as_of"] = "not-a-date"
         ledger["review_cadence_days"] = 0
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("ledger.as_of" in error for error in errors))
         self.assertTrue(any("review_cadence_days" in error for error in errors))
 
     def test_duplicate_primary_source_across_clusters_is_rejected(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][1]["sources"][0]["url"] = ledger["records"][0]["sources"][0]["url"]
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("primary source URL duplicates" in error for error in errors))
 
     def test_extra_ledger_to_fixture_link_is_rejected(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][1]["fixture_ids"].append("clean-baseline")
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("lacks reciprocal evidence_id" in error for error in errors))
 
     def test_unavailable_source_requires_unverified_status(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][0]["sources"][0]["availability"] = "unavailable"
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("unavailable source requires unverified" in error for error in errors))
 
     def test_malformed_source_entry_is_reported_without_crashing(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][0]["sources"] = ["not-an-object"]
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("sources[0] must be an object" in error for error in errors))
 
     def test_unknown_check_id_is_rejected(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][0]["check_ids"].append("CFDOC-NOT-REAL")
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("unknown check_id" in error for error in errors))
 
     def test_fixture_evidence_must_match_a_fixture_check(self) -> None:
         ledger = copy.deepcopy(self.ledger)
         ledger["records"][0]["check_ids"] = []
-        errors, _ = module.validate(ledger, self.as_of)
+        errors, _ = module.validate(ledger, dt.date(2026, 8, 9))
         self.assertTrue(any("has no check_id matching required/forbidden fixture behavior" in error for error in errors))
 
 

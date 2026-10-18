@@ -65,22 +65,6 @@ The current matched GPT-5.5 three-way round (`with_skill` current PR, `old_skill
 
 Qualitative assertions now use an explicit `0.85` threshold instead of the fake-red implicit `1.0`. Every tune answer case also has token and elapsed-time assertions. Keep the multi-dimensional objective/qualitative/efficiency view rather than collapsing value to one pass number.
 
-## Private/background D1 investigations
-
-The five `private-d1-*` tune cases provide synthetic code, schema, plans, and row measurements for private polling, deep OFFSET pagination, repeated full syncs, indexed updates, and safe controls. Prompts start from ambiguous usage symptoms; fixture inputs do not supply the diagnosis or derived exposure arithmetic. These are agent-reasoning cases, not static-scanner detections or an incident replay.
-
-Materialize the focused manifest at the repository root, where the pinned harness can resolve its relative ablation paths:
-
-```bash
-python3 scripts/focus_private_d1_eval.py --out .private-d1-focused.json
-```
-
-Use the repository-pinned harness from `package.json` to validate it, prepare paired `with_skill` / `without_skill` tasks and the `no-private-d1-cost-accounting` ablation, execute fresh isolated answers, and grade with `--allow-scripts`. The ablation removes the new mandatory accounting instructions and diagnosis routing; existing reference guidance remains, so it tests their incremental contribution. Expected behavior and oracle code are grading inputs, never answer-generation inputs.
-
-The structural oracle checks path-specific evidence, separate read/write exposure, sampled-versus-enforced bounds, remediation, and precision controls. Negative unit tests guard plausible wrong diagnoses and arithmetic. These checks do not prove unrestricted prose correct or establish model lift. Report execution success, structural results, qualitative review, and efficiency separately; a smoke run or a reused tune case is not an independent holdout.
-
-The [2026-10-18 smoke receipt](results/private-d1-investigations/README.md) retains all five outputs, initial structural failures, parser repairs, revised grading, and the native-runner authentication limitation. It makes no paired-effectiveness claim.
-
 ## Adding cases
 
 Add cases when the trigger policy changes or a false trigger is observed:

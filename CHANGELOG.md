@@ -4,12 +4,10 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
-- Private/background D1 cost diagnosis (2026-10-18):
-  - Added mandatory measured cost-path accounting independent of public traffic or user count, with separate read/write terms, parameter/cardinality cohorts, and observed-versus-projected exposure. The existing public-route release gate remains conditional on anonymous routes.
-  - Added a scoped bill-diagnosis reference, pinned-Wrangler insights planning, and D1-specific targeted account reads. Total reads/writes/executions are separated from latency, limited insights from invoice reconciliation, and sampled units from enforced bounds.
-  - Expanded write-amplification guidance for syncs, retries, indexed updates, and migrations, plus spending/availability requirements that distinguish alerts from durable application work budgets and verified product limits.
-  - Added synthetic private-workload investigation cases and safe controls, a focused evaluation manifest helper, and semantic-oracle regression tests. These are investigation scenarios, not a replay of the reported incident or new static-scanner coverage.
-  - Recorded the Cyberlane report as one unverified source cluster with unknown mechanism and a 2026-11-17 review; the ledger now contains 32 records. Updated ledger tests to validate against its recorded review date rather than an obsolete fixed date.
+- General cost-audit principles:
+  - Account for evidenced private/background work and execution frequency using each applicable product's billing units, plan, and window.
+  - Prioritize charge contributions, distinguish raw usage from billed quantities, avoid repeated allowance deductions, and confirm causes from application/usage evidence.
+  - Treat spending predictability and stop/degrade behavior as customer requirements; distinguish notifications from verified enforcement and preserve unknown scope.
 - Verification hygiene (2026-09 verification audit):
   - CI now runs `npm test` and `npm run eval:validate` instead of a hand-copied command list, so `package.json` is the single source of truth for the gate (the copies had drifted: CI did not compile `scripts/focus_public_route_eval.py`). The duplicate `install-boundary.yml` workflow is removed; `npm test` already runs `check_install_boundary.py`.
   - `scripts/check_claim_ledger.py` now fails on overdue non-accepted evidence (unverified, superseded, retracted) once it is more than `NON_ACCEPTED_REVIEW_GRACE_DAYS` (30) days past `review_due`; before that it warns with the date it will start failing. Accepted evidence still fails as soon as review is due.

@@ -1,8 +1,0 @@
-{
-  "name": "fixture-private-d1-safe",
-  "main": "index.js",
-  "compatibility_date": "2026-08-01",
-  "workers_dev": false,
-  "services": [{ "binding": "SESSION_GATE", "service": "fixture-imaginary-session-gate" }],
-  "d1_databases": [{ "binding": "DB", "database_name": "fixture-private-dashboard", "database_id": "00000000-0000-0000-0000-000000000025" }]
-}

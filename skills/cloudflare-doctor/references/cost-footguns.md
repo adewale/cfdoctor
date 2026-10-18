@@ -9,9 +9,12 @@ Ask for or infer cautiously:
 - Per-request storage operations: KV reads/writes/lists, D1 queries/rows, R2 Class A/B operations, Queue messages, DO requests/duration, Dynamic Worker requests/CPU/unique workers, and Artifacts operations/storage.
 - Background job volume, retry rates, cron frequency, agent/tool/browser/sandbox runs, log volume/retention, and add-on products enabled.
 - Plan type and limits. Cloudflare pricing/limits change; verify current docs before quoting numbers.
-- Acceptable spend, burst/overshoot tolerance, and whether expensive work should degrade or stop at a boundary. See [`product-fit-rubric.md`](product-fit-rubric.md#spending-and-availability-requirements) when predictable spending affects product fit.
 - Whether the project recently moved from Free to Paid. Treat plan upgrades as cost-risk changes: hard stops/included usage may become paid overages or different throttling behavior depending on product and plan.
 - Circuit breakers, kill switches, retry limits, fanout caps, DLQ depth, and run-summary metrics. Missing controls turn transient failures into spend amplification.
+
+For every relevant meter, separate execution frequency from billable units per execution, including private/authenticated requests, scheduled work, retries, and fanout. A small audience does not establish a small workload. Mark missing values unknown and sampled costs as samples; do not sum aggregate usage and its component operations twice. Use the product's actual unit and window for storage, fixed charges, or other meters that are not execution-driven.
+
+When billing evidence is supplied, prioritize the largest charge contributions, not raw operation counts across unlike units. Establish whether each quantity is gross usage or already billable before applying account allowances; match the billing period and avoid deducting allowances twice. Preserve supplied charges when missing rate/rounding/credit details prevent reconciliation. A meter breakdown supports cost attribution; a query, route, or job diagnosis still needs application and usage evidence. Use only the smallest scoped evidence request that can resolve that gap.
 
 ## Workers
 
@@ -62,20 +65,14 @@ Better patterns:
 ## D1
 
 Footguns:
-- Unbounded queries, table scans, missing indexes, `ORDER BY RANDOM()`, and deep OFFSET pagination on frequently executed paths. Small results do not bound rows read. `SELECT *`, `COUNT(*)`, polling, and OFFSET syntax are investigation leads, not sufficient evidence of an expensive scan; confirm predicates, indexes, cardinality, query plan, measured `meta.rows_read`, and execution frequency.
-- N+1 query patterns in Workers; count queries and rows read/written per invocation, including authenticated polling, scheduled work, and retries. One user or a private app does not bound execution frequency or work per execution.
-- Rewriting a full dataset during every sync/import, unconditional upserts of unchanged records, delete-and-reinsert refreshes, or replayed write loops. Check update predicates, checkpoints, idempotency, retry ownership, and trigger/cascade effects before attributing writes. Measure `meta.rows_written`; do not assume an upsert is free when its input is unchanged or equate logical records changed with billed rows.
-- Ignoring index maintenance and schema work: writes involving indexed columns can add billed index writes, indexes consume storage, and migrations/index builds can incur reads and writes. Repeated schema rebuilds on startup or a hot path require investigation; `CREATE INDEX IF NOT EXISTS` alone does not prove an index is rebuilt.
+- Unbounded queries, table scans, missing indexes, or `ORDER BY RANDOM()` on hot routes. D1 rows read can dominate cost even when result count is small. `SELECT *` alone is a projection/schema-coupling lead, not proof of extra billed rows; confirm predicates, indexes, limits, query plan, and `rows_read` metadata.
+- N+1 query patterns in Workers; count queries and rows read per user-visible request, not just HTTP request count.
 - Using D1 as an analytics/event sink or queue.
 - Recomputing public query results on every request instead of caching.
 
 Better patterns:
-- Budget reads and writes separately: `executions per period × sum(measured rows per statement)` for each meter, with dataset growth, retries, and duplicate work explicit. Compare with current per-meter rates, included allowances, storage, and separately billed Worker work; equal row counts do not imply equal cost.
-- Validate an index with `EXPLAIN QUERY PLAN` and representative before/after read and write metadata. Weigh recurring reads saved against index creation, ongoing write amplification, storage, and correctness constraints; avoid indexing every column. Benchmark writes on a disposable local/staging copy, not production merely to collect evidence.
-- Prefer incremental syncs, change detection, idempotent checkpoints, and bounded batches. Batching/prepared statements improve latency or correctness but do not inherently reduce billed rows. Use limits, constraints, and safe cache layers where appropriate.
+- Add indexes, limits, batching, prepared statements, constraints, and CDN/cache layers where consistency allows.
 - Use Queues/Analytics Engine/R2 for high-volume event capture depending on requirements.
-
-Verify current semantics in [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [index guidance](https://developers.cloudflare.com/d1/best-practices/use-indexes/), and [return objects](https://developers.cloudflare.com/d1/worker-api/return-object/). Result counts, latency, `changes`, and `changed_db` do not replace the billed-row metadata; APIs returning only values may require existing instrumentation or a controlled local reproduction.
 
 ## R2
 
@@ -142,7 +139,6 @@ Better patterns:
 - Circuit breaker per dependency/product with threshold, cooldown, degraded fallback, alert, and manual override.
 - Persisted idempotency/result cache keyed by logical job/user action, not by retry attempt.
 - Fanout limits: max items, max depth, max concurrency, max queued messages, tenant quotas, and backpressure.
-- Where an owner requires stopped work at a boundary, use a durable, atomic application work budget with bounded reservations before dispatch, idempotent retry accounting, and checks inside every loop/batch/consumer. Define exhausted and budget-store-unavailable behavior; include in-flight overshoot and uncovered meters in the report. See the [spending/availability rubric](product-fit-rubric.md#spending-and-availability-requirements); alerts and delayed usage telemetry are detection, not enforcement.
 - Kill switches in config/secrets/flags that can disable expensive routes/jobs without deploys, checked inside loop steps (alarm handlers, queue consumers, DO stub-call sites), with `deleteAlarm()`, queue pause, and deployment rollback as the break-glass paths.
 - Per-run summaries that emit inputs, outputs, retries, DLQ count, fanout count, CPU-ish duration, subrequests, D1 rows, R2/KV ops, DO calls/duration/storage rows read-written, AI/browser/media/vector units, and cache hit/miss counts.
 - Deliberate billing-detection posture: budget alert thresholds sized to expected daily burn (replace the $10 default), recipients that are actually monitored, and a daily billable-usage review or API poll with an anomaly threshold so a runaway meter is caught in hours-to-days, not at invoice time.

@@ -41,7 +41,6 @@ Do not run mutating commands without explicit approval.
 - **Third-party origins behind Cloudflare**: Vercel, Netlify, Railway, Render, Fly.io, Heroku, AWS/GCP/Azure, Firebase/Supabase/Fastly origins; default hostnames; origin lock-down; origin billing model.
 - **Operations**: migrations, preview/staging/prod environments, local dev parity, observability, alarms, DLQs, rollback/deployment strategy.
 - **Cost drivers**: expected request volume, subrequests per request, CPU time, storage/object counts, operation counts, queue retries, logs/analytics retention, add-on products.
-- **Spending requirements**: acceptable spend/overshoot, whether the app may degrade or stop, and the owner of recovery. Distinguish informational alerts from verified product limits and durable application work budgets; see [`product-fit-rubric.md`](product-fit-rubric.md#spending-and-availability-requirements).
 
 ## Mandatory high-risk cost-trap checklist
 
@@ -49,7 +48,7 @@ For every audit, explicitly consider and either report or mark not applicable / 
 
 1. Separate direct Workers meters from amplification proxies: current Standard pricing directly meters requests and CPU, not duration or subrequests; subrequests still consume limits and can trigger separately metered downstream products. Verify Enterprise/legacy contracts.
 2. Free-to-Paid plan changes may replace hard stops/included usage with overages or different throttling; verify current product pricing/limits.
-3. D1 scans, missing indexes, `ORDER BY RANDOM()`, deep OFFSET pagination, and N+1 patterns can multiply reads. Full syncs, unchanged-record upserts, write loops/replays, triggers/cascades, migrations, and index maintenance can amplify writes. `SELECT *`, `COUNT(*)`, polling, or OFFSET syntax alone is insufficient: confirm plan, measured `meta.rows_read`/`meta.rows_written`, dataset growth, and execution frequency. Model reads and writes separately and verify the write/storage trade-off of added indexes.
+3. D1 full scans, missing indexes, `ORDER BY RANDOM()`, offset pagination, and N+1 query patterns can multiply rows read. `SELECT *` is a projection/schema-coupling smell only until query-plan and `rows_read` evidence proves scanning.
 4. Invalid/bot/unauthenticated traffic should be validated before calling Durable Objects.
 5. Durable Objects should not stay active through idle WebSockets, timers, polling, or missing hibernation/alarms where hibernation/Queues/Workflows fit.
 6. Expensive operations need idempotency/dedupe, especially Workers AI generation/embeddings and media/browser jobs.
@@ -79,10 +78,10 @@ For every audit, explicitly consider and either report or mark not applicable / 
 
 ## Diagnosis loop
 
-1. **Identify the primitive contract**. What does the app need: strong consistency, global low-latency reads, ordered coordination, relational queries, blob storage, background jobs, streaming, CDN caching, or access control? Include predictable-spend and stop/degrade requirements when relevant; leave unknown budget assumptions explicit.
+1. **Identify the primitive contract**. What does the app need: strong consistency, global low-latency reads, ordered coordination, relational queries, blob storage, background jobs, streaming, CDN caching, or access control?
 2. **Compare to chosen product**. Use `product-fit-rubric.md` to spot mismatches.
 3. **Check config shape**. Validate Wrangler/account configuration, env parity, migrations, routes, and security boundaries.
-4. **Trace hot paths**. Count subrequests, storage operations, D1 rows read/written, R2 list calls, KV operations, DO calls/duration/storage ops, Dynamic Worker creations/CPU, Agent tool/browser/sandbox/model runs, CPU-heavy transforms, external origins/TCP calls, fanout, retries, and cacheability. Include authenticated/private polling, scheduled jobs, sync/imports, migrations, and retries; multiply executions per period by measured per-execution work for each meter. User count is not a cost bound.
+4. **Trace hot paths**. Count subrequests, storage operations, D1 rows read/written, R2 list calls, KV operations, DO calls/duration/storage ops, Dynamic Worker creations/CPU, Agent tool/browser/sandbox/model runs, CPU-heavy transforms, external origins/TCP calls, fanout, retries, and cacheability.
 5. **Map cache layers**. For each hot request/job, list browser cache, CDN cache/Cache Rules, Worker Cache API, KV/D1/R2 metadata/content caches, AI Gateway/prompt caches, and app-level memoization. Record keys, TTLs, invalidation, personalization boundaries, and stale/read-after-write implications.
 6. **Model failure mode**. Ask: what breaks at 10x traffic, multi-region concurrency, one failed dependency, hot retries, unbounded fanout, a retry storm, a leaked preview URL, or a billing threshold?
 7. **Prescribe narrowly**. Recommend the smallest primitive/config/code change that removes the root risk. Avoid vague “use best practices” feedback.

@@ -2,6 +2,12 @@
 
 Use this rubric to decide whether the project is using the right Cloudflare primitive for the job. Treat every row as a diagnostic smell, not an automatic finding; confirm with access patterns and expected volume.
 
+## Spending and availability requirements
+
+When spending predictability affects product fit, establish the customer's acceptable spend, billing period, tolerable overshoot, and whether work may stop or degrade. Keep unknown requirements explicit. Distinguish notifications, verified product/plan limits, and application-enforced work budgets; do not assume a notification is a cap or that every customer needs a new budget service.
+
+For a proposed work bound, identify the covered meters and the enforcement point before expensive work. Verify behavior under concurrency, retries, restarts, and in-flight work, and report uncovered costs. Sampled units and delayed billing telemetry do not prove an exact invoice cap. Compare options against the customer's service and operating requirements rather than inferring a product mismatch from another customer's incident.
+
 ## Workers and Pages
 
 Good fit:
@@ -32,7 +38,7 @@ Good fit:
 
 Wrong-primitive smells:
 - D1 used as a high-throughput event queue, append-only log, blob store, or per-request analytics sink. Prefer Queues, R2, Analytics Engine, or Logpush.
-- Frequent request/job paths perform many sequential queries, expensive scans, or whole-dataset rewrites. Confirm plan, measured reads/writes, and invocation frequency; `SELECT *`, `COUNT(*)`, polling, or OFFSET syntax alone is not a cost finding. Batch for latency, index with read/write/storage trade-offs, limit/page results, sync incrementally, or cache where appropriate.
+- Request path does many sequential queries or unbounded `SELECT *`. Batch, index, add limits, denormalize carefully, or cache.
 - No migration files or migration process for production. D1 schema drift becomes an operations risk.
 - Strong per-key serialization logic built around D1 polling. Prefer Durable Objects for coordination.
 
@@ -144,12 +150,3 @@ Consider product fit rather than hand-rolling:
 - mTLS/API Shield for sensitive machine APIs when applicable.
 
 Smell: custom JavaScript-only bot checks, IP-block lists in code, or unauthenticated admin routes when Cloudflare security products could enforce closer to the edge.
-
-## Spending and availability requirements
-
-Predictability is part of product fit even for private, personal, or low-traffic apps. Establish an acceptable spend range, billing period, tolerable burst/overshoot, and whether the owner prefers degraded service or stopped work when a boundary is reached. If these requirements are unknown, state the gap rather than invent a budget.
-
-- Distinguish included allowances, platform-enforced product limits, notifications, and application-enforced work budgets. [Cloudflare budget alerts](https://developers.cloudflare.com/billing/manage/budget-alerts/) notify; they do not pause or cap usage. Check each product/plan: [D1 Free daily exhaustion stops queries, while Paid excess usage is billed](https://developers.cloudflare.com/d1/platform/pricing/). Do not infer an account-wide dollar cap from either behavior.
-- For application work budgets, define units, scope (tenant/job/product), reset period, and exhausted behavior. Reserve bounded work atomically in durable state before dispatch, include concurrent in-flight reservations, and check the budget/kill switch within every batch, consumer, timer, and detached loop. Idempotency prevents duplicate work; every executed retry still consumes budget. In-memory counters or post-hoc billing polls cannot enforce a shared bound. Define behavior when the budget service is unavailable and how an operator safely resumes work.
-- Verify exhaustion, concurrent runs, retries, and restarts cannot reset/bypass a budget. Report coverage and residual exposure: uncertain rows per query, already dispatched work, storage, other products, and bypass paths mean a work budget is not automatically an exact invoice cap.
-- If the spending/availability requirement remains unmet, present the mismatch and compare bounded-workload designs or verified plan/provider limits with their service and operating costs. Do not automatically recommend self-hosting or treat a fixed hosting bill as a bound on every dependency.

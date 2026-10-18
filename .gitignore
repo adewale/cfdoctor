@@ -6,4 +6,3 @@ __pycache__/
 # the per-run copies are local history (or CI artifacts), not review material.
 evals/results/trigger-eval-*.md
 evals/results/detection/detection-eval-*.md
-.private-d1-*.json

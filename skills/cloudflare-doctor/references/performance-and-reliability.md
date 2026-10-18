@@ -92,14 +92,11 @@ When a TypeScript repo has these boundary classes:
 ## D1 reliability/performance
 
 - Schema migrations are checked in and applied intentionally per environment.
-- Queries use indexes for common filters/sorts; avoid unbounded results, `ORDER BY RANDOM()`, and repeated scans. `SELECT *`, `COUNT(*)`, polling, and OFFSET alone are leads; establish query-plan behavior, measured `meta.rows_read`, dataset size/growth, and execution frequency before reporting a cost finding.
-- Measure writes as well as reads for syncs, imports, upserts, retries, triggers/cascades, and migrations. Check whether unchanged input causes writes, whether checkpoints survive retries, and whether overlapping runs repeat work. Use controlled local/staging replay to compare `meta.rows_read` and `meta.rows_written` before/after; do not replay production mutations for diagnosis.
-- An index recommendation includes its read savings, creation/storage cost, and maintenance writes on representative updates. Preserve uniqueness/constraint semantics. See [`cost-footguns.md`](cost-footguns.md#d1) for the separate-meter model and current official sources.
-- Batch statements where practical for latency/correctness; do not assume batching reduces billed row counts.
+- Queries use indexes for common filters/sorts; avoid unbounded results, `ORDER BY RANDOM()`, and table scans on hot paths. Treat `SELECT *` as a projection/schema-coupling review, not proof of a billed-row scan; confirm with `EXPLAIN QUERY PLAN` and D1 `rows_read` metadata.
+- Batch statements where practical.
 - Use constraints/unique indexes for correctness rather than only application checks.
 - Add `LIMIT`/pagination to user-controlled queries.
 - Cache read-heavy public results where consistency allows.
-- Trace authenticated refreshes, background timers, scheduled jobs, and retries independently of user count; a single dashboard can repeatedly execute the same expensive work.
 
 ## R2 reliability/performance
 
