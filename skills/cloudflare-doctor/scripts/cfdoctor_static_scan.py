@@ -1722,7 +1722,7 @@ def add_code_findings(
                         "cost footgun / missed optimization",
                         f"{rpath}:{mem_hit[0]}: {excerpt(mem_hit[1])}",
                         "Isolate memory is per-isolate and has no guaranteed lifetime: deploys, evictions, low-traffic locations, and warmup crons start cold isolates that re-run the cached computation regardless of TTL, so a full-scan D1 aggregate can execute far more often than the TTL implies while D1 bills every row scanned, not rows returned.",
-                        "Back expensive aggregate keys with a shared cache layer (for example a KV-backed cachified adapter or cache service), keep per-isolate memory only as an L1 in front of the shared layer or for values that are cheap to recompute, and compare per-query execution counts and rows read (D1 GraphQL d1QueriesAdaptiveGroups) against the TTL-implied refresh rate.",
+                        "Materialize the aggregate at publish/update time or on a cron if it sits on a public path. Otherwise back it with a KV-backed adapter or Workers Cache. The Cache API is per data center and does not collapse concurrent fills. Keep per-isolate memory only as an L1 or for cheap values, and compare per-query execution counts and rows read (D1 GraphQL d1QueriesAdaptiveGroups) against the TTL-implied refresh rate. On Workers Free, exceeding the daily rows-read limit fails every D1 query on the account until midnight UTC.",
                         "medium",
                     ))
 
