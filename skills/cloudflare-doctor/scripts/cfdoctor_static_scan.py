@@ -114,7 +114,7 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.4.0"
+SCANNER_VERSION = "0.4.1"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -160,6 +160,8 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-PERF-D1-SELECT-STAR", "PERF", "low", "medium", "D1 query uses SELECT *; review projection and bounds", "SELECT * widens transfer/decoding and couples code to schema, but does not by itself prove a full scan or increase D1 billed rows read."),
     ("CFDOC-COST-D1-ORDER-RANDOM", "COST", "high", "high", "D1 query orders by RANDOM()", "Random ordering forces expensive scans/sorts that grow with table size."),
     ("CFDOC-PERF-D1-N-PLUS-ONE", "PERF", "low", "low", "Many D1 prepared statements in one file; check for N+1 queries", "Several sequential queries per request can multiply latency and billed rows."),
+    ("CFDOC-COST-D1-NO-INDEXES", "COST", "medium", "medium", "D1 schema defines tables but no secondary indexes for filtered queries", "D1 bills rows scanned, not rows returned; with no secondary index in the schema, filtered or aggregate queries are likely table scans. Confirm with a query plan."),
+    ("CFDOC-COST-D1-LAYOUT-HOTPATH", "COST", "medium", "low", "Layout-level route file queries D1 without obvious caching", "Layout/root loaders run on every page view, so an uncached D1 query there multiplies billed rows read by sitewide traffic."),
     ("CFDOC-COST-DO-FRONT-DOOR", "COST", "medium", "low", "Durable Object call path lacks obvious front-door validation", "Invalid/bot traffic should be rejected before it becomes DO requests/duration."),
     ("DO-SHARDING-HOTSPOT", "COST", "high", "high", "Durable Object idFromName uses a global/singleton key", "Low-cardinality DO keys concentrate traffic into one hot object."),
     ("DO-EPHEMERAL-IDEMPOTENCY-OBJECTS", "FIT", "medium", "low", "Durable Object key appears tied to an ephemeral id/request", "One DO per request/idempotency key creates many idle objects and cleanup work."),
@@ -1303,6 +1305,46 @@ def add_code_findings(
             "low",
         ))
 
+    # D1 rows-read amplification: checked-in schema SQL creates tables but nothing
+    # in the project creates a secondary index, while code runs filtered/aggregate
+    # queries whose scanned-row count depends on indexes.
+    if d1_names:
+        schema_files = [
+            (path, text)
+            for path, text in files
+            if path.suffix == ".sql" and re.search(r"\bCREATE\s+TABLE\b", text, re.IGNORECASE)
+        ]
+        index_evidence_re = re.compile(
+            r"CREATE\s+(?:UNIQUE\s+)?INDEX|uniqueIndex\s*\(|\bindex\s*\(\s*['\"]|@@index|\.createIndex\s*\(",
+            re.IGNORECASE,
+        )
+        filtered_query_re = re.compile(
+            r"\bSELECT\b[^;'\"`\n]*\b(?:WHERE|ORDER\s+BY|GROUP\s+BY|DISTINCT\b|MAX\s*\(|MIN\s*\(|COUNT\s*\(|SUM\s*\(|AVG\s*\()",
+            re.IGNORECASE,
+        )
+        if schema_files and not any(index_evidence_re.search(text) for _, text in files):
+            query_hit: tuple[Path, int, str] | None = None
+            for qpath, qtext in source_files:
+                if qpath.suffix == ".sql":
+                    continue
+                hit = line_for(qtext, filtered_query_re)
+                if hit:
+                    query_hit = (qpath, hit[0], hit[1])
+                    break
+            if query_hit:
+                schema_path = schema_files[0][0]
+                qpath, qline_no, qline = query_hit
+                findings.append(Finding(
+                    "CFDOC-COST-D1-NO-INDEXES",
+                    "medium",
+                    "D1 schema defines tables but no secondary indexes for filtered queries",
+                    "cost footgun / missed optimization",
+                    f"{rel(schema_path, root)} creates tables with no CREATE INDEX; {rel(qpath, root)}:{qline_no}: {excerpt(qline)}",
+                    "D1 bills rows read (scanned), not rows returned. The checked-in schema creates no secondary index, so WHERE/ORDER BY/aggregate queries are likely full-table scans whose billed rows grow with table size times traffic even when each result is tiny. This is inferred from schema evidence, not a measured scan.",
+                    "Confirm with EXPLAIN QUERY PLAN and per-query rows_read before claiming cost. Then add indexes matching hot predicates (composite where queries filter on several columns) and run ANALYZE or PRAGMA optimize after batch index changes so the planner has sqlite_stat1 statistics. On an anonymous public route, apply the public-route cost release gate.",
+                    "medium",
+                ))
+
     for path, text in files:
         rpath = rel(path, root)
         if path.name in CONFIG_NAMES:
@@ -1664,6 +1706,33 @@ def add_code_findings(
                     "Trace route-level query counts; batch, join, cache, or denormalize where appropriate.",
                     "low",
                 ))
+            # Layout/root-level loaders (SvelteKit +layout*, Next.js app/**/layout.*,
+            # Remix app/root.*) run for every page beneath them before page code.
+            posix_path = path.as_posix()
+            layout_like = bool(
+                re.search(r"/\+layout(?:\.server)?\.[cm]?[jt]sx?$", posix_path)
+                or re.search(r"/app/(?:[^/]+/)*layout\.[jt]sx?$", posix_path)
+                or re.search(r"/app/root\.[jt]sx$", posix_path)
+            )
+            if layout_like:
+                queries_d1 = ".prepare(" in text or ".batch(" in text or any(
+                    re.search(rf"env\.{re.escape(name)}\.", text) for name in d1_names
+                )
+                cache_evidence = bool(re.search(r"cach", text, re.IGNORECASE)) or any(
+                    re.search(rf"env\.{re.escape(name)}\.get\s*\(", text) for name in kv_names
+                )
+                if queries_d1 and not cache_evidence:
+                    hit = line_for(text, re.compile(r"\.prepare\s*\(|\.batch\s*\(")) or (1, "")
+                    findings.append(Finding(
+                        "CFDOC-COST-D1-LAYOUT-HOTPATH",
+                        "medium",
+                        "Layout-level route file queries D1 without obvious caching",
+                        "cost footgun / missed optimization",
+                        f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
+                        "Layout/root loaders run for every page view beneath them, before page-specific code executes. An uncached D1 query here is inherited work on every public route family, so its rows read multiply by sitewide traffic, and an unindexed query in this position can dominate the whole bill. Only queries written in this file are seen; queries in imported helpers are not.",
+                        "Materialize rarely-changing navigation data at publish time, or cache it before the D1 call (KV cache-aside or Workers Cache) under an explicit versioned key with invalidation on data change. A cache does not make the fill safe by itself: keep the miss/refill query indexed and bounded. Verify per-route rows_read before and after.",
+                        "low",
+                    ))
 
         # Durable Object / Workers RPC public-method reachability.
         rpc_boundary = re.search(r"\bclass\s+([A-Za-z_$][\w$]*)\s+extends\s+(?:[A-Za-z_$][\w$]*\.)?(DurableObject|WorkerEntrypoint|WorkflowEntrypoint|RpcTarget|Agent)\b", text)

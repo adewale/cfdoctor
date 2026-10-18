@@ -62,12 +62,17 @@ Better patterns:
 
 Footguns:
 - Unbounded queries, table scans, missing indexes, or `ORDER BY RANDOM()` on hot routes. D1 rows read can dominate cost even when result count is small. `SELECT *` alone is a projection/schema-coupling lead, not proof of extra billed rows; confirm predicates, indexes, limits, query plan, and `rows_read` metadata.
+- Treating indexing as latency tuning instead of a billing control. D1 bills rows *scanned*: a `MAX(column)`, `DISTINCT`, or `WHERE` over an unindexed column rescans the whole table on every call, so billed rows grow with table size times traffic (the shape behind the 127B-rows-read/$134 whatmedicaidpays month on a ~765k-row database).
+- Indexes without planner statistics. After batch index/schema changes, an empty `sqlite_stat1` can leave the query planner picking scans or the wrong index; `ANALYZE`/`PRAGMA optimize` is part of the fix, not an optional extra.
+- D1 queries in layout/root-level loaders or middleware that run on every page view before page code; any inefficiency there is multiplied by sitewide traffic.
 - N+1 query patterns in Workers; count queries and rows read per user-visible request, not just HTTP request count.
 - Using D1 as an analytics/event sink or queue.
 - Recomputing public query results on every request instead of caching.
 
 Better patterns:
-- Add indexes, limits, batching, prepared statements, constraints, and CDN/cache layers where consistency allows.
+- Add indexes, limits, batching, prepared statements, constraints, and CDN/cache layers where consistency allows. Ship indexes for hot predicates before launch (composite where queries filter on several columns), run `ANALYZE`/`PRAGMA optimize` after batch index changes, and confirm with `EXPLAIN QUERY PLAN` plus per-query `rows_read` metadata.
+- Serve every-page data (navigation, latest-period, lookup lists) cache-aside from KV or Workers Cache under explicit versioned keys with invalidation on data change, instead of querying D1 in layout-level code.
+- Watch the rows-read-to-rows-returned ratio in D1 metrics/analytics and treat regressions as cost incidents, not just slow queries.
 - Use Queues/Analytics Engine/R2 for high-volume event capture depending on requirements.
 
 ## R2

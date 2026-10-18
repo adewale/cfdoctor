@@ -1,24 +1,26 @@
 # Detection eval report
 
-- Generated: 2026-08-09 23:10:46
+- Generated: 2026-10-18 19:40:14
 - Scanner: `skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py --json`
 - Fixture root: `evals/fixtures/detection/`
-- Result: 30/30 fixtures passed
+- Result: 32/32 fixtures passed
 
 | Fixture | Status | Required found | Findings | Notes |
 |---|---|---|---|---|
 | broad-route-cron-storm | PASS | 2/2 | 2 | - |
 | clean-baseline | PASS | 0/0 | 0 (max 0) | - |
-| d1-nplus1-dashboard | PASS | 2/2 | 3 | - |
+| d1-indexed-layout-cached | PASS | 0/0 | 0 (max 0) | - |
+| d1-nplus1-dashboard | PASS | 3/3 | 4 | - |
+| d1-unindexed-hot-queries | PASS | 2/2 | 2 | - |
 | dead-rpc-surface | PASS | 1/1 | 1 | - |
 | do-gotchas | PASS | 3/3 | 6 | - |
 | do-sql-unbounded-scan | PASS | 1/1 | 1 | - |
-| do-stub-call-cycle | PASS | 2/2 | 3 | - |
+| do-stub-call-cycle | PASS | 2/2 | 4 | - |
 | do-stub-chain-safe | PASS | 0/0 | 0 (max 0) | - |
 | do-stub-cycle-guarded-safe | PASS | 0/0 | 0 (max 0) | - |
 | full-observability-sampling | PASS | 1/1 | 1 | - |
 | gap-alarm-guard-variable | PASS | 1/1 | 1 | - |
-| gap-alarm-log-noise | PASS | 1/1 | 3 | - |
+| gap-alarm-log-noise | PASS | 1/1 | 2 | - |
 | gap-dashboard-queue-consumer | PASS | 1/1 | 2 | - |
 | gap-do-sharding-deep | PASS | 1/1 | 1 | - |
 | gap-do-sharding-indirect | PASS | 1/1 | 3 | - |
@@ -55,12 +57,28 @@
 - Max findings allowed: 0
 - Check IDs emitted (0 findings): (none)
 
+### d1-indexed-layout-cached — PASS
+
+- Scenario: Remediated twin of d1-unindexed-hot-queries: composite indexes cover the hot predicates, migrations note the post-index ANALYZE/PRAGMA optimize step, and the layout loader serves navigation data cache-aside from KV under a versioned key. Precision control: the scanner must stay silent.
+- Evidence IDs: CFDOC-EVD-D1-134-BILL
+- Required check IDs: (none)
+- Forbidden check IDs: CFDOC-COST-D1-NO-INDEXES, CFDOC-COST-D1-LAYOUT-HOTPATH
+- Max findings allowed: 0
+- Check IDs emitted (0 findings): (none)
+
 ### d1-nplus1-dashboard — PASS
 
 - Scenario: Blog feed endpoint that loads every post with SELECT * and then runs four more queries per post (author, comments, like total, latest comment) plus a per-post UPDATE inside the loop. Models read-amplification bills where billed rows grow with content size on every page view.
 - Evidence IDs: CFDOC-EVD-FIREBASE-READS
-- Required check IDs: CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR
-- Check IDs emitted (3 findings): CFDOC-COST-RETRY-AMPLIFY, CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR
+- Required check IDs: CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR, CFDOC-COST-D1-NO-INDEXES
+- Check IDs emitted (4 findings): CFDOC-COST-D1-NO-INDEXES, CFDOC-COST-RETRY-AMPLIFY, CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR
+
+### d1-unindexed-hot-queries — PASS
+
+- Scenario: SvelteKit-style Medicaid rates site on D1: migrations create a hot reimbursement table with no secondary indexes, the root layout loader scans it on every page view (MAX(year), DISTINCT state), and page loaders filter and aggregate over the same table. Models rows-read amplification where D1 bills every scanned row.
+- Evidence IDs: CFDOC-EVD-D1-134-BILL
+- Required check IDs: CFDOC-COST-D1-NO-INDEXES, CFDOC-COST-D1-LAYOUT-HOTPATH
+- Check IDs emitted (2 findings): CFDOC-COST-D1-LAYOUT-HOTPATH, CFDOC-COST-D1-NO-INDEXES
 
 ### dead-rpc-surface — PASS
 
@@ -89,7 +107,7 @@
 - Scenario: Two Durable Objects re-trigger each other via detached waitUntil stub calls while every hop re-scans a growing SQLite table. Models the 2026-08 StandardAgents runaway-loop bill where DO storage rows read were 98.5% of an $8,846 invoice.
 - Evidence IDs: CFDOC-EVD-STDAGENTS-DO-LOOP
 - Required check IDs: DO-STUB-CALL-CYCLE, DO-SQL-SCAN-HOTPATH
-- Check IDs emitted (3 findings): DO-SQL-SCAN-HOTPATH, DO-STUB-CALL-CYCLE, DO-WAITUNTIL-LIFECYCLE
+- Check IDs emitted (4 findings): DO-SQL-SCAN-HOTPATH, DO-STUB-CALL-CYCLE, DO-WAITUNTIL-LIFECYCLE, KV-VS-DO-STORAGE-FIT
 
 ### do-stub-chain-safe — PASS
 
@@ -128,7 +146,7 @@
 - Scenario: Durable Object alarm that unconditionally reschedules itself, but a logging if-statement after the setAlarm call suppressed the original heuristic, which treated any 'if (' near the alarm body as an idle guard.
 - Evidence IDs: CFDOC-EVD-COEY-DO-GOTCHAS, CFDOC-EVD-COEY-LOOPS
 - Required check IDs: DO-ALARM-RECURSION
-- Check IDs emitted (3 findings): CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD, DO-ALARM-RECURSION, DO-STUB-CALL-CYCLE
+- Check IDs emitted (2 findings): CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD, DO-ALARM-RECURSION
 
 ### gap-dashboard-queue-consumer — PASS
 

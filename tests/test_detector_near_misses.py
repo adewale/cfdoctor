@@ -39,6 +39,15 @@ def durable_object(body: str) -> dict[str, str]:
     )
 
 
+def d1_project(files: dict[str, str]) -> dict[str, str]:
+    config = wrangler(d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}])
+    return {"wrangler.jsonc": config, **files}
+
+
+D1_TABLE = "CREATE TABLE reimbursement (id INTEGER PRIMARY KEY, year INTEGER NOT NULL);\n"
+D1_LATEST_YEAR = 'await platform.env.DB.prepare("SELECT MAX(year) AS year FROM reimbursement").first();\n'
+
+
 def check_ids(files: dict[str, str]) -> set[str]:
     return {f["check_id"] for f in scan(files)["findings"]}
 
@@ -274,6 +283,21 @@ CASES = [
         "fetching a path on a configured origin, not the incoming URL",
         worker('export default { async fetch(request, env) { return fetch(new URL("/api", request.url)); } };\n'),
         worker('export default { async fetch(request, env) { return fetch(new URL("/api", env.ORIGIN_URL)); } };\n'),
+    ),
+    (
+        "CFDOC-COST-D1-NO-INDEXES",
+        "the same schema with an index on the filtered column",
+        d1_project({"migrations/0001_init.sql": D1_TABLE, "src/load.js": D1_LATEST_YEAR}),
+        d1_project({
+            "migrations/0001_init.sql": D1_TABLE + "CREATE INDEX reimbursement_year_idx ON reimbursement(year);\n",
+            "src/load.js": D1_LATEST_YEAR,
+        }),
+    ),
+    (
+        "CFDOC-COST-D1-LAYOUT-HOTPATH",
+        "the same D1 query in a page loader, not a layout",
+        d1_project({"src/routes/+layout.server.ts": D1_LATEST_YEAR}),
+        d1_project({"src/routes/prices/+page.server.ts": D1_LATEST_YEAR}),
     ),
 ]
 

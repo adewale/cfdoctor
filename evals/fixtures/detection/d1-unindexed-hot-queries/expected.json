@@ -1,0 +1,15 @@
+{
+  "description": "SvelteKit-style Medicaid rates site on D1: migrations create a hot reimbursement table with no secondary indexes, the root layout loader scans it on every page view (MAX(year), DISTINCT state), and page loaders filter and aggregate over the same table. Models rows-read amplification where D1 bills every scanned row.",
+  "evidence_ids": [
+    "CFDOC-EVD-D1-134-BILL"
+  ],
+  "required_check_ids": [
+    "CFDOC-COST-D1-NO-INDEXES",
+    "CFDOC-COST-D1-LAYOUT-HOTPATH"
+  ],
+  "forbidden_check_ids": [],
+  "expected_evidence_terms": [
+    "migrations/0001_init.sql",
+    "+layout.server.ts"
+  ]
+}
