@@ -65,15 +65,16 @@
       "id": "CFDOC-EVD-CYBERLANE-D1-BILL",
       "source_cluster_id": "cyberlane-private-d1-bill-2026-10-18",
       "evidence_class": "incident",
-      "title": "Operator reports a $500-plus D1 bill for two private personal apps",
+      "title": "Operator reports a $513.20 D1 invoice dominated by writes for two private apps",
       "status": "unverified",
-      "taxonomy": ["billing-surprise", "private-workload", "product-fit", "unknown-mechanism"],
-      "mechanism": "Unknown. Jay (@Cyberlane) reports more than $500 in D1 read/write charges for two small databases used only by him. A reply proposes scans, missing indexes, COUNT(*), OFFSET pagination, and polling as investigation leads; the operator acknowledges a query or loop is possible but does not confirm one. No invoice, query plan, execution count, row-meter breakdown, or application code was supplied in the inspected posts.",
+      "taxonomy": ["billing-surprise", "private-workload", "write-dominant-cost", "product-fit", "unknown-mechanism"],
+      "mechanism": "Unknown. Jay (@Cyberlane) reports a $513.20 before-tax D1 invoice for September 17–October 16: 452,256,462 invoice rows written ($453) and 60,197,421,138 invoice rows read ($60.20), for two small personal-app databases. Writes are about 88.3% of the stated charge; these are operator-reported invoice quantities, not verified raw-usage totals or query attribution. A reply proposes scans, missing indexes, COUNT(*), OFFSET pagination, and polling as leads; no cause is confirmed. The original invoice, allowance/rate/rounding treatment, query plans, execution counts, and application code were not supplied in the inspected posts.",
       "sources": [
         {"url": "https://x.com/cyberlane/status/2111654229463146499", "role": "primary", "author_org": "Jay (@Cyberlane)", "published_at": "2026-10-18", "first_hand": true},
         {"url": "https://x.com/Cyberlane/status/2111654232260784486", "role": "supporting", "author_org": "Jay (@Cyberlane)", "published_at": "2026-10-18", "first_hand": true},
         {"url": "https://x.com/agrimkhurana/status/2111755448982315079", "role": "discovery", "author_org": "@agrimkhurana", "published_at": "2026-10-18", "first_hand": false},
-        {"url": "https://x.com/Cyberlane/status/2111759145720533053", "role": "supporting", "author_org": "Jay (@Cyberlane)", "published_at": "2026-10-18", "first_hand": true}
+        {"url": "https://x.com/Cyberlane/status/2111759145720533053", "role": "supporting", "author_org": "Jay (@Cyberlane)", "published_at": "2026-10-18", "first_hand": true},
+        {"url": "https://x.com/cyberlane/status/2111798271861833740", "role": "supporting", "author_org": "Jay (@Cyberlane)", "published_at": "2026-10-18", "first_hand": true}
       ],
       "current_semantics_urls": ["https://developers.cloudflare.com/d1/platform/pricing/", "https://developers.cloudflare.com/d1/observability/metrics-analytics/", "https://developers.cloudflare.com/d1/best-practices/use-indexes/", "https://developers.cloudflare.com/billing/manage/budget-alerts/"],
       "verified_at": "2026-10-18",
@@ -82,7 +83,7 @@
       "scenario_numbers": [],
       "check_ids": [],
       "fixture_ids": [],
-      "disposition": "One report cluster; the reply and operator follow-ups are not independent corroboration. Source text was retrieved on 2026-10-18, including the reply's expanded X note. The bill amount and cause remain unverified. Official documentation establishes meter and alert semantics, not this account's charges. This record motivates investigation of private/background workloads and predictable-spend requirements; it derives no scanner finding or incident-replay fixture. See research/cyberlane-d1-bill-2026-10-18.md."
+      "disposition": "One report cluster; the reply and operator follow-ups are not independent corroboration. Source text was retrieved on 2026-10-18, including the reply's expanded X note and the 12:35 UTC invoice-detail follow-up. The operator now reports a meter split and billing period, but the underlying invoice and usage mechanism remain unverified. Preserve stated quantities and charges; do not deduct an allowance twice or manufacture exact reconciliation from missing rate/rounding details. Official documentation establishes meter and alert semantics, not this account's charges. This record motivates private/background workload investigation and predictable-spend requirements; it derives no scanner finding or incident-replay fixture. See research/cyberlane-d1-bill-2026-10-18.md."
     }
   ]
 }

@@ -10,7 +10,11 @@ Normal bill diagnosis needs [D1 pricing](https://developers.cloudflare.com/d1/pl
 
 Request the smallest redacted D1 invoice/export excerpt: account alias, billing period with timezone, plan/contract, each meter's quantity and unit, included allowance, rate, and charge. Keep reads, writes, and storage separate; query count and latency are not row meters. Keep account allowances separate from per-database usage: do not subtract the same included allowance for every database. If entitlement scope is absent, mark it unknown rather than inventing a charge.
 
+Distinguish raw usage totals from invoice line quantities that may already exclude included usage. Establish that basis before applying an allowance; never deduct it twice. Preserve supplied quantities and charges separately when rate units, rounding, credits, or allowance treatment prevent exact reconciliation. Label operator-reported invoice details as reported if the invoice itself was not inspected. They identify reported meter cost, not the query or caller that caused it.
+
 Match the usage window to the invoice window, including subscription renewal boundaries. Record discounts, credits, and known missing databases without requesting an entire account inventory. Supplied account totals can establish the allowance calculation while investigation remains scoped to one suspect database. Do not extrapolate an old invoice from a recent rolling window or treat storage snapshots as a full storage-month bill.
+
+Prioritize investigation by each meter's charge contribution when supplied, not row-count magnitude alone. A write-dominated charge calls for write execution counts and amplification evidence first, while preserving separate read attribution. Neither the larger charge nor invoice quantities alone establish a missing index, loop, sync, or other application cause.
 
 ## 2. Trace execution frequency before collecting more
 
