@@ -31,6 +31,7 @@ the plan doc and the git history, not repeated here.
 
 ## Evals
 
+- [x] Add private/background D1 investigation fixtures and safe controls for polling, deep pagination, full synchronization, and indexed writes; keep observed units, projections, and enforced bounds distinct.
 - [x] Improve Wrangler approval/no-install semantics, add package-runner and identifier-minimization oracles, suppress unnecessary docs refresh, and require explicit metadata-only/source boundaries.
 - [x] Run a matched current/main/no-skill three-way evaluation with three runs per case, paired uncertainty, blind GPT judgments, and a 27-case Claude judge sample.
 - [ ] Add human-labeled judge alignment. Cross-model pass agreement is 26/27, but neither model is a human gold label.
@@ -56,7 +57,9 @@ the plan doc and the git history, not repeated here.
 
 ## Research backlog (new patterns and experience reports)
 
-The 29-record structured `research/incident-claim-ledger.json` now separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 23 runtime scenarios and 25 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`.
+The 32-record structured `research/incident-claim-ledger.json` separates incidents, official guidance, operator notes, product announcements, and superseded evidence; deduplicates source clusters; records five confidence dimensions and freshness; covers all 24 runtime scenarios and 30 detection fixtures; and has reciprocal fixture lineage enforced by `scripts/check_claim_ledger.py`. The Cyberlane private-D1 report remains unverified and does not establish a scanner rule or incident-replay fixture.
+
+- [ ] Re-review `CFDOC-EVD-CYBERLANE-D1-BILL` by 2026-11-17 for invoice/meter evidence, query plans, or a measured remediation. Do not promote the reply's hypotheses to confirmed causes.
 
 - [x] Mine 544 recent `cloudflare/cloudflare-docs` commits for warnings, pricing/billing transitions, deprecations, and limits; retain selected first-party fossils in `research/frontier-refresh-2026-07-11.md`.
 - [x] Sweep 1,160 recent `cloudflare/workers-sdk` issues for guardrail/failure leads; keep issue evidence discovery-only until reproduced/corroborated.

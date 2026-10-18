@@ -1,0 +1,27 @@
+All evidence is synthetic and supplied, not produced by running against a real D1
+database. No account bill, credentials, or deployed traffic is included.
+
+Current schema:
+CREATE TABLE note_status (id INTEGER PRIMARY KEY, owner_id TEXT NOT NULL,
+  sync_state TEXT NOT NULL, modified_at INTEGER NOT NULL);
+CREATE INDEX status_by_state ON note_status(sync_state);
+CREATE INDEX status_by_owner_state ON note_status(owner_id, sync_state);
+CREATE INDEX status_by_modified_state ON note_status(modified_at, sync_state);
+The fixture contains the 1,000 IDs updated by the scheduled task.
+
+EXPLAIN QUERY PLAN UPDATE note_status SET sync_state = 'ready' WHERE id = 1;
+SEARCH note_status USING INTEGER PRIMARY KEY (rowid=?)
+Current-schema supplied sample: meta.rows_read=1; meta.rows_written=4.
+Each of 1,000 per-run updates has that supplied sample in the modeled run.
+
+Separate comparison probe in a synthetic clone with the same 1,000 rows but
+without the three secondary indexes:
+EXPLAIN QUERY PLAN UPDATE note_status SET sync_state = 'ready' WHERE id = 1;
+SEARCH note_status USING INTEGER PRIMARY KEY (rowid=?)
+Comparison-clone supplied sample: meta.rows_read=1; meta.rows_written=1.
+This comparison was not executed against production. Other consumers of each
+index and their benefit are unknown. The samples do not describe other statements
+or schemas, account attribution, or future worst-case bounds.
+
+Cron: */15 * * * *.
+No application retry loop or daily work stop is present; actual attempts unknown.

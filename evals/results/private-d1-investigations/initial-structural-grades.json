@@ -1,0 +1,27 @@
+[
+  {
+    "case": "private-d1-deep-offset",
+    "returncode": 1,
+    "stdout": "{\"score\": 19, \"max_score\": 24, \"case_id\": \"private-d1-deep-offset\", \"oracle\": \"fixture-accounting\"}\nFAIL private D1 accounting oracle\n- no structurally complete evidence-backed finding\n- path rows-read/query does not preserve the supplied sample\n- OFFSET diagnosis must preserve the existing covering index\n- deep OFFSET fix must address skipped work rather than prescribe a missing index\n- deep OFFSET fixture incorrectly diagnosed as a missing index/full table scan\n"
+  },
+  {
+    "case": "private-d1-indexed-writes",
+    "returncode": 1,
+    "stdout": "{\"score\": 20, \"max_score\": 23, \"case_id\": \"private-d1-indexed-writes\", \"oracle\": \"fixture-accounting\"}\nFAIL private D1 accounting oracle\n- sampled units must not be presented as a proven future worst-case bound\n- no structurally complete evidence-backed finding\n- missing sampled indexed-write amplification mechanism\n"
+  },
+  {
+    "case": "private-d1-polling-growth",
+    "returncode": 1,
+    "stdout": "{\"score\": 23, \"max_score\": 25, \"case_id\": \"private-d1-polling-growth\", \"oracle\": \"fixture-accounting\"}\nFAIL private D1 accounting oracle\n- private polling must leave active duration/total executions unknown\n- manual diagnostics require separate unknown-frequency bounded accounting\n"
+  },
+  {
+    "case": "private-d1-repeated-sync",
+    "returncode": 1,
+    "stdout": "{\"score\": 22, \"max_score\": 23, \"case_id\": \"private-d1-repeated-sync\", \"oracle\": \"fixture-accounting\"}\nFAIL private D1 accounting oracle\n- sampled units must not be presented as a proven future worst-case bound\n"
+  },
+  {
+    "case": "private-d1-safe-controls",
+    "returncode": 1,
+    "stdout": "{\"score\": 26, \"max_score\": 35, \"case_id\": \"private-d1-safe-controls\", \"oracle\": \"fixture-accounting\"}\nFAIL private D1 accounting oracle\n- sampled units must not be presented as a proven future worst-case bound\n- safe split accounting must retain both query shapes\n- path frequency/window does not preserve the evidenced execution multiplier\n- path frequency/window does not preserve the evidenced execution multiplier\n- path queries/execution does not preserve the evidenced query multiplier\n- path rows-read/query does not preserve the supplied sample\n- safe case omits the supplied atomic admission contract before D1\n- safe case promotes a supplied gate contract into verified deployment state\n- safe COUNT and SELECT * lack their bounded plan/schema evidence\n"
+  }
+]

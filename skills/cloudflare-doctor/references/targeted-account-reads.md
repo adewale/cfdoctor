@@ -29,6 +29,8 @@ Use an existing pinned product CLI when it exposes the field. Otherwise ask the 
 | A Queue can delete poison messages | The named consumer's retry count/delay, DLQ, batch size/timeout, and concurrency | All queues/messages |
 | A preview deployment is public and paid | The named project/environment deployment, routes, bindings, and lifecycle/last-active evidence | Every Pages/Workers project |
 | Logging is materially expensive | Product usage for the named Worker/time window, sampling config, retained bytes/events, retention, and invoice line item | Raw logs or request payloads |
+| A D1 query or repeated job explains a row-meter spike | Named database and bounded window: query insights ranked by total reads, total writes, and execution count; retain redacted query templates and row/count totals; see [D1 bill diagnosis](d1-bill-diagnosis.md) | Every database, raw bound values, production SQL replay, or treating top-N queries as a complete invoice |
+| D1 database usage and its invoice appear inconsistent | Redacted D1 meter lines, exact cycle/timezone, entitlement scope, and supplied account totals; then row totals for the named database/window only if needed | Full invoices/contracts, subtracting an account allowance per database, or silently widening a rolling window |
 | A cost estimate needs entitlement | Plan/contract name and only the relevant product entitlement/line item, with negotiated values redacted when possible | Full invoice/account contract |
 | A meter is running away right now | Billable usage for the current cycle (dashboard export or the account billable-usage API), filtered to the suspect product/meter and date range | Full invoice history or unrelated products |
 | Billing alerts could not have caught this | Budget alert configuration (thresholds, recipients, enabled state — note the auto-created $10 default) and the notification history for the affected cycle | All account notification settings |
@@ -70,6 +72,7 @@ For products whose current Wrangler version has an exact `list`/`get`/`info` com
 - R2 API: https://developers.cloudflare.com/api/resources/r2/
 - Queues API: https://developers.cloudflare.com/api/resources/queues/
 - GraphQL Analytics API: https://developers.cloudflare.com/analytics/graphql-api/
+- D1 analytics/query insights: https://developers.cloudflare.com/d1/observability/metrics-analytics/
 - Billable usage dashboard/data source: https://developers.cloudflare.com/billing/manage/billable-usage/
 - Budget alerts (informational only; no pause/cap): https://developers.cloudflare.com/billing/manage/budget-alerts/
 

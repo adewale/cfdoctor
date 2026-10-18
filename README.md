@@ -11,6 +11,7 @@ Use it as a **read-only audit partner** when you want Cloudflare-specific judgme
 - **Repo/config audit** — inspect Wrangler config (`wrangler.jsonc` for new projects; JSON/TOML also supported), bindings, Workers/Pages code, IaC, tests, and docs before launch or review.
 - **Product-fit review** — ask whether KV, D1, R2, Durable Objects, Queues, Workflows, Vectorize, Workers AI, etc. match the access pattern.
 - **Cost and surprise-billing review** — identify billing meters, fanout, retries, AI/browser/media/vector usage, cache misses, and missing cost proxies.
+- **D1 bill diagnosis** — trace private polling, background jobs, syncs, and migrations as well as public requests; separate read/write amplification and match query evidence to the billing window. See the [diagnosis recipe](skills/cloudflare-doctor/references/d1-bill-diagnosis.md).
 - **Security/reliability posture** — check auth boundaries, preview exposure, WAF/rate-limit evidence, queue/DLQ behavior, cron/loop bounds, and observability.
 - **Dashboard/account evidence review** — provide screenshots, API exports, Terraform, `cf-terraforming`, or approved read-only command output for state that is not in the repo.
 - **Scanner triage** — run the static scanner for leads, then use the skill to confirm or suppress findings with source context and current docs.
@@ -23,6 +24,10 @@ Use Cloudflare Doctor to audit this repo for production launch. Refresh current 
 
 ```text
 Audit our Workers AI + Vectorize search path for cost, abuse, cache, rate-limit, and product-fit risks. Assume 50k searches/day unless repo evidence says otherwise.
+```
+
+```text
+Diagnose this project's D1 bill from the supplied redacted invoice and usage evidence. Model private polling, scheduled work, syncs, and retries independently of user count. Separate rows read and written, preserve missing evidence, and plan scoped authenticated reads for approval. Include acceptable spend and whether the app may stop or degrade.
 ```
 
 Interpret the output as an evidence-backed risk review: findings should include file/account evidence, Cloudflare-specific failure or billing mechanism, smallest safe fix, cost/trade-off, verification, source basis, and confidence. It is not a substitute for live load testing, billing exports, formal security review, or dashboard/account inspection that you did not provide.

@@ -2309,9 +2309,392 @@
       "domain": "cloudflare-workers",
       "difficulty": "extended",
       "success_goals": ["outcome"]
+    },
+    {
+      "id": "private-d1-polling-growth",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/private-d1-polling/README.md",
+        "fixtures/benchmark/private-d1-polling/wrangler.jsonc",
+        "fixtures/benchmark/private-d1-polling/index.js",
+        "fixtures/benchmark/private-d1-polling/evidence.txt"
+      ],
+      "prompt": "I use this app alone and D1 usage is higher than I expected. Cloudflare Doctor the attached app and explain what the supplied evidence supports.",
+      "expected_behavior": [
+        "Trace the authenticated ten-second poll to the supplied SCAN notes plan and 50,000-row synthetic sample, despite only 20 rows returned; keep safe COUNT and primary-key SELECT * controls separate.",
+        "Model one active hour as 360 executions × 1 query × 50,000 sampled rows = 18 million reads, with zero sampled writes; active duration, other calls, growth, account allowance and actual bill remain unknown.",
+        "Identify the first real prevention boundary and measure a selective query/materialization before and after; do not attribute the historical bill to bots or treat every SQL keyword as a finding."
+      ],
+      "assertions": [
+        {
+          "name": "private-d1-accounting-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "private-d1-polling-growth"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "oracle": "strong",
+          "description": "Checks fixture-specific accounting, evidence relationships and selected contradictory diagnoses. Deterministic checks do not establish model effectiveness; run with --allow-scripts and qualitative review."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Discovers the mechanism from the attached code, schema, plans and synthetic samples rather than from user count or a canned missing-index diagnosis",
+            "Separates execution frequency, query count, sampled reads and sampled writes; keeps unknown multipliers and matching account/allowance/window evidence explicit",
+            "Distinguishes plans, sampled units and projected scenarios from proven worst-case bounds or a historical invoice cause",
+            "Reports the first evidenced prevention boundary and smallest complete fix with before/after verification; preserves safe SQL controls and any external-gate assumptions",
+            "Grounds current D1 meter and index recommendations in directly relevant official documentation"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "private-d1-cost-accounting",
+        "d1",
+        "cost-investigation"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "private-d1-deep-offset",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/private-d1-offset/README.md",
+        "fixtures/benchmark/private-d1-offset/wrangler.jsonc",
+        "fixtures/benchmark/private-d1-offset/index.js",
+        "fixtures/benchmark/private-d1-offset/evidence.txt"
+      ],
+      "prompt": "Only I use this private history browser. Later pages feel odd and D1 usage has increased. Review the attached evidence and recommend the smallest supported change.",
+      "expected_behavior": [
+        "Use the existing covering archive_owner_created_id index and paired shallow/deep samples to identify skipped-row amplification rather than invent a missing index or full table scan.",
+        "Preserve 20 returned versus 10,020 sampled reads at offset 10,000, one query per page, zero sampled writes, and unknown page frequency; LIMIT is not a billed-read bound.",
+        "Recommend and verify keyset/seek pagination against before/after plans and per-query rows, preserving the indexed ordering and avoiding a fabricated daily bill."
+      ],
+      "assertions": [
+        {
+          "name": "private-d1-accounting-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "private-d1-deep-offset"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "oracle": "strong",
+          "description": "Checks fixture-specific accounting, evidence relationships and selected contradictory diagnoses. Deterministic checks do not establish model effectiveness; run with --allow-scripts and qualitative review."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Discovers the mechanism from the attached code, schema, plans and synthetic samples rather than from user count or a canned missing-index diagnosis",
+            "Separates execution frequency, query count, sampled reads and sampled writes; keeps unknown multipliers and matching account/allowance/window evidence explicit",
+            "Distinguishes plans, sampled units and projected scenarios from proven worst-case bounds or a historical invoice cause",
+            "Reports the first evidenced prevention boundary and smallest complete fix with before/after verification; preserves safe SQL controls and any external-gate assumptions",
+            "Grounds current D1 meter and index recommendations in directly relevant official documentation"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "private-d1-cost-accounting",
+        "d1",
+        "cost-investigation"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "private-d1-repeated-sync",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/private-d1-sync/README.md",
+        "fixtures/benchmark/private-d1-sync/wrangler.jsonc",
+        "fixtures/benchmark/private-d1-sync/index.js",
+        "fixtures/benchmark/private-d1-sync/evidence.txt"
+      ],
+      "prompt": "This is a private app with one owner. Its data barely changes, but D1 usage keeps accumulating. Cloudflare Doctor the supplied files.",
+      "expected_behavior": [
+        "Trace the five-minute scheduled full replacement: one DELETE plus 1,000 inserts even for an identical snapshot, with synthetic per-shape writes kept separate.",
+        "At 288 scheduled runs/day, model 1,000 DELETE writes plus 1,000 insertion writes = 2,000/run and 576,000/day; retain the separately supplied read samples and unknown retries/overlap instead of treating schedule arithmetic as observed billing.",
+        "Prevent unnecessary repeated replacement through change detection/deltas and verify both reads and writes; batching/upserting alone does not establish fewer billed rows."
+      ],
+      "assertions": [
+        {
+          "name": "private-d1-accounting-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "private-d1-repeated-sync"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "oracle": "strong",
+          "description": "Checks fixture-specific accounting, evidence relationships and selected contradictory diagnoses. Deterministic checks do not establish model effectiveness; run with --allow-scripts and qualitative review."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Discovers the mechanism from the attached code, schema, plans and synthetic samples rather than from user count or a canned missing-index diagnosis",
+            "Separates execution frequency, query count, sampled reads and sampled writes; keeps unknown multipliers and matching account/allowance/window evidence explicit",
+            "Distinguishes plans, sampled units and projected scenarios from proven worst-case bounds or a historical invoice cause",
+            "Reports the first evidenced prevention boundary and smallest complete fix with before/after verification; preserves safe SQL controls and any external-gate assumptions",
+            "Grounds current D1 meter and index recommendations in directly relevant official documentation"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "private-d1-cost-accounting",
+        "d1",
+        "cost-investigation"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "private-d1-indexed-writes",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/private-d1-indexed-writes/README.md",
+        "fixtures/benchmark/private-d1-indexed-writes/wrangler.jsonc",
+        "fixtures/benchmark/private-d1-indexed-writes/index.js",
+        "fixtures/benchmark/private-d1-indexed-writes/evidence.txt"
+      ],
+      "prompt": "Only I use this app and reads look modest. Help investigate its growing D1 usage from these files before proposing a change.",
+      "expected_behavior": [
+        "Attribute the supplied 4-write indexed update versus 1-write comparison to evidenced index-maintenance amplification, while preserving the existing primary-key search and one-read sample.",
+        "Model 96 scheduled runs/day × 1,000 updates/run as 384,000 sampled write units and 96,000 sampled read units, keeping the intentional state toggle and future/overlap/account limits explicit.",
+        "Assess whether the update cadence and each secondary index are necessary, checking index consumers before a targeted change; do not assume unchanged rows, unused indexes, a universal one-write-per-index rule or an invoice cause."
+      ],
+      "assertions": [
+        {
+          "name": "private-d1-accounting-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "private-d1-indexed-writes"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "oracle": "strong",
+          "description": "Checks fixture-specific accounting, evidence relationships and selected contradictory diagnoses. Deterministic checks do not establish model effectiveness; run with --allow-scripts and qualitative review."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Discovers the mechanism from the attached code, schema, plans and synthetic samples rather than from user count or a canned missing-index diagnosis",
+            "Separates execution frequency, query count, sampled reads and sampled writes; keeps unknown multipliers and matching account/allowance/window evidence explicit",
+            "Distinguishes plans, sampled units and projected scenarios from proven worst-case bounds or a historical invoice cause",
+            "Reports the first evidenced prevention boundary and smallest complete fix with before/after verification; preserves safe SQL controls and any external-gate assumptions",
+            "Grounds current D1 meter and index recommendations in directly relevant official documentation"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "private-d1-cost-accounting",
+        "d1",
+        "cost-investigation"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "private-d1-safe-controls",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/benchmark/private-d1-safe/README.md",
+        "fixtures/benchmark/private-d1-safe/wrangler.jsonc",
+        "fixtures/benchmark/private-d1-safe/index.js",
+        "fixtures/benchmark/private-d1-safe/evidence.txt"
+      ],
+      "prompt": "I am the only user. Does this private app show the same sort of D1 cost problem? Audit the supplied evidence without assuming the live account state.",
+      "expected_behavior": [
+        "Report no confirmed finding from polling, COUNT(*) or SELECT * alone: schema/plan/sample evidence supports a one-row count and primary-key lookup.",
+        "Retain the supplied synthetic SESSION_GATE atomic admission contract before D1 and its uninspected implementation/deployment; it admits at most 60 calls in the supplied session, each with 2 queries sampling one read and zero writes.",
+        "Model 120 sampled D1 reads/session, zero sampled D1 writes, and unknown other-gate costs/account totals; samples and a mock contract do not prove future billed-unit bounds or live deployment safety."
+      ],
+      "assertions": [
+        {
+          "name": "private-d1-accounting-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/fixture_oracle.py",
+            "{output_dir}",
+            "private-d1-safe-controls"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "oracle": "strong",
+          "description": "Checks fixture-specific accounting, evidence relationships and selected contradictory diagnoses. Deterministic checks do not establish model effectiveness; run with --allow-scripts and qualitative review."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Discovers the mechanism from the attached code, schema, plans and synthetic samples rather than from user count or a canned missing-index diagnosis",
+            "Separates execution frequency, query count, sampled reads and sampled writes; keeps unknown multipliers and matching account/allowance/window evidence explicit",
+            "Distinguishes plans, sampled units and projected scenarios from proven worst-case bounds or a historical invoice cause",
+            "Reports the first evidenced prevention boundary and smallest complete fix with before/after verification; preserves safe SQL controls and any external-gate assumptions",
+            "Grounds current D1 meter and index recommendations in directly relevant official documentation"
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 120000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 120,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "fixture-backed",
+        "private-d1-cost-accounting",
+        "d1",
+        "cost-investigation"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     }
   ],
   "ablations": [
+    {
+      "id": "no-private-d1-cost-accounting",
+      "removed_component": "D1 workload cost accounting and focused diagnosis routing",
+      "expected_regressions": [
+        {
+          "summary": "Private and scheduled D1 work loses explicit frequency × query × sampled-row accounting, read/write separation, or calibrated evidence limitations.",
+          "cases": [
+            "private-d1-polling-growth",
+            "private-d1-deep-offset",
+            "private-d1-repeated-sync",
+            "private-d1-indexed-writes",
+            "private-d1-safe-controls"
+          ],
+          "assertions": [
+            "private-d1-accounting-oracle"
+          ]
+        }
+      ],
+      "applies_to_cases": [
+        "private-d1-polling-growth",
+        "private-d1-deep-offset",
+        "private-d1-repeated-sync",
+        "private-d1-indexed-writes",
+        "private-d1-safe-controls"
+      ],
+      "notes": "Instruction ablation removes only the new D1 accounting block and diagnosis routing, retaining the public-route gate and pre-existing performance/cost guidance. Regression is a hypothesis until a paired model run supports it.",
+      "mechanism": "patch",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/cloudflare-doctor/SKILL.md",
+        "patch": "evals/ablations/no-private-d1-cost-accounting.patch"
+      }
+    },
     {
       "id": "no-docs-refresh",
       "removed_component": "docs-refresh requirement",

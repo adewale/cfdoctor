@@ -1,0 +1,7 @@
+{
+  "name": "fixture-private-d1-offset",
+  "main": "index.js",
+  "compatibility_date": "2026-08-01",
+  "workers_dev": false,
+  "d1_databases": [{ "binding": "DB", "database_name": "fixture-private-archive", "database_id": "00000000-0000-0000-0000-000000000022" }]
+}

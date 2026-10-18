@@ -18,6 +18,14 @@ Review this Cloudflare project for surprise-billing risks. Focus on Workers CPU/
 
 Use when spend is high or traffic patterns changed. The answer should identify meters and amplification mechanisms rather than invent dollar estimates.
 
+## D1 bill diagnosis
+
+```text
+Diagnose this project's D1 bill from the supplied redacted invoice and usage evidence. Follow references/d1-bill-diagnosis.md. Separate rows read, rows written, and storage; match the billing window and account allowance scope. Trace private polling, scheduled/background jobs, syncs, imports, retries, and migrations as well as public traffic. Correlate query totals and execution counts with plans and measured row metadata before proposing a fix. Show the smallest missing evidence and any unreconciled remainder. Plan authenticated reads for approval; do not run them yet, replay production writes, or install tooling.
+```
+
+Start with the suspect database's repository/config, redacted D1 meter lines and period, and any existing row metrics. The [diagnosis workflow](../skills/cloudflare-doctor/references/d1-bill-diagnosis.md) uses the installed project-pinned Wrangler's help before planning experimental query insights, ranks total reads/writes/count instead of default duration, and keeps limited insights separate from invoice reconciliation. One user or a private app still needs a measured execution-frequency model.
+
 ## Durable Objects deep dive
 
 ```text
