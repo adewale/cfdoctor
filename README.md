@@ -10,7 +10,7 @@ Use it as a **read-only audit partner** when you want Cloudflare-specific judgme
 
 - **Repo/config audit** — inspect Wrangler config (`wrangler.jsonc` for new projects; JSON/TOML also supported), bindings, Workers/Pages code, IaC, tests, and docs before launch or review.
 - **Product-fit review** — ask whether KV, D1, R2, Durable Objects, Queues, Workflows, Vectorize, Workers AI, etc. match the access pattern.
-- **Cost and surprise-billing review** — identify billing meters, fanout, retries, AI/browser/media/vector usage, cache misses, and missing cost proxies.
+- **Cost and surprise-billing review** — identify applicable plan/meters, private/background work, fanout, retries, AI/browser/media/vector usage, cache misses, and missing cost proxies; prioritize evidenced cost without inferring a cause from an invoice alone.
 - **Security/reliability posture** — check auth boundaries, preview exposure, WAF/rate-limit evidence, queue/DLQ behavior, cron/loop bounds, and observability.
 - **Dashboard/account evidence review** — provide screenshots, API exports, Terraform, `cf-terraforming`, or approved read-only command output for state that is not in the repo.
 - **Scanner triage** — run the static scanner for leads, then use the skill to confirm or suppress findings with source context and current docs.

@@ -18,6 +18,8 @@ Review this Cloudflare project for surprise-billing risks. Focus on Workers CPU/
 
 Use when spend is high or traffic patterns changed. The answer should identify meters and amplification mechanisms rather than invent dollar estimates.
 
+Include private/authenticated requests, scheduled work, retries, and fanout when evidenced; user count alone does not bound cost. Start with the actual products and plan, prioritize supplied dollar charges over raw operation counts, and match usage versus invoice quantities and allowance windows. Ask for the smallest missing evidence before assigning a cause. If spending predictability matters, state acceptable overshoot and whether service may stop or degrade.
+
 ## Durable Objects deep dive
 
 ```text

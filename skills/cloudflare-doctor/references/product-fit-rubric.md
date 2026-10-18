@@ -2,6 +2,12 @@
 
 Use this rubric to decide whether the project is using the right Cloudflare primitive for the job. Treat every row as a diagnostic smell, not an automatic finding; confirm with access patterns and expected volume.
 
+## Spending and availability requirements
+
+When spending predictability affects product fit, establish the customer's acceptable spend, billing period, tolerable overshoot, and whether work may stop or degrade. Keep unknown requirements explicit. Distinguish notifications, verified product/plan limits, and application-enforced work budgets; do not assume a notification is a cap or that every customer needs a new budget service.
+
+For a proposed work bound, identify the covered meters and the enforcement point before expensive work. Verify behavior under concurrency, retries, restarts, and in-flight work, and report uncovered costs. Sampled units and delayed billing telemetry do not prove an exact invoice cap. Compare options against the customer's service and operating requirements rather than inferring a product mismatch from another customer's incident.
+
 ## Workers and Pages
 
 Good fit:

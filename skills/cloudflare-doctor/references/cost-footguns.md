@@ -12,6 +12,10 @@ Ask for or infer cautiously:
 - Whether the project recently moved from Free to Paid. Treat plan upgrades as cost-risk changes: hard stops/included usage may become paid overages or different throttling behavior depending on product and plan.
 - Circuit breakers, kill switches, retry limits, fanout caps, DLQ depth, and run-summary metrics. Missing controls turn transient failures into spend amplification.
 
+For every relevant meter, separate execution frequency from billable units per execution, including private/authenticated requests, scheduled work, retries, and fanout. A small audience does not establish a small workload. Mark missing values unknown and sampled costs as samples; do not sum aggregate usage and its component operations twice. Use the product's actual unit and window for storage, fixed charges, or other meters that are not execution-driven.
+
+When billing evidence is supplied, prioritize the largest charge contributions, not raw operation counts across unlike units. Establish whether each quantity is gross usage or already billable before applying account allowances; match the billing period and avoid deducting allowances twice. Preserve supplied charges when missing rate/rounding/credit details prevent reconciliation. A meter breakdown supports cost attribution; a query, route, or job diagnosis still needs application and usage evidence. Use only the smallest scoped evidence request that can resolve that gap.
+
 ## Workers
 
 Footguns:
@@ -129,7 +133,7 @@ Footguns:
 - Missing kill switches for expensive features, cron jobs, queue consumers, demo/workshop routes, Dynamic Workers, Agents scheduled tasks/tools, Workers AI, Browser Run, Images/Stream transforms, or Vectorize search.
 - No anti-rework cache: the same logical operation repeats after refresh, retry, queue replay, webhook duplicate, browser reconnect, or user double-click.
 - Run summaries log success/failure but not cost proxies, making it impossible to notice spend amplification until billing arrives.
-- Relying on Cloudflare billing notifications as the runaway-spend defense. Budget alerts are informational only — they do not pause or cap usage, there is no hard spending limit, eligible Pay-as-you-go accounts get only an auto-created $10 default threshold, and per-product usage notifications scoped to one product (for example Workers requests) cannot see a different meter (for example DO storage rows read). Verify configured scope, thresholds, recipients, and delivery latency against current billing docs instead of assuming timely alerts.
+- Relying on Cloudflare billing notifications as the runaway-spend defense. Budget alerts are informational only — they do not pause or cap usage or enforce a spending limit, eligible Pay-as-you-go accounts get only an auto-created $10 default threshold, and per-product usage notifications scoped to one product (for example Workers requests) cannot see a different meter (for example DO storage rows read). Verify configured scope, thresholds, recipients, and delivery latency against current billing docs instead of assuming timely alerts.
 - Kill switches that only guard the HTTP edge. A loop detached through `waitUntil`, alarms, queue consumers, or DO-to-DO stubs never passes the edge again; the flag must be checked inside every loop step (alarm entry, consumer entry, stub-call site) to actually stop it.
 
 Better patterns:
