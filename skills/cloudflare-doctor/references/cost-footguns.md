@@ -114,11 +114,12 @@ Footguns:
 - Poison messages exhausting the retry limit and being permanently deleted when no DLQ/alerting/replay path exists; Cloudflare currently defaults to three retries.
 - Enqueueing enormous fan-outs from a single request with no quota/backpressure.
 - Workflows used for simple fire-and-forget tasks where Queues would suffice, or ad hoc queues implemented in KV/D1.
-- Treating Workflow steps or retained instance state as free. Current pricing meters requests, CPU, persisted storage, and steps; Cloudflare announced that Paid-plan step and storage billing starts no earlier than August 10, 2026. Sleeps and event waits are steps even though idle wait time does not consume CPU.
+- Treating Workflow steps or retained instance state as free. Current pricing meters requests, CPU, persisted storage, and steps. Sleeps and event waits count as steps even though idle wait time does not consume CPU; built-in retries and rollback handlers are excluded from billed step count, but their CPU and downstream operations can still cost money. Distinguish these meters when diagnosing retry amplification.
+- Assuming all paid Workflows retain completed/errored state for 30 days. The default depends on when the Workflow was created and any configured overrides; use the creation-date and storage guidance in [Workflows steps, retries, and retention](performance-and-reliability.md#workflows-steps-retries-and-retention).
 - Retrying terminal failures or ignoring provider-specific `Retry-After` guidance. Workflows now supports dynamic retry delay functions and `NonRetryableError` for permanent failures.
 
 Better patterns:
-- Idempotency keys, DLQs, bounded retries, adaptive backoff, `NonRetryableError` for permanent failures, alerting, explicit fan-out limits, coarse meaningful Workflow steps, and intentional instance-state retention. Verify the announced billing start date before making a current invoice claim.
+- Idempotency keys, DLQs, bounded retries, adaptive backoff, `NonRetryableError` for permanent failures, alerting, explicit fan-out limits, coarse meaningful Workflow steps, and intentional instance-state retention. Refresh current pricing and billing changelogs; use invoice/account evidence for actual-charge claims.
 
 ## Spend-amplification controls
 

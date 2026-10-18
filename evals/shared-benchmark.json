@@ -363,6 +363,410 @@
       ]
     },
     {
+      "id": "workflow-builtin-retry-billing",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Review the attached Workflow usage and code for cost. Estimate the step-only overage using the supplied official docs, identify remaining unmeasured costs, and decide whether changing retry policy is justified by the step fee alone. Include a fenced JSON worksheet with workflow_starts, billed_steps, step_overage_usd, retry_extra_step_fee_usd, and retry_cpu_and_downstream_cost_guaranteed_zero. The last field is a boolean asking whether the supplied evidence guarantees zero CPU and downstream spend from retry execution; the separate extra-step-fee field concerns only the Workflow step meter.",
+      "files": [
+        "fixtures/benchmark/workflow-billing/builtin-retries.json",
+        "fixtures/benchmark/workflow-billing/workflow-pricing.md",
+        "fixtures/benchmark/workflow-billing/workflow-retention.md",
+        "fixtures/benchmark/workflow-billing/workflow-billing-start.md"
+      ],
+      "expected_behavior": [
+        "Built-in retry attempts do not increase billed step count or Workflow starts.",
+        "Step-only overage is $36, not a 15M-step estimate; active CPU and paid provider calls may increase.",
+        "Do not recommend removing useful retries solely to reduce step fees."
+      ],
+      "assertions": [
+        {
+          "name": "billing-worksheet-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/workflow_billing_oracle.py",
+            "{output_dir}",
+            "workflow-builtin-retry-billing"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Parse the billing worksheet and verify typed values/arithmetic; qualitative grading checks the explanation and source use."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Built-in retry attempts do not increase billed step count or Workflow starts.",
+            "Step-only overage is $36, not a 15M-step estimate; active CPU and paid provider calls may increase.",
+            "Do not recommend removing useful retries solely to reduce step fees.",
+            "Use supplied current official source snapshots with observation/effective dates; avoid unsupported exact charges and unnecessary fixes."
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 80000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 180,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "workflows",
+        "billing",
+        "precision",
+        "negative"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "workflow-application-retry-billing",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Review the attached Workflow code and usage. Estimate the step-only overage and explain how this control flow affects billed work. Include a fenced JSON worksheet with workflow_starts, billed_steps, and step_overage_usd. Recommend a change only if the code and billing evidence justify it.",
+      "files": [
+        "fixtures/benchmark/workflow-billing/application-loop.json",
+        "fixtures/benchmark/workflow-billing/workflow-pricing.md",
+        "fixtures/benchmark/workflow-billing/workflow-retention.md",
+        "fixtures/benchmark/workflow-billing/workflow-billing-start.md"
+      ],
+      "expected_behavior": [
+        "The explicit application loop executes fifteen distinct Workflow steps per run, not five.",
+        "The built-in retry exclusion does not exempt explicit step.do calls; overage is $116.",
+        "Any suggestion to use built-in retries must preserve the false-result versus thrown-error semantics and idempotency."
+      ],
+      "assertions": [
+        {
+          "name": "billing-worksheet-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/workflow_billing_oracle.py",
+            "{output_dir}",
+            "workflow-application-retry-billing"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Parse the billing worksheet and verify typed values/arithmetic; qualitative grading checks the explanation and source use."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "The explicit application loop executes fifteen distinct Workflow steps per run, not five.",
+            "The built-in retry exclusion does not exempt explicit step.do calls; overage is $116.",
+            "Any suggestion to use built-in retries must preserve the false-result versus thrown-error semantics and idempotency.",
+            "Use supplied current official source snapshots with observation/effective dates; avoid unsupported exact charges and unnecessary fixes."
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 80000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 180,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "workflows",
+        "billing",
+        "precision"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "workflow-rollback-billing",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Review the supplied failure/compensation usage. Estimate step-only overage, identify unmeasured cost exposure, and assess whether compensation should be disabled to reduce step fees. Include a fenced JSON worksheet with billed_steps, step_overage_usd, rollback_extra_step_fee_usd, and rollback_cpu_and_downstream_cost_guaranteed_zero. The last field is a boolean asking whether the supplied evidence guarantees zero CPU and downstream spend from rollback execution; the separate extra-step-fee field concerns only the Workflow step meter.",
+      "files": [
+        "fixtures/benchmark/workflow-billing/rollback.json",
+        "fixtures/benchmark/workflow-billing/workflow-pricing.md",
+        "fixtures/benchmark/workflow-billing/workflow-retention.md",
+        "fixtures/benchmark/workflow-billing/workflow-billing-start.md"
+      ],
+      "expected_behavior": [
+        "Four executed forward steps per run give 4M billed steps and $28 overage.",
+        "Rollback handlers and their built-in retries do not add step fees, but active CPU and downstream calls may be metered.",
+        "Do not sacrifice recovery by disabling compensation solely for step savings."
+      ],
+      "assertions": [
+        {
+          "name": "billing-worksheet-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/workflow_billing_oracle.py",
+            "{output_dir}",
+            "workflow-rollback-billing"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Parse the billing worksheet and verify typed values/arithmetic; qualitative grading checks the explanation and source use."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Four executed forward steps per run give 4M billed steps and $28 overage.",
+            "Rollback handlers and their built-in retries do not add step fees, but active CPU and downstream calls may be metered.",
+            "Do not sacrifice recovery by disabling compensation solely for step savings.",
+            "Use supplied current official source snapshots with observation/effective dates; avoid unsupported exact charges and unnecessary fixes."
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 80000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 180,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "workflows",
+        "billing",
+        "precision",
+        "negative"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "workflow-wait-invocation-billing",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Review this Workflow's usage using the supplied docs. Estimate step and CPU overages separately and explain the effect of waiting. Include a fenced JSON worksheet with workflow_starts, billed_steps, step_overage_usd, cpu_overage_usd, and subtotal_usd. Exclude subscription, storage, and downstream vendor charges.",
+      "files": [
+        "fixtures/benchmark/workflow-billing/waits.json",
+        "fixtures/benchmark/workflow-billing/workflow-pricing.md",
+        "fixtures/benchmark/workflow-billing/workflow-retention.md",
+        "fixtures/benchmark/workflow-billing/workflow-billing-start.md"
+      ],
+      "expected_behavior": [
+        "The two step.do operations, sleep, and event wait are four billed steps, while each new run is one invocation.",
+        "Measured active CPU is 50M ms; subtract 30M included for $0.40 CPU overage. Idle wall time is not CPU.",
+        "Step overage is $28, subtotal $28.40; state storage remains outside this subtotal."
+      ],
+      "assertions": [
+        {
+          "name": "billing-worksheet-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/workflow_billing_oracle.py",
+            "{output_dir}",
+            "workflow-wait-invocation-billing"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Parse the billing worksheet and verify typed values/arithmetic; qualitative grading checks the explanation and source use."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "The two step.do operations, sleep, and event wait are four billed steps, while each new run is one invocation.",
+            "Measured active CPU is 50M ms; subtract 30M included for $0.40 CPU overage. Idle wall time is not CPU.",
+            "Step overage is $28, subtotal $28.40; state storage remains outside this subtotal.",
+            "Use supplied current official source snapshots with observation/effective dates; avoid unsupported exact charges and unnecessary fixes."
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 80000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 180,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "workflows",
+        "billing",
+        "precision"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "workflow-retention-cohort",
+      "split": "holdout",
+      "kind": "audit-output",
+      "prompt_ref": "holdout/workflow-retention-cohort.md",
+      "files": [
+        "fixtures/benchmark/workflow-billing/retention.json",
+        "fixtures/benchmark/workflow-billing/workflow-pricing.md",
+        "fixtures/benchmark/workflow-billing/workflow-retention.md",
+        "fixtures/benchmark/workflow-billing/workflow-billing-start.md"
+      ],
+      "expected_behavior": [
+        "Workflow definition creation date determines whether the seven-day new-paid default applies, not the October instance creation date.",
+        "Preserve the legacy 30-day setting and apply per-instance overrides ahead of default_retention.",
+        "Explicitly disclose pricing-page 30-day default versus dated seven-day changelog; identify cohort and avoid inferred dashboard state."
+      ],
+      "assertions": [
+        {
+          "name": "billing-worksheet-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/workflow_billing_oracle.py",
+            "{output_dir}",
+            "workflow-retention-cohort"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Parse the billing worksheet and verify typed values/arithmetic; qualitative grading checks the explanation and source use."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Workflow definition creation date determines whether the seven-day new-paid default applies, not the October instance creation date.",
+            "Preserve the legacy 30-day setting and apply per-instance overrides ahead of default_retention.",
+            "Explicitly disclose pricing-page 30-day default versus dated seven-day changelog; identify cohort and avoid inferred dashboard state.",
+            "Use supplied current official source snapshots with observation/effective dates; avoid unsupported exact charges and unnecessary fixes."
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 80000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 180,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "workflows",
+        "billing",
+        "precision"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "workflow-storage-daily-peak",
+      "split": "holdout",
+      "kind": "audit-output",
+      "prompt_ref": "holdout/workflow-storage-daily-peak.md",
+      "files": [
+        "fixtures/benchmark/workflow-billing/storage.json",
+        "fixtures/benchmark/workflow-billing/workflow-pricing.md",
+        "fixtures/benchmark/workflow-billing/workflow-retention.md",
+        "fixtures/benchmark/workflow-billing/workflow-billing-start.md"
+      ],
+      "expected_behavior": [
+        "Thirty daily peaks of 10GB average to 10 GB-month; subtract 1GB included to obtain $1.80 storage overage.",
+        "Zero state at end of day does not erase that day's peak; do not use zero or prorate by how briefly the peak existed.",
+        "Cleanup can reduce future storage peaks, not retroactively remove a peak; preserve diagnostic and active-work requirements."
+      ],
+      "assertions": [
+        {
+          "name": "billing-worksheet-oracle",
+          "type": "script",
+          "command": [
+            "python3",
+            "oracles/workflow_billing_oracle.py",
+            "{output_dir}",
+            "workflow-storage-daily-peak"
+          ],
+          "pass_exit_code": 0,
+          "timeout_s": 10,
+          "description": "Parse the billing worksheet and verify typed values/arithmetic; qualitative grading checks the explanation and source use."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Thirty daily peaks of 10GB average to 10 GB-month; subtract 1GB included to obtain $1.80 storage overage.",
+            "Zero state at end of day does not erase that day's peak; do not use zero or prorate by how briefly the peak existed.",
+            "Cleanup can reduce future storage peaks, not retroactively remove a peak; preserve diagnostic and active-work requirements.",
+            "Use supplied current official source snapshots with observation/effective dates; avoid unsupported exact charges and unnecessary fixes."
+          ],
+          "threshold": 0.85
+        },
+        {
+          "name": "efficiency-total-tokens",
+          "type": "total_tokens_le",
+          "max": 80000,
+          "severity": "soft",
+          "oracle": "strong"
+        },
+        {
+          "name": "efficiency-elapsed-time",
+          "type": "elapsed_seconds_le",
+          "max": 180,
+          "severity": "soft",
+          "oracle": "strong"
+        }
+      ],
+      "tags": [
+        "workflows",
+        "billing",
+        "precision"
+      ],
+      "domain": "cloudflare-workers",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
       "id": "pos-workflows-unbounded-fanout",
       "split": "tune",
       "kind": "audit-output",

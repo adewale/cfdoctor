@@ -65,6 +65,16 @@ The current matched GPT-5.5 three-way round (`with_skill` current PR, `old_skill
 
 Qualitative assertions now use an explicit `0.85` threshold instead of the fake-red implicit `1.0`. Every tune answer case also has token and elapsed-time assertions. Keep the multi-dimensional objective/qualitative/efficiency view rather than collapsing value to one pass number.
 
+## Focused Workflow billing comparison
+
+Six `workflow-*` cases in `shared-benchmark.json` exercise built-in retries versus explicit retry loops, rollback handlers, waits/invocations, retention cohorts/overrides, and daily-peak storage. They use synthetic usage records and official Markdown responses captured on 2026-10-18 under `fixtures/benchmark/workflow-billing/`. The billing worksheet oracle checks typed values and arithmetic; the qualitative judge separately checks source interpretation, contradictory prose, unnecessary fixes, and missing account evidence. Oracle unit tests reject wrong values, numeric strings, answer echoes, and duplicate contradictory worksheets.
+
+Use `scripts/focus_workflow_billing_eval.py --baseline <immutable-repo-root> --current <frozen-current-repo-root> --out <temporary-manifest>` to select these cases plus four existing controls. Follow the pinned harness workflow in [`shared-harness.md`](shared-harness.md): validate/leakage-check the manifest, prepare with `--include-old-skill --runs-per-variant 3`, run isolated answers, then grade with script assertions and blind qualitative judgments. Record the baseline commit, skill/input hashes, model and reasoning settings, invocation failures, and reference-read traces. Report the six new cases and four controls separately; use cases as the uncertainty unit rather than treating repeated runs as independent cases.
+
+The two holdout prompts live in gitignored `evals/holdout/workflow-*.md` and must be supplied privately before scoring. Their synthetic usage records and expected behavior are public, so they are split-isolation checks, not independently authored unseen tests. Do not claim behavioral lift from source-anchor checks or a passing test suite alone.
+
+The [2026-10-18 receipt](results/workflow-billing/README.md) preserves the pilot measurement correction, final three-way results, uncertainty, source-drift tests, and reproduction commands. `scripts/judge_workflow_billing_eval.py` uses the shared harness backend with opaque variant labels; keep its raw artifacts outside the repository and use a fresh root after any candidate/rubric/model change.
+
 ## Adding cases
 
 Add cases when the trigger policy changes or a false trigger is observed:

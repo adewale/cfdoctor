@@ -13,7 +13,8 @@
     {"url": "https://developers.cloudflare.com/queues/configuration/batching-retries/", "content_terms": ["defaults to 3", "additional read operation"]},
     {"url": "https://developers.cloudflare.com/queues/configuration/dead-letter-queues/", "content_terms": ["deleted permanently"]},
     {"url": "https://developers.cloudflare.com/workers/wrangler/configuration/", "content_terms": ["workers_dev", "Defaults to true"]},
-    {"url": "https://developers.cloudflare.com/workflows/reference/pricing/", "content_terms": ["Steps", "August 10"]},
+    {"url": "https://developers.cloudflare.com/workflows/reference/pricing/", "content_terms": ["Steps", "Step count does not include rollback handlers or retries", "averaging the peak storage per day"]},
+    {"url": "https://developers.cloudflare.com/changelog/post/2026-09-10-paid-retention-default/", "content_terms": ["September 10, 2026", "seven days", "existing Workflows is unchanged"]},
     {"url": "https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/", "content_terms": ["no longer supported for accounts without an existing key-value-backed namespace", "new_sqlite_classes"]},
     {"url": "https://developers.cloudflare.com/images/pricing/", "content_terms": ["unique transformations", "Repeat requests"]}
   ]
