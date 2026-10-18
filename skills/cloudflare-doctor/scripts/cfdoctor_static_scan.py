@@ -160,7 +160,7 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-PERF-D1-SELECT-STAR", "PERF", "low", "medium", "D1 query uses SELECT *; review projection and bounds", "SELECT * widens transfer/decoding and couples code to schema, but does not by itself prove a full scan or increase D1 billed rows read."),
     ("CFDOC-COST-D1-ORDER-RANDOM", "COST", "high", "high", "D1 query orders by RANDOM()", "Random ordering forces expensive scans/sorts that grow with table size."),
     ("CFDOC-PERF-D1-N-PLUS-ONE", "PERF", "low", "low", "Many D1 prepared statements in one file; check for N+1 queries", "Several sequential queries per request can multiply latency and billed rows."),
-    ("CFDOC-COST-D1-NO-INDEXES", "COST", "medium", "medium", "D1 schema defines tables but no secondary indexes for filtered queries", "D1 bills rows scanned, not rows returned; filtered or aggregate queries over unindexed tables can rescan the whole table on every call."),
+    ("CFDOC-COST-D1-NO-INDEXES", "COST", "medium", "medium", "D1 schema defines tables but no secondary indexes for filtered queries", "D1 bills rows scanned, not rows returned; with no secondary index in the schema, filtered or aggregate queries are likely table scans. Confirm with a query plan."),
     ("CFDOC-COST-D1-LAYOUT-HOTPATH", "COST", "medium", "low", "Layout-level route file queries D1 without obvious caching", "Layout/root loaders run on every page view, so an uncached D1 query there multiplies billed rows read by sitewide traffic."),
     ("CFDOC-COST-DO-FRONT-DOOR", "COST", "medium", "low", "Durable Object call path lacks obvious front-door validation", "Invalid/bot traffic should be rejected before it becomes DO requests/duration."),
     ("DO-SHARDING-HOTSPOT", "COST", "high", "high", "Durable Object idFromName uses a global/singleton key", "Low-cardinality DO keys concentrate traffic into one hot object."),
@@ -1340,8 +1340,8 @@ def add_code_findings(
                     "D1 schema defines tables but no secondary indexes for filtered queries",
                     "cost footgun / missed optimization",
                     f"{rel(schema_path, root)} creates tables with no CREATE INDEX; {rel(qpath, root)}:{qline_no}: {excerpt(qline)}",
-                    "D1 bills rows read (scanned), not rows returned. Without secondary indexes, WHERE/ORDER BY/aggregate queries rescan the whole table on every call, so billed rows grow with table size times traffic even when each result is tiny.",
-                    "Add indexes matching hot predicates (composite where queries filter on several columns), run ANALYZE or PRAGMA optimize after batch index changes so the planner has sqlite_stat1 statistics, then confirm with EXPLAIN QUERY PLAN and per-query rows_read metadata.",
+                    "D1 bills rows read (scanned), not rows returned. The checked-in schema creates no secondary index, so WHERE/ORDER BY/aggregate queries are likely full-table scans whose billed rows grow with table size times traffic even when each result is tiny. This is inferred from schema evidence, not a measured scan.",
+                    "Confirm with EXPLAIN QUERY PLAN and per-query rows_read before claiming cost. Then add indexes matching hot predicates (composite where queries filter on several columns) and run ANALYZE or PRAGMA optimize after batch index changes so the planner has sqlite_stat1 statistics. On an anonymous public route, apply the public-route cost release gate.",
                     "medium",
                 ))
 
@@ -1729,8 +1729,8 @@ def add_code_findings(
                         "Layout-level route file queries D1 without obvious caching",
                         "cost footgun / missed optimization",
                         f"{rpath}:{hit[0]}: {excerpt(hit[1])}",
-                        "Layout/root loaders run for every page view beneath them, before page-specific code executes. An uncached D1 query here multiplies its rows read by sitewide traffic, and an unindexed query in this position can dominate the whole bill.",
-                        "Cache the result (KV cache-aside or Workers Cache) under an explicit versioned key with invalidation on data change, or precompute rarely-changing navigation data; verify per-route rows_read before and after.",
+                        "Layout/root loaders run for every page view beneath them, before page-specific code executes. An uncached D1 query here is inherited work on every public route family, so its rows read multiply by sitewide traffic, and an unindexed query in this position can dominate the whole bill. Only queries written in this file are seen; queries in imported helpers are not.",
+                        "Materialize rarely-changing navigation data at publish time, or cache it before the D1 call (KV cache-aside or Workers Cache) under an explicit versioned key with invalidation on data change. A cache does not make the fill safe by itself: keep the miss/refill query indexed and bounded. Verify per-route rows_read before and after.",
                         "low",
                     ))
 

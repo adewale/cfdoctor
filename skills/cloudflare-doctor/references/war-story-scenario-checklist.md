@@ -380,8 +380,9 @@ These are not pricing authorities. Use them as scenario/check sources, then cite
 - Cloudflare checks:
   - Every hot `WHERE`/`ORDER BY`/`GROUP BY`/aggregate predicate is covered by an index (composite where queries filter on several columns); migrations or ORM schema actually create them before launch, even for weekend projects.
   - `ANALYZE` (or `PRAGMA optimize`) runs after batch index/schema changes so `sqlite_stat1` exists; `EXPLAIN QUERY PLAN` confirms index use instead of scans.
-  - Layout/root-level loaders and other every-page code paths do not query D1 directly; rarely-changing data (navigation, latest-period, lookup lists) is cached (KV cache-aside/Workers Cache) with explicit versioned keys and invalidation.
+  - Layout/root-level loaders and other every-page code paths do not query D1 directly; rarely-changing data (navigation, latest-period, lookup lists) is materialized at publish time or cached before the D1 call (KV cache-aside/Workers Cache) with explicit versioned keys and invalidation, and the cache's miss/refill query stays indexed and bounded.
   - Per-query `rows_read` (query metadata and D1 metrics/analytics) is monitored; a high rows-read-to-rows-returned ratio is treated as a cost regression, not just slow-query noise.
+  - On anonymous public routes, run the `SKILL.md` public-route cost release gate. A layout query is inherited work in every route family's row. A checked-in schema with no index, plus a corpus aggregate such as `MAX`/`COUNT`/`GROUP BY` on every request, is code evidence for `BLOCK`. When no schema or query plan is supplied, the verdict is `CONDITIONAL`: an absent plan is not evidence of an absent index.
 - Evidence to request: D1 metrics/analytics rows-read breakdown per query, `EXPLAIN QUERY PLAN` for the top queries, migration/ORM index definitions, whether `ANALYZE` ran after the last index change, which queries execute in layout/middleware paths, cache config for those paths, and the billing/usage export.
 
 ## Scenario-to-check matrix

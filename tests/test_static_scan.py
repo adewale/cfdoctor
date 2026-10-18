@@ -781,6 +781,16 @@ class StaticScannerTests(unittest.TestCase):
         self.assertEqual(1, len(layout_hits))
         self.assertIn("app/dashboard/layout.tsx", layout_hits[0])
 
+    def test_layout_hotpath_does_not_follow_imported_helpers(self) -> None:
+        # Documented boundary (check-coverage-matrix.md): the lead sees only D1 calls
+        # written in the layout file; helper indirection stays semantic review work.
+        report = scan({
+            "wrangler.jsonc": self.D1_APP_CONFIG,
+            "src/routes/+layout.server.ts": 'import { getNavData } from "$lib/nav";\nexport async function load({ platform }) { return { nav: await getNavData(platform.env.DB) }; }',
+            "src/lib/nav.ts": 'export async function getNavData(db) { return db.prepare("SELECT MAX(year) AS year FROM reimbursement").first(); }',
+        })
+        self.assertNotIn("CFDOC-COST-D1-LAYOUT-HOTPATH", {f["check_id"] for f in report["findings"]})
+
     def test_cached_layout_d1_query_is_not_flagged(self) -> None:
         config = '''{
           "name": "d1-index-test",
