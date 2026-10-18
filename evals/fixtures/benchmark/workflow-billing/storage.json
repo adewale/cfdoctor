@@ -1,0 +1,16 @@
+{
+  "as_of": "2026-10-18",
+  "plan": "Workers Paid",
+  "billing_period_days": 30,
+  "storage_unit": "GB, decimal",
+  "daily_records": {
+    "count": 30,
+    "each_day": {
+      "peak_persisted_state_gb": 10,
+      "end_of_day_persisted_state_gb": 0,
+      "cleanup": "All instances and their state deleted after the daily peak."
+    }
+  },
+  "other_workflow_storage_gb_month": 0,
+  "question_scope": "Estimate storage overage only, excluding other meters and subscription. Assess the engineer's claim that cleanup makes storage free."
+}

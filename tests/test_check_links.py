@@ -34,6 +34,49 @@ class CheckLinksTests(unittest.TestCase):
             _, missing = module.discover_markdown_files(Path(tmp), ["missing.md"])
         self.assertEqual(["missing.md"], missing)
 
+    def test_workflow_anchor_policy_catches_billing_fact_drift(self) -> None:
+        from io import BytesIO
+        from unittest.mock import patch
+
+        pricing = "https://developers.cloudflare.com/workflows/reference/pricing/"
+        retention = "https://developers.cloudflare.com/changelog/post/2026-09-10-paid-retention-default/"
+        fixture = ROOT / "evals/fixtures/benchmark/workflow-billing"
+        clean = {
+            pricing: (fixture / "workflow-pricing.md").read_text(),
+            retention: (fixture / "workflow-retention.md").read_text(),
+        }
+        current = json.loads((ROOT / "evals/link-check-policy.json").read_text())
+        current["critical_sources"] = [source for source in current["critical_sources"] if source["url"] in clean]
+        previous = {"critical_sources": [{"url": pricing, "content_terms": ["Steps", "August 10"]}]}
+
+        class Response(BytesIO):
+            def __init__(self, url, body):
+                super().__init__(body.encode())
+                self.url = url
+
+            def geturl(self):
+                return self.url
+
+        def check(policy, bodies):
+            def open_source(request, **kwargs):
+                return Response(request.full_url, bodies[request.full_url])
+            with patch.object(module.urllib.request, "urlopen", side_effect=open_source):
+                return module.check_content_sources(policy)
+
+        self.assertTrue(all(row["status"] == "ok" for row in check(current, clean)))
+        self.assertTrue(all(row["status"] == "ok" for row in check(previous, clean)))
+        mutations = [
+            (pricing, "Step count does not include rollback handlers or retries.", "Retries and rollback handlers count as additional billed steps."),
+            (pricing, "averaging the peak storage per day", "averaging time-weighted storage within each day"),
+            (retention, "seven days", "thirty days"),
+        ]
+        for url, before, after in mutations:
+            with self.subTest(fact=before):
+                self.assertIn(before, clean[url])
+                changed = dict(clean, **{url: clean[url].replace(before, after)})
+                self.assertTrue(all(row["status"] == "ok" for row in check(previous, changed)))
+                self.assertTrue(any(row["status"] == "content-drift" for row in check(current, changed)))
+
     def test_repository_content_policy_is_current_and_valid(self) -> None:
         policy = json.loads((ROOT / "evals/link-check-policy.json").read_text())
         self.assertEqual([], module.validate_content_policy(policy, dt.date(2026, 7, 11)))

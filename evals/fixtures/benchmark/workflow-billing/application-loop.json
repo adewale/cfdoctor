@@ -1,0 +1,11 @@
+{
+  "as_of": "2026-10-18",
+  "plan": "Workers Paid",
+  "monthly_runs": 1000000,
+  "other_account_usage": 0,
+  "forward_code": "for (let item=0;item<5;item++) { for(let attempt=0;attempt<3;attempt++){ const done=await step.do(`item-${item}-try-${attempt}`,{retries:{limit:0}},async()=>callProvider(item)); if(done) break; }}",
+  "observed_attempts_per_item": 3,
+  "items_per_run": 5,
+  "behavior": "Every step succeeds as a Workflow step, returning false on the first two calls and true on the third. The provider itself charges per call.",
+  "assumption": "Ignore storage and CPU in the requested step-only subtotal."
+}

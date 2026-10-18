@@ -1,0 +1,11 @@
+{
+  "as_of": "2026-10-18",
+  "plan": "Workers Paid",
+  "monthly_runs": 1000000,
+  "other_account_usage": 0,
+  "code": "await step.do('start',async()=>start()); await step.sleep('pause','1 day'); await step.waitForEvent('approval',{type:'approved',timeout:'2 days'}); await step.do('finish',async()=>finish());",
+  "measured_total_active_cpu_ms_per_run": 50,
+  "observed_wall_duration_days": 2,
+  "storage": "not measured",
+  "assumption": "Every run reaches all four operations exactly once. Compute only step and CPU overages, excluding subscription and state storage."
+}

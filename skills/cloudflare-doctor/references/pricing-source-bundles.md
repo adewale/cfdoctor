@@ -42,7 +42,7 @@ Never average conflicting figures or silently prefer the newest-looking page. Re
 | R2 | https://developers.cloudflare.com/r2/pricing/ | https://developers.cloudflare.com/r2/pricing/ | https://developers.cloudflare.com/r2/platform/limits/ | https://developers.cloudflare.com/r2/platform/metrics-analytics/ |
 | Durable Objects | https://developers.cloudflare.com/durable-objects/platform/pricing/ | https://developers.cloudflare.com/durable-objects/platform/pricing/ | https://developers.cloudflare.com/durable-objects/platform/limits/ | https://developers.cloudflare.com/durable-objects/observability/metrics-and-analytics/ |
 | Queues | https://developers.cloudflare.com/queues/platform/pricing/ | https://developers.cloudflare.com/queues/reference/delivery-guarantees/ | https://developers.cloudflare.com/queues/platform/limits/ | https://developers.cloudflare.com/queues/observability/ |
-| Workflows | https://developers.cloudflare.com/workflows/reference/pricing/ | https://developers.cloudflare.com/workflows/build/rules-of-workflows/ | https://developers.cloudflare.com/workflows/reference/limits/ | account Workflow analytics |
+| Workflows | https://developers.cloudflare.com/workflows/reference/pricing/ | https://developers.cloudflare.com/workflows/reference/pricing/ (step exclusions and storage calculation); https://developers.cloudflare.com/workflows/build/rules-of-workflows/ (execution behavior) | https://developers.cloudflare.com/workflows/reference/limits/ | https://developers.cloudflare.com/workflows/observability/metrics-analytics/ plus account usage |
 | Workers AI | https://developers.cloudflare.com/workers-ai/platform/pricing/ | https://developers.cloudflare.com/workers-ai/platform/pricing/ | https://developers.cloudflare.com/workers-ai/platform/limits/ | Workers AI / AI Gateway usage |
 | Vectorize | https://developers.cloudflare.com/vectorize/platform/pricing/ | https://developers.cloudflare.com/vectorize/platform/pricing/ | https://developers.cloudflare.com/vectorize/platform/limits/ | account Vectorize usage |
 | Dynamic Workers | https://developers.cloudflare.com/dynamic-workers/pricing/ | https://developers.cloudflare.com/dynamic-workers/pricing/ | https://developers.cloudflare.com/dynamic-workers/usage/limits/ | loader/tenant usage and audit logs |
@@ -56,6 +56,8 @@ Never average conflicting figures or silently prefer the newest-looking page. Re
 | Stream | https://developers.cloudflare.com/stream/pricing/ | https://developers.cloudflare.com/stream/pricing/ | product limits/current plan | Stream analytics/delivered minutes |
 
 ## Compound bills
+
+For Workflow step/storage effective dates, also read the [billing announcement](https://developers.cloudflare.com/changelog/post/2026-07-07-workflows-billing-updates/). For retention estimates, reconcile the pricing/limits pages with the [creation-date-specific retention change](https://developers.cloudflare.com/changelog/post/2026-09-10-paid-retention-default/), configured overrides, and the guidance in [Workflows steps, retries, and retention](performance-and-reliability.md#workflows-steps-retries-and-retention).
 
 Build a meter graph rather than one blended rate. A Worker request may also trigger Worker CPU, D1 rows read/written, KV/R2 operations, Queue operations, AI inference, Browser sessions, third-party API charges, and logs. Calculate each meter separately, state shared assumptions once, then sum only compatible plan/region/effective-date estimates.
 

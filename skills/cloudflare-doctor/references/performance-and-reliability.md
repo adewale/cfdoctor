@@ -116,10 +116,11 @@ When a TypeScript repo has these boundary classes:
 
 ## Workflows steps, retries, and retention
 
-- Count Workflow steps as a current cost proxy alongside requests, CPU, and persisted state. Each unit of durable work—including sleeps and event waits—is a step; Paid-plan step and storage billing was announced to begin no earlier than August 10, 2026, so verify the changelog before asserting that it is active.
+- Count Workflow steps separately from starts, CPU, and persisted state. Sleeps and event waits count as billable steps, but built-in retries and rollback handlers do not. Steps are not additional Workflow invocations. Use Workflow analytics plus code to model loops and child fan-out; raw `step.do` counts or retry-attempt counts alone do not establish billed steps. Refresh the [pricing page](https://developers.cloudflare.com/workflows/reference/pricing/) and [billing announcement](https://developers.cloudflare.com/changelog/post/2026-07-07-workflows-billing-updates/) for the audit date; do not present the August 10, 2026 start date as a future exemption after it has passed.
 - Use dynamic retry delay functions when the next delay depends on the attempt, error, or downstream `Retry-After`; bound the retry limit and use `NonRetryableError` for permanent failures.
 - Keep steps coarse enough to be meaningful and idempotent rather than wrapping trivial operations merely for visibility. Bound child Workflow creation and per-tenant fan-out.
-- Set instance-state retention intentionally. Running, errored, sleeping, and completed instances contribute to persisted storage until retention or deletion releases it.
+- Separate retry/rollback execution costs from step fees: active CPU and downstream D1/R2/AI/third-party operations can still be metered. Idle network waits and sleeps consume no CPU, but persisted state continues consuming storage.
+- Set instance-state retention intentionally and estimate storage from average daily peaks, including running, errored, sleeping, and completed instances. The [September 10, 2026 retention change](https://developers.cloudflare.com/changelog/post/2026-09-10-paid-retention-default/) gives paid Workflows created on or after that date a seven-day completed/errored-state default; existing Workflows retain their setting, and the maximum remains 30 days. Free remains three days. Inspect creation date, `default_retention`, and per-instance `retention` overrides instead of assuming a universal default. If pricing/limits pages still say 30 days by default, record the conflict and apply the dated changelog only to its stated cohort. Retention or deletion frees state, but deleting it after a daily peak does not erase that day's peak usage.
 
 ## Dynamic Workers, Agents, and sandboxed code reliability
 

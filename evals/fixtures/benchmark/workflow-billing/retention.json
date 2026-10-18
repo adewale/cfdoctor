@@ -1,0 +1,41 @@
+{
+  "as_of": "2026-10-18",
+  "workflows": [
+    {
+      "name": "legacy",
+      "plan": "Workers Paid",
+      "definition_created_at": "2026-09-09",
+      "completed_instance_created_at": "2026-10-15",
+      "stored_retention_setting_days": 30,
+      "instance_override": null
+    },
+    {
+      "name": "new",
+      "plan": "Workers Paid",
+      "definition_created_at": "2026-09-10",
+      "completed_instance_created_at": "2026-10-15",
+      "stored_retention_setting_days": null,
+      "instance_override": null
+    },
+    {
+      "name": "override",
+      "plan": "Workers Paid",
+      "definition_created_at": "2026-10-01",
+      "default_retention": {
+        "successRetention": "2 days",
+        "errorRetention": "14 days"
+      },
+      "instance_override": {
+        "successRetention": "1 day",
+        "errorRetention": "4 days"
+      }
+    },
+    {
+      "name": "free",
+      "plan": "Workers Free",
+      "definition_created_at": "2026-10-01",
+      "instance_override": null
+    }
+  ],
+  "question_scope": "Predict completed/errored retention from supplied settings and documented defaults. No dashboard/API inspection is authorized."
+}

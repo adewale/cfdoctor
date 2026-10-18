@@ -1,0 +1,14 @@
+{
+  "as_of": "2026-10-18",
+  "plan": "Workers Paid",
+  "monthly_runs": 1000000,
+  "other_account_usage": 0,
+  "forward_steps_started_per_run": 4,
+  "successful_forward_steps_per_run": 3,
+  "fourth_step": "throws a permanent error",
+  "rollback_handlers_executed_per_run": 3,
+  "rollback_attempts_per_handler": 2,
+  "registration_example": "await step.do('reserve', async()=>reserve(), {rollback:async()=>releaseReservation(),rollbackConfig:{retries:{limit:1}}});",
+  "cpu_ms": "not measured",
+  "assumption": "The failed fourth forward step counts as one executed forward step. Ignore CPU and storage in the requested step-only subtotal."
+}

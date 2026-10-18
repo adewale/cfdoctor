@@ -96,6 +96,7 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - Workflows sleeping and retrying (dynamic delay functions and `NonRetryableError`): https://developers.cloudflare.com/workflows/build/sleeping-and-retrying/
 - Workflows pricing (requests, CPU, storage, and steps): https://developers.cloudflare.com/workflows/reference/pricing/
 - Workflows step/storage billing announcement: https://developers.cloudflare.com/changelog/post/2026-07-07-workflows-billing-updates/
+- Workflows completed/errored-state retention default by Workflow creation date (seven days for new paid Workflows from September 10, 2026; existing settings unchanged): https://developers.cloudflare.com/changelog/post/2026-09-10-paid-retention-default/
 - Workflows limits: https://developers.cloudflare.com/workflows/reference/limits/
 - Agents SDK docs: https://developers.cloudflare.com/agents/
 - Agents long-running agents: https://developers.cloudflare.com/agents/concepts/agentic-patterns/long-running-agents/

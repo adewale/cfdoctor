@@ -1,0 +1,32 @@
+{
+  "total": 30,
+  "agree": 27,
+  "invalid_pairs": 0,
+  "mean_absolute_score_difference": 0.07099999999999997,
+  "disagreements": [
+    {
+      "case_id": "detection-fixture-queue-dlq-safe",
+      "variant": "old_skill",
+      "primary_passed": false,
+      "secondary_passed": true,
+      "primary_score": 0.78,
+      "secondary_score": 0.9
+    },
+    {
+      "case_id": "detection-fixture-queue-dlq-safe",
+      "variant": "with_skill",
+      "primary_passed": false,
+      "secondary_passed": true,
+      "primary_score": 0.78,
+      "secondary_score": 0.9
+    },
+    {
+      "case_id": "detection-fixture-queue-dlq-safe",
+      "variant": "without_skill",
+      "primary_passed": false,
+      "secondary_passed": true,
+      "primary_score": 0.78,
+      "secondary_score": 0.88
+    }
+  ]
+}
