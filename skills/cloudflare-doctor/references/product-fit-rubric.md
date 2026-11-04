@@ -33,6 +33,7 @@ Good fit:
 Wrong-primitive smells:
 - D1 used as a high-throughput event queue, append-only log, blob store, or per-request analytics sink. Prefer Queues, R2, Analytics Engine, or Logpush.
 - Request path does many sequential queries or unbounded `SELECT *`. Batch, index, add limits, denormalize carefully, or cache.
+- Worker code that builds full-database backups or exports by reading every table into memory. D1 rejects any query result over its maximum query result size, so prefer the D1 REST export / `wrangler d1 export` (exempt from that limit) or Time Travel for backups, and paginated, projected reads for application-level exports.
 - No migration files or migration process for production. D1 schema drift becomes an operations risk.
 - Strong per-key serialization logic built around D1 polling. Prefer Durable Objects for coordination.
 

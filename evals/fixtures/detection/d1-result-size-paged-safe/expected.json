@@ -1,0 +1,13 @@
+{
+  "description": "The same admin backup export rewritten to read each table in rowid-keyset pages with explicit columns, LIMIT, and a halve-and-retry on D1's result-size error, plus a single-row COUNT(*). False-positive guard: no result-size lead and zero findings total.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-D1-RESULT-LIMIT",
+    "CFDOC-EVD-EMDASH-D1-SNAPSHOT"
+  ],
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-REL-D1-RESULT-SIZE",
+    "CFDOC-PERF-D1-SELECT-STAR"
+  ],
+  "max_findings": 0
+}

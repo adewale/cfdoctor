@@ -61,9 +61,10 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | CFDOC-FIT-KV-COORDINATION | scanner-lead | FIT | high | [`product-fit-rubric.md`](product-fit-rubric.md) (KV consistency limits) | KV read-modify-write smell for coordination/counters. |
 | CFDOC-PERF-AWAITED-CACHE-PUT | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Cache put awaited in request path. |
 | CFDOC-PERF-D1-N-PLUS-ONE | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Many D1 prepared statements in one file; check for N+1 queries. |
-| CFDOC-PERF-D1-SELECT-STAR | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Projection/schema-coupling review only; `SELECT *` does not itself prove a full scan or extra billed rows. |
+| CFDOC-PERF-D1-SELECT-STAR | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Projection/schema-coupling review only; `SELECT *` does not itself prove a full scan or extra billed rows. Wide projections also count toward the D1 maximum query result size; the hard-failure lead is `CFDOC-REL-D1-RESULT-SIZE`. |
 | CFDOC-PERF-PUBLIC-SERVICE-URL | scanner-lead | PERF | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (service bindings) | Public Cloudflare service URL fetch; consider service bindings. |
 | CFDOC-PERF-R2-BUFFERING | scanner-lead | PERF | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (streaming) | R2 object may be buffered instead of streamed. |
+| CFDOC-REL-D1-RESULT-SIZE | scanner-lead | REL | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (D1 reliability/performance); D1 limits page, 2026-10-30 changelog | Literal `.prepare()` SELECT with no LIMIT, a FROM table, not a single-row aggregate, and not executed with `.first()`. No-WHERE literals always report; WHERE-filtered or constructed (`${table}`, concatenated) SQL reports only in dump/backup/export/snapshot-shaped files (raised to high there). Query-builder/ORM reads, variable SQL, and actual row widths remain semantic review work. |
 | CFDOC-REL-QUEUE-NO-DLQ | scanner-lead | REL | medium | [`performance-and-reliability.md`](performance-and-reliability.md); current Queues retry/DLQ docs | No DLQ means permanent deletion after the configured limit (currently three retries by default), not unbounded platform retries. |
 | CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD | scanner-lead | REL | low | [`performance-and-reliability.md`](performance-and-reliability.md) (cross-boundary RPC); [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §22 | Cross-boundary public RPC methods need reachability review; scanner only detects the review surface, not deadness. |
 | CFDOC-SEC-CORS-WILDCARD-CREDS | scanner-lead | SEC | high | [`config-and-security-checks.md`](config-and-security-checks.md) (CORS) | Wildcard CORS appears near credentialed responses. |
@@ -158,3 +159,21 @@ known-bad and false-positive-guard fixtures:
   with neither WHERE nor LIMIT, in source files only, so reference prose and
   docs cannot trip it. Variable/constructed SQL and index quality remain
   semantic review work backed by rows-read metrics.
+
+Scanner 0.5.0 added `CFDOC-REL-D1-RESULT-SIZE` for the D1 maximum query result
+size (50 MB, enforced from 2026-11-04; evidence `CFDOC-EVD-CF-D1-RESULT-LIMIT`
+and `CFDOC-EVD-EMDASH-D1-SNAPSHOT`):
+
+- Scope is literal SQL passed to `.prepare()`. A SELECT with no structural
+  LIMIT and no WHERE is a whole-table read and is reported anywhere. WHERE
+  clauses and constructed SQL (`${table}` interpolation, string
+  concatenation) are reported only in dump/backup/export/snapshot-shaped
+  files, because elsewhere the bound may be appended at runtime. The JS
+  `export` keyword does not make a file export-shaped.
+- Suppressed: `LIMIT` anywhere outside comments/quoted literals, `.first()`
+  execution, single-row aggregates (`COUNT`/`SUM`/`AVG`/`MIN`/`MAX`/`TOTAL`
+  without GROUP BY), SELECTs with no FROM, and `sqlite_master`/`pragma_*`
+  reads.
+- A LIMIT bounds rows, not bytes, so the lead does not prove a bounded query
+  is safe; very wide/BLOB rows still need projection or byte-aware page sizes.
+  Drizzle/Kysely/Prisma query builders and `db.exec()` are not parsed.

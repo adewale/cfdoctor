@@ -114,7 +114,7 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.4.0"
+SCANNER_VERSION = "0.5.0"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -157,7 +157,8 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-FIT-KV-COORDINATION", "FIT", "high", "medium", "KV read-modify-write smell for coordination/counters", "Eventually consistent KV is unsafe for locks, counters, inventory, or rate-limit state."),
     ("CFDOC-COST-R2-LIST-HOTPATH", "COST", "medium", "medium", "R2 bucket list appears in application code", "R2 listing is a storage operation and a poor metadata query path at volume."),
     ("CFDOC-PERF-R2-BUFFERING", "PERF", "medium", "low", "R2 object may be buffered instead of streamed", "Buffering R2 objects increases memory/CPU pressure and delays first byte."),
-    ("CFDOC-PERF-D1-SELECT-STAR", "PERF", "low", "medium", "D1 query uses SELECT *; review projection and bounds", "SELECT * widens transfer/decoding and couples code to schema, but does not by itself prove a full scan or increase D1 billed rows read."),
+    ("CFDOC-PERF-D1-SELECT-STAR", "PERF", "low", "medium", "D1 query uses SELECT *; review projection and bounds", "SELECT * widens transfer/decoding, counts toward D1's maximum query result size, and couples code to schema, but does not by itself prove a full scan or increase D1 billed rows read."),
+    ("CFDOC-REL-D1-RESULT-SIZE", "REL", "medium", "low", "D1 SELECT can return an unbounded result set; check the maximum query result size", "A D1 SELECT with no LIMIT (a whole-table read, or a table-dump/backup/export path) fails outright once its result passes D1's maximum query result size (50 MB, enforced from 2026-11-04)."),
     ("CFDOC-COST-D1-ORDER-RANDOM", "COST", "high", "high", "D1 query orders by RANDOM()", "Random ordering forces expensive scans/sorts that grow with table size."),
     ("CFDOC-PERF-D1-N-PLUS-ONE", "PERF", "low", "low", "Many D1 prepared statements in one file; check for N+1 queries", "Several sequential queries per request can multiply latency and billed rows."),
     ("CFDOC-COST-DO-FRONT-DOOR", "COST", "medium", "low", "Durable Object call path lacks obvious front-door validation", "Invalid/bot traffic should be rejected before it becomes DO requests/duration."),
@@ -1239,6 +1240,82 @@ def strip_sql_comments_and_literals(statement: str) -> str:
     return "".join(out)
 
 
+D1_PREPARE_LITERAL_RE = re.compile(
+    r"\.prepare\s*\(\s*(?P<q>[`'\"])(?P<sql>(?:\\.|(?!(?P=q)).)*?)(?P=q)",
+    re.DOTALL,
+)
+# Dump/backup/export/snapshot-shaped code reads whole tables by design. The
+# lowercase `export` forms are case-sensitive so the JS `export default` /
+# `export const` keywords never count; only identifiers, routes, and strings do.
+D1_EXPORT_SHAPED_RE = re.compile(
+    r"(?i:backup|snapshot|\bdump|archiv)"
+    r"|(?<![\w$])export(?=[A-Z_\-/.'\"`]|s\b|ing\b)"
+    r"|[a-z]Export\b|/export\b"
+)
+D1_AGGREGATE_ITEM_RE = re.compile(
+    r"^\s*(?:count|sum|avg|min|max|total)\s*\(.*\)\s*(?:as\s+\w+)?\s*$",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _split_top_level_commas(text: str) -> list[str]:
+    items: list[str] = []
+    depth = 0
+    current: list[str] = []
+    for char in text:
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth = max(0, depth - 1)
+        if char == "," and depth == 0:
+            items.append("".join(current))
+            current = []
+            continue
+        current.append(char)
+    items.append("".join(current))
+    return items
+
+
+def d1_unbounded_result_hit(text: str, rpath: str) -> tuple[int, str, bool] | None:
+    """Return the first literal D1 SELECT whose result size has no visible bound.
+
+    Flags a `.prepare("SELECT ...")` literal that has no LIMIT, reads FROM a
+    table, is not a single-row aggregate, and is not executed with `.first()`.
+    A literal with no WHERE is a whole-table read and is always reported;
+    WHERE-filtered or constructed (`${table}`, string-concatenated) SQL is
+    reported only in dump/backup/export/snapshot-shaped files, where reading
+    every row of a table is the point.
+    """
+    export_shaped = bool(D1_EXPORT_SHAPED_RE.search(rpath) or D1_EXPORT_SHAPED_RE.search(text))
+    for match in D1_PREPARE_LITERAL_RE.finditer(text):
+        raw_sql = match.group("sql")
+        constructed = "${" in raw_sql or bool(re.match(r"\s*\+", text[match.end():]))
+        structural = strip_sql_comments_and_literals(re.sub(r"\$\{[^}]*\}", " __expr__ ", raw_sql))
+        if not re.match(r"\s*\(?\s*(?:select|with)\b", structural, re.IGNORECASE):
+            continue
+        if re.search(r"\blimit\b", structural, re.IGNORECASE):
+            continue
+        select_match = re.search(r"\bselect\b(?P<proj>.*?)\bfrom\b(?P<rest>.*)", structural, re.IGNORECASE | re.DOTALL)
+        if not select_match:
+            continue
+        if re.match(r"\s*(?:sqlite_master|sqlite_schema|sqlite_sequence|pragma_)", select_match.group("rest"), re.IGNORECASE):
+            continue
+        if not re.search(r"\bgroup\s+by\b", structural, re.IGNORECASE) and all(
+            D1_AGGREGATE_ITEM_RE.match(item) for item in _split_top_level_commas(select_match.group("proj"))
+        ):
+            continue
+        call_tail = text[match.end():match.end() + 400].split(";", 1)[0]
+        if re.search(r"\.first\s*\(", call_tail):
+            continue
+        has_where = bool(re.search(r"\bwhere\b", structural, re.IGNORECASE))
+        if (constructed or has_where) and not export_shaped:
+            continue
+        sql_start = match.start("sql") + len(raw_sql) - len(raw_sql.lstrip())
+        line_no = text.count("\n", 0, sql_start) + 1
+        return line_no, text.splitlines()[line_no - 1], export_shaped
+    return None
+
+
 def add_code_findings(
     root: Path,
     files: list[tuple[Path, str]],
@@ -1637,7 +1714,7 @@ def add_code_findings(
                     "D1 query uses SELECT *; review projection and bounds",
                     "missed optimization / schema coupling",
                     f"{rpath}:{hit[0]}: {hit[1][:160]}",
-                    "SELECT * can widen transfer/decoding and couple callers to schema changes, but it does not by itself prove a full scan or increase D1 billed rows read; predicates, indexes, LIMIT, and the query plan determine rows scanned.",
+                    "SELECT * can widen transfer/decoding, pulls wide/BLOB columns toward D1's maximum query result size, and couples callers to schema changes, but it does not by itself prove a full scan or increase D1 billed rows read; predicates, indexes, LIMIT, and the query plan determine rows scanned.",
                     "Select only needed columns where useful, and verify bounds/index use with EXPLAIN QUERY PLAN plus D1 rows_read metadata before making a billing claim.",
                     "medium",
                 ))
@@ -1653,6 +1730,20 @@ def add_code_findings(
                     "Use indexed sampling, precomputed random keys, or a bounded candidate set.",
                     "high",
                 ))
+            if is_source_like:
+                result_hit = d1_unbounded_result_hit(text, rpath)
+                if result_hit:
+                    line_no, line_text, export_shaped = result_hit
+                    findings.append(Finding(
+                        "CFDOC-REL-D1-RESULT-SIZE",
+                        "high" if export_shaped else "medium",
+                        "D1 SELECT can return an unbounded result set; check the maximum query result size",
+                        "reliability / wrong primitive",
+                        f"{rpath}:{line_no}: {excerpt(line_text)}",
+                        "D1 rejects any query whose result is larger than its maximum query result size (50 MB, enforced from 2026-11-04; recheck current D1 limits), returning `D1 query result exceeded the maximum response size limit of 50 MB`. A SELECT with no LIMIT that reads a whole table, or a dump/backup/export/snapshot path that reads tables in one query, works on small data and then fails outright once the table grows. A LIMIT bounds rows, not bytes: rows can be up to 2 MB each, so wide or BLOB rows need projection or byte-aware page sizes too.",
+                        "Select only the columns needed and page large reads with keyset pagination (`WHERE rowid > ? ORDER BY rowid LIMIT ?`; OFFSET also works but re-reads skipped rows into rows_read). For dumps of variable-width rows, size pages from observed row bytes and retry a page at half size on the result-size error. For full-database backups, prefer the D1 REST export / `wrangler d1 export`, which the limit does not apply to.",
+                        "low",
+                    ))
             if len(re.findall(r"\.prepare\s*\(", text)) >= 6:
                 findings.append(Finding(
                     "CFDOC-PERF-D1-N-PLUS-ONE",

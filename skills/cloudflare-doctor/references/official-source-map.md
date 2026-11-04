@@ -60,6 +60,9 @@ Use official Cloudflare docs/pricing/limits when making Cloudflare-specific clai
 - D1 query best practices: https://developers.cloudflare.com/d1/best-practices/query-d1/
 - D1 migrations: https://developers.cloudflare.com/d1/reference/migrations/
 - D1 limits: https://developers.cloudflare.com/d1/platform/limits/
+- D1 maximum query result size changelog (2026-10-30, enforced 2026-11-04): https://developers.cloudflare.com/changelog/post/2026-10-30-query-result-size-limit/
+- D1 error list (result-size error text and remediation): https://developers.cloudflare.com/d1/observability/debug-d1/
+- D1 import and export (REST export is exempt from the result-size limit): https://developers.cloudflare.com/d1/best-practices/import-export-data/
 - D1 pricing: https://developers.cloudflare.com/d1/platform/pricing/
 - D1 billing observability: https://developers.cloudflare.com/d1/observability/billing/
 - D1 metrics and analytics: https://developers.cloudflare.com/d1/observability/metrics-analytics/

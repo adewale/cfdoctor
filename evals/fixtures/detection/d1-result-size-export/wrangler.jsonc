@@ -1,0 +1,10 @@
+{
+  // CMS admin Worker whose backup export reads every table in one query each.
+  "name": "cms-backup-export",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "cms", "database_id": "0000fixture0000" }
+  ]
+}

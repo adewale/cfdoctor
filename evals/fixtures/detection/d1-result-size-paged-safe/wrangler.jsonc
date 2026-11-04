@@ -1,0 +1,10 @@
+{
+  // Same CMS backup export, rewritten to page every table under the D1 result limit.
+  "name": "cms-backup-export-paged",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "cms", "database_id": "0000fixture0000" }
+  ]
+}

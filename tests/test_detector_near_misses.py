@@ -270,6 +270,56 @@ CASES = [
         ),
     ),
     (
+        "CFDOC-REL-D1-RESULT-SIZE",
+        "a whole-table read paged with LIMIT",
+        worker(
+            "export default { async fetch(request, env) {\n"
+            '  return Response.json(await env.DB.prepare("SELECT id, title FROM posts ORDER BY id").all());\n'
+            "} };\n",
+            d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
+        ),
+        worker(
+            "export default { async fetch(request, env) {\n"
+            '  return Response.json(await env.DB.prepare("SELECT id, title FROM posts ORDER BY id LIMIT ?").bind(50).all());\n'
+            "} };\n",
+            d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
+        ),
+    ),
+    (
+        "CFDOC-REL-D1-RESULT-SIZE",
+        "a whole-table SELECT executed with .first()",
+        worker(
+            "export default { async fetch(request, env) {\n"
+            '  return Response.json(await env.DB.prepare("SELECT id, title FROM posts ORDER BY id").all());\n'
+            "} };\n",
+            d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
+        ),
+        worker(
+            "export default { async fetch(request, env) {\n"
+            '  return Response.json(await env.DB.prepare("SELECT id, title FROM posts ORDER BY id").first());\n'
+            "} };\n",
+            d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
+        ),
+    ),
+    (
+        "CFDOC-REL-D1-RESULT-SIZE",
+        "per-table SQL outside a dump/backup/export path",
+        worker(
+            "export async function backupTables(db, tables) {\n"
+            "  for (const table of tables) await db.prepare(`SELECT id FROM ${table}`).all();\n"
+            "}\n"
+            "export default { async fetch() { return new Response('ok'); } };\n",
+            d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
+        ),
+        worker(
+            "export async function countTables(db, tables) {\n"
+            "  for (const table of tables) await db.prepare(`SELECT id FROM ${table}`).all();\n"
+            "}\n"
+            "export default { async fetch() { return new Response('ok'); } };\n",
+            d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
+        ),
+    ),
+    (
         "CFDOC-COST-ASYNC-LOOP",
         "fetching a path on a configured origin, not the incoming URL",
         worker('export default { async fetch(request, env) { return fetch(new URL("/api", request.url)); } };\n'),
