@@ -1,0 +1,173 @@
+"""Regression cases from issue #35; inputs are synthetic, not production data."""
+from __future__ import annotations
+
+import unittest
+
+from test_static_scan import scan
+
+
+CONFIG = '''{"main":"src/index.ts","compatibility_date":"2026-10-01",
+"observability":{"enabled":true},"d1_databases":[{"binding":"DB","database_id":"x"}],
+"r2_buckets":[{"binding":"REPLAYS","bucket_name":"recordings"}]}'''
+
+
+def report(source: str, **files: str) -> dict:
+    return scan({"wrangler.jsonc": CONFIG, "src/index.ts": source, **files})
+
+
+def ids(result: dict) -> set[str]:
+    return {f["check_id"] for f in result["findings"]}
+
+
+class WorkloadScanTests(unittest.TestCase):
+    def test_types_labels_and_test_salt_are_not_credentials(self):
+        result = scan({
+            "cli.ts": "export const CI_SECRET = 'CLOUDFLARE_API_TOKEN';\n"
+                      "function put(secrets: Record<string, string>) {}\n"
+                      "const credentials: Credentials = loadCredentials();",
+            "test/server.ts": "const config = {\n GLASS_SALT_SECRET: 'dev-salt',\n};",
+        })
+        self.assertNotIn("CFDOC-SEC-SECRET-ASSIGNMENT", ids(result))
+
+    def test_real_test_credential_is_still_reported_and_scoped(self):
+        result = scan({"test/leak.ts": 'const apiKey = "live-9f8a7b6c5d4e3f21";'})
+        finding = next(f for f in result["findings"] if f["check_id"] == "CFDOC-SEC-SECRET-ASSIGNMENT")
+        self.assertEqual("test", finding["runtime_scope"])
+        self.assertEqual("lead", finding["status"])
+
+    def test_user_agent_and_header_loop_do_not_become_agent_or_retry(self):
+        result = report('''export async function handle(request, env) {
+          const ua = request.headers.get('User-Agent');
+          for (const [key, value] of Object.entries(headers)) response.headers.set(key, value);
+          await env.DB.prepare('SELECT 1').run();
+          return new Response(ua);
+        }''')
+        self.assertNotIn("AGENT-AUTONOMOUS-LOOP-COST", ids(result))
+        self.assertNotIn("CFDOC-COST-RETRY-AMPLIFY", ids(result))
+
+    def test_agents_import_and_retry_positive_controls(self):
+        result = report('''import { Agent as WorkerAgent } from 'agents';
+        export class Runner extends WorkerAgent {
+          async run() { while (true) { await this.callTool(); } }
+        }
+        export async function deliver(url) {
+          for (let attempt = 0; attempt < 8; attempt++) {
+            const response = await fetch(url);
+            if (response.ok) return response;
+          }
+        }''')
+        self.assertIn("AGENT-AUTONOMOUS-LOOP-COST", ids(result))
+        self.assertIn("CFDOC-COST-RETRY-AMPLIFY", ids(result))
+
+    def test_node_cli_is_separate_from_worker(self):
+        result = report("export default { fetch() { return new Response('ok'); } };", **{
+            "cli/package.json": '{"name":"deploy-cli","bin":{"deploy":"index.js"}}',
+            "cli/index.js": "const account = process.env.ACCOUNT_ID;",
+        })
+        self.assertNotIn("CFDOC-CONFIG-PROCESS-ENV", ids(result))
+        self.assertEqual("node", next(s for s in result["source_scopes"] if s["path"] == "cli/index.js")["runtime"])
+
+    def test_worker_process_env_positive_control(self):
+        result = report("export default { fetch() { return new Response(process.env.MESSAGE); } };")
+        self.assertIn("CFDOC-CONFIG-PROCESS-ENV", ids(result))
+
+    def test_static_assets_do_not_need_worker_observability(self):
+        result = scan({"wrangler.jsonc": '{"assets":{"directory":"public"},"compatibility_date":"2026-10-01"}'})
+        self.assertNotIn("CFDOC-CONFIG-NO-OBSERVABILITY", ids(result))
+
+    def test_generated_config_is_inventoried_without_execution(self):
+        result = scan({"cli.ts": '''import { writeFileSync } from 'node:fs';
+        export function render(config) {
+          const deployment = { main: 'worker.js', observability: { enabled: true } };
+          if (config.lake) deployment.pipelines = [{ binding: 'EVENTS_STREAM', stream: config.stream }];
+          return JSON.stringify(deployment);
+        }
+        throw new Error('scanner must never execute this file');''',
+        "worker/lake.ts": "const url = 'https://api.sql.cloudflarestorage.com/api/v1/accounts'; const paths = ['basin-sql'];"})
+        self.assertIn("Pipelines", result["detected_products"])
+        self.assertIn("Basin SQL", result["detected_products"])
+        generated = next(s for s in result["deployment_scopes"] if s["kind"] == "generated")
+        self.assertEqual("conditional", generated["products"]["Pipelines"]["availability"])
+        self.assertTrue(generated["observability"])
+
+    def test_dynamic_bind_parameter_budget(self):
+        result = report('''async function touch(db, ids) {
+          return db.prepare(`UPDATE persons SET last_seen = ? WHERE project = ? AND id IN (${ids.map(() => '?').join(',')})`)
+            .bind(now, project, ...ids).run();
+        }''')
+        lead = next(f for f in result["findings"] if f["check_id"] == "CFDOC-REL-D1-PARAMETERS")
+        self.assertIn("98", lead["message"])
+        self.assertTrue(lead["evidence_chain"])
+        self.assertIn("https://developers.cloudflare.com/d1/platform/limits/", lead["source_basis"])
+
+    def test_safe_chunk_parameter_budget(self):
+        result = report('''async function touch(db, ids) {
+          for (let i = 0; i < ids.length; i += 98) {
+            const chunk = ids.slice(i, i + 98);
+            await db.prepare(`UPDATE persons SET last_seen = ? WHERE project = ? AND id IN (${chunk.map(() => '?').join(',')})`)
+              .bind(now, project, ...chunk).run();
+          }
+        }''')
+        self.assertNotIn("CFDOC-REL-D1-PARAMETERS", ids(result))
+
+    def test_repeated_id_parameter_budget(self):
+        result = report('''async function erase(db, ids) {
+          const marks = ids.map(() => '?').join(',');
+          await db.prepare(`DELETE FROM events WHERE project = ? AND (a IN (${marks}) OR b IN (${marks}) OR c IN (${marks}))`)
+            .bind(project, ...ids, ...ids, ...ids).run();
+        }''')
+        lead = next(f for f in result["findings"] if f["check_id"] == "CFDOC-REL-D1-PARAMETERS")
+        self.assertIn("33", lead["message"])
+
+    def test_deletion_query_budget(self):
+        result = report('''async function erase(db) {
+          const { results } = await db.prepare('SELECT id FROM sessions LIMIT 500').all();
+          for (const row of results) {
+            await db.prepare('DELETE FROM sessions WHERE id = ?').bind(row.id).run();
+            await db.prepare('DELETE FROM notes WHERE id = ?').bind(row.id).run();
+          }
+        }''')
+        lead = next(f for f in result["findings"] if f["check_id"] == "CFDOC-REL-D1-QUERY-BUDGET")
+        self.assertIn("1001", lead["message"])
+
+    def test_separate_crud_methods_are_not_n_plus_one(self):
+        result = report('\n'.join(f"async function action{i}(db) {{ return db.prepare('SELECT id FROM records').all(); }}" for i in range(7)))
+        self.assertNotIn("CFDOC-PERF-D1-N-PLUS-ONE", ids(result))
+
+    def test_eu_generated_binding_mismatch_and_safe_pair(self):
+        source = '''function create(wrangler, eu) { return wrangler.run(['r2','bucket','create',name,...(eu ? ['--jurisdiction','eu'] : [])]); }
+        function render(config) {
+          const worker = { main: 'worker.js' };
+          worker.r2_buckets = [{ binding: 'REPLAYS', bucket_name: config.bucket EXTRA }];
+          return JSON.stringify(worker);
+        }'''
+        self.assertIn("CFDOC-CONFIG-R2-JURISDICTION", ids(scan({"deploy.ts": source.replace(' EXTRA', '')})))
+        self.assertNotIn("CFDOC-CONFIG-R2-JURISDICTION", ids(scan({"deploy.ts": source.replace(' EXTRA', ", jurisdiction: config.eu ? 'eu' : undefined")})))
+
+    def test_replay_counter_retry_mismatch_and_receipt_pair(self):
+        source = '''async function upload(env, key, bytes) {
+          await env.REPLAYS.put(key, bytes);
+          RECEIPT
+          await env.DB.prepare('INSERT INTO replays (id,chunks) VALUES (?,1) ON CONFLICT(id) DO UPDATE SET chunks = replays.chunks + 1').bind(key).run();
+        }'''
+        self.assertIn("CFDOC-REL-CROSS-STORE-IDEMPOTENCY", ids(report(source.replace('RECEIPT', ''))))
+        receipt = "const receipt = await env.DB.prepare('INSERT OR IGNORE INTO receipts (id) VALUES (?)').bind(key).run(); if (!receipt.meta.changes) return;"
+        self.assertNotIn("CFDOC-REL-CROSS-STORE-IDEMPOTENCY", ids(report(source.replace('RECEIPT', receipt))))
+
+    def test_expansion_buffering_and_streamed_pair(self):
+        self.assertIn("CFDOC-REL-EXPANSION-BOUND", ids(report('''async function decode(bytes) {
+          const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+          return new Response(stream).text();
+        }''')))
+        self.assertNotIn("CFDOC-REL-EXPANSION-BOUND", ids(report('''async function decode(stream) {
+          const reader = stream.pipeThrough(new DecompressionStream('gzip')).getReader();
+          let total = 0;
+          while (true) { const {value,done} = await reader.read(); if (done) break;
+            total += value.byteLength; if (total > 1000000) { await reader.cancel(); throw new Error('large'); }
+            await sink.write(value);
+          }
+        }''')))
+
+
+if __name__ == "__main__":
+    unittest.main()
