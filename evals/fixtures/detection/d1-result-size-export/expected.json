@@ -1,0 +1,15 @@
+{
+  "description": "Admin backup export that reads each content table with one unbounded `SELECT * FROM ${table}` and a revisions listing with no LIMIT. Models the emdash snapshot export that produced a ~57 MB single-query result from revision history once D1 enforced its 50 MB maximum query result size.",
+  "evidence_ids": [
+    "CFDOC-EVD-CF-D1-RESULT-LIMIT",
+    "CFDOC-EVD-EMDASH-D1-SNAPSHOT"
+  ],
+  "required_check_ids": [
+    "CFDOC-REL-D1-RESULT-SIZE",
+    "CFDOC-PERF-D1-SELECT-STAR"
+  ],
+  "expected_evidence_terms": [
+    "SELECT * FROM ${table}"
+  ],
+  "forbidden_check_ids": []
+}

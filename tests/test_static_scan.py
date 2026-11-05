@@ -722,5 +722,76 @@ class StaticScannerTests(unittest.TestCase):
         self.assertEqual([], self.do_sql_ids(report))
 
 
+class D1ResultSizeTests(unittest.TestCase):
+    CONFIG = json.dumps({
+        "name": "d1-result-size",
+        "main": "src/index.js",
+        "compatibility_date": "2026-10-01",
+        "observability": {"enabled": True},
+        "d1_databases": [{"binding": "DB", "database_name": "app", "database_id": "x"}],
+    })
+
+    def findings(self, source: str, path: str = "src/index.js") -> list[dict]:
+        report = scan({"wrangler.jsonc": self.CONFIG, path: source})
+        return [f for f in report["findings"] if f["check_id"] == "CFDOC-REL-D1-RESULT-SIZE"]
+
+    def query(self, sql: str, terminal: str = ".all()") -> str:
+        return (
+            "export default { async fetch(request, env) {\n"
+            f"  return Response.json(await env.DB.prepare({json.dumps(sql)}){terminal});\n"
+            "} };\n"
+        )
+
+    def test_whole_table_read_is_medium_with_limit_message(self) -> None:
+        [finding] = self.findings(self.query("SELECT id, body FROM revisions ORDER BY id"))
+        self.assertEqual("medium", finding["severity"])
+        self.assertIn("50 MB", finding["message"])
+        self.assertIn("src/index.js:2:", finding["evidence"])
+
+    def test_filtered_query_in_plain_worker_is_not_reported(self) -> None:
+        # `export default` must not make an ordinary Worker look like an export path.
+        self.assertEqual([], self.findings(self.query("SELECT id FROM revisions WHERE post_id = ?", ".bind(1).all()")))
+
+    def test_filtered_query_in_backup_file_is_high(self) -> None:
+        [finding] = self.findings(
+            self.query("SELECT id, body FROM revisions WHERE deleted_at IS NULL"), path="src/backup.js"
+        )
+        self.assertEqual("high", finding["severity"])
+
+    def test_concatenated_table_name_in_export_route_is_reported(self) -> None:
+        source = (
+            "export default { async fetch(request, env) {\n"
+            "  if (new URL(request.url).pathname !== '/api/export') return new Response('no', { status: 404 });\n"
+            "  const table = 'posts';\n"
+            "  return Response.json(await env.DB.prepare('SELECT id FROM ' + table).all());\n"
+            "} };\n"
+        )
+        [finding] = self.findings(source)
+        self.assertEqual("high", finding["severity"])
+
+    def test_single_row_aggregates_are_not_reported(self) -> None:
+        self.assertEqual([], self.findings(self.query("SELECT COUNT(*) AS n, MAX(id) AS top FROM revisions")))
+
+    def test_grouped_aggregate_is_reported(self) -> None:
+        self.assertEqual(1, len(self.findings(self.query("SELECT post_id, COUNT(*) FROM revisions GROUP BY post_id"))))
+
+    def test_limit_keyword_in_string_literal_does_not_suppress(self) -> None:
+        self.assertEqual(1, len(self.findings(self.query("SELECT id, 'LIMIT' AS note FROM revisions"))))
+
+    def test_schema_and_no_from_selects_are_not_reported(self) -> None:
+        self.assertEqual([], self.findings(self.query("SELECT name FROM sqlite_master WHERE type = 'table'")))
+        self.assertEqual([], self.findings(self.query("SELECT 1 AS ok")))
+
+    def test_writes_are_not_reported(self) -> None:
+        self.assertEqual([], self.findings(self.query("INSERT INTO archive SELECT * FROM revisions", ".run()")))
+
+    def test_prose_mention_in_markdown_is_not_reported(self) -> None:
+        report = scan({
+            "wrangler.jsonc": self.CONFIG,
+            "docs/backup.md": 'Run `env.DB.prepare("SELECT * FROM revisions").all()` for backups.',
+        })
+        self.assertEqual([], [f for f in report["findings"] if f["check_id"] == "CFDOC-REL-D1-RESULT-SIZE"])
+
+
 if __name__ == "__main__":
     unittest.main()

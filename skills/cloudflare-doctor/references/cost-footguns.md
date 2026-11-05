@@ -65,6 +65,7 @@ Footguns:
 - N+1 query patterns in Workers; count queries and rows read per user-visible request, not just HTTP request count.
 - Using D1 as an analytics/event sink or queue.
 - Recomputing public query results on every request instead of caching.
+- Fixing a D1 result-size failure (`CFDOC-REL-D1-RESULT-SIZE`) with deep `LIMIT ... OFFSET` paging over a large table: each page re-reads the skipped rows, so a full export costs roughly quadratic rows read. Keyset pagination reads each row once.
 
 Better patterns:
 - Add indexes, limits, batching, prepared statements, constraints, and CDN/cache layers where consistency allows.

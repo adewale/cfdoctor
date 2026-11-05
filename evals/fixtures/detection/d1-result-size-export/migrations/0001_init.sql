@@ -1,0 +1,4 @@
+CREATE TABLE posts (id INTEGER PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, body TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft');
+CREATE TABLE revisions (id INTEGER PRIMARY KEY, post_id INTEGER NOT NULL REFERENCES posts(id), body TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE media (id INTEGER PRIMARY KEY, filename TEXT NOT NULL, alt TEXT);
+CREATE INDEX revisions_post_id ON revisions(post_id);

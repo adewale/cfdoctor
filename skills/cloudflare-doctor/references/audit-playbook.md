@@ -48,7 +48,7 @@ For every audit, explicitly consider and either report or mark not applicable / 
 
 1. Separate direct Workers meters from amplification proxies: current Standard pricing directly meters requests and CPU, not duration or subrequests; subrequests still consume limits and can trigger separately metered downstream products. Verify Enterprise/legacy contracts.
 2. Free-to-Paid plan changes may replace hard stops/included usage with overages or different throttling; verify current product pricing/limits.
-3. D1 full scans, missing indexes, `ORDER BY RANDOM()`, offset pagination, and N+1 query patterns can multiply rows read. `SELECT *` is a projection/schema-coupling smell only until query-plan and `rows_read` evidence proves scanning.
+3. D1 full scans, missing indexes, `ORDER BY RANDOM()`, offset pagination, and N+1 query patterns can multiply rows read. `SELECT *` is a projection/schema-coupling smell only until query-plan and `rows_read` evidence proves scanning. Separately, any D1 query whose result can grow past the maximum query result size (whole-table reads, table dumps/backups/exports, wide/BLOB projections) fails outright; check result bytes, not just rows.
 4. Invalid/bot/unauthenticated traffic should be validated before calling Durable Objects.
 5. Durable Objects should not stay active through idle WebSockets, timers, polling, or missing hibernation/alarms where hibernation/Queues/Workflows fit.
 6. Expensive operations need idempotency/dedupe, especially Workers AI generation/embeddings and media/browser jobs.

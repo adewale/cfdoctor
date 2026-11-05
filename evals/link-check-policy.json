@@ -6,6 +6,7 @@
     {"url": "https://developers.cloudflare.com/workers/platform/pricing/", "content_terms": ["CPU time", "subrequests"]},
     {"url": "https://developers.cloudflare.com/workers/cache/", "content_terms": ["Caching bills requests that are normally free", "cache hit"]},
     {"url": "https://developers.cloudflare.com/d1/platform/pricing/", "content_terms": ["rows read", "rows written"]},
+    {"url": "https://developers.cloudflare.com/d1/platform/limits/", "content_terms": ["Maximum query result size", "50 MB"]},
     {"url": "https://developers.cloudflare.com/durable-objects/platform/pricing/", "content_terms": ["multi-key", "billed the same", "rows read"]},
     {"url": "https://developers.cloudflare.com/billing/manage/budget-alerts/", "content_terms": ["informational only", "do not pause"]},
     {"url": "https://developers.cloudflare.com/billing/manage/billable-usage/", "content_terms": ["monthly invoice", "usage-based"]},

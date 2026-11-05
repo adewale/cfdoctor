@@ -96,6 +96,12 @@ When a TypeScript repo has these boundary classes:
 - Batch statements where practical.
 - Use constraints/unique indexes for correctness rather than only application checks.
 - Add `LIMIT`/pagination to user-controlled queries.
+- Keep every query result under the D1 maximum query result size (50 MB, enforced from 2026-11-04; recheck the [D1 limits](https://developers.cloudflare.com/d1/platform/limits/) page). A larger result is not truncated: the query fails with `D1 query result exceeded the maximum response size limit of 50 MB`. The exposed shapes are whole-table reads with no LIMIT, admin/backup/export/snapshot/sync jobs that dump tables in one query, and wide/BLOB projections on tables that grow (revision history, logs, rendered HTML, embeddings). Scanner lead: `CFDOC-REL-D1-RESULT-SIZE`.
+  - Fix order: project only the needed columns; page with keyset pagination (`WHERE rowid > ? ORDER BY rowid LIMIT ?`, or an indexed key) rather than large OFFSETs, which re-read skipped rows into `rows_read`; for dumps of variable-width rows, size later pages from observed row bytes and retry a page at half size when the error text contains `maximum response size`.
+  - A LIMIT bounds rows, not bytes. D1 rows can be up to 2 MB, so `LIMIT 1000` over wide rows can still exceed the limit; review the widest column, not just the row count.
+  - Full-database backups belong on the D1 REST export / `wrangler d1 export` path ([import and export](https://developers.cloudflare.com/d1/best-practices/import-export-data/)), which the limit does not apply to, or on Time Travel, not on an in-Worker `SELECT *` loop.
+  - Postgres/Hyperdrive and Durable Object SQLite reads are not covered by this D1 limit; do not extend the finding to them without their own current limits page.
+  - Verification: generate a table past the limit in a staging D1 database (or mock the error, as emdash-cms/emdash#4610 did) and confirm the export/listing still completes, returns every row once, and preserves order.
 - Cache read-heavy public results where consistency allows.
 
 ## R2 reliability/performance

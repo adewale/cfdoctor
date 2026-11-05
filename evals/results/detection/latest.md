@@ -1,24 +1,26 @@
 # Detection eval report
 
-- Generated: 2026-08-09 23:10:46
+- Generated: 2026-11-05 15:30:44
 - Scanner: `skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py --json`
 - Fixture root: `evals/fixtures/detection/`
-- Result: 30/30 fixtures passed
+- Result: 32/32 fixtures passed
 
 | Fixture | Status | Required found | Findings | Notes |
 |---|---|---|---|---|
 | broad-route-cron-storm | PASS | 2/2 | 2 | - |
 | clean-baseline | PASS | 0/0 | 0 (max 0) | - |
-| d1-nplus1-dashboard | PASS | 2/2 | 3 | - |
+| d1-nplus1-dashboard | PASS | 2/2 | 4 | - |
+| d1-result-size-export | PASS | 2/2 | 3 | - |
+| d1-result-size-paged-safe | PASS | 0/0 | 0 (max 0) | - |
 | dead-rpc-surface | PASS | 1/1 | 1 | - |
 | do-gotchas | PASS | 3/3 | 6 | - |
 | do-sql-unbounded-scan | PASS | 1/1 | 1 | - |
-| do-stub-call-cycle | PASS | 2/2 | 3 | - |
+| do-stub-call-cycle | PASS | 2/2 | 4 | - |
 | do-stub-chain-safe | PASS | 0/0 | 0 (max 0) | - |
 | do-stub-cycle-guarded-safe | PASS | 0/0 | 0 (max 0) | - |
 | full-observability-sampling | PASS | 1/1 | 1 | - |
 | gap-alarm-guard-variable | PASS | 1/1 | 1 | - |
-| gap-alarm-log-noise | PASS | 1/1 | 3 | - |
+| gap-alarm-log-noise | PASS | 1/1 | 2 | - |
 | gap-dashboard-queue-consumer | PASS | 1/1 | 2 | - |
 | gap-do-sharding-deep | PASS | 1/1 | 1 | - |
 | gap-do-sharding-indirect | PASS | 1/1 | 3 | - |
@@ -60,7 +62,23 @@
 - Scenario: Blog feed endpoint that loads every post with SELECT * and then runs four more queries per post (author, comments, like total, latest comment) plus a per-post UPDATE inside the loop. Models read-amplification bills where billed rows grow with content size on every page view.
 - Evidence IDs: CFDOC-EVD-FIREBASE-READS
 - Required check IDs: CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR
-- Check IDs emitted (3 findings): CFDOC-COST-RETRY-AMPLIFY, CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR
+- Check IDs emitted (4 findings): CFDOC-COST-RETRY-AMPLIFY, CFDOC-PERF-D1-N-PLUS-ONE, CFDOC-PERF-D1-SELECT-STAR, CFDOC-REL-D1-RESULT-SIZE
+
+### d1-result-size-export — PASS
+
+- Scenario: Admin backup export that reads each content table with one unbounded `SELECT * FROM ${table}` and a revisions listing with no LIMIT. Models the emdash snapshot export that produced a ~57 MB single-query result from revision history once D1 enforced its 50 MB maximum query result size.
+- Evidence IDs: CFDOC-EVD-CF-D1-RESULT-LIMIT, CFDOC-EVD-EMDASH-D1-SNAPSHOT
+- Required check IDs: CFDOC-REL-D1-RESULT-SIZE, CFDOC-PERF-D1-SELECT-STAR
+- Check IDs emitted (3 findings): CFDOC-COST-RETRY-AMPLIFY, CFDOC-PERF-D1-SELECT-STAR, CFDOC-REL-D1-RESULT-SIZE
+
+### d1-result-size-paged-safe — PASS
+
+- Scenario: The same admin backup export rewritten to read each table in rowid-keyset pages with explicit columns, LIMIT, and a halve-and-retry on D1's result-size error, plus a single-row COUNT(*). False-positive guard: no result-size lead and zero findings total.
+- Evidence IDs: CFDOC-EVD-CF-D1-RESULT-LIMIT, CFDOC-EVD-EMDASH-D1-SNAPSHOT
+- Required check IDs: (none)
+- Forbidden check IDs: CFDOC-REL-D1-RESULT-SIZE, CFDOC-PERF-D1-SELECT-STAR
+- Max findings allowed: 0
+- Check IDs emitted (0 findings): (none)
 
 ### dead-rpc-surface — PASS
 
@@ -89,7 +107,7 @@
 - Scenario: Two Durable Objects re-trigger each other via detached waitUntil stub calls while every hop re-scans a growing SQLite table. Models the 2026-08 StandardAgents runaway-loop bill where DO storage rows read were 98.5% of an $8,846 invoice.
 - Evidence IDs: CFDOC-EVD-STDAGENTS-DO-LOOP
 - Required check IDs: DO-STUB-CALL-CYCLE, DO-SQL-SCAN-HOTPATH
-- Check IDs emitted (3 findings): DO-SQL-SCAN-HOTPATH, DO-STUB-CALL-CYCLE, DO-WAITUNTIL-LIFECYCLE
+- Check IDs emitted (4 findings): DO-SQL-SCAN-HOTPATH, DO-STUB-CALL-CYCLE, DO-WAITUNTIL-LIFECYCLE, KV-VS-DO-STORAGE-FIT
 
 ### do-stub-chain-safe — PASS
 
@@ -128,7 +146,7 @@
 - Scenario: Durable Object alarm that unconditionally reschedules itself, but a logging if-statement after the setAlarm call suppressed the original heuristic, which treated any 'if (' near the alarm body as an idle guard.
 - Evidence IDs: CFDOC-EVD-COEY-DO-GOTCHAS, CFDOC-EVD-COEY-LOOPS
 - Required check IDs: DO-ALARM-RECURSION
-- Check IDs emitted (3 findings): CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD, DO-ALARM-RECURSION, DO-STUB-CALL-CYCLE
+- Check IDs emitted (2 findings): CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD, DO-ALARM-RECURSION
 
 ### gap-dashboard-queue-consumer — PASS
 
