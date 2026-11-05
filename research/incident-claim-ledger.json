@@ -74,7 +74,7 @@
         "complete-deletion",
         "scanner-precision"
       ],
-      "mechanism": "A pinned source audit and synthetic function probes found D1 parameter/query budget failures, missing generated R2 jurisdiction, replay expansion and duplicate-counter paths, incomplete erasure and cost coverage, and excessive default runtime credential capability. This is code evidence and local reproduction, not a deployed incident or a measured production bill. Fixtures are synthetic minimal pairs derived from that review.",
+      "mechanism": "A pinned source audit and synthetic function probes found D1 parameter/query budget failures, missing generated R2 jurisdiction, replay expansion and duplicate-counter paths, incomplete erasure and cost coverage, and excessive default runtime credential capability. This is code evidence and local reproduction, not a deployed incident or a measured production bill. Fixtures are synthetic minimal pairs derived from that review. Independent forward review also found hostname-label guessing for route zones; a generated co.uk example reproduces it.",
       "sources": [
         {
           "url": "https://github.com/adewale/cfdoctor/issues/35",
@@ -102,7 +102,8 @@
         "https://developers.cloudflare.com/r2/pricing/",
         "https://developers.cloudflare.com/r2/reference/data-location/",
         "https://developers.cloudflare.com/workers/platform/limits/",
-        "https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/"
+        "https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/",
+        "https://developers.cloudflare.com/workers/wrangler/configuration/"
       ],
       "verified_at": "2026-11-05",
       "review_due": "2027-02-05",
@@ -128,7 +129,8 @@
         "CFDOC-SEC-SECRET-ASSIGNMENT",
         "AGENT-AUTONOMOUS-LOOP-COST",
         "CFDOC-COST-RETRY-AMPLIFY",
-        "CFDOC-CONFIG-PROCESS-ENV"
+        "CFDOC-CONFIG-PROCESS-ENV",
+        "CFDOC-CONFIG-ROUTE-ZONE-GUESS"
       ],
       "fixture_ids": [
         "workload-cross-store",
@@ -151,7 +153,9 @@
         "workload-runtime-token",
         "workload-runtime-token-safe",
         "workload-test-binding",
-        "workload-test-binding-safe"
+        "workload-test-binding-safe",
+        "workload-route-zone",
+        "workload-route-zone-safe"
       ]
     }
   ]

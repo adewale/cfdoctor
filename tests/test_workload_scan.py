@@ -104,6 +104,14 @@ class WorkloadScanTests(unittest.TestCase):
         self.assertEqual(1, len(result["deployment_scopes"]))
         self.assertNotIn("Workers AI", result["detected_products"])
 
+    def test_quoted_generated_keys_are_supported(self):
+        result = scan({"deploy.ts": '''function render() {
+          const config = {"main":"worker.js", "pipelines":[{"binding":"EVENTS","stream":"s"}]};
+          return JSON.stringify(config);
+        }'''})
+        self.assertIn("Pipelines", result["detected_products"])
+        self.assertNotIn("Stream", result["detected_products"])
+
     def test_uppercase_real_credential_is_not_a_ci_label(self):
         result = report('const apiKey = "UPPERCASEVALUE123456789";')
         self.assertIn("CFDOC-SEC-SECRET-ASSIGNMENT", ids(result))
@@ -188,6 +196,17 @@ class WorkloadScanTests(unittest.TestCase):
         }'''
         self.assertIn("CFDOC-CONFIG-R2-JURISDICTION", ids(scan({"deploy.ts": source.replace(' EXTRA', '')})))
         self.assertNotIn("CFDOC-CONFIG-R2-JURISDICTION", ids(scan({"deploy.ts": source.replace(' EXTRA', ", jurisdiction: config.eu ? 'eu' : undefined")})))
+
+    def test_route_zone_uses_account_zone_rather_than_label_count(self):
+        source = '''function render(config) {
+          const zone = config.route.split('/')[0].split('.').slice(-2).join('.');
+          return { routes: [{pattern: config.route, zone_name: zone}] };
+        }'''
+        self.assertIn("CFDOC-CONFIG-ROUTE-ZONE-GUESS", ids(scan({"deploy.ts": source})))
+        safe = "function render(config) { return {routes: [{pattern: config.route, zone_id: config.zoneId}]}; }"
+        self.assertNotIn("CFDOC-CONFIG-ROUTE-ZONE-GUESS", ids(scan({"deploy.ts": safe})))
+        commented = "function render(config) {\n// const zone = config.route.split('.').slice(-2).join('.');\nconst zone = config.zoneName; return {routes:[{pattern:config.route,zone_name:zone}]}; }"
+        self.assertNotIn("CFDOC-CONFIG-ROUTE-ZONE-GUESS", ids(scan({"deploy.ts": commented})))
 
     def test_replay_counter_retry_mismatch_and_receipt_pair(self):
         source = '''async function upload(env, key, bytes) {

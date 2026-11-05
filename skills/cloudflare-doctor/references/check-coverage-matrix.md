@@ -99,6 +99,8 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | CFDOC-SEC-RUNTIME-PROVISIONING-TOKEN | scanner-lead | SEC | low | [`workload-boundaries.md`](workload-boundaries.md) | Provisioning token also supplies a runtime secret. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
 | CFDOC-REL-TEST-BINDING-CONTRACT | scanner-lead | REL | low | [`workload-boundaries.md`](workload-boundaries.md) | Local binding double omits a platform contract. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
 
+| CFDOC-CONFIG-ROUTE-ZONE-GUESS | scanner-lead | CONFIG | medium | [`workload-boundaries.md`](workload-boundaries.md) | Literal last-two-label derivation feeding zone_name; explicit zone IDs/names do not trigger it. |
+
 ## How to update
 
 - Adding a check to the scanner registry requires adding a `scanner-lead` row to this table in the same change; `scripts/check_coverage.py` fails CI otherwise.

@@ -29,6 +29,11 @@ generated binding, upload and query endpoints. A creation flag does not change
 an existing resource. Compare all those boundaries with
 [R2 jurisdiction requirements](https://developers.cloudflare.com/r2/reference/data-location/).
 
+For generated routes, use the actual zone name/ID. Taking the last two hostname
+labels yields co.uk for analytics.example.co.uk and cannot identify delegated
+subzones. Prefer explicit zone input or an authorized scoped lookup over a
+hostname guess. See [Wrangler routes](https://developers.cloudflare.com/workers/wrangler/configuration/).
+
 ## D1 parameters and invocation queries
 
 Count each statement's fixed parameters plus each spread's multiplicity.
@@ -102,6 +107,11 @@ complete after one call. Preserve identifiers and progress until every matching
 row/object/note is accounted for. Verify more than one page/slice, invocation
 budget exhaustion and restart after partial deletion. Treat data-deletion
 correctness separately from legal conclusions.
+
+Before describing a successful partial erasure, check whether the nested query,
+subrequest or execution budget lets that path reach its success response. A
+maximum slice may throw first. Report the earlier interruption and the missing
+continuation separately rather than asserting that the caller returned success.
 
 Trace retries across every side effect. A deterministic R2 key can overwrite
 one object while an additive D1 upsert increments twice. A unique receipt guard

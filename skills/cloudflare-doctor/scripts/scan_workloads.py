@@ -15,6 +15,7 @@ SOURCES = {
     "CFDOC-REL-D1-PARAMETERS": ["https://developers.cloudflare.com/d1/platform/limits/"],
     "CFDOC-REL-D1-QUERY-BUDGET": ["https://developers.cloudflare.com/d1/platform/limits/"],
     "CFDOC-CONFIG-R2-JURISDICTION": ["https://developers.cloudflare.com/r2/reference/data-location/"],
+    "CFDOC-CONFIG-ROUTE-ZONE-GUESS": ["https://developers.cloudflare.com/workers/wrangler/configuration/"],
     "CFDOC-REL-EXPANSION-BOUND": ["https://developers.cloudflare.com/workers/platform/limits/"],
     "CFDOC-REL-DELETION-CONTINUATION": ["https://developers.cloudflare.com/d1/platform/limits/"],
     "CFDOC-REL-CROSS-STORE-IDEMPOTENCY": ["https://developers.cloudflare.com/r2/api/workers/workers-api-reference/"],
@@ -138,8 +139,8 @@ def runtime_inventory(root, files, configs, mask, matching, binding_keys):
                 for field, fragment, offset in fragments:
                     for key, product in binding_keys.items():
                         fragment_code = mask(fragment)
-                        properties = list(re.finditer(rf"\b{key}\s*:", fragment_code))
-                        root_property = any(fragment_code[:hit.start()].count("{") - fragment_code[:hit.start()].count("}") == 1 for hit in properties)
+                        properties = list(re.finditer(rf"(?:\b{key}|['\"]{key}['\"])\s*:", fragment))
+                        root_property = any(fragment_code[hit.end() - 1] == ":" and fragment_code[:hit.start()].count("{") - fragment_code[:hit.start()].count("}") == 1 for hit in properties)
                         if (field is not None and field != key) or (field is None and not root_property):
                             continue
                         line = text.count("\n", 0, function["body_start"] + offset) + 1
@@ -259,6 +260,11 @@ def workload_leads(root, files, inventory, mask, matching):
         for function in functions:
             body, code = function["text"], function["code"]
             offset = function["body_start"]
+            guessed = re.search(r"\b(?:const|let)\s+(\w+)\s*=[^;]*\.split\(\s*['\"]\.['\"]\s*\)\s*\.slice\(\s*-2\s*\)\s*\.join\(\s*['\"]\.['\"]\s*\)", body)
+            if guessed and code[guessed.start():guessed.start() + 3].strip() and re.search(rf"\bzone_name\s*:\s*{re.escape(guessed[1])}\b", code):
+                add("CFDOC-CONFIG-ROUTE-ZONE-GUESS", relative, text, offset + guessed.start(),
+                    "Route zone_name is derived from the last two hostname labels. For analytics.example.co.uk this yields co.uk, not example.co.uk; delegated subzones also cannot be resolved from label count alone. Deployed affected routes are unknown.",
+                    "Use an explicitly supplied zone ID/name or a scoped lookup of the account's matching zone; test multi-label suffixes and delegated subzones.", confidence="medium")
             token = re.search(r"\b([A-Z_]*TOKEN)\s*:\s*([a-zA-Z_$][\w$]*)\s*[,}]", code)
             if token and re.search(rf"\b(?:wrangler|provision|ensure|deploy)\w*\s*\([^;]*\b{re.escape(token[2])}\b|\b(?:createWrangler|listAccounts)\s*\([^;]*\b{re.escape(token[2])}\b", code, re.IGNORECASE):
                 add("CFDOC-SEC-RUNTIME-PROVISIONING-TOKEN", relative, text, offset + token.start(),
@@ -365,7 +371,7 @@ def workload_leads(root, files, inventory, mask, matching):
             if re.search(r"\.send\s*\(|\b(?:cursor|continuation|jobId)\s*:", caller["code"]):
                 continue
             add("CFDOC-REL-DELETION-CONTINUATION", caller_path, caller_text, caller["body_start"] + call.start(),
-                f"{caller['name']} calls limited deletion helper {helper['name']} once and proceeds to remove identity/person rows. A completed erasure is not established beyond the helper's selected slice.",
+                f"{caller['name']} calls limited deletion helper {helper['name']} once and proceeds to remove identity/person rows. A completed erasure is not established beyond the helper's selected slice. First check nested invocation budgets: the helper may throw before identity removal or any success response; do not claim successful partial deletion without that reachability proof.",
                 "Persist the erasure identifiers and progress, finish all slices within invocation budgets, and report success only after storage and metadata are verified absent.",
                 chain=[evidence(caller_path, caller_text, caller["body_start"] + call.start()), evidence(path, text, helper["body_start"])], confidence="medium")
     # Report sibling ingress-policy differences only when a router actually
@@ -396,6 +402,7 @@ TITLES = {
     "CFDOC-REL-D1-PARAMETERS": "Constructed D1 statement needs a parameter budget",
     "CFDOC-REL-D1-QUERY-BUDGET": "Per-item D1 work can exceed an invocation query budget",
     "CFDOC-CONFIG-R2-JURISDICTION": "Bucket creation and generated R2 binding jurisdiction need reconciliation",
+    "CFDOC-CONFIG-ROUTE-ZONE-GUESS": "Route generator guesses the zone from hostname label count",
     "CFDOC-REL-EXPANSION-BOUND": "Expanded or accumulated data lacks a proved work bound",
     "CFDOC-REL-DELETION-CONTINUATION": "Limited deletion helper is used without visible completion tracking",
     "CFDOC-REL-CROSS-STORE-IDEMPOTENCY": "Object upload and additive metadata need cross-store retry review",
