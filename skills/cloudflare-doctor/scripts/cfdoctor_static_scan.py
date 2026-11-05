@@ -11,14 +11,18 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+from scan_workloads import SOURCES, TITLES, loops, runtime_inventory, workload_leads
 
 try:
     import tomllib  # Python 3.11+
@@ -100,7 +104,7 @@ SECRET_VALUE_RE = re.compile(
     re.IGNORECASE,
 )
 SECRET_ASSIGN_RE = re.compile(
-    r"^\s*(?:(?:export\s+)?(?:const|let|var)\s+|export\s+)?([A-Za-z_][A-Za-z0-9_-]*)\s*[:=]\s*['\"]?([^'\"\s#]{8,})",
+    r"^\s*(?:(?:export\s+)?(?:const|let|var)\s+|export\s+)?([A-Za-z_][A-Za-z0-9_-]*)(?:\s*:\s*(?!['\"])[^=;]+)?\s*[:=]\s*['\"]?([^'\"\s#]{8,})",
     re.IGNORECASE,
 )
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.IGNORECASE)
@@ -114,7 +118,7 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.4.0"
+SCANNER_VERSION = "0.5.0"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -181,6 +185,12 @@ _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
     ("CFDOC-SEC-TLS-FLEXIBLE", "SEC", "high", "high", "Terraform sets SSL/TLS mode to Flexible", "Flexible SSL leaves the Cloudflare-to-origin leg unencrypted."),
     ("CFDOC-SEC-DNS-UNPROXIED", "SEC", "medium", "medium", "Terraform has unproxied DNS record; verify origin exposure", "DNS-only records bypass Cloudflare WAF/cache/Access and may expose origin."),
 ]
+_CHECK_ROWS.extend(
+    (cid, "SEC" if "-SEC-" in cid else "COST" if "-COST-" in cid else "CONFIG" if "-CONFIG-" in cid else "REL",
+     "low" if cid in {"CFDOC-COST-METER-COVERAGE", "CFDOC-REL-TEST-BINDING-CONTRACT"} else "medium", "low", title,
+     "Bounded source-path lead; confirm helper behavior, generated values and current platform semantics.")
+    for cid, title in TITLES.items()
+)
 CHECKS: dict[str, dict[str, str]] = {
     cid: {"pillar": pillar, "severity": severity, "confidence": confidence, "title": title, "description": description}
     for cid, pillar, severity, confidence, title, description in _CHECK_ROWS
@@ -197,6 +207,7 @@ class Finding:
     why: str
     fix: str
     confidence: str = "medium"
+    evidence_chain: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.check_id not in CHECKS:
@@ -210,14 +221,19 @@ def rel(path: Path, root: Path) -> str:
         return str(path)
 
 
-def iter_files(root: Path) -> Iterable[Path]:
+def iter_files(root: Path, skipped: list[dict[str, str]] | None = None) -> Iterable[Path]:
     for dirpath, dirnames, filenames in os.walk(root):
+        if skipped is not None:
+            skipped.extend({"path": rel(Path(dirpath) / d, root), "reason": "excluded directory"}
+                           for d in dirnames if d in EXCLUDE_DIRS)
         dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
         for name in filenames:
             path = Path(dirpath) / name
             if name in CONFIG_NAMES or path.suffix in TEXT_EXTS or name.startswith(".env"):
                 if path.stat().st_size <= 1_500_000:
                     yield path
+                elif skipped is not None:
+                    skipped.append({"path": rel(path, root), "reason": "file exceeds 1,500,000-byte scan limit; source/build parity unverified"})
 
 
 def read_text(path: Path) -> str:
@@ -348,6 +364,15 @@ def is_sensitive_assignment(match: re.Match[str], in_code_file: bool = False) ->
         return False
     if re.match(r"(?:re\.compile|RegExp)\(", value):
         return False
+    if in_code_file:
+        # A TS colon is an annotation unless followed immediately by a string
+        # literal (object property). Never interpret type/reference text as a key.
+        prefix = match.group(0)
+        literal = re.search(r"(?:=|:)\s*(['\"])(.*?)\1", match.string[match.start():])
+        if not literal or (":" in prefix and "=" not in prefix and not re.search(r":\s*['\"]", prefix)):
+            return False
+        if (name == "CI_SECRET" or re.search(r"(?:SECRET|TOKEN|KEY)_(?:NAME|ENV|VAR)$", name)) and re.fullmatch(r"[A-Z][A-Z0-9_]*", literal[2]):
+            return False  # a CI/environment variable label, not its value
     return not (in_code_file and (CODE_CALL_VALUE_RE.match(value) or CODE_REFERENCE_VALUE_RE.match(value)))
 
 
@@ -770,7 +795,8 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                     "high",
                 ))
 
-        if not is_env and not observability:
+        local_only = bool(re.search(r"(?:running|configuration|config)[^\n]{0,90}\blocally\b|development.only|local.only", text, re.IGNORECASE))
+        if not is_env and not observability and not local_only and not (data.get("assets") and not data.get("main")):
             findings.append(Finding(
                 "CFDOC-CONFIG-NO-OBSERVABILITY",
                 "low",
@@ -1246,6 +1272,8 @@ def add_code_findings(
     findings: list[Finding],
     queue_consumer_names: set[str] | None = None,
     do_scopes: list[tuple[list[tuple[Path, str]], dict[str, str]]] | None = None,
+    source_roles: dict[str, dict[str, Any]] | None = None,
+    path_bindings: dict[str, dict[str, set[str]]] | None = None,
 ) -> None:
     queue_consumer_names = queue_consumer_names or set()
     kv_names = bindings.get("KV", set())
@@ -1254,14 +1282,15 @@ def add_code_findings(
     project_has_stream_host = any(
         re.search(r"(?:cloudflarestream\.com|videodelivery\.net)", t, re.IGNORECASE) for _, t in files
     )
-    d1_names = bindings.get("D1", set())
     r2_names = bindings.get("R2", set())
     ai_names = bindings.get("Workers AI", set()) or {"AI"}
     vectorize_names = bindings.get("Vectorize", set())
     dynamic_worker_names = bindings.get("Dynamic Workers", set()) or {"LOADER"}
     artifacts_names = bindings.get("Artifacts", set())
 
-    source_files = [(path, text) for path, text in files if path.suffix in CODE_EXTS]
+    source_roles = source_roles or {}
+    source_files = [(path, text) for path, text in files if path.suffix in CODE_EXTS
+                    and source_roles.get(rel(path, root), {}).get("runtime") not in {"test", "node", "browser"}]
     for scoped_files, binding_classes in do_scopes or []:
         before = {(finding.check_id, finding.evidence) for finding in findings}
         scoped_findings: list[Finding] = []
@@ -1305,6 +1334,10 @@ def add_code_findings(
 
     for path, text in files:
         rpath = rel(path, root)
+        role = source_roles.get(rpath, {}).get("runtime", "unresolved")
+        local_bindings = (path_bindings or {}).get(rpath, bindings)
+        kv_names = local_bindings.get("KV", set())
+        r2_names = local_bindings.get("R2", set())
         if path.name in CONFIG_NAMES:
             continue
 
@@ -1325,7 +1358,8 @@ def add_code_findings(
         is_source_like = path.suffix in CODE_EXTS or path.name in SPECIAL_SOURCE_NAMES
         for line_no, line in enumerate(text.splitlines(), 1):
             match = SECRET_ASSIGN_RE.search(line)
-            if match and is_sensitive_assignment(match, in_code_file=is_source_like):
+            fixture_placeholder = role == "test" and match and match.group(2) in {"dev-salt", "dev-admin-key", "dev-read-key"}
+            if match and not fixture_placeholder and is_sensitive_assignment(match, in_code_file=is_source_like):
                 findings.append(Finding(
                     "CFDOC-SEC-SECRET-ASSIGNMENT",
                     "high",
@@ -1338,8 +1372,10 @@ def add_code_findings(
                 ))
                 break
 
-        if not is_source_like:
+        if not is_source_like or role in {"test", "node", "browser"}:
             continue
+
+        code = mask_javascript_non_code(text)
 
         if path.name == "_routes.json":
             try:
@@ -1470,11 +1506,22 @@ def add_code_findings(
                     "low",
                 ))
 
-        if re.search(r"\b(Agent|AIChatAgent|McpAgent|routeAgentRequest|getAgentByName|subAgent|startFiber|runFiber|scheduleTask|queueTask)\b", text):
-            has_loop_or_tool = re.search(r"while\s*\(|for\s*\(|tool|browser|sandbox|subAgent|schedule|queueTask|retry|autonomous|continueLastTurn", text, re.IGNORECASE)
-            has_agent_bounds = re.search(r"max(?:Steps|Iterations|Retries|Duration|Attempts)|AbortController|timeout|cancel|abort|idempot|backoff|jitter|budget|quota", text, re.IGNORECASE)
+        agent_imports = re.findall(r"import\s*\{([^}]+)\}\s*from\s*['\"]agents(?:/[^'\"]*)?['\"]", text)
+        agent_names = []
+        for imports in agent_imports:
+            for symbol in imports.split(","):
+                parts = re.split(r"\s+as\s+", symbol.strip())
+                if parts[0] in {"Agent", "AIChatAgent", "McpAgent"}:
+                    agent_names.append(parts[-1])
+        agent_class = re.search(r"\bextends\s+(?:" + "|".join(map(re.escape, agent_names)) + r")\b", code) if agent_names else None
+        if agent_class:
+            opening = code.find("{", agent_class.end())
+            closing = matching_delimiter(code, opening, "{", "}") if opening >= 0 else None
+            agent_code = code[opening:closing] if closing else ""
+            has_loop_or_tool = re.search(r"while\s*\(|for\s*\(|\.\w*(?:[Tt]ool|[Bb]rowser|[Ss]andbox)|\b(?:subAgent|schedule|queueTask|retry|continueLastTurn)\s*\(", agent_code)
+            has_agent_bounds = re.search(r"max(?:Steps|Iterations|Retries|Duration|Attempts)|AbortController|timeout|cancel|abort|idempot|backoff|jitter|budget|quota", agent_code, re.IGNORECASE)
             if has_loop_or_tool and not has_agent_bounds:
-                hit = line_for(text, re.compile(r"\b(Agent|AIChatAgent|McpAgent|subAgent|startFiber|runFiber|scheduleTask|queueTask)\b")) or (1, "")
+                hit = line_for(text, re.compile(r"\bextends\s+")) or (1, "")
                 findings.append(Finding(
                     "AGENT-AUTONOMOUS-LOOP-COST",
                     "medium",
@@ -1527,11 +1574,17 @@ def add_code_findings(
                 "medium",
             ))
 
-        retry_shaped = re.search(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", text, re.IGNORECASE)
-        expensive_call = re.search(r"env\.[A-Za-z0-9_]+\.(run|query|send|sendBatch|put|list|prepare)\s*\(|fetch\s*\(|browser\.(launch|connect)|newPage\s*\(", text, re.IGNORECASE)
-        has_resilience_controls = re.search(r"circuit|breaker|backoff|jitter|maxAttempts|max_retries|maxRetries|AbortController|timeout|killSwitch|disable|enabled", text, re.IGNORECASE)
-        if retry_shaped and expensive_call and not has_resilience_controls:
-            hit = line_for(text, re.compile(r"retry|retries|attempt|attempts|while\s*\(|for\s*\(", re.IGNORECASE)) or (1, "")
+        retry_loop = None
+        for loop in loops(text, mask_javascript_non_code, matching_delimiter):
+            expensive_call = re.search(r"(?:\.prepare|\bfetch|\.send|\.put|\.launch|\.newPage)\s*\(", loop["code"])
+            retry_intent = re.search(r"\b(?:attempts?|retr(?:y|ies))\b", loop["header"], re.IGNORECASE) or re.search(r"\.ok\s*\)\s*\{?\s*return|\bcatch\s*\(", loop["code"]) or loop["header"].strip() == "true"
+            controls = re.search(r"\b(?:backoff|jitter|AbortController|timeout|killSwitch|circuitBreaker)\b|\b(?:sleep|setTimeout)\s*\(|\bscheduler\.wait\s*\(", loop["code"], re.IGNORECASE)
+            if expensive_call and retry_intent and not controls:
+                retry_loop = loop
+                break
+        if retry_loop:
+            line_no = text.count("\n", 0, retry_loop["start"]) + 1
+            hit = (line_no, text.splitlines()[line_no - 1].strip())
             findings.append(Finding(
                 "CFDOC-COST-RETRY-AMPLIFY",
                 "medium",
@@ -1610,8 +1663,8 @@ def add_code_findings(
                     "R2 bucket list appears in application code",
                     "cost footgun / wrong primitive",
                     f"{rpath}:{hit[0]}: {hit[1][:160]}",
-                    "R2 listing is a storage operation and a poor metadata query path at high request volume.",
-                    "Maintain queryable metadata in D1/KV/search and cache list responses; use R2 for object bytes.",
+                    "Listing consumes operation units. A deletion/maintenance listing can be appropriate; determine its trigger, pagination and work budget before calling this a metadata-query mismatch.",
+                    "For user-facing metadata search, inspect an existing index first. For maintenance, bound pages and nested work and preserve resumable completion.",
                     "medium",
                 ))
             if re.search(rf"env\.{safe}\.get\s*\(", text) and re.search(r"\.(arrayBuffer|text|json)\s*\(\s*\)", text):
@@ -1622,13 +1675,13 @@ def add_code_findings(
                     "R2 object may be buffered instead of streamed",
                     "missed optimization / reliability",
                     f"{rpath}:{hit[0]}: {hit[1][:160]}",
-                    "Buffering large R2 objects in a Worker increases memory/CPU pressure and delays first byte.",
-                    "Return the R2 object's stream/body directly when possible and support range requests for large media/downloads.",
+                    "Buffering can increase memory/CPU pressure. Small cached metadata and intentional parsing need different treatment from unbounded chunk/session accumulation.",
+                    "Trace the returned object's size and parsing path. Stream downloads where useful; for parsing/aggregation bound expanded bytes and total retained work before allocation.",
                     "low",
                 ))
 
         # D1 query smells.
-        if d1_names or ".prepare(" in text or ".batch(" in text:
+        if ".prepare(" in code or ".batch(" in code:
             hit = line_for(text, re.compile(r"SELECT\s+\*", re.IGNORECASE))
             if hit:
                 findings.append(Finding(
@@ -1653,13 +1706,15 @@ def add_code_findings(
                     "Use indexed sampling, precomputed random keys, or a bounded candidate set.",
                     "high",
                 ))
-            if len(re.findall(r"\.prepare\s*\(", text)) >= 6:
+            query_loop = next((loop for loop in loops(text, mask_javascript_non_code, matching_delimiter)
+                               if re.search(r"\bof\b", loop["header"]) and ".prepare" in loop["code"]), None)
+            if query_loop:
                 findings.append(Finding(
                     "CFDOC-PERF-D1-N-PLUS-ONE",
                     "low",
-                    "Many D1 prepared statements in one file; check for N+1 queries",
+                    "D1 statements execute inside a per-item loop",
                     "missed optimization / cost footgun",
-                    rpath,
+                    f"{rpath}:{text.count(chr(10), 0, query_loop['start']) + 1}: per-item .prepare path",
                     "Several sequential D1 queries on one request path can multiply latency and billed rows/operations.",
                     "Trace route-level query counts; batch, join, cache, or denormalize where appropriate.",
                     "low",
@@ -1985,7 +2040,7 @@ def add_code_findings(
 
         # Node env assumptions.
         hit = line_for(text, r"process\.env\.[A-Za-z0-9_]+")
-        if hit and path.suffix not in {".md"}:
+        if hit and role == "worker":
             findings.append(Finding(
                 "CFDOC-CONFIG-PROCESS-ENV",
                 "low",
@@ -2025,15 +2080,26 @@ def add_code_findings(
                 ))
 
 
-def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings: dict[str, set[str]], findings: list[Finding], files_scanned: int) -> str:
+def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings: dict[str, set[str]], findings: list[Finding], files_scanned: int, inventory: dict | None = None) -> str:
     products = sorted(product for product, names in bindings.items() if names)
     config_paths = [rel(path, root) for path, _, _ in configs]
     out: list[str] = []
     out.append("# Cloudflare Doctor static scan")
     out.append("")
+
+    if inventory:
+        out.append("## Deployment evidence")
+        for scope in inventory["deployment_scopes"]:
+            out.append(f"- {scope['id']}: {scope['kind']}; products {', '.join(scope['products']) or 'unknown'}; deployed state not inspected")
+        out.append("Generated declarations are candidates; conditions and installed configuration are not evaluated.")
+        for skipped in inventory.get("scan_exclusions", []):
+            if skipped["reason"].startswith("file exceeds"):
+                out.append(f"- Not inspected: {skipped['path']}: {skipped['reason']}")
+        out.append("")
     out.append("This is a heuristic local scan. Confirm every finding with source context and current Cloudflare docs/pricing before treating it as true.")
     out.append("")
     out.append(f"- Scanner version: {SCANNER_VERSION}")
+    out.append(f"- Source commit: {source_commit(root) or 'not available'} (scanned text may differ; JSON includes its input hash)")
     out.append(f"- Root: `{root}`")
     out.append(f"- Files scanned: {files_scanned}")
     out.append(f"- Wrangler configs: {', '.join(config_paths) if config_paths else 'none detected'}")
@@ -2060,6 +2126,11 @@ def render(root: Path, configs: list[tuple[Path, str, dict[str, Any]]], bindings
         out.append(f"- Why it matters: {finding.why}")
         out.append(f"- Fix: {finding.fix}")
         out.append(f"- Confidence: {finding.confidence}")
+        out.append("- Status: lead; measurements not collected")
+        if finding.evidence_chain:
+            out.extend(f"  - Trace: {item}" for item in finding.evidence_chain)
+        if SOURCES.get(finding.check_id):
+            out.append("- Official sources to refresh: " + ", ".join(SOURCES[finding.check_id]))
     out.append("")
     return "\n".join(out)
 
@@ -2072,7 +2143,7 @@ def split_evidence(evidence: str) -> tuple[str, int | None, str]:
     return re.sub(r"\s*\[env\.[^\]]*\]$", "", head), None, rest
 
 
-def render_json(root: Path, bindings: dict[str, set[str]], findings: list[Finding]) -> str:
+def render_json(root: Path, bindings: dict[str, set[str]], findings: list[Finding], inventory: dict | None = None, file_texts: list | None = None) -> str:
     products = sorted(product for product, names in bindings.items() if names)
     severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
     findings_sorted = sorted(findings, key=lambda f: (severity_order.get(f.severity, 9), f.check_id, f.evidence))
@@ -2091,6 +2162,11 @@ def render_json(root: Path, bindings: dict[str, set[str]], findings: list[Findin
             "message": finding.why,
             "fix": finding.fix,
             "excerpt": exc,
+            "status": "lead",
+            "runtime_scope": (inventory or {}).get("roles", {}).get(path, {}).get("runtime", "configuration"),
+            "evidence_chain": finding.evidence_chain or [finding.evidence],
+            "source_basis": SOURCES.get(finding.check_id, []),
+            "measurements": "not collected",
         })
     counts: dict[str, int] = {"total": len(findings_sorted)}
     for sev in ("critical", "high", "medium", "low"):
@@ -2101,8 +2177,24 @@ def render_json(root: Path, bindings: dict[str, set[str]], findings: list[Findin
         "detected_products": products,
         "findings": items,
         "counts": counts,
+        "source_commit": source_commit(root),
+        "input_sha256": hashlib.sha256("\n".join(
+            rel(path, root) + "\0" + text for path, text in sorted(file_texts or [], key=lambda item: str(item[0]))
+        ).encode()).hexdigest(),
+        "verification": {"command": "python3 <skill-dir>/scripts/cfdoctor_static_scan.py <root> --json", "live_state": "not inspected", "finding_status": "heuristic leads; confirm with code and refreshed official sources"},
     }
+    if inventory:
+        doc.update({key: inventory[key] for key in ("deployment_scopes", "source_scopes", "dependencies")})
+        doc["scan_exclusions"] = inventory.get("scan_exclusions", [])
     return json.dumps(doc, indent=2, sort_keys=True)
+
+
+def source_commit(root: Path) -> str | None:
+    try:
+        result = subprocess.run(["git", "-C", str(root), "rev-parse", "--verify", "HEAD"], capture_output=True, text=True, timeout=5)
+        return result.stdout.strip() if result.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired):
+        return None
 
 
 def render_check_list() -> str:
@@ -2134,8 +2226,10 @@ def main(argv: list[str]) -> int:
     file_texts: list[tuple[Path, str]] = []
     configs: list[tuple[Path, str, dict[str, Any]]] = []
     parse_errors: list[tuple[Path, str]] = []
-    for path in iter_files(root):
+    skipped: list[dict[str, str]] = []
+    for path in iter_files(root, skipped):
         if excludes and any(Path(rel(path, root)).as_posix().startswith(e) for e in excludes):
+            skipped.append({"path": rel(path, root), "reason": "explicit --exclude prefix"})
             continue
         text = read_text(path)
         file_texts.append((path, text))
@@ -2145,7 +2239,16 @@ def main(argv: list[str]) -> int:
             except ConfigParseError as exc:
                 parse_errors.append((path, str(exc)))
 
+    inventory = runtime_inventory(root, file_texts, configs, mask_javascript_non_code, matching_delimiter, BINDING_KEYS)
+    inventory["scan_exclusions"] = skipped
     bindings = collect_bindings(configs)
+    for scope in inventory["deployment_scopes"]:
+        if scope["kind"] == "generated":
+            bindings["Workers"].add(scope["id"])
+            for product in scope["products"]:
+                bindings.setdefault(product, set()).update(scope.get("bindings", {}).get(product) or [scope["id"]])
+    for dependency in inventory["dependencies"]:
+        bindings.setdefault(dependency["product"], set()).add(dependency["path"])
     findings: list[Finding] = []
     add_config_findings(root, configs, findings, parse_errors)
     queue_consumer_names: set[str] = set()
@@ -2160,6 +2263,13 @@ def main(argv: list[str]) -> int:
         if isinstance(envs, dict):
             pending_configs.extend(value for value in envs.values() if isinstance(value, dict))
     cycle_source_files = [(path, text) for path, text in file_texts if path.suffix in CODE_EXTS]
+    path_bindings = {}
+    for path, _ in file_texts:
+        candidates = [config for config in configs if path.is_relative_to(config[0].parent)]
+        if candidates:
+            nearest_depth = max(len(config[0].parent.parts) for config in candidates)
+            selected = [config for config in candidates if len(config[0].parent.parts) == nearest_depth]
+            path_bindings[rel(path, root)] = collect_bindings(selected)
     add_code_findings(
         root,
         file_texts,
@@ -2167,11 +2277,15 @@ def main(argv: list[str]) -> int:
         findings,
         queue_consumer_names=queue_consumer_names,
         do_scopes=durable_object_scopes(configs, cycle_source_files),
+        source_roles=inventory["roles"],
+        path_bindings=path_bindings,
     )
+    for lead in workload_leads(root, file_texts, inventory, mask_javascript_non_code, matching_delimiter):
+        findings.append(Finding(**lead))
     if args.json:
-        print(render_json(root, bindings, findings))
+        print(render_json(root, bindings, findings, inventory, file_texts))
     else:
-        print(render(root, configs, bindings, findings, len(file_texts)))
+        print(render(root, configs, bindings, findings, len(file_texts), inventory))
     return 0
 
 

@@ -1,0 +1,14 @@
+{
+  "description": "Synthetic regression for workload-precision. Safe controls prove only the named detector boundary, not whole-application safety.",
+  "source_issue": "https://github.com/adewale/cfdoctor/issues/35",
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-SEC-SECRET-ASSIGNMENT",
+    "AGENT-AUTONOMOUS-LOOP-COST",
+    "CFDOC-COST-RETRY-AMPLIFY",
+    "CFDOC-CONFIG-PROCESS-ENV"
+  ],
+  "evidence_ids": [
+    "CFDOC-EVD-DATAFLARE-AUDIT"
+  ]
+}

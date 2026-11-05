@@ -5,7 +5,6 @@ import unittest
 
 from test_static_scan import scan
 
-
 CONFIG = '''{"main":"src/index.ts","compatibility_date":"2026-10-01",
 "observability":{"enabled":true},"d1_databases":[{"binding":"DB","database_id":"x"}],
 "r2_buckets":[{"binding":"REPLAYS","bucket_name":"recordings"}]}'''
@@ -71,6 +70,10 @@ class WorkloadScanTests(unittest.TestCase):
         result = report("export default { fetch() { return new Response(process.env.MESSAGE); } };")
         self.assertIn("CFDOC-CONFIG-PROCESS-ENV", ids(result))
 
+    def test_worker_node_compat_import_is_not_a_node_cli(self):
+        result = report("import {randomUUID} from 'node:crypto'; export default {fetch(){return new Response(process.env.MESSAGE + randomUUID());}};")
+        self.assertIn("CFDOC-CONFIG-PROCESS-ENV", ids(result))
+
     def test_static_assets_do_not_need_worker_observability(self):
         result = scan({"wrangler.jsonc": '{"assets":{"directory":"public"},"compatibility_date":"2026-10-01"}'})
         self.assertNotIn("CFDOC-CONFIG-NO-OBSERVABILITY", ids(result))
@@ -89,6 +92,39 @@ class WorkloadScanTests(unittest.TestCase):
         generated = next(s for s in result["deployment_scopes"] if s["kind"] == "generated")
         self.assertEqual("conditional", generated["products"]["Pipelines"]["availability"])
         self.assertTrue(generated["observability"])
+        self.assertNotIn("Stream", result["detected_products"])
+
+    def test_template_serialization_and_test_generator_are_distinct(self):
+        result = scan({"deploy.ts": '''function render(config) {
+          const deployment = { main: 'worker.js', observability: { enabled: true } };
+          return `// generated\n${JSON.stringify(deployment)}`;
+        }''', "tests/fake.ts": '''function fake() {
+          const config = { main: 'fake.js', ai: true }; return JSON.stringify(config);
+        }'''})
+        self.assertEqual(1, len(result["deployment_scopes"]))
+        self.assertNotIn("Workers AI", result["detected_products"])
+
+    def test_uppercase_real_credential_is_not_a_ci_label(self):
+        result = report('const apiKey = "UPPERCASEVALUE123456789";')
+        self.assertIn("CFDOC-SEC-SECRET-ASSIGNMENT", ids(result))
+
+    def test_typed_literal_credential_is_still_reported(self):
+        result = report('const apiKey: string = "live-9f8a7b6c5d4e3f21";')
+        self.assertIn("CFDOC-SEC-SECRET-ASSIGNMENT", ids(result))
+
+    def test_binding_names_do_not_cross_worker_directories(self):
+        result = scan({
+            "one/wrangler.jsonc": '{"main":"index.js","compatibility_date":"2026-10-01","kv_namespaces":[{"binding":"DATA","id":"a"}]}',
+            "one/index.js": "export default {fetch(){return new Response('ok')}};",
+            "two/wrangler.jsonc": '{"main":"index.js","compatibility_date":"2026-10-01","r2_buckets":[{"binding":"DATA","bucket_name":"two"}]}',
+            "two/index.js": "export async function list(env) { return env.DATA.list({prefix: 'objects/'}); }",
+        })
+        self.assertNotIn("CFDOC-COST-KV-LIST-HOTPATH", ids(result))
+        self.assertIn("CFDOC-COST-R2-LIST-HOTPATH", ids(result))
+
+    def test_local_window_variable_is_not_a_browser_global(self):
+        result = report("async function query(env) { const window = {from: 1}; return env.DB.prepare('SELECT 1').bind(window.from).run(); }")
+        self.assertEqual("worker", next(s for s in result["source_scopes"] if s["path"] == "src/index.ts")["runtime"])
 
     def test_dynamic_bind_parameter_budget(self):
         result = report('''async function touch(db, ids) {
@@ -109,6 +145,15 @@ class WorkloadScanTests(unittest.TestCase):
           }
         }''')
         self.assertNotIn("CFDOC-REL-D1-PARAMETERS", ids(result))
+
+    def test_parameter_boundaries_and_nested_fixed_arguments(self):
+        for size in [98, 99]:
+            source = "async function touch(db) { const ids = " + str(list(range(size))) + ''';
+              return db.prepare(`UPDATE persons SET last_seen = ? WHERE project = ? AND id IN (${ids.map(() => '?').join(',')})`)
+                .bind(Math.max(a, b), project, ...ids).run();
+            }'''
+            result = report(source)
+            self.assertEqual(size == 99, "CFDOC-REL-D1-PARAMETERS" in ids(result))
 
     def test_repeated_id_parameter_budget(self):
         result = report('''async function erase(db, ids) {

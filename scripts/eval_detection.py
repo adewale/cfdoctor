@@ -21,6 +21,7 @@ import datetime as dt
 import json
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -50,10 +51,13 @@ class FixtureResult:
     forbidden_hit: list[str] = field(default_factory=list)
     over_budget: bool = False
     missing_evidence_terms: list[str] = field(default_factory=list)
+    missing_products: list[str] = field(default_factory=list)
+    forbidden_products_hit: list[str] = field(default_factory=list)
+    elapsed_ms: float = 0
 
     @property
     def passed(self) -> bool:
-        return not self.missing and not self.forbidden_hit and not self.over_budget and not self.missing_evidence_terms
+        return not (self.missing or self.forbidden_hit or self.over_budget or self.missing_evidence_terms or self.missing_products or self.forbidden_products_hit)
 
     @property
     def notes(self) -> str:
@@ -66,6 +70,10 @@ class FixtureResult:
             parts.append(f"{self.total_findings} findings > max_findings {self.max_findings}")
         if self.missing_evidence_terms:
             parts.append("missing evidence terms " + ", ".join(self.missing_evidence_terms))
+        if self.missing_products:
+            parts.append("missing products " + ", ".join(self.missing_products))
+        if self.forbidden_products_hit:
+            parts.append("forbidden products " + ", ".join(self.forbidden_products_hit))
         return "; ".join(parts) if parts else "-"
 
 
@@ -79,8 +87,8 @@ def load_expected(path: Path) -> dict:
     return data
 
 
-def scan_fixture(fixture_dir: Path) -> dict:
-    cmd = [sys.executable, str(SCANNER), str(fixture_dir), "--json"]
+def scan_fixture(fixture_dir: Path, scanner: Path | None = None) -> dict:
+    cmd = [sys.executable, str(scanner or SCANNER), str(fixture_dir), "--json"]
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     except (OSError, subprocess.TimeoutExpired) as exc:
@@ -95,7 +103,7 @@ def scan_fixture(fixture_dir: Path) -> dict:
         raise HarnessError(f"scanner emitted invalid JSON on {fixture_dir.name}: {exc}") from exc
 
 
-def evaluate_fixture(fixture_dir: Path) -> FixtureResult:
+def evaluate_fixture(fixture_dir: Path, scanner: Path | None = None) -> FixtureResult:
     expected = load_expected(fixture_dir / "expected.json")
     required = [str(c) for c in expected.get("required_check_ids", [])]
     forbidden = [str(c) for c in expected.get("forbidden_check_ids", []) or []]
@@ -105,7 +113,9 @@ def evaluate_fixture(fixture_dir: Path) -> FixtureResult:
     evidence_ids = [str(x) for x in expected.get("evidence_ids", [])]
     expected_evidence_terms = [str(x) for x in expected.get("expected_evidence_terms", [])]
 
-    report = scan_fixture(fixture_dir)
+    started = time.perf_counter()
+    report = scan_fixture(fixture_dir, scanner) if scanner else scan_fixture(fixture_dir)
+    elapsed_ms = (time.perf_counter() - started) * 1000
     findings = report.get("findings", [])
     found_ids = sorted({str(f.get("check_id")) for f in findings})
 
@@ -120,6 +130,7 @@ def evaluate_fixture(fixture_dir: Path) -> FixtureResult:
         expected_evidence_terms=expected_evidence_terms,
         found_ids=found_ids,
         total_findings=len(findings),
+        elapsed_ms=round(elapsed_ms, 2),
     )
     result.missing = [c for c in required if c not in found_ids]
     result.forbidden_hit = [c for c in forbidden if c in found_ids]
@@ -127,6 +138,9 @@ def evaluate_fixture(fixture_dir: Path) -> FixtureResult:
     evidence_findings = [f for f in findings if not required or str(f.get("check_id")) in required]
     evidence_text = "\n".join(str(f.get("evidence", "")) for f in evidence_findings).casefold()
     result.missing_evidence_terms = [term for term in expected_evidence_terms if term.casefold() not in evidence_text]
+    products = set(report.get("detected_products", []))
+    result.missing_products = sorted(set(expected.get("required_products", [])) - products)
+    result.forbidden_products_hit = sorted(set(expected.get("forbidden_products", [])) & products)
     return result
 
 
@@ -188,11 +202,13 @@ def main(argv: list[str]) -> int:
         "--out-dir",
         help="Directory for markdown reports (default: evals/results/detection)",
     )
+    parser.add_argument("--scanner", type=Path, help="Pinned scanner to compare against the same current fixtures")
     args = parser.parse_args(argv)
     results_dir = Path(args.out_dir) if args.out_dir else DEFAULT_RESULTS_DIR
 
-    if not SCANNER.exists():
-        print(f"harness error: scanner not found at {SCANNER}", file=sys.stderr)
+    scanner = args.scanner.resolve() if args.scanner else SCANNER
+    if not scanner.exists():
+        print(f"harness error: scanner not found at {scanner}", file=sys.stderr)
         return 2
     fixture_dirs = sorted(
         (p.parent for p in FIXTURES_DIR.glob("*/expected.json")),
@@ -203,7 +219,7 @@ def main(argv: list[str]) -> int:
         return 2
 
     try:
-        results = [evaluate_fixture(d) for d in fixture_dirs]
+        results = [evaluate_fixture(d, scanner) for d in fixture_dirs]
     except HarnessError as exc:
         print(f"harness error: {exc}", file=sys.stderr)
         return 2
@@ -222,10 +238,15 @@ def main(argv: list[str]) -> int:
 
     timestamp = dt.datetime.now()
     report = render_report(results, timestamp)
+    report = report.replace("- Scanner: `skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py --json`", f"- Scanner: `{display_path(scanner)} --json`")
     results_dir.mkdir(parents=True, exist_ok=True)
     stamped = results_dir / f"detection-eval-{timestamp.strftime('%Y%m%d-%H%M%S')}.md"
     stamped.write_text(report, encoding="utf-8")
     (results_dir / "latest.md").write_text(report, encoding="utf-8")
+    (results_dir / "latest.json").write_text(json.dumps({
+        "scanner": str(scanner), "passed": passed, "total": len(results),
+        "cases": [{**vars(result), "passed": result.passed} for result in results],
+    }, indent=2) + "\n", encoding="utf-8")
     print(f"report: {display_path(stamped)} (and latest.md)")
 
     return 0 if passed == len(results) else 1

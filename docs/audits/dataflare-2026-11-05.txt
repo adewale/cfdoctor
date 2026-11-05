@@ -1,0 +1,386 @@
+Dataflare source audit 5 November 2026
+
+Dataflare revision: 689f4baecae918f498dbde903302daf10a57f48c, version 0.6.3.
+cfdoctor scanner: 0.5.0, developed for cfdoctor issue #35 and PR #36.
+
+The revised scanner produces leads for all eight problem groups below. Source
+review and local probes establish several concrete failures; they do not
+establish a production outage, account compromise, invoice or legal violation.
+No issue has been filed in Dataflare as part of this audit.
+
+Scope inspected: Worker routes/auth/service, ingest, flags, replay handling,
+cron, stores, migrations, CLI provisioning/configuration, SDK replay retries,
+usage estimates and local test bindings. Generated customer configuration and
+the checked-in .glass configuration were distinguished from the development
+Worker and static site. The large .glass/worker.js bundle was excluded by the
+scanner's size limit; its source/build parity was not verified.
+
+Scope not inspected: live Workers, account rules, actual token scopes, traffic,
+query plans, billed-row metadata, billing windows or published npm package
+parity. The project test suite was not installed/run. The probes execute exact
+extracted functions with synthetic bindings and SQLite; imposed D1 limits are
+identified explicitly. No target installer or Cloudflare account command ran.
+
+Docs refreshed: current official D1 limits/pricing/result metadata, Workers
+limits/pricing/rate-limit binding, R2 jurisdiction/API/pricing, Pipelines
+bindings/pricing, Basin SQL/Catalog pricing and API token permission guidance.
+
+Detected products: Workers, D1, R2, static assets, optional Pipelines, Basin
+Catalog and Basin SQL. The detected Pipelines stream field is not Stream video.
+
+Cost proxy summary: a replay upload performs one R2 PUT and a D1 index upsert,
+plus a project lookup on an isolate-cache miss. An uncached summary lists and
+reads session chunks and queries events; settled summaries also write the R2
+cache and D1 index. Product units and execution counts for a production bill
+remain unknown. D1 query counts and billed rows are separate quantities.
+
+Overall risk: high for the evidenced parameter, configuration and replay
+lifecycle paths. Prioritize the bounded, reproducible failures before a broader
+capacity redesign. The authenticated analytics API does not expose its queries
+through an anonymous GET route, so a crawler-oriented release BLOCK is not
+justified by this audit. Public POST ingestion and background work were reviewed.
+
+1. Ingestion and person erasure can exceed D1's parameter limit
+
+Severity: high. Category: reliability.
+
+Evidence: packages/worker/src/ingest.ts:316-333 and
+packages/worker/src/stores/d1.ts:39-47. Scanner: CFDOC-REL-D1-PARAMETERS.
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L316-L333
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/stores/d1.ts#L39-L47
+
+The person-properties SELECTs use chunks of 90, but their results are combined
+into one UPDATE with two fixed parameters. A batch involving 99 existing
+persons produces 101 parameters; 200 persons produce 202. D1 permits 100.
+The local probe executes the 202-parameter shape successfully in plain SQLite
+and rejects it when that D1 limit is imposed. A normal single-person browser
+batch need not trigger this; multi-person/server batches can.
+
+Person event deletion repeats the ID list in three predicates and binds the
+project once. At 34 IDs, it requires 103 parameters. The service builds that
+list from the person plus their device links without this bound.
+
+Why it matters: accepted operations can fail before completing. Smaller SELECT
+batches do not protect the later UPDATE or DELETE.
+
+Fix: chunk the UPDATE at 98 IDs and the repeated-ID DELETE at 33 IDs, or use an
+equivalent query that respects the parameter budget. Preserve complete deletion
+and partial-failure semantics across chunks.
+
+Cost / trade-off: more small statements or batch construction, with no automatic
+reduction in billed rows. This is a local change with boundary tests.
+
+Verify: 98/99/200 existing persons; 33/34 deletion IDs, including a person with
+33 linked devices. Run with D1 limits rather than relying on ordinary SQLite.
+
+Source basis: https://developers.cloudflare.com/d1/platform/limits/
+Confidence: high on parameter arithmetic and the reproduced function path.
+Filing decision: ready to file with these boundary cases.
+
+2. The EU replay bucket binding omits its jurisdiction
+
+Severity: high. Category: configuration/reliability.
+
+Evidence: packages/cli/src/cloudflare/provision.ts:49-63,241-268.
+Scanner: CFDOC-CONFIG-R2-JURISDICTION.
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/cli/src/cloudflare/provision.ts#L49-L63
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/cli/src/cloudflare/provision.ts#L241-L268
+
+ensureBucket creates an EU-jurisdiction bucket when eu is true. The generated
+REPLAYS binding contains binding and bucket_name but no jurisdiction. Rendering
+an EU D1 configuration with replay enabled reproduces that output. Cloudflare
+requires the jurisdiction when binding a jurisdiction-restricted bucket.
+
+Why it matters: the documented D1 --eu installation path generates an incomplete
+replay binding. Version 0.6.3 separately rejects --lake --eu; that change does
+not address the D1/replay case described here.
+
+Fix: carry the actual bucket jurisdiction into the binding. Reconcile existing
+buckets rather than assuming a flag can change an existing resource.
+
+Cost / trade-off: small generator change; an existing bucket in the wrong
+jurisdiction would require a separate resource/migration decision.
+
+Verify: render EU/non-EU configurations with replay on/off. An EU replay
+binding must contain jurisdiction: eu. Follow with an authorized dry run and
+scoped bucket-access check; deployment was not performed during this audit.
+
+Source basis: https://developers.cloudflare.com/r2/reference/data-location/
+Confidence: high on the generated configuration and documented requirement.
+Filing decision: ready to file for the D1/replay path.
+
+3. Replay processing has no expanded-size or whole-session work limit
+
+Severity: high. Category: reliability/cost.
+
+Evidence: packages/worker/src/replays.ts:59-61,65-103,437-483;
+packages/worker/src/cron.ts:14-16,51-56.
+Scanners: CFDOC-REL-EXPANSION-BOUND, CFDOC-PERF-R2-BUFFERING.
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L59-L103
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L437-L483
+
+The uploader buffers the request before checking its five-million-byte cap.
+When enc=gzip, it stores the caller's bytes without bounding their expanded
+size or validating the decoded event schema. Readers enumerate every chunk,
+decompress/parse it and retain the parsed events. Six concurrent reads limit
+simultaneous fetching, but retained memory grows across the entire session.
+
+A local upload probe accepts 16,363 compressed bytes that expand to 16,777,243
+bytes. This demonstrates amplification below the upload cap; it does not
+demonstrate a Workers OOM. The missing whole-session bound is also relevant to
+large legitimate recordings.
+
+Why it matters: an uploaded recording can defer excessive work until an
+authenticated replay request or the hourly summary job processes it. Cron
+attempts ten summaries/hour across the deployment, at most 240/day under ideal
+successful execution without on-demand assistance. Whether that capacity is
+adequate requires arrival rates and backlog age; no production backlog was
+measured. Newest-first selection can leave older work behind.
+
+Fix: enforce compressed and expanded limits while streaming, validate the
+event schema, cap session chunks/bytes, and process large sessions incrementally.
+Make background progress resumable and monitor the oldest pending session.
+
+Cost / trade-off: segmentation or rejection changes behavior for large sessions.
+Additional background capacity increases work/cost. Admission controls should
+precede storage without removing intentional public browser ingestion.
+
+Verify: highly compressible uploads, bodies exceeding the cap, many chunks in
+one session, concurrent summary fills, interrupted jobs and sustained arrivals.
+Measure memory, CPU, R2 operations and backlog. Check deployed perimeter controls
+before asserting a particular external attack rate.
+
+Source basis: https://developers.cloudflare.com/workers/platform/limits/
+https://developers.cloudflare.com/r2/pricing/
+Confidence: high on the code bounds and local expansion acceptance; production
+failure thresholds and cost are unmeasured.
+Filing decision: ready to file the missing bounds; treat capacity sizing as a
+measurement question within the issue.
+
+4. Person erasure uses a deletion slice without a resumable completion protocol
+
+Severity: high. Category: correctness/reliability.
+
+Evidence: packages/worker/src/service.ts:1240-1278 and
+packages/worker/src/replays.ts:499-531.
+Scanners: CFDOC-REL-DELETION-CONTINUATION, CFDOC-REL-D1-QUERY-BUDGET.
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/service.ts#L1240-L1278
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L499-L531
+
+deleteReplays selects at most 500 sessions. It executes two individual D1
+deletes for each selected session after the SELECT, requiring up to 1,001 D1
+queries before caller work. The current limits are 50 Free / 1,000 Paid.
+Person erasure calls this helper once and then removes identity/person rows;
+it does not persist a continuation. Object enumeration adds nested work too.
+
+The local helper probe with 501 sessions and no imposed invocation limit deletes
+500 and leaves one. With documented query limits explicitly imposed, it instead
+throws on query 51 (Free-sized budget) or 1,001 (Paid-sized budget). Those are
+synthetic contract tests, not remote D1 measurements. Do not describe the latter
+as a successful live deletion: the invocation can fail partway through.
+
+Why it matters: the operation needs a way to finish after a bounded slice or
+failure. Increasing LIMIT, or moving this synchronous loop into one background
+invocation, leaves the same completion and budget problem.
+
+Fix: persist erasure identifiers/progress, process bounded batches and resume
+until all matching event/replay/note data is gone. Remove identity links only
+when no remaining step needs them. Expose pending/failed/completed states.
+
+Cost / trade-off: additional job state and recovery logic. R2 deletes themselves
+are free under current pricing, while listing and D1 mutations retain meters.
+
+Verify: more than 500 sessions, multiple R2 pages, invocation-budget exhaustion,
+and failure after each storage operation. Assert no matching data remains before
+reporting completion. This is a deletion-correctness issue, not a legal finding.
+
+Source basis: https://developers.cloudflare.com/d1/platform/limits/
+https://developers.cloudflare.com/r2/api/workers/workers-api-reference/
+https://developers.cloudflare.com/r2/pricing/
+Confidence: high on query arithmetic, caller structure and local probes.
+Filing decision: ready to file; keep it separate from the parameter-limit fix.
+
+5. Retrying one replay chunk increments its index twice
+
+Severity: medium. Category: correctness/cost.
+
+Evidence: packages/web/src/replay.ts:274-308 and
+packages/worker/src/replays.ts:97-125.
+Scanner: CFDOC-REL-CROSS-STORE-IDEMPOTENCY.
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/web/src/replay.ts#L274-L308
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L97-L125
+
+The SDK retries a failed/ambiguous upload with the same URL. The R2 key is
+deterministic, but the D1 upsert adds chunks, bytes, pages and other counters
+on each handler execution. Sending the same chunk twice locally leaves one R2
+object while the index reports two chunks and two pages.
+
+Why it matters: a lost response after a successful write can inflate replay
+statistics and the usage model. There is also a failure window between the R2
+write and D1 update that a deterministic key alone cannot repair.
+
+Fix: use a unique chunk receipt and an idempotent counter transition, with a
+recoverable protocol between the stores. A conditional R2 write alone does not
+establish recovery after one store succeeds and the other fails.
+
+Cost / trade-off: receipt storage/reconciliation add work. Duplicate operation
+attempts may still consume billable units even when counters stay correct.
+
+Verify: duplicate/concurrent calls, first-response loss after commit, and failure
+between R2 and D1. Counters must reflect unique chunks and incomplete state must
+be repairable.
+
+Source basis: https://developers.cloudflare.com/r2/api/workers/workers-api-reference/
+https://developers.cloudflare.com/r2/pricing/
+Confidence: high; reproduced with the handler's actual SQL and an object map.
+Filing decision: ready to file as replay upload idempotency.
+
+6. Replay uploads omit the project's browser-origin policy
+
+Severity: medium. Category: admission-policy correctness.
+
+Evidence: packages/worker/src/ingest.ts:79-93 and
+packages/worker/src/replays.ts:65-90.
+Scanner: CFDOC-SEC-INGRESS-POLICY-PARITY.
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L79-L93
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L65-L90
+
+Event ingestion rejects a present Origin outside allowedOrigins. Replay
+ingestion checks project existence but never applies that policy. A local probe
+with a restricted project accepts a replay from a disallowed origin.
+
+Why it matters: the configured browser admission restriction does not cover
+recording uploads. This permits cross-origin browser writes/data pollution under
+that configuration. It is not evidence of private replay disclosure, and Origin
+checks cannot authenticate a non-browser client that forges the header.
+
+Fix: share the intended browser admission helper across event/replay writers,
+retaining a defined policy for server senders with no Origin. Flag evaluation
+also lacks the check; whether that read path should share the restriction is a
+product-policy question rather than a demonstrated private-data disclosure.
+
+Cost / trade-off: stricter admission can reject previously tolerated clients.
+Code-level checks do not remove the Worker request meter or establish a global
+spending cap. Live account rules were not inspected.
+
+Verify: allowed/disallowed/absent/null Origin on the actual router and handler;
+rejected replay requests must perform no R2 PUT or D1 upsert. The local probe
+exercises the handler with synthetic project lookup, not deployed middleware.
+
+Source basis: https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
+https://developers.cloudflare.com/workers/platform/pricing/
+Confidence: high on the local policy difference; deployed perimeter unknown.
+Filing decision: ready to file for replay; ask the policy question for flags.
+
+7. The usage total excludes material cost paths
+
+Severity: medium. Category: cost-estimate correctness.
+
+Evidence: packages/core/src/usage.ts:155-283;
+packages/worker/src/service.ts:770-836;
+packages/worker/src/stores/d1.ts:34-36.
+Scanner: CFDOC-COST-METER-COVERAGE.
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/core/src/usage.ts#L155-L283
+
+The estimator discloses that it is an estimate and that account allowances are
+shared. Its summed overage total nevertheless omits D1 reads, R2 Class B reads
+and listing, several person/identity/retention writes, query execution frequency
+and lake storage/transform/delivery/scan/catalog work. D1 read cost appears only
+as a separate per-report heuristic. D1Store discards query meta. A flat 1.5 ms
+CPU assumption cannot represent measured replay summary work.
+
+Why it matters: equal stored event counts can produce different spend when
+report loads, agent calls or replay reads differ. The summary can say "$0 beyond"
+the plan allowances even though those omitted meters were not evaluated. No
+actual underbilling amount or production invoice was established here.
+
+Fix: qualify the total as covering named modeled meters, expose exclusions and
+unknowns, and retain measured per-path product units where practical. Add a
+lake-specific model instead of implying event writes simply disappear from cost.
+
+Cost / trade-off: telemetry itself needs a bounded cost/retention model. Reconcile
+the same product/account/window and avoid double-counting aggregate totals.
+
+Verify: scenarios with equal stored events and different report/agent/replay
+loads; identity updates, retention and lake scan volumes. Compare measured units
+with matching Cloudflare telemetry before claiming a complete bill.
+
+Source basis: https://developers.cloudflare.com/d1/platform/pricing/
+https://developers.cloudflare.com/d1/worker-api/return-object/
+https://developers.cloudflare.com/r2/pricing/
+https://developers.cloudflare.com/basin-pipelines/platform/pricing/
+https://developers.cloudflare.com/basin-sql/platform/pricing/
+https://developers.cloudflare.com/basin-catalog/platform/pricing/
+Confidence: high on omitted terms; actual unmodeled spend unknown.
+Filing decision: ready to file as estimate coverage/wording, without claiming an
+observed billing incident.
+
+8. Lake setup stores the deployment credential in the Worker
+
+Severity: medium. Category: least privilege.
+
+Evidence: packages/cli/src/commands/init.ts:324-333;
+packages/worker/src/stores/lake.ts:54-85; docs/lake.md "Using a narrower token".
+Scanner: CFDOC-SEC-RUNTIME-PROVISIONING-TOKEN.
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/cli/src/commands/init.ts#L324-L333
+https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/docs/lake.md
+
+init --lake supplies its provisioning token to CF_API_TOKEN in Worker secrets.
+The setup token performs deployment/storage provisioning while the runtime lake
+query path needs read access. The documentation explains manual narrowing, but
+the default installation does not request a separate runtime credential.
+
+Why it matters: a runtime credential can have deployment capabilities it does
+not need. This audit found a capability flow, not a leaked token or an exploit.
+Actual operator token resource scopes were not inspected.
+
+Fix: accept a separately scoped lake-read credential during onboarding, keep
+provisioning credentials in the deployment environment and ensure upgrades
+preserve the runtime credential. Do not rotate credentials from an audit.
+
+Cost / trade-off: another setup/rotation path in exchange for a smaller runtime
+credential blast radius.
+
+Verify: capture the secret-upload mapping during setup/upgrade; check that runtime
+queries work and provisioning edits are denied with the read token in an
+explicitly authorized test account.
+
+Source basis: https://developers.cloudflare.com/fundamentals/api/get-started/create-token/
+Confidence: high on default credential flow; deployed scopes unknown.
+Filing decision: ready to file as a least-privilege default improvement.
+
+Local test evidence supporting these issues
+
+The SQLite test binding does not enforce D1 parameter/invocation-query limits.
+The R2 doubles can return truncated without a cursor, so they cannot verify a
+second page. Add contract-aware tests with the relevant fixes. These observations
+support the issues above rather than establish a separate production incident.
+
+Run summary with cost proxies
+
+Hot paths: POST /e, /r, /f; authenticated API/MCP/dashboard/CLI; replay summaries,
+playback and erasure; hourly retention/summarization; CLI-generated deployments.
+Retry/fanout posture: the SDK retries once and chunk reads have concurrency six;
+total session work and cross-store recovery remain unbounded/unproved.
+Cache map: project metadata 30s per isolate; flags 10s per isolate; npm version
+1h per isolate with inflight coalescing; persistent R2 summaries keyed by project
+and session and checked against D1 chunk count. SDK Cache-Control headers do not
+prove pre-Worker cache eligibility. No shared caching of authenticated or
+personalized API responses is recommended.
+
+Recommended next actions: fix parameter budgets and generated EU replay binding,
+then complete erasure and retry/expansion handling. File cost-estimate and runtime
+credential improvements separately so each change has a clear verification.
+
+Questions / evidence needed: deployed version and generated config; Free/Paid
+plan; session/chunk/expanded-byte distributions and backlog age; matching-window
+D1 row/Worker CPU/R2/lake telemetry; existing admission rules and runtime token
+permissions. Only collect these when they change a diagnosis or size a fix.
+
+Changes already made upstream in 0.6.3
+
+The release fixes the lake fetch receiver, switches Pipelines listing away from
+unparseable Wrangler output, gives lake resources deployment-specific names and
+rejects --lake --eu. Those fixes were not reported as current defects here.
+The source remains beta with documented lake erasure/retention/schema limits;
+do not file those documented limitations as newly discovered regressions.

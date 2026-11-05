@@ -59,6 +59,21 @@ proves that experience-report provenance is not merely free-text decoration.
 Reports land in `evals/results/detection/`. Repo self-scans must exclude these
 intentionally bad fixtures: `./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures`.
 
+The `workload-*` fixtures are synthetic minimal pairs derived from the pinned
+Dataflare source audit in #35. They cover generated configuration/product scope,
+D1 parameter and invocation-query budgets, expanded data, deletion continuation,
+cross-store counters, admission policy, runtime credentials, cost-model coverage
+and local binding contracts. A safe fixture suppresses only its named lead; it
+does not certify the whole application or a cross-store recovery protocol.
+
+For a paired scanner comparison, run the same current fixtures with
+`python3 scripts/eval_detection.py --scanner /path/to/pinned-baseline-scanner.py --out-dir /tmp/before`
+and then omit `--scanner` for the candidate. `latest.json` records missing and
+forbidden checks/products, fixture results and elapsed milliseconds. Keep the
+legacy and new slices separate. These deterministic checks establish scanner
+behavior, not model-audit quality; the receipt in `results/dataflare/` states
+which behavioral evaluation was actually completed.
+
 ## Paired model value eval
 
 The current matched GPT-5.5 three-way round (`with_skill` current PR, `old_skill` from immutable GitHub `origin/main`, and `without_skill`) is summarized in [`results/gpt-5.5-current-threeway/latest.md`](results/gpt-5.5-current-threeway/latest.md). It uses three fresh isolated runs per visible answer case and variant, paired uncertainty analysis, and a cross-model Claude judge sample. Earlier pinned results remain under [`results/gpt-5.5-value/`](results/gpt-5.5-value/) as historical evidence. The one-shot private release guard is recorded only as a [sanitized aggregate](results/private-release-2026-07-11.md): 2/2 passes, 0.925 blind-judge mean. The evaluation grades diagnostic lift, precision, token/latency overhead, clean/DLQ/no-trigger controls, pricing conflicts, and four Wrangler snapshot behaviors: multi-version Worker reconciliation, Pages/Worker evidence separation, approval-gated collection plans, and Static Assets metadata-only mode. Raw model transcripts stay outside the repository; the checked-in report records the protocol, legacy/new-feature slices, metrics, limitations, and artifact paths.
