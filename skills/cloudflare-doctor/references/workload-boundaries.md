@@ -127,6 +127,13 @@ source basis; logical deduplication does not erase every billable attempt.
 
 Compare sibling public endpoints that accept the same project or tenant.
 Check inherited middleware before calling a local policy difference a bypass.
+Trace the first authentication guard and the capability it intentionally grants.
+A distinct secret gate can be the intended authentication for an admin or test
+operation; a holder using that capability does not demonstrate an authentication
+bypass. A checked-in route also does not establish deployed activation. When its
+key/configuration is unknown, keep deployment and removal questions conditional.
+Confirm a bypass through an unauthorized side effect or a failed independent
+expiry/ownership boundary, rather than through the presence of a powerful route.
 Origin/CORS and User-Agent checks do not authenticate server senders. Preserve
 intentionally public browser ingestion and verify that rejected requests stop
 before storage writes. Account-level rules remain uninspected without evidence.
