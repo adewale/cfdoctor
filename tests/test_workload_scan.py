@@ -19,6 +19,24 @@ def ids(result: dict) -> set[str]:
 
 
 class WorkloadScanTests(unittest.TestCase):
+    def test_ci_secret_expressions_are_references_in_yaml(self):
+        result = scan({".github/workflows/deploy.yml": """env:
+  SECRET_WEBHOOK_URL: ${{secrets.SECRET_WEBHOOK_URL}}
+  API_TOKEN: ${{ secrets.API_TOKEN }}
+  AUTH_KEY: ${AUTH_KEY}
+"""})
+        self.assertNotIn("CFDOC-SEC-SECRET-ASSIGNMENT", ids(result))
+
+    def test_explicit_replace_with_example_is_not_a_credential(self):
+        result = scan({"README.md": "AUTH_KEY=replace-with-a-local-dev-key\n"})
+        self.assertNotIn("CFDOC-SEC-SECRET-ASSIGNMENT", ids(result))
+
+    def test_real_yaml_and_documentation_credentials_remain_leads(self):
+        for path in ["README.md", ".github/workflows/deploy.yml"]:
+            with self.subTest(path=path):
+                result = scan({path: 'AUTH_KEY: "live-9f8a7b6c5d4e3f21"\n'})
+                self.assertIn("CFDOC-SEC-SECRET-ASSIGNMENT", ids(result))
+
     def test_types_labels_and_test_salt_are_not_credentials(self):
         result = scan({
             "cli.ts": "export const CI_SECRET = 'CLOUDFLARE_API_TOKEN';\n"

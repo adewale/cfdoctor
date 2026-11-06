@@ -108,6 +108,13 @@ SECRET_ASSIGN_RE = re.compile(
     re.IGNORECASE,
 )
 PLACEHOLDER_SECRET_RE = re.compile(r"^(?:changeme|change-me|example|placeholder|dummy|test|todo|xxx|your[_-]?)", re.IGNORECASE)
+REPLACEMENT_SECRET_RE = re.compile(
+    r"^replace[-_]with[-_](?:a[-_])?(?:local[-_])?(?:dev[-_])?(?:key|token|secret|password)$",
+    re.IGNORECASE,
+)
+CONFIG_SECRET_REFERENCE_RE = re.compile(
+    r"^(?:\$\{[A-Za-z_]\w*\}|\$\{\{(?:secrets|vars|env|inputs|steps|needs)\.[\w.]+\}\})$"
+)
 NON_SECRET_ASSIGNMENT_NAMES_RE = re.compile(r"(?:_RE|_REGEX|_PATTERN)$", re.IGNORECASE)
 # In source files a secret-named variable is usually assigned a reference, not a literal:
 # `const token = form.get("cf-turnstile-response")`, `const apiKey = env.API_KEY`,
@@ -360,7 +367,9 @@ def is_sensitive_assignment(match: re.Match[str], in_code_file: bool = False) ->
         return False
     if NON_SECRET_ASSIGNMENT_NAMES_RE.search(name):
         return False
-    if PLACEHOLDER_SECRET_RE.search(value):
+    if PLACEHOLDER_SECRET_RE.search(value) or REPLACEMENT_SECRET_RE.fullmatch(value):
+        return False
+    if CONFIG_SECRET_REFERENCE_RE.fullmatch(value):
         return False
     if re.match(r"(?:re\.compile|RegExp)\(", value):
         return False
