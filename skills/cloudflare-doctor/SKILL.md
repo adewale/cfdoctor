@@ -21,6 +21,26 @@ Use this skill to audit a user's Cloudflare project like a doctor: diagnose from
 
 Use this skill only when the request includes concrete Cloudflare project, configuration, architecture, IaC, account, or usage evidence to audit. An explicit repository URL or local project path authorizes reading that target to collect the evidence; it does not authorize probing its deployed application or account. Decide from the user request and explicitly supplied inputs before inspecting the workspace. **Hard stop:** when the task names only AWS or another non-Cloudflare platform, reply in one brief sentence that Cloudflare Doctor is not applicable; do not inspect the repo, emit scope markers, or perform that audit. If a prompt merely claims a README/repo/config exists without supplying files or an identifiable target, reply only that no auditable project evidence was supplied; do not search the workspace or emit `Scope inspected:`. For generic DNS explanations, public status checks, product news, brand copy, or conceptual Cloudflare questions with no project evidence, do not search the workspace, read this skill's references, or emit its audit format; answer normally or route to the appropriate skill.
 
+## Confirm findings
+
+Confirm both the mechanism and what makes it wrong before creating a finding card.
+
+- Trace the executed branch, including guards, optional work, catches and its
+  actual response. Do not transfer counts or failures between branches.
+- Establish the violated requirement and when it must hold. An operation
+  authorized before expiry may finish later under admission semantics. If a
+  stronger deadline, method/status policy or deployment requirement is
+  unspecified, put it under **Questions / evidence needed**, not confirmed
+  findings. Public access and manual setup alone do not establish defects.
+- Check external-API and quota claims against sources actually inspected. KV
+  binding reads use the internal-service allowance; do not take the minimum
+  with the external-fetch allowance. A link or model memory is not a refreshed
+  or supplied document. If the needed API contract is unavailable, keep the
+  claim unverified rather than inventing a source basis.
+- Verify that the remedy fits the actual function/callback/loop, preserves valid
+  behavior, and has a test that exercises the failing branch. A true mechanism
+  does not excuse an unsupported impact, requirement or fix.
+
 ## Standard workflow
 
 1. Inventory the supplied evidence first: relevant repo files, Wrangler config, bindings, IaC, routes, runtime paths, migrations, tests, and account exports. Separate Worker, Node tooling, browser, test and static-only scopes. Follow deploy scripts and config generators to their installed artifacts; label generated values, alternate hosts, skipped bundles and live state unknown where they were not inspected. Binding names from one Worker do not establish another Worker's products. If there is no concrete Cloudflare evidence, stop at the activation boundary.
@@ -70,13 +90,17 @@ Use this skill only when the request includes concrete Cloudflare project, confi
 4. Fetch only the current official Cloudflare pages needed to confirm or reject the hypotheses, using product `llms.txt` indexes and applicable Markdown pages. Treat local references as navigation aids, not current authority. For each dependency in a reported cost path, use the current official product/runtime documentation for call semantics and the applicable official pricing or limits documentation for its billable/quota unit, exclusions, aggregation key, and window; do not label an operation "paid" merely because it is a Cloudflare binding. Every current product/configuration recommendation needs official `Source basis` that directly supports it. War stories can support historical mechanisms, not current semantics, applicability, or probability. Exception: a static Wrangler snapshot plan or reconciliation from supplied artifacts should use [`wrangler-snapshots.md`](references/wrangler-snapshots.md) without browsing unless the user asks or a command's current availability/semantics is materially disputed.
 5. If account/dashboard state could change a hypothesis, ask for the smallest discriminating evidence package. Do not request broad account dumps or infer state from its absence in the repo.
 6. If TypeScript code exposes `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, or Agent classes, use the optional dead cross-boundary RPC path only when reachability is actually in scope. Gate third-party tools on approval/pinning and treat output as leads, not proof.
-7. Before publishing, trace each finding through its caller, guards, conditional work, catches and response path. Do not transfer counts or error responses between branches. Match each quota to its product, counter, plan and scope before claiming overflow. KV binding reads use the internal-service allowance; do not take the minimum with the external-fetch allowance. Identify the required behavior and when it must hold; public access, manual setup or an unstated stronger policy alone is not a defect. For expiry, distinguish authorization at admission from a write/commit deadline. Check that the proposed fix is valid in its actual function/callback/loop and that its verification exercises the failing branch. Drop unsupported subclaims even when the main defect is real. Prioritize material correctness, security, reliability and cost.
+7. Apply the finding criteria above; prioritize material correctness, security, reliability and cost over exhaustive trivia. Keep qualified hypotheses and optional hardening separate from confirmed defects.
 
 ## Output modes
 
 Use **focused triage** by default for one narrow mechanism, prompt-only architecture evidence, small fixture reviews, and zero-finding results. Keep it concise. For three or fewer supplied files, read them directly: do not inventory/search the entire workspace, read the broad playbook/provenance/war-story references, or fetch a product index. Use at most one scanner run and the minimum direct official page needed for a mutable claim. Include `Scope inspected:`, `Scope not inspected:`, and `Docs refreshed:` (or why no mutable semantic required a fetch). If no finding is supported, say `No confirmed findings.` and stop after any question that would materially change that conclusion. Do not add low-severity filler, generic cost maps, or a full run summary.
 
 When the public-route cost release gate activates, put this compact evidence block before the findings, in order: the literal `Release verdict:` line; the route-family matrix; `Discovery gaps:` naming evidenced public families absent from the sitemap or other initial seed and where they were found; `Exposure scenario:` stating per-hit units and the evidence-selected uncached or cached equation (including the first-fill and location/refill/concurrency envelope only for cached paths); and `Closure conditions:` naming what must be true before the verdict can become `PASS`. Before returning, check that all four literal labels, the matrix, and official source basis for the product meter and every recommended cache or static-delivery boundary are present. If the answer recommends Workers Caching or `cache.enabled`, it must cite both Workers Caching configuration and Workers pricing, and state that a cache hit bypasses Worker execution/CPU but retains the documented request charge.
+
+Explicitly identify this verdict as the anonymous GET/HEAD **cost gate**. A cost
+`PASS` does not approve writes or authorization; state any other blocking
+findings separately so the reader cannot mistake it for whole-project approval.
 
 When focused triage has a confirmed finding, use every finding-card field below with the literal labels (`Severity`, `Category`, `Evidence`, `Why it matters`, `Fix`, `Cost / trade-off`, `Verify`, `Source basis`, and `Confidence`); do not fold `Source basis` into inline citations. The full audit scaffold is not required. Explicit bounded retries plus a configured DLQ and process-before-ack flow are a valid Queue near-miss: do not invent findings for optional custom backoff, a separate DLQ consumer, or permanent-error classification unless workload/account evidence makes them necessary.
 
