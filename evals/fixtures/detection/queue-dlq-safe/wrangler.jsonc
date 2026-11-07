@@ -8,9 +8,6 @@
       "queue": "jobs",
       "max_retries": 3,
       "dead_letter_queue": "jobs-dlq"
-    }, {
-      "queue": "jobs-dlq",
-      "max_retries": 3
     }]
   }
 }

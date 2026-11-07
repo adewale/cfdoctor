@@ -12,11 +12,11 @@
       "taxonomy": ["recursive-trigger", "retry-amplification", "storage-amplification"],
       "mechanism": "A queue path re-enqueued the same logical work while hot-path KV listing and Durable Object writes multiplied usage.",
       "sources": [{"url": "https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/", "role": "primary", "author_org": "RetainDB operator", "published_at": "2026-05-01", "first_hand": true, "archive_url": "https://web.archive.org/web/20260506025828/https://www.reddit.com/r/CloudFlare/comments/1t1e8nh/i_accidentally_generated_16_billion_durable/"}, {"url": "https://serverlesshorrors.com/all/cloudflare-36k", "role": "discovery", "author_org": "ServerlessHorrors", "published_at": "2026-05-01", "first_hand": false}],
-      "current_semantics_urls": ["https://developers.cloudflare.com/queues/reference/delivery-guarantees/", "https://developers.cloudflare.com/queues/configuration/batching-retries/", "https://developers.cloudflare.com/durable-objects/platform/pricing/"],
+      "current_semantics_urls": ["https://developers.cloudflare.com/queues/reference/delivery-guarantees/", "https://developers.cloudflare.com/queues/configuration/batching-retries/", "https://developers.cloudflare.com/durable-objects/platform/pricing/", "https://developers.cloudflare.com/queues/configuration/dead-letter-queues/"],
       "verified_at": "2026-10-11", "review_due": "2027-01-11",
       "confidence": {"authenticity": 1, "mechanism": 1, "independence": 1, "applicability": 1, "temporal": 2},
       "scenario_numbers": [1], "check_ids": ["CFDOC-COST-ASYNC-LOOP", "CFDOC-REL-QUEUE-NO-DLQ", "CFDOC-COST-KV-LIST-HOTPATH", "DO-STORAGE-BATCHING"],
-      "fixture_ids": ["runaway-self-fetch-queue", "gap-self-fetch-new-url", "gap-self-fetch-variable", "gap-dashboard-queue-consumer", "gap-queue-per-consumer", "kv-list-do-write-amplify", "queue-dlq-safe"]
+      "fixture_ids": ["runaway-self-fetch-queue", "gap-self-fetch-new-url", "gap-self-fetch-variable", "gap-dashboard-queue-consumer", "gap-queue-per-consumer", "kv-list-do-write-amplify", "queue-dlq-safe", "queue-terminal-dlq-safe"]
     },
     {
       "id": "CFDOC-EVD-CONVOY-WEBHOOK", "source_cluster_id": "convoy-stripe-webhook-abuse", "evidence_class": "incident", "title": "Stripe webhook abuse caused serverless spend", "status": "accepted", "taxonomy": ["abuse-traffic", "duplicate-side-effects"], "mechanism": "Mass account creation generated repeated webhook-triggered function work.",
