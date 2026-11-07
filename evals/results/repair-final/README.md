@@ -1,6 +1,6 @@
 # Final repair evaluation — 7 November 2026
 
-**cfdoctor improves on this sample. Keep PR #36 on hold.** Both judges score the final skill higher, and independent source review finds more complete diagnoses. The expanded sample also exposes a repeated new operation-count error. The repair has not met its predeclared condition of avoiding a new material error pattern.
+**Historical assessment: cfdoctor improved on this sample; PR #36 was put on hold.** Both judges score the final skill higher, and independent source review finds more complete diagnoses. The expanded sample also exposes a repeated new operation-count error. That condition was later judged too strict for this wording error; the [focused follow-up](../focused-followup/README.md) records the smaller repairs and current judgment. The scores below remain unchanged.
 
 The installed skill is frozen at `a1e9c3ae07d6cf61b50fadb44b2c12e0ff681372`. Later commits only align ablation offsets and publish evidence. The scanner and guidance changes are real improvements; they do not make generated audit reports safe to publish without checking their claims.
 
@@ -67,7 +67,7 @@ The final real-project reports still need corrections:
 - **Policy questions still become requirements:** intentional public/manual features and separately credentialed routes sometimes get mandatory removal/authentication recommendations without an established stronger contract. Real deployment/cost risks remain valid when qualified.
 - **Recall is incomplete:** the final skill finds the initializing chat backlog loss in two of three repetitions; one still misses it. Additional valid findings do not substitute for that mechanism.
 
-The new AnyNote pattern fails the preregistered readiness condition despite the aggregate gains. The next repair needs reliable branch-count and remedy verification; these results do not justify saying the gaps are all fixed. [Source summary](source-review-summary.json), [60 project reviews](projects-source-reviews.jsonl), [32 focused reviews](regressions-source-reviews.jsonl).
+The new AnyNote pattern failed the original readiness condition despite the aggregate gains. Requiring no repeated wording error was too rigid as a merge bar, particularly where the table already gave the correct upper bound. The [focused follow-up](../focused-followup/README.md) addresses valid remedies and judge evidence without claiming that all generated audit errors are fixed. [Source summary](source-review-summary.json), [60 project reviews](projects-source-reviews.jsonl), [32 focused reviews](regressions-source-reviews.jsonl).
 
 ## Token overhead
 
@@ -97,6 +97,8 @@ The same 54 detection fixtures score 40/54 on original main and 54/54 on final. 
 The 92 command traces contain no observed browsing, target execution or account mutation. One heuristic installation match is quoted text in an `rg` search; the command does not install anything. Trace review is not an OS sandbox proof. No target code was dynamically tested. [Process evidence](process-receipt.json).
 
 ## Reproduce
+
+For the original grader and exact historical scripts, use immutable commit `69426f6`. The current adjacent judge helper includes the later execution-receipt fix; regrading with it creates new ratings rather than reproducing the old ones.
 
 Use an environment with the pinned harness dependencies and authenticated native Codex/Claude CLIs. Create immutable checkouts of original main `7eefbc7`, previous PR head `4bdd6c5` and final `a1e9c3a`. Clone the harness into `$work/harness` and check out `abd8d7d57aae788658bc293abac1dab80dfb24ac`.
 

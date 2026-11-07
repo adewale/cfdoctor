@@ -4,7 +4,9 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
-- Final matched repair evaluation: 60 real-project and 32 focused audits, both native judges and complete source adjudication. Both judges score the repaired skill higher; total tokens rise 3.1% with uncached input flat. A repeated new operation-count error keeps PR #36 on hold. See `evals/results/repair-final/`.
+- Focused follow-up clarifies callback return versus loop continue, makes test use proportional, and gives native judges actual command/scanner receipts. Changed grading inputs cannot reuse stale verdicts. Eight matched audits and four judge controls are recorded under `evals/results/focused-followup/`; superseded large evidence payloads are linked at their immutable archive commit.
+
+- Final matched repair evaluation: 60 real-project and 32 focused audits, both native judges and complete source adjudication. Both judges score the repaired skill higher; total tokens rise 3.1% with uncached input flat. The run also found a repeated operation-count wording error; the later focused follow-up records its limits and a less rigid merge judgment. See `evals/results/repair-final/`.
 
 - Scanner 0.5.1 recognizes a terminal DLQ consumer from the source consumer's same-scope configuration, while retaining missing-DLQ leads for unrelated consumers. Generic test variables named `secret` remain low-confidence leads unless credential-shaped; later service credentials in the file still take priority.
 - Audit verification now checks branch order/error responses, quota counter identity, intended contracts and callback-valid remedies before publication. Inventory includes hidden config, source-only application defects have a provenance path, and WebSocket recovery covers initializing sessions as well as ready sockets. These corrections are evaluated against the preserved matched-source sample and independent regression/fresh-project cases.
