@@ -1,0 +1,886 @@
+{
+  "by_arm": {
+    "old_skill": {
+      "n": 12,
+      "dimension_means": {
+        "recall": 4.833333333333333,
+        "precision": 3.8333333333333335,
+        "actionability": 4.583333333333333,
+        "evidence": 4.583333333333333
+      },
+      "quality_mean": 0.8645833333333334,
+      "quality_passes": 10,
+      "mean_total_tokens": 755908.9166666666,
+      "median_total_tokens": 771285.0,
+      "median_seconds": 249.82600000000002,
+      "mean_seconds": 260.0999166666667
+    },
+    "with_skill": {
+      "n": 12,
+      "dimension_means": {
+        "recall": 5.0,
+        "precision": 4.166666666666667,
+        "actionability": 4.916666666666667,
+        "evidence": 4.833333333333333
+      },
+      "quality_mean": 0.9322916666666666,
+      "quality_passes": 11,
+      "mean_total_tokens": 949195.25,
+      "median_total_tokens": 917048.0,
+      "median_seconds": 275.422,
+      "mean_seconds": 269.2455
+    }
+  },
+  "paired_runs": 12,
+  "pair_wins": 9,
+  "pair_losses": 2,
+  "pair_ties": 1,
+  "uncertainty": {
+    "case_clusters": 4,
+    "quality_delta": 0.06770833333333333,
+    "bootstrap_95_ci": [
+      -0.020833333333333332,
+      0.15104166666666666
+    ],
+    "exact_two_sided_sign_flip_p": 0.375,
+    "case_deltas": {
+      "fresh-bytego": 0.1875,
+      "fresh-status-page": 0.041666666666666664,
+      "fresh-url-shortener": 0.10416666666666667,
+      "fresh-web-tools": -0.0625
+    }
+  },
+  "missing": [],
+  "pairs": [
+    {
+      "case": "fresh-bytego",
+      "run": 1,
+      "quality_delta": 0.0625,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "actionability": 1.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-bytego",
+      "run": 2,
+      "quality_delta": 0.4375,
+      "dimension_deltas": {
+        "recall": 2.0,
+        "precision": 2.0,
+        "actionability": 1.0,
+        "evidence": 2.0
+      }
+    },
+    {
+      "case": "fresh-bytego",
+      "run": 3,
+      "quality_delta": 0.0625,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "actionability": 1.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-status-page",
+      "run": 1,
+      "quality_delta": 0.0625,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "actionability": 1.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-status-page",
+      "run": 2,
+      "quality_delta": 0.0625,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 1.0,
+        "actionability": 0.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-status-page",
+      "run": 3,
+      "quality_delta": 0.0,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 1.0,
+        "actionability": 0.0,
+        "evidence": -1.0
+      }
+    },
+    {
+      "case": "fresh-url-shortener",
+      "run": 1,
+      "quality_delta": 0.0625,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "actionability": 0.0,
+        "evidence": 1.0
+      }
+    },
+    {
+      "case": "fresh-url-shortener",
+      "run": 2,
+      "quality_delta": 0.0625,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 1.0,
+        "actionability": 0.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-url-shortener",
+      "run": 3,
+      "quality_delta": 0.1875,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 1.0,
+        "actionability": 1.0,
+        "evidence": 1.0
+      }
+    },
+    {
+      "case": "fresh-web-tools",
+      "run": 1,
+      "quality_delta": 0.0625,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 1.0,
+        "actionability": 0.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-web-tools",
+      "run": 2,
+      "quality_delta": -0.125,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": -1.0,
+        "actionability": -1.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-web-tools",
+      "run": 3,
+      "quality_delta": -0.125,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": -2.0,
+        "actionability": 0.0,
+        "evidence": 0.0
+      }
+    }
+  ],
+  "runs": [
+    {
+      "case": "fresh-bytego",
+      "variant": "old_skill",
+      "run": 1,
+      "source_round": "round-3-bytego",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 4.0,
+        "evidence": 5.0
+      },
+      "quality": 0.875,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Primary B1 was found: the report identifies that c.req.parseBody() runs before the File.size check, explains the multipart-overhead/materialization and 128 MB memory-pressure risk, qualifies runtime memory failure as unmeasured, and proposes a streaming alternative. No materially false security claim is made; authentication, traversal, CORS, or leaked-secret issues are not incorrectly asserted. Precision loses one point because the 50-record history behavior\u2014consistent with the documented 'recent history' design\u2014is framed as a medium defect rather than chiefly a product trade-off, and overwrite risk is arguably overstated as high for an authenticated API/configuration feature. Remediation and boundary testing are strong, but the Content-Length precheck is incomplete when the header is absent or unreliable; the raw known-length streaming redesign is the safer fix. Evidence is source-specific, cites the supplied canonical Cloudflare snapshots, discloses their supplied nature, and clearly separates confirmed behavior from deployment, account, caching, spend, and memory effects requiring runtime evidence.",
+      "output_sha256": "ec6a328095cd9d3467dce92a3dda145dcec5b092ae66c69ed1129aa5f738554b",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 287.787,
+      "usage": {
+        "input_tokens": 1023334,
+        "cached_input_tokens": 921216,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14816,
+        "reasoning_output_tokens": 10191
+      },
+      "completed_shell_commands": 51,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "old_skill",
+      "run": 2,
+      "source_round": "round-3-bytego",
+      "dimensions": {
+        "recall": 3.0,
+        "precision": 2.0,
+        "actionability": 4.0,
+        "evidence": 3.0
+      },
+      "quality": 0.5,
+      "quality_threshold_pass": false,
+      "judge_rationale": "Primary B1 was only partially found: the report notices parseBody-related memory risk and recommends rejecting Content-Length before parsing, but it does not clearly establish the key mechanism that c.req.parseBody() materializes the multipart body before the File.size check, nor that the later file.stream() R2 write cannot undo that buffering. Precision is reduced by presenting MIME restrictions as a confirmed medium defect despite exploit impact depending on deployment/domain isolation, and by assigning high risk to authenticated custom-path overwrite/stale deletion without establishing that mutable paths violate intended API semantics; these are contextual or overstated findings. The proposed fixes and concurrency/boundary tests are generally source-specific and useful, but the upload fix remains incomplete for absent or misleading Content-Length unless multipart parsing is replaced or otherwise strictly bounded. Evidence is well cited and usually distinguishes source behavior from unmeasured deployment effects, but the central B1 causal chain has a meaningful evidence gap.",
+      "output_sha256": "154f9438bfd33b54f0e593ee19065834bfeebbda7d6af6a514cbd37d52e043df",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 306.957,
+      "usage": {
+        "input_tokens": 903013,
+        "cached_input_tokens": 819328,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 15861,
+        "reasoning_output_tokens": 9766
+      },
+      "completed_shell_commands": 34,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "old_skill",
+      "run": 3,
+      "source_round": "round-3-bytego",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 4.0,
+        "evidence": 5.0
+      },
+      "quality": 0.875,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Primary B1 was found completely: the report identifies that c.req.parseBody() runs before the File.size check, explains that multipart materialization therefore precedes the nominal 100 MiB guard, notes that the later file.stream() R2 sink does not remove that memory risk, and appropriately treats OOM/concurrency impact as requiring runtime evidence. No materially false security claim was made: it respects authentication, delete-mode gating, and the lack of leaked credentials or demonstrated traversal. Precision loses one point because the public-UI Worker cost item is primarily a contextual optimization without traffic evidence yet is presented as a medium-severity release concern; the high severity assigned to authenticated/custom-key overwrite is also somewhat aggressive, though its mechanism is source-supported. Fixes are source-specific and verification covers size boundaries, chunked input, concurrency, R2 results, and runtime metrics. Actionability loses one point because a Content-Length check alone is not a complete pre-parse bound unless missing/untrustworthy lengths are explicitly rejected, and passing the parsed File directly to R2 resolves stream-length uncertainty but not prior multipart materialization. Evidence is otherwise excellent: source locations and supplied canonical documentation are cited, supplied-snapshot provenance is disclosed, and confirmed behavior is clearly separated from plan, buffering, cache, and runtime uncertainties.",
+      "output_sha256": "073cca8ba9f10058613e35e097e5e5ca27c37a0174969c26d23d393f0f41f25b",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 284.08,
+      "usage": {
+        "input_tokens": 746583,
+        "cached_input_tokens": 659840,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14813,
+        "reasoning_output_tokens": 10336
+      },
+      "completed_shell_commands": 43,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "with_skill",
+      "run": 1,
+      "source_round": "round-3-bytego",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Primary B1 was found with the correct causal chain: `/upload` materializes multipart data via `c.req.parseBody()` before checking `File.size`, so the later limit and subsequent R2 streaming do not bound prior parsing memory. The report qualifies memory failure as unmeasured, cites the 128 MB documented limit without claiming an observed OOM, and supplies boundary/failure tests. No materially false claim is present. Precision loses one point because the undefined cache policy is presented as a medium finding despite being primarily a contextual optimization whose real cost/staleness impact depends on deployment evidence; the overall \u201chigh\u201d characterization is also somewhat stronger than the demonstrated runtime evidence. Fixes are source-specific and behavior-aware, including a raw known-length streaming path, conditional R2 writes, idempotent retries, and meaningful verification. Evidence clearly separates confirmed source behavior, supplied documentation semantics, and runtime/account effects requiring measurement, while disclosing that documentation snapshots were supplied.",
+      "output_sha256": "2dd6172fb480973b1c1ce413ce8bf197a97b20ae1d1b27a7a2f87a65bcbc1982",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 223.266,
+      "usage": {
+        "input_tokens": 1261186,
+        "cached_input_tokens": 1165184,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11324,
+        "reasoning_output_tokens": 6581
+      },
+      "completed_shell_commands": 31,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "with_skill",
+      "run": 2,
+      "source_round": "round-3-bytego",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: Primary B1 was fully identified: `c.req.parseBody()` materializes the multipart body before the 100 MiB `File.size` check, so the later check and streaming R2 write do not prevent pre-validation memory/body-buffer pressure; the report appropriately treats runtime OOM/concurrency impact as unmeasured. Precision: no materially false security claim was made, and authentication, traversal, or leaked-secret issues were not fabricated. The public-download cache/deletion section is a contextual, deployment-dependent risk presented under medium severity despite low confidence, which is a minor overclassification rather than a materially false finding. Actionability: the report proposes source-specific early rejection, a safer shared boundary, retaining post-parse validation, an alternative streaming/multipart design, conditional R2 writes, and meaningful boundary, race, memory, and integration verification. Evidence: it cites the relevant source order and supplied canonical Cloudflare snapshots, discloses that the snapshots were supplied, and clearly separates confirmed behavior and documented limits from hypotheses requiring runtime, plan, cache, or account evidence.",
+      "output_sha256": "5a6ab614114a90f7b4924c6836be41d22838decdbda90e3e9d94427c0a2ae8e4",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 282.872,
+      "usage": {
+        "input_tokens": 911870,
+        "cached_input_tokens": 825344,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14763,
+        "reasoning_output_tokens": 10076
+      },
+      "completed_shell_commands": 15,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "with_skill",
+      "run": 3,
+      "source_round": "round-3-bytego",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Primary B1 was found: the report identifies that c.req.parseBody() runs before the file-size check, explains that the later check and R2 streaming do not bound prior multipart materialization, connects this to the documented request/memory limits, and appropriately treats parser-memory failure as requiring runtime evidence. No primary was missed. There are no materially false claims about authentication, traversal, credential leakage, or CORS; however, the high severity assigned to authenticated custom-path overwrites is somewhat policy-dependent, and \u201ccore behavior is untested\u201d is more a testing-gap recommendation than a confirmed operational defect. Fixes are source-specific and include useful boundary, collision, persistence, and runtime-failure verification. Evidence is strong: source behavior, supplied documentation, deployment unknowns, and unmeasured runtime/account effects are clearly distinguished.",
+      "output_sha256": "70cfb447dec17b62ed20ddd090ae9c86ed56c2be5ccf097ba563077a0f7c9cd9",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 334.279,
+      "usage": {
+        "input_tokens": 1589503,
+        "cached_input_tokens": 1506304,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 16824,
+        "reasoning_output_tokens": 11025
+      },
+      "completed_shell_commands": 26,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 1,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 4.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries are found with complete causal chains\u2014S1 (an unguarded rejected fetch aborts the loop before the sole KV write, skipping later monitors) and S2 (cleanup deletes a removed monitor and then dereferences its missing checks, preventing save). Precision: no material false claim; the report respects the waitUntil controls, treats quota impact as Free-plan conditional, recognizes the API cron invocation is commented out, and labels KV collision frequency as requiring runtime evidence. Actionability: fixes and failure tests for S1, S2, and the cadence issue are strong, but the Durable Object/outbox redesign is broader than the smallest safe fix and lacks enough implementation detail for an otherwise top score. Evidence: source locations are accurate, supplied documentation is disclosed and cited canonically, and confirmed source behavior is consistently separated from account-, deployment-, and runtime-dependent impact.",
+      "output_sha256": "c7a30c0abbeb6d21663d392d85fffd1cad556dbea421556c6eb5ba6782ffae81",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 247.556,
+      "usage": {
+        "input_tokens": 876750,
+        "cached_input_tokens": 784000,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 12825,
+        "reasoning_output_tokens": 7366
+      },
+      "completed_shell_commands": 26,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 2,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries are identified. S1 is correctly traced from an unguarded per-monitor fetch rejection through loop abortion to the final KV write being skipped; S2 is correctly traced from deleting a removed monitor to dereferencing its now-missing checks and never saving. Precision: no materially false mechanism is asserted, and safe controls such as waitUntil registration and the inert API route are respected. The deduction is for severity inflation: the explicitly conditional Free-plan quota issue and runtime-dependent overlapping KV-write risk are both labeled high despite the supplied truth treating the quota issue as secondary and concurrency as a risk requiring runtime evidence. Actionability is excellent: fixes are source-specific and paired with rejection, timeout, overlap, provider-error, and cleanup verification cases. Evidence is strong: source locations and supplied canonical documentation are cited, the supplied-snapshot constraint is disclosed, and confirmed source behavior is consistently separated from unknown plan, deployment, cache, and runtime effects.",
+      "output_sha256": "1ef5354beecbc7e5a69a5e88b321f1e3caa3bd2df6284e50e08d01ead302cde7",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 246.699,
+      "usage": {
+        "input_tokens": 768430,
+        "cached_input_tokens": 687360,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 12744,
+        "reasoning_output_tokens": 7853
+      },
+      "completed_shell_commands": 54,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 3,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries are fully identified\u2014S1 (a rejected per-monitor fetch aborts the loop and prevents the final KV write, leaving stale state) and S2 (cleanup deletes a removed monitor and immediately dereferences its checks, so cleanup never saves). Precision: the report respects the important safe controls and adds valid webhook-response and concurrency risks, but the first finding\u2019s \u201cdetached probes and notifications\u201d wording is misleading because probes are awaited and notifications are registered with event.waitUntil; the high-severity confirmed framing for possible overlapping writers is also somewhat stronger than the runtime evidence. No other material false claim is apparent. Actionability: fixes are source-specific and accompanied by strong failure, boundary, and race verification; the Durable Object/outbox proposal is larger than the smallest fix but is presented with tradeoffs. Evidence: source locations, supplied-document citations, plan-dependent quota arithmetic, and distinctions between confirmed control flow and runtime/account uncertainty are consistently accurate.",
+      "output_sha256": "18bd71d7667407c9a4025de9f2a20dec76d53188ae8dd1bd2f69c606a51d658a",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 224.373,
+      "usage": {
+        "input_tokens": 512616,
+        "cached_input_tokens": 442496,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11543,
+        "reasoning_output_tokens": 7471
+      },
+      "completed_shell_commands": 35,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 1,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 1.0,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries are found with complete causal chains\u2014S1 identifies that an unhandled rejected monitor fetch aborts later checks and prevents the final KV commit, and S2 identifies deletion followed by dereferencing the removed monitor, preventing cleanup from being saved. Precision: no material false claim; the report respects controls around waitUntil, the inert debug API, per-run rather than per-monitor KV writes, and conditions Free-plan quota impact on account plan. Additional concurrency and notification-delivery findings are source-supported and appropriately distinguish possibility from observed incidence. Actionability: fixes are source-specific and paired with meaningful rejection, timeout, missing-header, removed-monitor, HTTP-error, quota, and concurrency verification. Evidence: exact source locations and supplied canonical Cloudflare documentation are cited, the supplied-snapshot status is disclosed, and confirmed behavior is consistently separated from unmeasured deployment, plan, cache, and collision conditions.",
+      "output_sha256": "1756e7ad5ed1a33e1895f544ff734fee26b716466a8786b93aeef53cb824829e",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 253.502,
+      "usage": {
+        "input_tokens": 691553,
+        "cached_input_tokens": 615552,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 13048,
+        "reasoning_output_tokens": 8942
+      },
+      "completed_shell_commands": 31,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 2,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 1.0,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries are found with complete causal accounts\u2014S1 identifies the uncaught per-monitor fetch rejection aborting later checks and the sole post-loop KV write; S2 identifies deletion followed by dereferencing the deleted monitor, preventing cleanup persistence. Precision: no material false claim; the report respects C1/C2 by recognizing waitUntil registration and does not claim notifier rejection blocks the main KV write, treats concurrent-write occurrence as unconfirmed, and correctly presents the Free-plan write quota as conditional. Actionability: fixes are source-specific and paired with meaningful failure tests, including rejected/timeout monitor fetches, removed-monitor cleanup, API failures, notification retry behavior, and stale-writer concurrency. Evidence: source locations and supplied canonical Cloudflare snapshots are cited accurately, scope limits are disclosed, confirmed behavior is separated from runtime/account-dependent risk, and no deployment incidents or account state are invented.",
+      "output_sha256": "8e15844d51327583769234d847d2ce38becb592a7d5fee50fc823a40e9a9db91",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 230.548,
+      "usage": {
+        "input_tokens": 609025,
+        "cached_input_tokens": 532992,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11652,
+        "reasoning_output_tokens": 7606
+      },
+      "completed_shell_commands": 11,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 3,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 4.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries were found. S1 is accurately explained as an unguarded rejected monitor fetch aborting the loop before the sole KV write, with later monitors skipped and no new state persisted. S2 is accurately explained as deleting a removed monitor and then dereferencing its missing checks object, preventing cleanup from being saved. Precision: no material false claim; the report respects the safe controls by recognizing waitUntil registration, treating the API route as empty, and making concurrency incidence conditional on runtime overlap. The additional notification and KV concurrency risks are source-supported rather than scanner-only assertions. Actionability: fixes are source-specific and paired with meaningful rejection, timeout, race, provider-error, and HTTP-failure verification. Evidence: strong source locations, supplied-document disclosure, and clear separation of confirmed mechanisms from unmeasured deployment frequency/account effects; a small gap is the unsupported mention of inspecting project-source.json and some peripheral route/cost analysis whose framework behavior remains unverified.",
+      "output_sha256": "b6630778311079c100019b056b6c981a363699657da7ea77a63e1ea7a6ac7ba5",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 234.613,
+      "usage": {
+        "input_tokens": 802064,
+        "cached_input_tokens": 723712,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 12085,
+        "reasoning_output_tokens": 7426
+      },
+      "completed_shell_commands": 16,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "old_skill",
+      "run": 1,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 4.0
+      },
+      "quality": 0.875,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: found both primaries with complete causal accounts\u2014U1 covers the non-atomic/eventually consistent KV read-modify-write in both the API rate limiter and click counter, including lost increments, write contention, and weak enforcement; U2 covers the single-page KV list, missed entries after 1,000, and whole-page get fan-out. Missed primaries: none. Precision: no materially false finding; however, the click-analytics section states that cache hits bypass counting without repeating the report\u2019s otherwise appropriate qualification that actual Hono middleware behavior was not inspected, and the mention of create-path \u201ccache work\u201d is imprecise. Actionability: fixes are source-specific, generally safe, preserve redirect behavior, and include concurrency, pagination, lifecycle, and failure-path verification. Evidence: source locations and supplied canonical Cloudflare snapshots are cited accurately, supplied-document status and runtime/account limits are disclosed, and SSRF/cache claims are mostly qualified; the unqualified cache-hit consequence is a small evidence-confidence gap.",
+      "output_sha256": "f24bc18d7bc03c8a28b87aa80f4ed84be6bdc84164b73bf4b71c87f4ac305105",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 239.924,
+      "usage": {
+        "input_tokens": 727814,
+        "cached_input_tokens": 655232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 12461,
+        "reasoning_output_tokens": 7268
+      },
+      "completed_shell_commands": 21,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "old_skill",
+      "run": 2,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries are identified. U1 is correctly traced to KV read-modify-write in both the per-IP rate limiter and click counter, with eventual-consistency lost updates, same-key write contention/429s, weak quota enforcement, and redirect failures. U2 is correctly traced to a single unpaginated list() followed by up to 1,000 get() calls, causing missed duplicates beyond the first page and corpus-page-scale work. Precision: no materially false finding was found, and the report correctly recognizes API authentication and qualifies uncertain Hono cache/runtime behavior. Minor overstatements keep this from 5: the summary says creation scales with the \u201centire mapping set\u201d even though the implementation only scans the first page, and \u201cinvalid API traffic\u201d does not always incur an API_KEYS read when the Authorization header is absent. Actionability: fixes are source-specific and behavior-preserving, including coordinated counters, waitUntil with rejection handling for noncritical analytics, a bounded reverse index with concurrency caveats, unified expiry checks, and meaningful concurrency, pagination, and expiry verification. Evidence: source ranges and supplied Cloudflare snapshots directly support the main conclusions; the report discloses that documentation was supplied, avoids account-state claims, and clearly separates confirmed source behavior from deployment, cache, dependency, and traffic questions requiring runtime evidence.",
+      "output_sha256": "708646486427fe6a5824d0a5ee61064b04091791c334854c3d094814b206fb68",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 265.536,
+      "usage": {
+        "input_tokens": 464826,
+        "cached_input_tokens": 392320,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14063,
+        "reasoning_output_tokens": 9454
+      },
+      "completed_shell_commands": 42,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "old_skill",
+      "run": 3,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 3.0
+      },
+      "quality": 0.6875,
+      "quality_threshold_pass": false,
+      "judge_rationale": "Recall: both primaries are fully identified. U1 correctly explains the KV read-modify-write mechanisms in both the per-IP limiter and click counter, including eventual consistency, lost increments, same-key write contention, weak quota enforcement, and possible errors. U2 correctly identifies the single unpaginated list(), page-limited duplicate detection, and whole-page get() fan-out. Precision: the material false claim is that the creation scan is constrained by the Workers Free 50-subrequest limit; the supplied limits snapshot separately allows up to 1,000 internal-service subrequests, so the stated threshold/causal explanation is wrong and also fails to count the other KV operations. No other material false finding is evident; cache and SSRF uncertainties are appropriately qualified. Actionability: the primary fixes and concurrency/page-boundary verification are specific and useful, but the expiry remedy has a caveat: checking expiry in handlers does not address a response already served by the cache middleware, so cache invalidation or TTL bounding is still needed. Evidence: source locations and supplied canonical documentation are generally cited well, and runtime/account hypotheses are clearly separated from confirmed behavior. The incorrect interpretation of the subrequest limits is one meaningful evidence gap, although it does not undermine the core corpus-scan finding.",
+      "output_sha256": "649705be14f30892788299fd8ad7b280cd2ce221d356df13269f8b2b361342d4",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 247.489,
+      "usage": {
+        "input_tokens": 772449,
+        "cached_input_tokens": 681728,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 12356,
+        "reasoning_output_tokens": 7888
+      },
+      "completed_shell_commands": 17,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "with_skill",
+      "run": 1,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries are fully identified. U1 correctly traces the per-IP rate limiter and redirect analytics through KV read-modify-write, eventual consistency, same-key contention, lost increments, weak enforcement, and client-facing failures. U2 correctly identifies the single unpaginated list(), first-page-only duplicate detection, and up-to-1,000-get fan-out. Precision: no major fabricated finding, missing-auth claim, or commented-binding mistake appears. Minor inaccuracies prevent a 5: rate-limit rejection does not itself refresh the TTL, so \u201cblocked until 60 seconds of inactivity\u201d is imprecise, and the wording around the 50 versus 1,000 subrequest boundaries is somewhat muddled even though a full page plus inherited work can exceed a relevant limit. Actionability: fixes are source-specific and behavior-preserving, including serialized counters/uniqueness, reverse indexing, redirect independence from analytics, bounded metadata fetching, and meaningful concurrency, pagination, expiration, and failure tests. Evidence: source locations and supplied canonical documentation are cited accurately; supplied-snapshot provenance is disclosed; cache behavior, SSRF reachability, deployment/account state, and measurements are appropriately qualified as unresolved runtime risks.",
+      "output_sha256": "e3be72996f21a37c8f56219c1afc3c8b01744d4af0cc2c085d3273942a33a661",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 274.17,
+      "usage": {
+        "input_tokens": 760764,
+        "cached_input_tokens": 675584,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14469,
+        "reasoning_output_tokens": 8505
+      },
+      "completed_shell_commands": 29,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "with_skill",
+      "run": 2,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 1.0,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: both primaries are fully identified. U1 covers the per-IP rate limiter and per-code click counter as KV read-modify-write operations, explaining lost increments, same-key write contention/429s, eventual consistency, weak global enforcement, and redirect failure because analytics is awaited. U2 identifies the single unpaginated list(), the 1,000-key page boundary, duplicate misses beyond that page, and the per-create fan-out of get() calls. Precision: no material false claim; authentication ordering is described correctly, commented bindings are not treated as active, and Hono cache/SSRF implications are appropriately qualified where runtime evidence is needed. Actionability: fixes are source-specific and behavior-aware\u2014remove scanning or introduce authoritative indexed/strongly consistent coordination, move exact counters to a suitable primitive, decouple noncritical analytics, align expiration and cache behavior, and bound metadata fetches\u2014with meaningful concurrency, pagination, lifecycle, and resource-boundary verification. Evidence: the report cites relevant source lines and supplied canonical Cloudflare snapshots, discloses that documentation was supplied, and clearly separates confirmed source behavior from unmeasured deployment, account, middleware, cache, and network effects.",
+      "output_sha256": "ef272416741f5943eda150dce77a298f74278a52071016dbbb8178f8de1d29e7",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 310.961,
+      "usage": {
+        "input_tokens": 1033235,
+        "cached_input_tokens": 938112,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 16393,
+        "reasoning_output_tokens": 11490
+      },
+      "completed_shell_commands": 15,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "with_skill",
+      "run": 3,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 4.0
+      },
+      "quality": 0.875,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: found both primaries. U1 is correctly identified in the per-IP limiter and click-counter KV read-modify-write paths, with eventual consistency, lost increments, same-key contention, weak quota enforcement, and inaccurate analytics explained. U2 is correctly identified as the single unpaginated list followed by up to 1,000 gets, causing missed duplicates after page one and corpus-dependent fan-out. Precision: no material false finding, but the statement that internal-service subrequests are capped at 1,000 \u201cby default\u201d is overbroad\u2014the supplied limits show 1,000 on Free while Paid defaults to 10,000\u2014and \u201coverall analytics is intrinsically empty\u201d should be limited to data produced solely by this Worker because external/preexisting KV writes were not inspected. Actionability: fixes are source-specific and behavior-aware, including a reverse index/stronger coordination primitive, atomic limiting and counters, KV-native expiration, bounded metadata fetching, and meaningful pagination/concurrency/expiry verification. Evidence: source lines and supplied canonical documentation are cited well, supplied-snapshot provenance is disclosed, and runtime-dependent cache, account, route, and private-network claims are qualified; the limits misreading and slightly absolute analytics conclusion are small evidence gaps that do not alter the primary conclusions.",
+      "output_sha256": "e7c99ea5a2caee507ed5f9ad5d8f1c0dd8a360bb3cb81b55c84918ea81ec3962",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 276.674,
+      "usage": {
+        "input_tokens": 1057699,
+        "cached_input_tokens": 961792,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14257,
+        "reasoning_output_tokens": 9072
+      },
+      "completed_shell_commands": 20,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 1,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.875,
+      "quality_threshold_pass": true,
+      "judge_rationale": "The report finds primary D1: session rows store an expiry, but getSessionUser authenticates solely by token, so replayed expired tokens retain access to every To-Do route. It also correctly finds secondary D2, the non-atomic read/invert/write toggle race. The material precision problem is the high-severity production-backdoor framing of the internal seed endpoint: it is disabled unless a secret INTERNAL_TEST_KEY is configured and requires the matching header; possession of that key is the endpoint's intended authorization, and activation was explicitly unknown. The claim about minting an \u201callowed-email identity\u201d is also irrelevant to To-Do routes, which use requireUser rather than requireAllowedUser. Other observations are substantially supported. Fixes are source-specific and include strong boundary, malformed-input, concurrency, migration, and valid-session verification. Evidence generally cites the supplied source and documentation accurately and clearly separates confirmed behavior from unknown deployment/account state.",
+      "output_sha256": "a873ed8a19f5d291d709d5f94cfd31923988ecd95e7c2ed919828f08735bc021",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 252.096,
+      "usage": {
+        "input_tokens": 625008,
+        "cached_input_tokens": 551168,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 12795,
+        "reasoning_output_tokens": 8267
+      },
+      "completed_shell_commands": 26,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 2,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "D1 was fully identified: the report traces stored expirations through the token-only session lookup to continued To-Do authorization and explains replay after browser cookie expiry. It also correctly found secondary D2 and its read/compute/write lost-toggle interleaving. No primary mechanism was missed. The safe controls were generally respected, including the guarded seed route, owner checks, parameter binding, and unknown deployment/account state. Precision loses one point because the separate high-severity \u201carbitrary cookies reach D1\u201d finding elevates a generic, source-visible lookup/amplification risk to a high defect without traffic or deployed-control evidence, though the report appropriately qualifies exposure; the other conditional findings are source-supported rather than materially false. Fixes are source-specific and include useful malformed-input, expiry-boundary, concurrency, migration, and staging verification. Evidence is accurately tied to source locations and supplied Cloudflare snapshots, with confirmed behavior clearly separated from unmeasured deployment, traffic, migration, and account-control questions.",
+      "output_sha256": "d07d13c4abfd1242ed2beff0544c479884c1bacc0d98ca82336fae61b6184fb8",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 271.468,
+      "usage": {
+        "input_tokens": 832937,
+        "cached_input_tokens": 756352,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14265,
+        "reasoning_output_tokens": 9396
+      },
+      "completed_shell_commands": 13,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 3,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 1.0,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: primary D1 was found with the complete mechanism\u2014expires_at is stored but getSessionUser authenticates solely by token, so expired sessions continue reaching every To-Do route. No primary ID was missed; the secondary D2 toggle race was also correctly identified. Precision: no material false claim; the report respects owner checks, parameter binding, the seed key guard, and qualifies deployment/query-plan uncertainties. The additional parsing, 500-row visibility, and conditional seed-schema findings are source-supported and appropriately scoped. Actionability: fixes are source-specific, preserve behavior, address timestamp-format migration, atomic mutation and pagination, and include useful expired/malformed/concurrency/boundary verification. Evidence: it cites the relevant source locations, discloses that documentation snapshots were supplied, distinguishes confirmed behavior from unmeasured deployment and performance risks, and does not claim live execution or account state.",
+      "output_sha256": "df88a4deec5987b7789f53383f2409dd4ce34f8ca13e9decb53673ab8bed8e7b",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 247.234,
+      "usage": {
+        "input_tokens": 656025,
+        "cached_input_tokens": 578688,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 12580,
+        "reasoning_output_tokens": 8158
+      },
+      "completed_shell_commands": 36,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 1,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: D1 was fully identified\u2014the token-only session lookup ignores stored expiry, allowing replay beyond seven days/one minute\u2014and D2 was also correctly identified with the two-read/two-write lost-toggle interleaving. Precision: no materially false exploit claim was made, and the report respected the owner checks, bound SQL values, configured DB/migrations, guarded seed route, and cookie/OAuth controls. The deduction is for presenting the guarded seed capability as a medium defect and rating overall/session risk as high; these are somewhat overstated given that the secret is not configured in the supplied production config and the scoped consequence is access through a stolen per-user token. Actionability: fixes are source-specific and paired with meaningful boundary, concurrency, ownership, malformed-input, and pagination verification; the expiry fix also correctly calls for changing to a canonically comparable representation before enforcing it. Evidence: source locations and supplied documentation are accurately cited, supplied snapshots are disclosed, no execution or deployment state is invented, and confirmed behavior is consistently separated from runtime-dependent traffic, query-plan, secret, cache, and impact questions.",
+      "output_sha256": "7170c8f308bb0911f7115395e874ea24ab4b702e9796e6a74f19c1b6a260b69c",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 296.587,
+      "usage": {
+        "input_tokens": 893260,
+        "cached_input_tokens": 809984,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 15398,
+        "reasoning_output_tokens": 10782
+      },
+      "completed_shell_commands": 15,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 2,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 5.0
+      },
+      "quality": 0.8125,
+      "quality_threshold_pass": false,
+      "judge_rationale": "Recall: D1, the primary expired-session mechanism, is fully identified with the replay trigger, token-only lookup, ineffective browser-only Max-Age boundary, and consequence; the secondary D2 toggle race is also correctly found. No primary was missed. Precision: the material false finding is the high-severity claim that the internal seed route is a production authentication backdoor. C4 shows it is disabled without a configured nonempty secret and requires a matching header; hypothesizing that an intentionally configured secret becomes known or leaked does not establish a defect in the guard. The remaining findings are substantially supported or appropriately qualified. Actionability: fixes and boundary/concurrency tests are source-specific, but the primary session fix is incomplete about safely converting or parsing existing RFC-style expires_at values before comparison, a caveat emphasized by the truth. Evidence: source locations are accurate, supplied documentation is disclosed and linked canonically, runtime/account effects are consistently labeled unmeasured, and no execution or incident is invented; even the mistaken seed classification clearly separates confirmed code behavior from unknown deployment exposure.",
+      "output_sha256": "22e29a794152b47af7084b46a2102022b0345717b5edcf4036554a874c9da3fa",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 292.127,
+      "usage": {
+        "input_tokens": 910620,
+        "cached_input_tokens": 816512,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14818,
+        "reasoning_output_tokens": 10240
+      },
+      "completed_shell_commands": 40,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 3,
+      "source_round": "round-2",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.875,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: primary D1 (expired sessions accepted because getSessionUser matches token without enforcing expires_at) was identified with the correct replay trigger, trust path into every To-Do route, and indefinite-access consequence; no primary was missed. The secondary toggle race was also correctly identified. Precision: the high-severity seed-route finding is materially overstated: the source shows a POST-only route disabled unless a nonempty INTERNAL_TEST_KEY is configured and exactly matched, and the candidate acknowledges no evidence that it is configured. Treating this credential-gated test facility as a high-severity authentication bypass fails the safe-control ground truth, although its conditional source behavior is described accurately. No other material false claim was found; the parsing, concurrency, and 500-item visibility observations are appropriately supported or qualified. Actionability: fixes are source-specific and safe, notably canonicalizing expiry representation before enforcing it, using an owner-scoped atomic toggle, bounding parsing, and adding stable pagination; verification covers expired/active sessions, concurrent toggles, malformed/oversized inputs, and pagination boundaries. Evidence: the report cites the supplied source and canonical supplied documentation URLs, discloses that documentation was supplied, avoids claims of live execution or account state, and consistently separates confirmed behavior from deployment, cost, query-plan, and runtime unknowns.",
+      "output_sha256": "889bf5376a8f457de09db8bf0c9ec982e510b91ca7f82bc72e5a4df3e742d79e",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 221.347,
+      "usage": {
+        "input_tokens": 703187,
+        "cached_input_tokens": 628352,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11346,
+        "reasoning_output_tokens": 6622
+      },
+      "completed_shell_commands": 37,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    }
+  ]
+}

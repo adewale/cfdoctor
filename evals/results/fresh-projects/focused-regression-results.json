@@ -1,0 +1,332 @@
+{
+  "by_arm": {
+    "old_skill": {
+      "n": 4,
+      "dimension_means": {
+        "recall": 5.0,
+        "precision": 3.5,
+        "actionability": 4.75,
+        "evidence": 4.5
+      },
+      "quality_mean": 0.859375,
+      "quality_passes": 2,
+      "mean_total_tokens": 879778.25,
+      "median_total_tokens": 773360.5,
+      "median_seconds": 291.0015,
+      "mean_seconds": 287.00300000000004
+    },
+    "with_skill": {
+      "n": 4,
+      "dimension_means": {
+        "recall": 5.0,
+        "precision": 4.5,
+        "actionability": 5.0,
+        "evidence": 4.75
+      },
+      "quality_mean": 0.953125,
+      "quality_passes": 4,
+      "mean_total_tokens": 737017.25,
+      "median_total_tokens": 735937.5,
+      "median_seconds": 244.05400000000003,
+      "mean_seconds": 236.42125000000001
+    }
+  },
+  "paired_runs": 4,
+  "pair_wins": 3,
+  "pair_losses": 0,
+  "pair_ties": 1,
+  "uncertainty": {
+    "case_clusters": 2,
+    "quality_delta": 0.125,
+    "bootstrap_95_ci": [
+      0.0625,
+      0.125
+    ],
+    "exact_two_sided_sign_flip_p": 0.5,
+    "case_deltas": {
+      "fresh-bytego": 0.1875,
+      "fresh-web-tools": 0.0625
+    }
+  },
+  "missing": [],
+  "pairs": [
+    {
+      "case": "fresh-bytego",
+      "run": 1,
+      "quality_delta": 0.1875,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 2.0,
+        "actionability": 1.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-web-tools",
+      "run": 1,
+      "quality_delta": 0.0625,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 1.0,
+        "actionability": 0.0,
+        "evidence": 0.0
+      }
+    },
+    {
+      "case": "fresh-web-tools",
+      "run": 2,
+      "quality_delta": 0.125,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 1.0,
+        "actionability": 0.0,
+        "evidence": 1.0
+      }
+    },
+    {
+      "case": "fresh-web-tools",
+      "run": 3,
+      "quality_delta": 0.0,
+      "dimension_deltas": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "actionability": 0.0,
+        "evidence": 0.0
+      }
+    }
+  ],
+  "runs": [
+    {
+      "case": "fresh-bytego",
+      "variant": "old_skill",
+      "run": 1,
+      "source_round": "regression-round",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 5.0
+      },
+      "quality": 0.8125,
+      "quality_threshold_pass": false,
+      "judge_rationale": "Recall: primary B1 was found with the correct mechanism and consequence: `c.req.parseBody()` runs before the 100 MiB `File.size` check, so rejection follows multipart materialization, and the later R2 stream does not remove the resulting memory risk; actual exhaustion is appropriately left unmeasured. No primary ID was missed. Precision: the primary finding is accurate and the report correctly rejects scanner secret false positives, recognizes hard-delete mode, and avoids claiming a demonstrated OOM. However, the overall/high severity is materially inflated: the missing-ignore-file issue is a conditional future-commit risk rather than an exposed credential, and the high overwrite finding omits that `/upload` requires the configured bearer secret and treats authenticated, documented custom-path replacement mainly as a security issue. The medium history-cap item also frames an intentional, documented local-history design as a defect despite the documented dashboard/Wrangler recovery path. Actionability: fixes and boundary/failure tests are generally concrete, especially conflict testing and below/above-limit, chunked, concurrent upload verification. The primary fix is slightly incomplete because a `Content-Length` precheck is bypassable when absent or inaccurate, and \u201clower the multipart limit\u201d does not identify an enforceable pre-materialization mechanism. Evidence: source locations and supplied canonical Cloudflare snapshots are cited accurately, the snapshots are disclosed as supplied, account/deployment state is scoped out, and confirmed source behavior is consistently separated from runtime, cache, lifecycle, and billing hypotheses.",
+      "output_sha256": "0cf16ec52f9025da72a6926f145f9bad8a829e2f5f4c208f22b984e62189cf43",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 304.345,
+      "usage": {
+        "input_tokens": 1282504,
+        "cached_input_tokens": 1187840,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 15662,
+        "reasoning_output_tokens": 10845
+      },
+      "completed_shell_commands": 21,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "with_skill",
+      "run": 1,
+      "source_round": "regression-round",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 1.0,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Primary B1 was fully found: the report identifies that c.req.parseBody() materializes multipart data before the File.size check, explains that file.stream() at the later R2 put does not remove the prior memory/body risk, and qualifies memory failure as requiring runtime evidence. It also correctly identifies the separate 100 MB platform-boundary mismatch. No material false claims: authentication, optional hard-delete mode, and runtime/account uncertainty are respected; the additional collision, history-pruning, and ignore-file findings are source-supported and appropriately scoped. Fixes are source-specific and include boundary, concurrency, collision, stale-delete, cleanup, and secret-ignore verification. Evidence clearly distinguishes confirmed code behavior, supplied documented platform semantics, and unmeasured deployment/runtime effects while disclosing that documentation snapshots were supplied.",
+      "output_sha256": "31d2b4154b07e4e35c10fcc1f88785f6c085327fe176293c174b6c979efd62f3",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 262.08,
+      "usage": {
+        "input_tokens": 976900,
+        "cached_input_tokens": 887040,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 13545,
+        "reasoning_output_tokens": 9022
+      },
+      "completed_shell_commands": 18,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 1,
+      "source_round": "regression-round",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: D1 was found with the complete mechanism, trigger, and consequence: getSessionUser authenticates solely by token despite stored expires_at values, so replayed expired sessions continue reaching every requireUser-protected To-Do route. No primary mechanism was missed; D2 was also correctly identified as the accepted secondary toggle race. Precision: no materially false exploit claim was made, and the report respected the ownership checks, parameter binding, seed-route key guard, cookie flags, and scope limits. The deduction is for presenting the guarded production seed route as a medium defect: its schema divergence is supportable, but possession/leakage of the intentionally required secret is conditional exposure and is better framed as defense-in-depth rather than a confirmed security defect. Actionability: fixes are source-specific and safe, including canonical expiry representation, atomic owner-scoped mutations, bounded input/pagination, and meaningful boundary/concurrency verification. Evidence: conclusions are tied accurately to supplied source and documentation, source-confirmed behavior is separated from deployment/account unknowns, and no live execution, incident, or account state is invented.",
+      "output_sha256": "5bb8ac6035d77994ea1f9880e8d246e649bff8cf444b1ad714f29cd4a740bb03",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 298.35,
+      "usage": {
+        "input_tokens": 689351,
+        "cached_input_tokens": 598912,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 15547,
+        "reasoning_output_tokens": 10957
+      },
+      "completed_shell_commands": 51,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 2,
+      "source_round": "regression-round",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 5.0,
+        "evidence": 3.0
+      },
+      "quality": 0.75,
+      "quality_threshold_pass": false,
+      "judge_rationale": "Recall: Primary D1 was found with the correct trigger (replay of a stored token after expires_at), mechanism (token-only session lookup), and consequence (continued To-Do authorization); no primary ID was missed. Secondary D2 was also correctly identified. Precision: the material false/unwarranted finding is the high-severity internal-seed \u201cbackdoor\u201d: C4 shows it is disabled without a configured nonempty secret and requires the matching header, so possession of that deliberately configured secret is authorization, not evidence of an OAuth bypass or public backdoor. The broad race framing for update/delete is also overstated, though the toggle and count/delete races are valid. Actionability: the expiry remediation correctly handles the existing RFC-formatted timestamp, fails closed, normalizes future storage, and gives meaningful before/after and route-level verification; the atomic-toggle and input/cookie fixes are similarly concrete and testable. Evidence: source citations and supplied-document disclosure are generally strong, and runtime uncertainty is often labeled, but the seed severity does not follow from the cited guard/configuration evidence, creating one meaningful evidence-to-conclusion gap.",
+      "output_sha256": "7fe8471f3e5ee299e46f10e7d7333297440593c0bad99226b393017468b2b467",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 261.664,
+      "usage": {
+        "input_tokens": 660857,
+        "cached_input_tokens": 584704,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 13369,
+        "reasoning_output_tokens": 8752
+      },
+      "completed_shell_commands": 52,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 3,
+      "source_round": "regression-round",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Primary D1 was found with the complete mechanism: expires_at is stored but ignored by token-only session lookup, so replayed expired tokens still authorize every To-Do route. No primary was missed. The secondary D2 toggle race was also correctly identified. No materially false claim was made, but the guarded seed helper was over-promoted as a high-severity defect/authentication-bypass condition: the report acknowledges the required configured matching secret and unconfirmed production exposure, making this chiefly a conditional hardening recommendation rather than a confirmed vulnerability. The malformed-input and 500-item findings are appropriately supported or qualified. Fixes are source-specific and include strong boundary/concurrency verification, especially canonical expiry storage, malformed-expiry rejection, atomic toggling, and controlled-time tests. Evidence is accurately tied to supplied source and documentation, with deployed configuration, metrics, query plans, and runtime effects explicitly distinguished as unknown.",
+      "output_sha256": "004f0206acb726d70d73d4ac8fad3ff15fb541078e55704fe059572b0b3f7152",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 283.653,
+      "usage": {
+        "input_tokens": 827192,
+        "cached_input_tokens": 741504,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14631,
+        "reasoning_output_tokens": 9759
+      },
+      "completed_shell_commands": 16,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 1,
+      "source_round": "regression-round",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 1.0,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: D1, the primary expired-session mechanism, is fully identified with token-only lookup, stored-but-unenforced expiry, replay consequence, fix, and verification. The report also correctly finds secondary D2, the non-atomic toggle interleaving. No primary IDs were missed. Precision: no material false claims; ownership checks, parameter binding, seed-key guarding, configured bindings/migrations, and the 500-row limitation are handled without asserting the prohibited near-misses. Additional findings have concrete conditional triggers and appropriately qualified exposure. Actionability: fixes are source-specific and security-preserving, including canonical expiry handling, atomic owner-scoped toggles, migration-only schema setup, bounded parsing, and cursor pagination, each with meaningful boundary or concurrency verification. Evidence: source locations and supplied Cloudflare snapshots are accurately cited, supplied-snapshot status is disclosed, and source-confirmed behavior is consistently separated from deployment exposure, query-plan costs, account rules, and other runtime effects that require measurement.",
+      "output_sha256": "7b56fcaaf99fd10d19fdce92db0eea0474a499c1273037cbf45d6cc5a58a40ac",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 230.489,
+      "usage": {
+        "input_tokens": 718600,
+        "cached_input_tokens": 636032,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11844,
+        "reasoning_output_tokens": 7526
+      },
+      "completed_shell_commands": 32,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 2,
+      "source_round": "regression-round",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 4.0
+      },
+      "quality": 0.875,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: primary D1 was found with the complete mechanism\u2014expires_at is stored but never checked by token-only session lookup, so replayed expired tokens still authorize every To-Do route; no primary was missed. The accepted secondary D2 toggle race was also identified. Precision: no materially false exploit claim was made, and safe controls such as the seed key requirement, owner checks, and bound SQL values were respected. However, the conditionally enabled seed route was elevated to a high-severity defect despite the supplied configuration not enabling it; this is better framed as deployment hardening/schema-order risk rather than a confirmed production security defect. Actionability: fixes are source-specific, preserve behavior, include the crucial timestamp-format caveat, and provide meaningful boundary and concurrency verification. Evidence: source citations and confidence distinctions are generally strong, but the report incorrectly says no D1 pricing snapshot was supplied even though the supplied Workers pricing snapshot contains D1 pricing, and some platform citations are only loosely relevant to the associated source-proven findings.",
+      "output_sha256": "e6915d67e3a18ba47ccaa2476ce544689cb1e842b295c2eb231cac64ae695c48",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 257.619,
+      "usage": {
+        "input_tokens": 728231,
+        "cached_input_tokens": 644224,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 13200,
+        "reasoning_output_tokens": 8515
+      },
+      "completed_shell_commands": 39,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 3,
+      "source_round": "regression-round",
+      "dimensions": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "quality": 0.9375,
+      "quality_threshold_pass": true,
+      "judge_rationale": "Recall: The sole primary, D1, is fully identified: token-only session lookup ignores stored expires_at, allowing replay after browser-cookie expiry across all requireUser-protected To-Do routes. The report also correctly finds secondary D2, the read/invert/write toggle race. Precision: no material false finding; the input-size/result-limit risk and conditional seed-before-migrations conflict are source-supported and appropriately qualified. Minor imprecision includes calling acceptance effectively \u201cforever\u201d despite acknowledged logout/deletion bounds and saying every cookie-bearing probe reaches D1 even though malformed percent-encoding can make the cookie parser throw first. Safe controls are respected: no owner-bypass, SQL-injection, or public-seed claim. Actionability: fixes are source-specific and behavior-conscious, including fail-closed expiry enforcement plus canonical timestamps, atomic owner-scoped mutations, input bounds/pagination, migration-based test setup, and meaningful expiry, concurrency, ownership, boundary, and schema verification. Evidence: source locations and supplied canonical documentation URLs are cited accurately; the report discloses supplied snapshots and distinguishes confirmed source behavior from unknown deployment exposure, traffic, secrets, plans, query plans, and incidence.",
+      "output_sha256": "a139c26a0d47f3c3f8d3cff4d78f45f08514a9cf8c0aace10519c045c84d062d",
+      "model": "gpt-5.6-sol",
+      "elapsed_seconds": 195.497,
+      "usage": {
+        "input_tokens": 475645,
+        "cached_input_tokens": 401152,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 10104,
+        "reasoning_output_tokens": 6569
+      },
+      "completed_shell_commands": 9,
+      "skill_read_observed": true,
+      "scanner_observed": true,
+      "out_of_workspace_handles": false
+    }
+  ]
+}

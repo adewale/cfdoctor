@@ -60,3 +60,5 @@ skill-benchmark benchmark evals/shared-benchmark.json --runs eval-runs/latest --
 Script assertions are deterministic repo-owned oracles and require `--allow-scripts` during grading. Judge assertions use an explicit `0.85` threshold. Tune answer cases also include `total_tokens_le` and `elapsed_seconds_le` assertions; grade with `--strict` when those soft efficiency budgets should gate the run.
 
 For a three-way release comparison, materialize the GitHub baseline outside the working tree, populate `old_skill_paths` in a temporary manifest copy, and prepare with `--include-old-skill`. Never point `old_skill` at the mutable local skill tree.
+
+The [fresh-project evaluation receipt](results/fresh-projects/README.md) shows a matched old/new run through these native hooks, including raw-source workspace mounting, frozen documentation hashes, blinded judgments, project-cluster uncertainty, and a disclosed input correction. Its source preparer fails on document drift instead of silently changing the comparison inputs.

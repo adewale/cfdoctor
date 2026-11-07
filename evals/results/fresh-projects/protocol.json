@@ -1,0 +1,160 @@
+{
+  "baseline_commit": "7eefbc7411b634d9a665f9f9240a761f0b2f4314",
+  "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+  "cases": [
+    {
+      "id": "fresh-url-shortener",
+      "bundle_sha256": "dc5452dcb614aec97f5ff2de071fa7aab69d0a7a441f165a0063387db4b4cec1",
+      "repository": "https://github.com/llegomark/url-shortener",
+      "commit": "ab83188893cca6feac2d9e26b57ed9ba00268c35"
+    },
+    {
+      "id": "fresh-bytego",
+      "bundle_sha256": "d9a7aceea5570c7289c284ff79855a31e0033c39f11d4288cfca1f75726b4aa2",
+      "repository": "https://github.com/zopiya/bytego",
+      "commit": "ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a"
+    },
+    {
+      "id": "fresh-status-page",
+      "bundle_sha256": "b6defdd83c19277525a54bce61755504eba0b4765ae2361b7aa468388c57e9cd",
+      "repository": "https://github.com/eidam/cf-workers-status-page",
+      "commit": "f5b49dcae71e12c613b8f00094ed16b735925f64"
+    },
+    {
+      "id": "fresh-web-tools",
+      "bundle_sha256": "5d5ffdd0fcd4ad211f9952ac2aca41483ba41c86633cd96959dbb865d2bf7eda",
+      "repository": "https://github.com/brucehart/web-tools",
+      "commit": "f1a09a2e80c9d3bc62786fe06409cad0b118a045"
+    }
+  ],
+  "manifest_sha256": "c8cbe2de4b586c16c6b46a22f59d8ca1fae3a001177043c72ab6840d141df495",
+  "runs_per_arm": 3,
+  "timeout_seconds": 480,
+  "answer_reasoning": "high",
+  "answer_model": "gpt-5.6-sol",
+  "primary_judge": "codex/gpt-5.6-sol (blinded)",
+  "planned_pairs": 12,
+  "planned_answers": 24,
+  "random_seed": 20261106,
+  "pilot": "round-1 preserved: 2 valid answers, 2 timeouts, 4 aborted in-flight; no pilot answer enters final matched comparison",
+  "final_composition": {
+    "accepted_full_round": 24,
+    "unchanged_round_2": 18,
+    "corrected_bytego_round_3": 6,
+    "reason": "cors.json omitted by initial acquisition filter; all six ByteGo answers replaced, both arms.",
+    "fresh_full_suite_replication": false
+  },
+  "full_round_results": {
+    "quality_gain": {
+      "case_clusters": 4,
+      "quality_delta": 0.06770833333333333,
+      "bootstrap_95_ci": [
+        -0.020833333333333332,
+        0.15104166666666666
+      ],
+      "exact_two_sided_sign_flip_p": 0.375,
+      "case_deltas": {
+        "fresh-bytego": 0.1875,
+        "fresh-status-page": 0.041666666666666664,
+        "fresh-url-shortener": 0.10416666666666667,
+        "fresh-web-tools": -0.0625
+      }
+    },
+    "wins": 9,
+    "losses": 2,
+    "ties": 1,
+    "codex_quality_threshold_passes": {
+      "old_skill": 10,
+      "with_skill": 11
+    },
+    "cross_model_sample": 8,
+    "cross_model_quality_means": {
+      "old_skill": 0.8125,
+      "with_skill": 0.8125
+    }
+  },
+  "attempts_before_focused_regression": {
+    "full_and_corrected_rounds": 30,
+    "budget_pilot": {
+      "completed": 2,
+      "timed_out": 2,
+      "aborted_in_flight": 4
+    },
+    "adapter_probes": {
+      "successful": 3,
+      "unsupported_model_errors": 2
+    },
+    "failed_or_aborted_complete_usage": "unavailable"
+  },
+  "latest_implementation_commit": "09ffa9e88acb78eabc18390902eafefd445dcd74",
+  "full_round_implementation_commit": "4f5333468cd853d067016b4c6ab391735ecbafb9",
+  "focused_regression_protocol": {
+    "candidate_commit": "09ffa9e88acb78eabc18390902eafefd445dcd74",
+    "baseline_commit": "7eefbc7411b634d9a665f9f9240a761f0b2f4314",
+    "reason": "Correct a measured guarded-route precision regression, with ByteGo as adjacent authentication/body-boundary control.",
+    "design": "Three fresh old/new repetitions for web-tools; one old/new ByteGo control repetition.",
+    "timeout_seconds": 480,
+    "model": "gpt-5.6-sol",
+    "reasoning": "high",
+    "prior_full_round_preserved": true
+  },
+  "artifact_limits": [
+    "Raw provider transcripts remain outside Git. Final-answer hashes and per-run scores/usage/rationales are published.",
+    "Frozen docs are retained locally. Reconstruction requires matching hashes or the frozen docs cache; live documentation drift fails closed.",
+    "The full round evaluates 4f5333468cd853d067016b4c6ab391735ecbafb9, not the later admission-guidance correction. Focused verification of the correction is separate.",
+    "Native harness compare-judges returns null default with/without lift for this old/new-only design; explicit overlap and old/new statistics are reported instead."
+  ],
+  "focused_regression_results": {
+    "accepted_answers": 8,
+    "execution_errors": 0,
+    "web_tools_quality": {
+      "old_skill": 87.5,
+      "with_skill": 93.75
+    },
+    "web_tools_precision": {
+      "old_skill": 3.6666666666666665,
+      "with_skill": 4.333333333333333
+    },
+    "unsupported_bypass_labels": {
+      "old_skill": "2/3",
+      "with_skill": "0/3"
+    },
+    "expiry_detected": "6/6",
+    "bytego_control_quality": {
+      "old_skill": 81.25,
+      "with_skill": 100.0
+    },
+    "full_suite_rerun_after_guidance_correction": false
+  },
+  "total_answer_attempts": 46,
+  "accepted_answers_across_separate_evaluations": 32,
+  "raw_run_roots": [
+    "matched-eval-work/round-1",
+    "matched-eval-work/round-2",
+    "matched-eval-work/round-3-bytego",
+    "matched-eval-work/final",
+    "matched-eval-work/regression-round"
+  ],
+  "latest_installed_skill_matches_focused_snapshot": true,
+  "latest_skill_files": {
+    "SKILL.md": "d2783e2f666292551da893c064b9c212b9e47319a5e8ecef4ca755d77abadeb8",
+    "references/audit-engine-patterns.md": "65279587a6ffb2e2e4c2bbbd3b59c7904b93927c43b69bdab95232601f5764cd",
+    "references/audit-playbook.md": "335b61acef612c62b9e9691f4dcc603304239c5a19034062901916fbd84be903",
+    "references/check-coverage-matrix.md": "d760c0e102b50f90aa3db87050f5b4c7cdda30d6b723f0eca08a09124cfadd77",
+    "references/cloudflare-best-practices-docs.md": "411c2da275970fa85b15fded5e907431031c89669dc7ecd5b83391c1a85b4002",
+    "references/config-and-security-checks.md": "508d5ecffbb829ca433b8eaecab6e95c845e4bf40c81e1f3220ac7531b18c5a7",
+    "references/cost-footguns.md": "fd2d8c44e2c7938a45ff48bcbb274329886ed71433d40cf18000b7b6d2f6eb08",
+    "references/official-source-map.md": "9e74b08469ac99359adea9b021e1b868158b3d0a93407ada066f5170d580a156",
+    "references/performance-and-reliability.md": "7301c5eecfabd126629027d7a3f6fa941e8af18f078423b59df54c8a1d73b63f",
+    "references/pricing-source-bundles.md": "f653cc550df1025886c5abd0fe6b95c90e98e0f932aabe435a81558b6970e68c",
+    "references/product-fit-rubric.md": "84945785a0a84a63cffd52766cb42dae9f67b4458bfa2625f7b0d1eb9e0bb816",
+    "references/recommendation-provenance.md": "aca855b7574010557a7488aaca6abe6352b9fa219591616f294d15ec9602087d",
+    "references/sharing-cloudflare-state.md": "38b182fd30563535c395b5d39a08067edc2702f5d8b05fde0fe8916723e966d4",
+    "references/targeted-account-reads.md": "fc3ab5ed0d6f1a2709596264517b65d45e69a327ad3cb4f35f2136b20c902c72",
+    "references/war-story-scenario-checklist.md": "28e6279c265026d695cb734ecda50ba13af0873a9af1fde708be1a1f473d91a7",
+    "references/workload-boundaries.md": "512748a397b96b2cea2d9059eb60f6cf3ebce7bea105e955da387c91308a01ee",
+    "references/wrangler-snapshots.md": "5ccaadf317ead0b6dd07987a342660c393aafd8144515d69c2f5f92b294d3c45",
+    "scripts/cfdoctor_static_scan.py": "7315594ddb552a68504dbb4e3dd56c21c4b630e6ac2dc5acfab01e9ed5741ce3",
+    "scripts/scan_workloads.py": "7b7ef2205a29fce8ecbb520a50abc06da879aefe3cb60a9d55898240773a2b32"
+  }
+}
