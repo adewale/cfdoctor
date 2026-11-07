@@ -1,0 +1,23 @@
+# Post-freeze factual addendum: deletion contract and supplied scope
+
+Prepared 2026-11-07 from the exact pinned source at a4385c092afda23c590189e18dfd557d3c86e363. This addendum supplements the non-exhaustive pre-generation author notes; it does not change those frozen notes, raw inputs, or original hashes. It contains factual source clarification rather than a new defect quota or changed evaluation policy. No target code, test, or deployed endpoint was executed.
+
+## The documentation contains a real retention/deletion conflict
+
+doc/api.md:127 describes the optional expiration parameter and says: “After this period of time, the paste is permanently deleted.” README.md:31 explicitly says: “To save KV writes, we do not actively delete expired big files in KV, we just overwrite them in need.” Both statements are present in the supplied pinned source. They should be considered together: physical retention is disclosed in the README, while the API describes permanent deletion without expressing that exception.
+
+The implementation confirms a split between logical expiration/access and physical deletion. src/db.js:48-65 computes expiration from stored metadata. DB_Get at :100-102 deletes an expired D1 row when it is accessed and returns null. DB_GetWithMetadata at :135-138 also deletes the D1 row on expired access, but returns the non-null expiredItemTemplate from :26-35. Ordinary raw GET therefore bypasses the not-found guard in src/handlers/handleRead.js:49-54 and reaches new Response(item.value) at :113 with a default 200 status and placeholder content. Role-specific decoding/rendering branches can behave differently; no runtime result for those branches is asserted here.
+
+DB_Delete at src/db.js:162-165 deletes the D1 row only. It has no KV delete. Large payload writes at :76-87 put bytes under the short key in KV and put a marker plus metadata in D1. Deletion, expiry cleanup, or a large-to-small update can therefore leave a KV payload without an active D1 reference. This can persist until that key is overwritten or separate external cleanup occurs. There is no source scheduler to delete untouched expired D1 rows; physical D1 cleanup is lazy. The source alone does not inventory deployed retained rows or payloads.
+
+A source-grounded report may identify the API/README contradiction, distinguish access expiration from a physical erasure guarantee, ask which retention contract the product intends, and propose harmonized documentation or physical cleanup. It may also independently identify the first-expired-default-read status inconsistency. It should not describe retained KV bytes as an undisclosed behavior, assert that a deleted D1 URL still serves the retained original bytes, or claim an observed external leak, privacy violation, legal consequence, billing incident, deployed frequency, or measured retention amount without supporting evidence. The non-exhaustive frozen notes' emphasis on README disclosure does not eliminate the separately supported API-contract contradiction.
+
+Browser freshness is a related but distinct issue: src/handlers/handleRead.js:14-16 applies the configured CACHE_PASTE_AGE, set to 600 in wrangler.toml:50-51, without clamping to remaining paste lifetime. A previously cached response may remain fresh after a short expiry/update/delete. Shared deployed caches, actual cache hits, and erasure of copies already received by a client are not established by these source facts.
+
+## Supplied CI scope is independently verified
+
+The frozen raw tree and per-file manifest include .github/workflows/deploy.yml (568 bytes) and .github/workflows/pr.yml (1,424 bytes). The actual supplied raw-source bundle, final-expanded-work/inputs/pastebin-d1.project.json, contains both exact paths. All 33 file contents in that bundle were independently compared byte-for-byte with the frozen raw inputs and matched. Dotfiles were therefore supplied in this case; a statement that no CI files were supplied is factually incorrect.
+
+The deploy workflow has separate Setup, Test, and Deploy steps; the PR workflow installs dependencies, tests coverage, and handles coverage artifacts. Neither is evidence that target tests passed or a deployment succeeded in this audit. README's manual D1 schema bootstrap remains an explicit deployment prerequisite; schema.sql is disclosed as resetting data. Missing automated migrations alone does not prove a hidden destructive upgrade occurred.
+
+Workflow SHA-256 values: deploy.yml = b413782d93841e283beb0ac22fb73b40f94af114a710cd8ba79f070e07139601; pr.yml = 6e6a8183210e74fabda5a43473e9ff033811b024d2dad224dc6cf62757196c12.

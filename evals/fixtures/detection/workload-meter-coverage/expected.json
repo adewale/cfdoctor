@@ -1,0 +1,11 @@
+{
+  "description": "Synthetic regression for workload-meter-coverage. Safe controls prove only the named detector boundary, not whole-application safety.",
+  "source_issue": "https://github.com/adewale/cfdoctor/issues/35",
+  "required_check_ids": [
+    "CFDOC-COST-METER-COVERAGE"
+  ],
+  "forbidden_check_ids": [],
+  "evidence_ids": [
+    "CFDOC-EVD-DATAFLARE-AUDIT"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "description": "Route-zone derivation control from independent forward audit. Explicit zone input suppresses only the hostname-guess lead.",
+  "evidence_ids": [
+    "CFDOC-EVD-DATAFLARE-AUDIT"
+  ],
+  "required_check_ids": [
+    "CFDOC-CONFIG-ROUTE-ZONE-GUESS"
+  ],
+  "forbidden_check_ids": []
+}

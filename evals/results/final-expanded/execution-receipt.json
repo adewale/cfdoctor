@@ -1,0 +1,19 @@
+{
+  "candidate_commit_tested": "769182a23e5acb67369dc240a88c54e75d2f9477",
+  "baseline_commit": "7eefbc7411b634d9a665f9f9240a761f0b2f4314",
+  "answer_attempts": 48,
+  "accepted_answers": 48,
+  "answer_errors": 0,
+  "answer_retries": 0,
+  "initial_judgments": 96,
+  "source_clarification_judgments": 24,
+  "final_judgments": 96,
+  "judge_errors": 0,
+  "initial_affected_judgments_preserved": 24,
+  "independent_source_reviews": 48,
+  "installed_skill_tree_still_matches_tested_pin": true,
+  "current_evidence_changes_touch_installed_skill": false,
+  "public_reconstruction_statistics_match": true,
+  "recommended_merge_status": "hold: aggregate audit-quality improvement not established across judges; source errors remain",
+  "required_checks": "passed; CI reruns after push"
+}

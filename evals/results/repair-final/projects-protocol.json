@@ -1,0 +1,187 @@
+{
+  "baseline_commit": "7eefbc7411b634d9a665f9f9240a761f0b2f4314",
+  "candidate_commit": "a1e9c3ae07d6cf61b50fadb44b2c12e0ff681372",
+  "candidate_skill_files": {
+    "SKILL.md": "00f89cd21cf461d8c50e9659cfe94fed3e45321323ee4496798708b6e2775249",
+    "references/audit-engine-patterns.md": "65279587a6ffb2e2e4c2bbbd3b59c7904b93927c43b69bdab95232601f5764cd",
+    "references/audit-playbook.md": "664ab96aab39c0988c2897f1445cb848f49b36be9b9dff51358d599030d8284f",
+    "references/check-coverage-matrix.md": "d760c0e102b50f90aa3db87050f5b4c7cdda30d6b723f0eca08a09124cfadd77",
+    "references/cloudflare-best-practices-docs.md": "411c2da275970fa85b15fded5e907431031c89669dc7ecd5b83391c1a85b4002",
+    "references/config-and-security-checks.md": "508d5ecffbb829ca433b8eaecab6e95c845e4bf40c81e1f3220ac7531b18c5a7",
+    "references/cost-footguns.md": "7ecfa7976366cdce11d8ba82daa00ee532d3692773ffbe5bf8d40a9392faef83",
+    "references/official-source-map.md": "9e74b08469ac99359adea9b021e1b868158b3d0a93407ada066f5170d580a156",
+    "references/performance-and-reliability.md": "5f0b4ece1e1c842410dac6a4dd9bccc7e4bf49713e410a5e404de17ab097d699",
+    "references/pricing-source-bundles.md": "f653cc550df1025886c5abd0fe6b95c90e98e0f932aabe435a81558b6970e68c",
+    "references/product-fit-rubric.md": "84945785a0a84a63cffd52766cb42dae9f67b4458bfa2625f7b0d1eb9e0bb816",
+    "references/recommendation-provenance.md": "39f5cb29e4a3c550a29e5ee82a47f94cfac3ba019e8767ce223a97e34877baa0",
+    "references/sharing-cloudflare-state.md": "38b182fd30563535c395b5d39a08067edc2702f5d8b05fde0fe8916723e966d4",
+    "references/targeted-account-reads.md": "fc3ab5ed0d6f1a2709596264517b65d45e69a327ad3cb4f35f2136b20c902c72",
+    "references/war-story-scenario-checklist.md": "28e6279c265026d695cb734ecda50ba13af0873a9af1fde708be1a1f473d91a7",
+    "references/workload-boundaries.md": "512748a397b96b2cea2d9059eb60f6cf3ebce7bea105e955da387c91308a01ee",
+    "references/wrangler-snapshots.md": "5ccaadf317ead0b6dd07987a342660c393aafd8144515d69c2f5f92b294d3c45",
+    "scripts/cfdoctor_static_scan.py": "0aff9839c621f5f5d2fedf7505f34acf0e4ba3c630b82903d3d52466a08e9db1",
+    "scripts/scan_workloads.py": "7b7ef2205a29fce8ecbb520a50abc06da879aefe3cb60a9d55898240773a2b32"
+  },
+  "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+  "model": "gpt-5.6-sol",
+  "reasoning": "high",
+  "timeout_seconds": 480,
+  "runs_per_arm": 3,
+  "planned_answers": 60,
+  "pairs": 30,
+  "pair_workers": 6,
+  "random_seed": 20261107,
+  "judges": {
+    "codex": "gpt-5.6-sol",
+    "claude": "claude-sonnet-4-6"
+  },
+  "judge_workers_per_backend": 4,
+  "raw_graded_threshold": 4.4,
+  "normalized_quality_threshold": 0.85,
+  "calibration": "24 independently authored near-miss reports per backend; final judges start only after calibration-v2 passes.",
+  "precision_rubric_sha256": "f206c0bc16234e3cc96e3f49ccbe18a35e395da19f9ec58fb07b6c126b6bc573",
+  "judge_preface_sha256": "47e8ca764a69ded2a5adc0e82ac8aba2d9b9fcae3389ab5182885da63e3cf13d",
+  "factual_cards_sha256": "efd74474713b01bd80c0cebb0ff173e95e48753501532e20a3fc8d510ebbf83a",
+  "source_oracle_review_receipt_sha256": "e58ddf3b003a8dd6437c23c8b5b112706304eac8f894ea9756d107b73ece913b",
+  "fresh_author_freeze_sha256": "dbdc9fcfe7d58bbf128e0e697f87cc3fe6016977b28788e6f67dec429c274b6f",
+  "manifest_sha256": "4eed8b764d88e3de804365ec44545bd969b8de5d7fabdff06a8a4f24e8e15672",
+  "cohorts": {
+    "known8": [
+      "fresh-url-shortener",
+      "fresh-bytego",
+      "fresh-status-page",
+      "fresh-web-tools",
+      "fresh-hookrelay",
+      "fresh-workers-chat-demo",
+      "fresh-pastebin-d1",
+      "fresh-reia-lfs-r2"
+    ],
+    "unseen2": [
+      "fresh-anynote",
+      "fresh-bashupload-r2"
+    ],
+    "original4": [
+      "fresh-url-shortener",
+      "fresh-bytego",
+      "fresh-status-page",
+      "fresh-web-tools"
+    ],
+    "previous_new4": [
+      "fresh-hookrelay",
+      "fresh-workers-chat-demo",
+      "fresh-pastebin-d1",
+      "fresh-reia-lfs-r2"
+    ]
+  },
+  "clusters": {
+    "fresh-url-shortener": "fresh-url-shortener",
+    "fresh-bytego": "fresh-bytego",
+    "fresh-status-page": "fresh-status-page",
+    "fresh-web-tools": "fresh-web-tools",
+    "fresh-hookrelay": "fresh-hookrelay",
+    "fresh-workers-chat-demo": "fresh-workers-chat-demo",
+    "fresh-pastebin-d1": "fresh-pastebin-d1",
+    "fresh-reia-lfs-r2": "fresh-reia-lfs-r2",
+    "fresh-anynote": "fresh-anynote",
+    "fresh-bashupload-r2": "fresh-bashupload-r2"
+  },
+  "analysis": {
+    "unit": "Project, not repetitions;50k case-cluster bootstrap seed20261107; exact paired sign-flip test.",
+    "channels": [
+      "primary recall",
+      "material factual precision",
+      "remedy validity",
+      "evidence",
+      "answer total/cached/uncached/output tokens",
+      "elapsed"
+    ],
+    "quality_means": "Normalize each of four1\u20135 dimensions using(score-1)/4; report judge disagreement and source adjudication.",
+    "readiness": "Required deterministic checks pass; full matched precision and primary recall do not decline consistently, both judges/source review support a quality gain; no repeated new material error pattern or primary loss on unseen cases. Inspect disagreements rather than averaging them away. Token tradeoff must be measured; no claim of stable dollar savings.",
+    "uncertainty": "Ten selected source projects, including only two newly unseen, do not establish general accuracy."
+  },
+  "retry_policy": "No selective quality retries. Preserve all failures. A failed answer invalidates its pair for quality comparison; only proven adapter/network failures may trigger a fresh rerun of both arms, separately recorded. Timeouts remain performance failures.",
+  "projects": [
+    {
+      "case": "fresh-url-shortener",
+      "repository": "https://github.com/llegomark/url-shortener",
+      "commit": "ab83188893cca6feac2d9e26b57ed9ba00268c35",
+      "bundle_sha256": "dc5452dcb614aec97f5ff2de071fa7aab69d0a7a441f165a0063387db4b4cec1",
+      "files": 6,
+      "bytes": 20561
+    },
+    {
+      "case": "fresh-bytego",
+      "repository": "https://github.com/zopiya/bytego",
+      "commit": "ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a",
+      "bundle_sha256": "d9a7aceea5570c7289c284ff79855a31e0033c39f11d4288cfca1f75726b4aa2",
+      "files": 10,
+      "bytes": 62850
+    },
+    {
+      "case": "fresh-status-page",
+      "repository": "https://github.com/eidam/cf-workers-status-page",
+      "commit": "f5b49dcae71e12c613b8f00094ed16b735925f64",
+      "bundle_sha256": "b6defdd83c19277525a54bce61755504eba0b4765ae2361b7aa468388c57e9cd",
+      "files": 11,
+      "bytes": 28513
+    },
+    {
+      "case": "fresh-web-tools",
+      "repository": "https://github.com/brucehart/web-tools",
+      "commit": "f1a09a2e80c9d3bc62786fe06409cad0b118a045",
+      "bundle_sha256": "5d5ffdd0fcd4ad211f9952ac2aca41483ba41c86633cd96959dbb865d2bf7eda",
+      "files": 14,
+      "bytes": 44194
+    },
+    {
+      "case": "fresh-hookrelay",
+      "repository": "https://github.com/grunt-it/hookrelay",
+      "commit": "b92069bf3b618600cd5d40e8ddfb2854cc88e18d",
+      "bundle_sha256": "2142cfbdd62920d0a16eafa59b58400c5e83fbddc0ad616984e6b04c2bad6393",
+      "files": 21,
+      "bytes": 76900
+    },
+    {
+      "case": "fresh-workers-chat-demo",
+      "repository": "https://github.com/cloudflare/workers-chat-demo",
+      "commit": "dd32ce87617a9df6c614004d2fc2fb0628698121",
+      "bundle_sha256": "6cf84e8117ff3c6ca6e999c24513c9aa70ee4cfd4ebee963636f8895cb2584ff",
+      "files": 8,
+      "bytes": 46435
+    },
+    {
+      "case": "fresh-pastebin-d1",
+      "repository": "A-Archives-and-Forks/pastebin-worker-d1",
+      "commit": "a4385c092afda23c590189e18dfd557d3c86e363",
+      "bundle_sha256": "08abb7a073e37004e403f2e8fa3ad0f8889c420e299bb1d3625772e66919df71",
+      "files": 33,
+      "bytes": 180311
+    },
+    {
+      "case": "fresh-reia-lfs-r2",
+      "repository": "Quaint-Studios/reia-lfs-cloudflare-worker",
+      "commit": "2758c463e3b364f4cfb59010e2c25f0d544540eb",
+      "bundle_sha256": "45e7301c9271a9cd69f6751bfcdd12a87ec9caf2328930063ce8d7eb9155ba69",
+      "files": 4,
+      "bytes": 22457
+    },
+    {
+      "case": "fresh-anynote",
+      "repository": "https://github.com/bestK/anynote",
+      "commit": "6a9af2ab179efc0eea7a026a9b9d848c950d4581",
+      "bundle_sha256": "7241ca14282f54d2f37d568a2698bb6af57b5c5341f9d83d68a7d7ee02b57616",
+      "files": 5,
+      "bytes": 52742
+    },
+    {
+      "case": "fresh-bashupload-r2",
+      "repository": "https://github.com/DullJZ/bashupload-r2",
+      "commit": "104901548e0b436fed269e445c4d23a0cfb043a6",
+      "bundle_sha256": "fbac41a2f3f801717610712a9f8c70b4f2edc9d9a1c96343dae7ed6422ed9bb9",
+      "files": 10,
+      "bytes": 101527
+    }
+  ],
+  "freeze_time": 1794024660.57058,
+  "pool": "Shared six pair workers across both cohorts; arms serial within pair. Separate baselines and statistics; never pool cohort quality scores."
+}

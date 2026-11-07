@@ -1,0 +1,15 @@
+{
+  "kind": "Authoring-unit correction in matched evaluation metadata, not a harness implementation bug.",
+  "initial_raw_threshold": 0.85,
+  "initial_native_normalized_threshold": 0.0,
+  "correct_raw_1_to_5_threshold": 4.4,
+  "correct_normalized_threshold": 0.85,
+  "initial_judging_manifest_sha256": "9e27ef13c9abcb3adcd073ae7185e2f5f409b1b78b61d7c66dfc399a47b910ed",
+  "corrected_judging_manifest_sha256": "8452ad093f8d8eb7a6419e40e6a4a7f2538c007e9a7ff42ffd002bb88cd96462",
+  "dimension_ratings_and_all_quality_means_deltas_unchanged": true,
+  "quality_summaries_always_recomputed_0_85_gate_from_dimensions": true,
+  "initial_native_pass_labels_not_used_as_quality_evidence": true,
+  "judge_calls_repeated_for_this_metadata_fix": 0,
+  "answer_prompts_inputs_skills_unchanged": true,
+  "native_benchmarks_reaggregated": true
+}

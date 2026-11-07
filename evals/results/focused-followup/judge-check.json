@@ -1,0 +1,143 @@
+{
+  "passed": true,
+  "rows": [
+    {
+      "judge_task_id": "sample-604cee807f64",
+      "case_id": "queue-control",
+      "variant": "candidate",
+      "run_number": 1,
+      "judge_model": "codex/gpt-5.6-sol",
+      "judge_backend": "codex",
+      "cost_usd": null,
+      "usage_normalized": {
+        "input_tokens": 16583,
+        "output_tokens": 194,
+        "total_tokens": 16777,
+        "source": "trace_normalized"
+      },
+      "cost_normalized": {
+        "source": "missing"
+      },
+      "evidence": "No material false or unsupported claims. The report correctly traces awaited sequential processing, acknowledgement only after successful delivery and body consumption, and retry for network, body-read, or non-2xx failures. It also correctly relies on README.md for the stated eventId deduplication and preconfigured DLQ, and appropriately rejects the scanner\u2019s low-confidence missing-config lead. All claimed file inspections and the read-only scanner execution are supported by the observed activity.",
+      "returncode": 0,
+      "stderr": "",
+      "verdict_kind": "dimensions",
+      "passed": true,
+      "score": 1.0,
+      "threshold": 0.75,
+      "dimension_scores": {
+        "precision": 5.0,
+        "evidence": 5.0
+      },
+      "sample": "observed",
+      "backend": "codex",
+      "output_sha256": "ff1c3bf633c68ab63cecf5076c5235cf3f0e6b6790f9469f32382263a96df45a"
+    },
+    {
+      "judge_task_id": "sample-01a529289685",
+      "case_id": "queue-control",
+      "variant": "candidate",
+      "run_number": 1,
+      "judge_model": "codex/gpt-5.6-sol",
+      "judge_backend": "codex",
+      "cost_usd": null,
+      "usage_normalized": {
+        "input_tokens": 16573,
+        "output_tokens": 308,
+        "total_tokens": 16881,
+        "source": "trace_normalized"
+      },
+      "cost_normalized": {
+        "source": "missing"
+      },
+      "evidence": "One material false claim: \u201cthe scanner\u2019s `CFDOC-SEC-SECRET-VALUE` lead is contradicted.\u201d The observed scanner output contains no such lead; its sole finding is `CFDOC-REL-QUEUE-NO-DLQ`. The README does support dismissing that actual DLQ/configuration lead, and the remainder of the callback analysis accurately follows worker.js and reference.md. Thus there is one unsupported execution/evidence attribution, not multiple defects or invented execution dominating the report.",
+      "returncode": 0,
+      "stderr": "",
+      "verdict_kind": "dimensions",
+      "passed": false,
+      "score": 0.5,
+      "threshold": 0.75,
+      "dimension_scores": {
+        "precision": 3.0,
+        "evidence": 3.0
+      },
+      "sample": "false-lead",
+      "backend": "codex",
+      "output_sha256": "77edddb16f2ef188eed4a766804904a4e60fe1c640125b4b64075eeca064b82f"
+    },
+    {
+      "judge_task_id": "sample-604cee807f64",
+      "case_id": "queue-control",
+      "variant": "candidate",
+      "run_number": 1,
+      "judge_model": "claude-sonnet-4-6",
+      "judge_backend": "claude",
+      "cost_usd": 0.163389,
+      "usage_normalized": {
+        "input_tokens": 3,
+        "output_tokens": 2180,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 21780,
+        "total_tokens": 2183,
+        "source": "provider_reported"
+      },
+      "cost_normalized": {
+        "currency": "USD",
+        "total_cost": 0.163389,
+        "source": "provider_reported",
+        "pricing_model": "claude-sonnet-4-6"
+      },
+      "evidence": "Precision 5: The candidate correctly identifies no material defects in the code. All claims are accurate and well-grounded: the sequential for-of/await loop is correctly characterized, ack/retry semantics match source, the scanner lead CFDOC-REL-QUEUE-NO-DLQ is correctly dismissed because README.md explicitly states the DLQ is already configured. The candidate avoids all stated material false claim traps. No material false or unsupported claims found. Evidence 4: All file inspections and the scanner run are confirmed by the evaluator trace (nl -ba on each file, python3 -B scanner run). The minor gap is that the candidate cites reference.md:3 for the claim about retry() not aborting the remaining batch, but that specific content resides in later lines of the document, not line 3. The file was genuinely inspected and contains the cited content, so this is a minor line-citation imprecision rather than an unsupported attribution.",
+      "returncode": 0,
+      "stderr": "",
+      "verdict_kind": "dimensions",
+      "passed": true,
+      "score": 0.875,
+      "threshold": 0.75,
+      "dimension_scores": {
+        "precision": 5.0,
+        "evidence": 4.0
+      },
+      "sample": "observed",
+      "backend": "claude",
+      "output_sha256": "ff1c3bf633c68ab63cecf5076c5235cf3f0e6b6790f9469f32382263a96df45a"
+    },
+    {
+      "judge_task_id": "sample-01a529289685",
+      "case_id": "queue-control",
+      "variant": "candidate",
+      "run_number": 1,
+      "judge_model": "claude-sonnet-4-6",
+      "judge_backend": "claude",
+      "cost_usd": 0.16087200000000001,
+      "usage_normalized": {
+        "input_tokens": 3,
+        "output_tokens": 2015,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 21773,
+        "total_tokens": 2018,
+        "source": "provider_reported"
+      },
+      "cost_normalized": {
+        "currency": "USD",
+        "total_cost": 0.160872,
+        "source": "provider_reported",
+        "pricing_model": "claude-sonnet-4-6"
+      },
+      "evidence": "**Precision (3):** The candidate's core code analysis is correct \u2014 the ack/retry flow is accurately described, the sequential for-of with await is correctly handled, and the conclusion of \"no confirmed findings\" is correct. However, there is one material false factual claim: the candidate states \"the scanner's `CFDOC-SEC-SECRET-VALUE` lead is contradicted by supplied configuration evidence.\" The actual scanner finding ID in the output is `CFDOC-REL-QUEUE-NO-DLQ` (reliability/DLQ concern), not `CFDOC-SEC-SECRET-VALUE` (which would be a secret-value finding). The candidate invented or confused the finding identifier. While the substance of dismissing the DLQ concern is correct (README states \"Deploy configuration already connects the consumer and DLQ\"), the false attribution of the scanner finding ID is a material false factual claim per the rubric. This meets the \"3: one material false factual claim\" threshold.\n\n**Evidence (3):** The trace confirms the auditor ran the scanner, read reference.md, worker.js, and README.md. File citations for the code analysis (worker.js:12, reference.md, README.md) are supported. However, the citation of `CFDOC-SEC-SECRET-VALUE` as the scanner finding is one unsupported evidence attribution \u2014 the scanner output plainly shows the only finding was `CFDOC-REL-QUEUE-NO-DLQ`. Citing a non-existent finding ID as the basis for dismissal constitutes one unsupported evidence attribution, landing at a score of 3 per the rubric.",
+      "returncode": 0,
+      "stderr": "",
+      "verdict_kind": "dimensions",
+      "passed": false,
+      "score": 0.5,
+      "threshold": 0.75,
+      "dimension_scores": {
+        "precision": 3.0,
+        "evidence": 3.0
+      },
+      "sample": "false-lead",
+      "backend": "claude",
+      "output_sha256": "77edddb16f2ef188eed4a766804904a4e60fe1c640125b4b64075eeca064b82f"
+    }
+  ]
+}

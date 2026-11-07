@@ -1,0 +1,19 @@
+{
+  "description": "Synthetic regression for workload-generator. Safe controls prove only the named detector boundary, not whole-application safety.",
+  "source_issue": "https://github.com/adewale/cfdoctor/issues/35",
+  "required_check_ids": [
+    "CFDOC-CONFIG-R2-JURISDICTION"
+  ],
+  "forbidden_check_ids": [],
+  "required_products": [
+    "D1",
+    "R2",
+    "Pipelines"
+  ],
+  "forbidden_products": [
+    "Stream"
+  ],
+  "evidence_ids": [
+    "CFDOC-EVD-DATAFLARE-AUDIT"
+  ]
+}

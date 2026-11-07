@@ -1,0 +1,191 @@
+{
+  "runs": [
+    {
+      "run": "fresh-url-shortener/old_skill/run-3",
+      "completed_commands": 17,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-url-shortener/old_skill/run-2",
+      "completed_commands": 42,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-url-shortener/old_skill/run-1",
+      "completed_commands": 21,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-url-shortener/with_skill/run-3",
+      "completed_commands": 20,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-url-shortener/with_skill/run-2",
+      "completed_commands": 15,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-url-shortener/with_skill/run-1",
+      "completed_commands": 29,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-bytego/old_skill/run-3",
+      "completed_commands": 43,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-bytego/old_skill/run-2",
+      "completed_commands": 34,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-bytego/old_skill/run-1",
+      "completed_commands": 51,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-bytego/with_skill/run-3",
+      "completed_commands": 26,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-bytego/with_skill/run-2",
+      "completed_commands": 15,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-bytego/with_skill/run-1",
+      "completed_commands": 31,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/old_skill/run-3",
+      "completed_commands": 36,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/old_skill/run-2",
+      "completed_commands": 13,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/old_skill/run-1",
+      "completed_commands": 26,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/with_skill/run-3",
+      "completed_commands": 37,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/with_skill/run-2",
+      "completed_commands": 40,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/with_skill/run-1",
+      "completed_commands": 15,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-status-page/old_skill/run-3",
+      "completed_commands": 35,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-status-page/old_skill/run-2",
+      "completed_commands": 54,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-status-page/old_skill/run-1",
+      "completed_commands": 26,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-status-page/with_skill/run-3",
+      "completed_commands": 16,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-status-page/with_skill/run-2",
+      "completed_commands": 11,
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-status-page/with_skill/run-1",
+      "completed_commands": 31,
+      "skill_read": true,
+      "scanner_run": true
+    }
+  ],
+  "commands_requiring_review": [],
+  "focused_runs": [
+    {
+      "run": "fresh-bytego/old_skill/run-1",
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-bytego/with_skill/run-1",
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/old_skill/run-3",
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/old_skill/run-2",
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/old_skill/run-1",
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/with_skill/run-3",
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/with_skill/run-2",
+      "skill_read": true,
+      "scanner_run": true
+    },
+    {
+      "run": "fresh-web-tools/with_skill/run-1",
+      "skill_read": true,
+      "scanner_run": true
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Synthetic regression for workload-parameters-safe. Safe controls prove only the named detector boundary, not whole-application safety.",
+  "source_issue": "https://github.com/adewale/cfdoctor/issues/35",
+  "required_check_ids": [],
+  "forbidden_check_ids": [
+    "CFDOC-REL-D1-PARAMETERS"
+  ],
+  "evidence_ids": [
+    "CFDOC-EVD-DATAFLARE-AUDIT"
+  ]
+}

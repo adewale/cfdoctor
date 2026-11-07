@@ -1,0 +1,43 @@
+{
+  "oracle-correction": {
+    "frozen_at": "2026-11-07T01:54:47.536445+00:00",
+    "affected_case": "fresh-pastebin-d1",
+    "reports_per_arm": 3,
+    "judges": [
+      "codex/gpt-5.6-sol",
+      "claude/claude-sonnet-4-6"
+    ],
+    "reason": "Independent source review identifies an API/README retention-contract conflict and verifies supplied hidden CI files. Clarify non-exhaustive source oracle for every affected report; do not select based on score.",
+    "oracle_addendum_sha256": "3b5dcc56fc5c8597b66bf2c5ba574437918eec9ed15d1551074f5c0cdd75a63a",
+    "initial_answer_manifest_sha256": "5957c11247da888d6286f9a6d7f9341bda4d2aeb24edbbf52bc87fdb51cff8fe",
+    "corrected_full_judging_manifest_sha256": "6cdc64ccf0445d7bba3ee50bb78204ae3845664f7d451059431b1b8610e0cfda",
+    "answer_inputs_model_skill_rubrics_unchanged": true,
+    "initial_judgments_preserved": true,
+    "planned_corrected_judgments": 12,
+    "answer_reruns": 0
+  },
+  "oracle-correction-status": {
+    "frozen_at": "2026-11-07T01:58:32.680167+00:00",
+    "affected_case": "fresh-status-page",
+    "reports_per_arm": 3,
+    "judges": [
+      "codex/gpt-5.6-sol",
+      "claude/claude-sonnet-4-6"
+    ],
+    "reason": "Independent source review clarifies that cleanup is a .map callback: callback return is valid, literal continue needs a loop refactor. Clarify all affected reports without changing diagnosis/rubrics or selecting by score.",
+    "oracle_addendum_sha256": "c27b4040f41176bc4a4f416d5384620a8385e9e71e6bce910179ca4165fa1d2c",
+    "initial_answer_manifest_sha256": "5957c11247da888d6286f9a6d7f9341bda4d2aeb24edbbf52bc87fdb51cff8fe",
+    "corrected_full_judging_manifest_sha256": "5f99b84e36db01a7d463aa2d389037f3ca7a77783d8e6672e3e7231a3f98687e",
+    "answer_inputs_model_skill_rubrics_unchanged": true,
+    "initial_judgments_preserved": true,
+    "planned_corrected_judgments": 12,
+    "answer_reruns": 0
+  },
+  "publication_normalization": {
+    "oracle-addendum-status.md": {
+      "original_graded_sha256": "c27b4040f41176bc4a4f416d5384620a8385e9e71e6bce910179ca4165fa1d2c",
+      "published_sha256": "a1ee92c2b7adc80b536185dd4e4f6cab549eb2b5f0dd8087a3c9113a83515f58",
+      "change": "Remove extra blank line at EOF for repository whitespace policy; factual text unchanged. Original exact graded note remains in archived run manifest/transcripts."
+    }
+  }
+}

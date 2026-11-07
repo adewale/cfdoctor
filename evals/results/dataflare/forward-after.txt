@@ -1,0 +1,59 @@
+Final focused forward-eval output. This four-finding triage is not an exhaustive audit or a matched old-skill benchmark.
+
+## Focused Cloudflare Doctor audit
+
+Scope inspected: `packages/worker/src/ingest.ts`, `packages/worker/src/replays.ts`, `packages/cli/src/cloudflare/provision.ts`; narrowly necessary callers, migrations, and generated-config paths; one read-only static scan.
+
+Scope not inspected: deployed Worker/configuration, Cloudflare plan, account resources, traffic, logs, metrics, bundled `.glass/worker.js`, or dashboard state. No target code, installer, account command, or deployment was run.
+
+Docs refreshed: Cloudflare D1 limits, Workers limits, R2 Workers API, and Wrangler configuration, all retrieved November 5, 2026.
+
+### 1. Ingest can exceed D1’s parameter limit
+
+- Severity: Medium
+- Category: Reliability
+- Evidence: `handleIngest` accepts as many as 200 events ([ingest.ts](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L96)). `personProperties` fetches people in 90-item chunks but accumulates all matches, then builds one update containing two fixed bindings plus every matched person ID ([ingest.ts](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L316)). Thus 99 matched people produce 101 parameters. Scanner lead: `CFDOC-REL-D1-PARAMETERS`.
+- Why it matters: Cloudflare currently permits at most 100 bound parameters per D1 query. A valid batch with at least 99 distinct existing people can fail during enrichment rather than being accepted.
+- Fix: Chunk the final `UPDATE persons` into at most 98 IDs per statement, or reuse the existing 90-item chunks. Define whether partial chunk failure may leave `last_seen` partially updated.
+- Cost / trade-off: One additional D1 query for larger batches; small implementation cost. It prevents deterministic request failures.
+- Verify: Add a binding double that enforces D1’s 100-parameter ceiling, seed 99 people, ingest 99 distinct events, and assert every `last_seen` is updated. Also test 200.
+- Source basis: [Cloudflare D1 limits](https://developers.cloudflare.com/d1/platform/limits/) documents 100 bound parameters per query.
+- Confidence: High — confirmed source failure; whether production receives such batches is unknown.
+
+### 2. Replay loading retains an unbounded decompressed session
+
+- Severity: High
+- Category: Reliability
+- Evidence: `loadReplayPages` paginates through every object under a session prefix, retains every key, fetches every object, buffers each compressed body, fully decompresses it to a string, parses it, retains every chunk, then copies events into page arrays and sorts them ([replays.ts](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L437)). Six-way fetch concurrency limits simultaneous fetches, not total retained data. The upload limit is per compressed chunk and is checked only after `request.arrayBuffer()` ([replays.ts](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L87)). Scanner leads: `CFDOC-REL-EXPANSION-BOUND`.
+- Why it matters: Workers have 128 MB per isolate, shared by concurrent requests. Neither a 5 MB compressed-chunk limit nor six-way concurrency bounds decompressed session size; sufficiently large or compressible sessions can cause error 1102 or cancellation under load.
+- Fix: Enforce a total session budget before and during reading: object count, compressed bytes, expanded bytes, and event count. Stream decompression and stop/cancel when the expanded-byte limit is crossed. For longer sessions, process resumable pages rather than retaining the complete recording.
+- Cost / trade-off: Requires explicit replay-size policy and incremental parsing; oversized sessions may need truncation or pagination.
+- Verify: Create synthetic highly compressible chunks in an R2-compatible test double and prove the loader stops below a chosen memory budget. In staging, inspect Workers invocation outcomes for `exceededMemory`; do not use production replay data without authorization.
+- Source basis: [Workers limits](https://developers.cloudflare.com/workers/platform/limits/#memory) states the 128 MB per-isolate limit and recommends streaming instead of buffering.
+- Confidence: High — confirmed unbounded source path; actual session sizes and deployed errors are unknown.
+
+### 3. Retried replay uploads double-count D1 metadata
+
+- Severity: Medium
+- Category: Reliability / cost footgun
+- Evidence: The replay object key is deterministic for project, session, start, page, and sequence. A retry overwrites the same R2 key ([replays.ts](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L97)), but the subsequent D1 upsert additively increments `chunks`, `bytes`, clicks, errors, pages, and other counters ([replays.ts](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L111)). There is no receipt or conditional write. Scanner lead: `CFDOC-REL-CROSS-STORE-IDEMPOTENCY`.
+- Why it matters: Client/network retries or response loss after commit corrupt replay counts and invalidate summary freshness. Interruption after R2 but before D1 also leaves an unindexed object. Each retry additionally consumes storage-operation units.
+- Fix: Give each chunk a unique receipt keyed by project/session/page/sequence and implement a recoverable state protocol. An R2 conditional `put` can prevent replacement, but it does not by itself atomically coordinate D1; recovery must reconcile “object stored, metadata pending.”
+- Cost / trade-off: Adds receipt/reconciliation state and complexity, but makes retries safe and summaries trustworthy.
+- Verify: Submit the identical logical chunk twice and assert one object and one counter increment. Add failpoints immediately after R2 and after D1, then demonstrate retry/reconciliation reaches the same final state.
+- Source basis: [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/#r2putoptions) documents conditional `put` through `onlyIf`.
+- Confidence: High — confirmed retry failure in source; duplicate frequency and deployed corruption are unknown.
+
+### 4. Route generation misidentifies multi-label and delegated zones
+
+- Severity: Medium
+- Category: Misconfiguration
+- Evidence: `renderWranglerConfig` derives `zone_name` by taking the hostname’s final two labels ([provision.ts](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/cli/src/cloudflare/provision.ts#L275)). For `analytics.example.co.uk/*`, it emits `co.uk`; it also cannot identify a delegated zone such as `analytics.example.com` from hostname labels alone. Scanner lead: `CFDOC-CONFIG-ROUTE-ZONE-GUESS`.
+- Why it matters: Wrangler requires the actual associated zone name or zone ID. Affected initialization/upgrades can fail or target the wrong configuration boundary.
+- Fix: Store an explicit `zone_id` or `zone_name` in configuration. If discovery is desired, perform an authorized, account-scoped lookup during provisioning and persist the selected zone.
+- Cost / trade-off: One extra configuration value or lookup; removes ambiguous public-suffix logic.
+- Verify: Unit-test `example.com`, `example.co.uk`, and a delegated subzone. Render configuration and assert the supplied zone ID/name is preserved exactly.
+- Source basis: [Wrangler route configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#routes) requires the zone associated with the pattern and supports explicit `zone_id`.
+- Confidence: High for the source defect; whether any deployed route uses an affected hostname is unknown.
+
+Other scanner results remain leads, not findings: deletion continuation/query-budget behavior needs fuller caller semantics, while R2 jurisdiction and runtime credential scope depend on generated or account state not inspected here.

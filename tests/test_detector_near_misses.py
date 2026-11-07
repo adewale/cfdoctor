@@ -169,7 +169,8 @@ CASES = [
         "a handler with a read, a write and an audit insert",
         worker(
             "export default { async fetch(request, env) {\n"
-            + "".join(f'  await env.DB.prepare("SELECT id FROM t{i} WHERE id = ?").bind(1).first();\n' for i in range(10))
+            + '  const { results } = await env.DB.prepare("SELECT id FROM posts").all();\n'
+            + '  for (const row of results) { await env.DB.prepare("SELECT id FROM users WHERE id = ?").bind(row.id).first(); }\n'
             + '  return new Response("ok");\n} };\n',
             d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
         ),

@@ -32,6 +32,7 @@ Interpret the output as an evidence-backed risk review: findings should include 
 - `skills/cloudflare-doctor/SKILL.md` — runtime instructions and audit output contract.
 - `skills/cloudflare-doctor/references/` — product-fit rubrics, account evidence guidance, official docs source map, performance/reliability/cost checks, war-story scenarios, and the check coverage matrix.
 - `skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py` — read-only Python scanner that parses local Cloudflare configs and source files to generate audit leads with stable check IDs (`--list-checks`, `--json`, `--exclude`).
+- Scanner JSON includes checked-in/generated deployment evidence, runtime labels, literal HTTP dependencies, excluded large files, a source commit/input hash, and per-lead evidence chains. Generated conditions and live state remain unknown; the scanner never executes target code. `scan_workloads.py` supplies the bounded source analysis next to the scanner.
 - `scripts/eval_skill_trigger.py` — deterministic trigger/description eval for the skill.
 - `scripts/eval_detection.py` — deterministic detection eval: runs the scanner against known-bad war-story fixtures and a clean baseline.
 - `scripts/check_coverage.py` — consistency check between `skills/cloudflare-doctor/references/check-coverage-matrix.md` and the scanner's check registry.

@@ -1,0 +1,11 @@
+{
+  "answers": 92,
+  "pairs": 46,
+  "all_rendered_prompt_hashes_match_original_run": true,
+  "raw_bytes_verified": true,
+  "serialized_bundle_unmounted": true,
+  "oracle_unmounted": true,
+  "seeded_execution_order_matches": true,
+  "original_receipt_sha256": "f21ce3e40f2f3fe036a12f6ad4ba3a629b97cea97e8eabeed3f0b5aea66b35fb",
+  "reconstruction_receipt_sha256": "f21ce3e40f2f3fe036a12f6ad4ba3a629b97cea97e8eabeed3f0b5aea66b35fb"
+}

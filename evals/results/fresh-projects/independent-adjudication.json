@@ -1,0 +1,830 @@
+{
+  "status_page": {
+    "review_scope": {
+      "project": "eidam/cf-workers-status-page",
+      "revision": "f5b49dcae71e12c613b8f00094ed16b735925f64",
+      "method": "Independent blinded source review; only the two report files and frozen raw-inputs/status-page source were read. No matched-eval-work access, target execution, variant inference, or ranking.",
+      "evidence_root": "matched-eval-author/raw-inputs/status-page",
+      "ground_truth_policy": "Original author rubric is non-exhaustive. Source-supported additional findings are accepted; known safe lifetime paths do not imply atomicity or successful notification delivery."
+    },
+    "shared_adjudications": {
+      "whole_document_KV_concurrency": {
+        "verdict": "supported_with_conditions",
+        "confidence": "high for reachable mechanism; production occurrence/frequency unknown",
+        "evidence": [
+          "src/functions/helpers.js:4,6-13,22-23: get/put the same monitors_data_v1_1 key, serializing the whole state.",
+          "src/functions/cronTrigger.js:22,61-69,128-146,152-156: read old document, compute transitions/counters locally, then overwrite document.",
+          "src/cli/gcMonitors.js:9,18-31,34-49,58-88: independently read, prune, and PUT the same entire document.",
+          "wrangler.toml:8-9: every-minute cron. .github/workflows/deploy.yml:8-9,37-38: monthly deploy workflow invokes cleanup after publication, with no shared state lock."
+        ],
+        "static_witness": "Use unchanged monitor IDs so cleanup does not hit its separate removed-monitor bug. Both cron and cleanup read S0. Cron increments a retained day's n or fails and writes S1. Cleanup prunes an older day in its copy and later writes S0-pruned, losing cron's increment/status. Space successful writes over one second to avoid depending on same-key write-rate acceptance. Reversing write order can restore cleanup-pruned history. Two cron invocations reading the same stale state can independently increment 10 to 11, final 11 rather than 12, or independently send the same transition.",
+        "qualifications": [
+          "One-minute scheduling alone does not prove actual overlapping cron invocations or stale reads on every run.",
+          "Enabling monthly cleanup while cron remains configured establishes competing writer paths, not a guaranteed simultaneous read/write collision.",
+          "KV eventual-consistency acknowledgement in README is a disclosed property, not serialization or immunity from lost updates.",
+          "Potential stale/overlapping reads plus unconditional whole-document replacement is a real correctness risk; account/runtime logs determine incidence."
+        ],
+        "severity": "Material reliability issue; high is defensible for monitoring authority with conditions, P2 would also be reasonable. Do not treat high source confidence as proof of observed high-frequency production loss."
+      },
+      "notification_delivery": {
+        "verdict": "supported_with_conditions",
+        "confidence": "high for source mechanism; actual provider failures unknown",
+        "evidence": [
+          "src/functions/cronTrigger.js:61-69: transition comparison and observed lastCheck update occur before notification outcome.",
+          "src/functions/cronTrigger.js:72-99: notification promises separately registered with waitUntil, not awaited as conditions for state persistence.",
+          "src/functions/helpers.js:59-64,81-85,104-109: helpers return fetch responses without checking HTTP status/body or recording acknowledgement.",
+          "src/functions/cronTrigger.js:152-156 and helpers.js:12-13,22-23: observed state committed independently; no pending-delivery/outbox/retry state is present."
+        ],
+        "static_witness": "Stored healthy=true; check returns expected-status mismatch, so local state becomes false. Webhook returns HTTP500, which fulfills fetch, while final KV put succeeds. A later run reading that committed false and observing continuing false has monitorStatusChanged=false and sends no retry. The lost alert for that transition has no durable pending record. A rejected webhook promise also does not by itself prevent the separately running main process promise reaching its KV put. Conversely, a successful webhook followed by a failed state put can be sent again when the next run reads pre-transition state.",
+        "qualifications": [
+          "Subsequent state visibility and unchanged monitored status are preconditions for suppression on the next run; eventual consistency can instead produce duplicate sends.",
+          "waitUntil correctly extends lifetime but neither validates response status nor provides durable retry, acknowledgement, atomic commit, or rollback.",
+          "Calling these promises 'detached' is acceptable only as independent control flow, not as unregistered/fire-and-forget work.",
+          "A 2xx check is a useful acceptance check, not a general guarantee of end-recipient delivery."
+        ],
+        "severity": "Substantive alert-reliability defect. High is defensible for an outage monitor; P2/medium is also reasonable absent production incident evidence."
+      },
+      "main_persistence_lifetime": {
+        "verdict": "safe_lifetime_path",
+        "evidence": [
+          "index.js:30-32: event.waitUntil(processCronTrigger(event)) registers the main task.",
+          "src/functions/cronTrigger.js:156: awaits setKVMonitors.",
+          "src/functions/helpers.js:12-13,22-23: helper promise chain returns the KV put promise."
+        ],
+        "conclusion": "A claim that the main KV put is unawaited, or that a separate waitUntil rejection automatically cancels/rolls back the main KV persistence, would be unsupported. Neither report actually makes that claim."
+      },
+      "primary_fetch_failure": {
+        "verdict": "supported",
+        "confidence": "high",
+        "evidence": [
+          "src/functions/cronTrigger.js:18,55: unguarded location lookup and sequential monitor fetch.",
+          "src/functions/helpers.js:139-143: probe fetch and unconditional cf-ray split.",
+          "src/functions/cronTrigger.js:152-156: final persistence only after all monitor checks."
+        ],
+        "conclusion": "Rejected monitor fetch exits before subsequent checks and before final KV persistence. Failed location lookup exits even earlier. Missing cf-ray is a conditional TypeError path; source does not establish that the provider routinely omits it. Stalled-fetch wall-time effects are conditional on the fetch failing to settle before the invocation deadline, not proof every slow request hangs."
+      },
+      "primary_GC_failure": {
+        "verdict": "supported",
+        "confidence": "high",
+        "evidence": [
+          "src/cli/gcMonitors.js:67-79: key enumeration includes removed monitor; line70 deletes it, line79 accesses its checks.",
+          "src/cli/gcMonitors.js:87-91: throw bypasses save; catch logs without setting nonzero exit code.",
+          "src/cli/gcMonitors.js:11-15: missing credentials explicitly exit0.",
+          "src/cli/gcMonitors.js:26-31,44-49: GET/PUT statuses are not checked; returned failed PUT can be ignored."
+        ],
+        "conclusion": "Both reports correctly identify deletion-before-dereference, failed cleanup persistence, and success-exit/error-signaling weaknesses. Effects lasting indefinitely are conditional on no later successful repair/cleanup; source establishes the persistent bug, not measured accumulated size."
+      }
+    },
+    "reports": [
+      {
+        "report": "report-e63ceae2f4.txt",
+        "findings": [
+          {
+            "heading": "KV is an unsafe authority for the mutable aggregate",
+            "verdict": "supported_with_conditions",
+            "wording_assessed": "'Lost incident increments, reverted status, or duplicate transition notifications are therefore possible' and 'actual collision frequency needs runtime logs' correctly distinguish possible source failure from observed occurrence.",
+            "caveat": "Cadence exactly60 seconds and documented lag60-or-more do not guarantee collision. Its explicit possible/frequency wording avoids that false claim."
+          },
+          {
+            "heading": "notifications can be permanently lost without acknowledgement",
+            "verdict": "supported_with_conditions",
+            "wording_assessed": "'HTTP 4xx/5xx still fulfills fetch' and 'network rejection does not stop the status transition from being saved' match the independent main task. 'The next run sees no change' should be read with a successful visible state commit and unchanged monitor status.",
+            "caveat": "'detaches notifications with waitUntil' is imprecise terminology but not a missing-lifetime finding; report explicitly says state commits independently."
+          },
+          {
+            "heading": "one dependency failure aborts every remaining monitor",
+            "verdict": "supported",
+            "wording_assessed": "Correct rejection/location-header mechanism and final-write placement; stalled target example remains conditional."
+          },
+          {
+            "heading": "cleanup crashes and reports success",
+            "verdict": "supported",
+            "wording_assessed": "Correct removed-monitor TypeError, exit0/log-only catch and unchecked HTTP error paths."
+          }
+        ],
+        "material_false_claims_in_requested_topics": [],
+        "safe_claims": [
+          "Public triggerCron handler performs no side effect.",
+          "Main/notification work is lifetime-registered; report does not assert waitUntil itself drops final KV persistence.",
+          "Actual deployment plan, logs, incidence and cache internals remain unknown."
+        ],
+        "severity_confidence_assessment": "High reliability severity is defensible but not uniquely required. High confidence is warranted for mechanisms, not measured production frequency. Free-plan cadence finding is explicitly conditional; 1440 successful writes/day versus1000 allowance is correct, while the approximate exhaustion clock depends on reset time, start time and other writes."
+      },
+      {
+        "report": "report-bbc0bedf02.txt",
+        "findings": [
+          {
+            "heading": "state mutations and transition notifications have no serialized owner",
+            "verdict": "supported_with_conditions",
+            "wording_assessed": "Report correctly separates 'confirmed platform behavior' from 'actual collision frequency needs runtime evidence'; unchecked HTTP500 and duplicate-successful-alert/failed-state-write schedules are source-supported. 'Separate waitUntil failures do not roll back other work' correctly preserves the lifetime safe control.",
+            "caveat": "'The monthly cleanup necessarily runs while the every-minute trigger remains enabled' is stronger than source can establish about a deployed account or scheduler. Frozen workflow config shows intended monthly cleanup and no coordination/trigger-disable step; it does not guarantee workflow execution or an overlapping invocation. Narrow this wording, while retaining the valid competing-writer risk."
+          },
+          {
+            "heading": "one failed dependency aborts the entire monitoring batch",
+            "verdict": "supported",
+            "wording_assessed": "Correct rejected fetch/missing-header path and skipped final state write; timeout example appropriately a possible stalled subrequest."
+          },
+          {
+            "heading": "cleanup can fail while CI reports success",
+            "verdict": "supported",
+            "wording_assessed": "Correct removed-monitor dereference and missing nonzero failure signaling; no measured production accumulation claimed."
+          }
+        ],
+        "material_false_claims_in_requested_topics": [],
+        "safe_claims": [
+          "'Separate waitUntil failures do not roll back other work' is correct.",
+          "Debug cron call is commented out.",
+          "Plan/deployment impact and collision frequency need runtime evidence.",
+          "No confirmed committed credential is inferred from GitHub Secrets syntax."
+        ],
+        "wording_overstatements": [
+          "'necessarily runs' should describe intended/default workflow configuration rather than guaranteed deployed execution; it is not evidence that a data race actually occurred."
+        ],
+        "severity_confidence_assessment": "High is defensible for the combined state/notification failure domain; medium/P2 would be reasonable. Source confidence high, observed incidence unknown. Conditional Free-plan quota finding is appropriately medium with separately stated production uncertainty."
+      }
+    ],
+    "adjudication_boundary": "No variant comparison/ranking. No change to original raw inputs or frozen original author notes. This additional review accepts non-exhaustive findings on their actual source-supported mechanism; it does not infer production outages or insist on one exact severity label."
+  },
+  "status_page_mapping": {
+    "report-bbc0bedf02": "old_skill",
+    "report-e63ceae2f4": "with_skill"
+  },
+  "bytego": {
+    "scope": {
+      "reports": [
+        "report-3219b41632.txt",
+        "report-7d0b579e92.txt",
+        "report-869ebc8442.txt",
+        "report-94220ab24c.txt",
+        "report-6b1a231071.txt",
+        "report-9e66b4779b.txt"
+      ],
+      "evidence": "Only sibling source/ selected snapshot, including cors.json. No matched-eval-work, cfdoctor, account access, target execution, dependency execution, or outside files inspected.",
+      "limitation": "This is source/README adjudication. Reports' external platform-documentation assertions were not independently revalidated; deployed plan, edge request-byte conventions, cache policy and runtime memory/stream behavior are not established by this source alone.",
+      "policy": "Assess mechanisms independently of desired architecture. Public arbitrary-file hosting, recent local history, optional hard deletion, and no server listing are explicit product choices. No ranking or variant inference."
+    },
+    "common_evidence": {
+      "key_replacement": {
+        "classification": "confirmed destructive mechanism; overwrite intent unspecified",
+        "evidence": [
+          "src/index.ts:84-94 accepts customPath or configurable generated key and unconditionally puts it.",
+          "src/utils.ts:65-75 supports deterministic filename/time formats as well as cryptographic random defaults.",
+          "README.md:293-296 documents customPath; does not explicitly promise create-only or explicitly document overwrite semantics.",
+          "src/index.ts:59-62,167-183 authenticates upload before parsing/storage; this is not an unauthenticated replacement or cross-user permission bypass."
+        ],
+        "conclusion": "Authenticated reuse of a key replaces prior content without conflict signaling. Collision protection is a defensible reliability improvement; high security severity must not imply a permission boundary absent from this shared-key tool."
+      },
+      "stale_hard_delete": {
+        "classification": "confirmed conditional destructive mechanism",
+        "evidence": [
+          "src/index.html:752-761 records object identity only by key, no version/ETag.",
+          "src/index.html:808-835 hard deletion sends record.key, including stale records retained by another browser profile.",
+          "src/index.ts:125-145 enables delete only in hard mode, authenticates, normalizes root, then deletes by key.",
+          "README.md:190-209,314 explicitly makes hard deletion opt-in; default none and soft mode do not delete R2 objects."
+        ],
+        "witness": "Browser A retains record for key K; authenticated client replaces K with new bytes; A hard-deletes its old record, deleting new bytes. Also possible after K is deleted and recreated.",
+        "fix_limit": "Create-only put prevents replacing an existing K but does not prevent recreation after deletion, nor protect stale records if explicit ETag overwrite is retained. To guarantee stale-delete safety, use distinct per-upload keys with nonreuse/identity discipline or serialize deletion against authoritative version identity; pre-delete head alone would race."
+      },
+      "upload_boundary": {
+        "classification": "source-confirmed cap/protocol mechanism; edge impact plan-dependent",
+        "evidence": [
+          "src/index.ts:70 parses body before file-size validation at78-80.",
+          "src/index.html:731-736 uses the same 100*1024*1024 file threshold;794-802 constructs multipart FormData.",
+          "Exact accepted file cap is104857600 bytes, and multipart whole-body length is greater.",
+          "wrangler.toml.example is reusable deployment template; README.md:76-80/106 says actual deployment config is local."
+        ],
+        "conclusion": "A file cap equal to a platform whole-request cap cannot safely promise that full file size through multipart. Whether this exact file threshold exceeds a live zone cap needs the intended plan and precise platform byte limit. Peak OOM and File.stream known-length failure are not proven by source.",
+        "fix_limit": "Content-Length rejection is an early optimization, not a substitute for actual-body/file limits; raw streaming must still respect the real whole-request cap and known-length/runtime requirements."
+      },
+      "history_choice": {
+        "classification": "confirmed behavior, deliberate recent-history model; not automatically a defect",
+        "evidence": [
+          "src/index.html:527 labels UI 'recent uploads';568 sets50;696-699 and882-885 prune older local records.",
+          "README.md:7 calls it recent local history,16 says no server index,222-229 documents browser-local state and dashboard/Wrangler fallback.",
+          "README.md:190-209 explicitly distinguishes local-history removal from R2 deletion."
+        ],
+        "conclusion": "After51 distinct saved uploads an old local record is evicted while its R2 object remains. This is not object-data loss, unauthorized retention, or proof it is unmanageable: README supplies external administration. The exact automatic50 cap is not documented in README, so disclosure/pagination is a reasonable UX suggestion, not a mandatory object-retention redesign."
+      },
+      "public_content_choice": {
+        "classification": "documented intentional capability; security impact deployment-dependent",
+        "evidence": [
+          "README.md:5,128-139 intends public CDN links on a separate R2 hostname.",
+          "README.md:218 allows public GET/HEAD;231 explicitly permits any file type and says add restrictions only if needed.",
+          "cors.json:3-7 permits wildcard-origin public GET/HEAD, not upload/delete.",
+          "src/index.ts:92-103 preserves file.type; upload requires AUTH_KEY before body processing.",
+          "src/index.ts:47,193-229 escapes UI title and adds UI security headers; src/index.html:895-898 uses textContent for filenames."
+        ],
+        "conclusion": "Authenticated HTML/SVG publication on the public asset origin is intentional. Sensitive parent-domain cookies, application trust, or unsandboxed embedding could create a security problem, but none is established here. Do not call this unauthenticated XSS in the Worker UI."
+      },
+      "selected_snapshot_ignore": {
+        "classification": "absence from selected snapshot cannot establish missing repository ignore rules",
+        "evidence": [
+          "README.md:78-80 explicitly says wrangler.toml and .dev.vars are ignored and must not be committed.",
+          "README.md:106 again says real wrangler.toml is local and ignored.",
+          "Source is a selected snapshot; no .gitignore, parent gitignore, global excludes or actual git index is included."
+        ],
+        "conclusion": "Verify ignore rules in the actual repository if needed. A high-confidence missing-ignore vulnerability does not follow from these10 selected files; a conditional evidence-needed note is valid."
+      },
+      "response_loss": {
+        "classification": "confirmed conditional reliability limitation, not server-listing product defect",
+        "evidence": [
+          "src/utils.ts:73-75 generates fresh random keys each default upload.",
+          "src/index.ts:94-115 commits write before success response.",
+          "src/index.html:750-766 records key only after response;794-805 has no automatic retry/idempotency protocol.",
+          "README.md:222-229 deliberately has no server listing and gives manual administrative fallback."
+        ],
+        "conclusion": "If response is lost after successful put and user retries, a new default key/object can be created; first object is absent from local history but discoverable via documented dashboard/Wrangler. No evidence that UI automatically retries or that objects are globally undiscoverable."
+      },
+      "cache_unknown": {
+        "classification": "deployment evidence gap, not confirmed missing-cache defect",
+        "evidence": [
+          "src/index.ts:94-103 sets contentType and custom metadata but no cacheControl.",
+          "README.md:128-139 uses a separate public R2 domain; cors.json defines read permission only, not CDN caching.",
+          "Actual Cache Rules/domain state absent."
+        ],
+        "conclusion": "Conditional cached/uncached operation models and TTL/invalidation questions are sound. No demonstrated read amplification, spend, deletion staleness or production cache failure. Cache-Control metadata alone does not prove a pre-R2 cache boundary."
+      }
+    },
+    "reports": [
+      {
+        "report": "report-3219b41632.txt",
+        "material_true_mechanisms": [
+          {
+            "mechanism": "key_replacement",
+            "evidence": "index.ts:84-103, utils.ts:65-75; distinguishes default randomness from explicit custom/deterministic reuse."
+          },
+          {
+            "mechanism": "upload_boundary",
+            "evidence": "index.ts:70-80; index.html:731-736,794-802; exact104857600-byte arithmetic correct, edge consequence conditional."
+          },
+          {
+            "mechanism": "history_choice",
+            "evidence": "index.html:568,696-699,882-885; local record eviction is correctly described as not deleting R2."
+          }
+        ],
+        "material_false_or_unsupported_findings": [
+          {
+            "quote": "Severity: medium \u2014 Active object records are silently discarded after 50 uploads",
+            "verdict": "true behavior, unsupported elevation to a required retention/reliability defect",
+            "counterevidence": "README.md:7 explicitly calls this recent local history;222-229 disclaims server indexing and provides dashboard/Wrangler management. UI527 says recent uploads. Missing README disclosure of exact50 is an optional UX/documentation concern; no promise to retain every active object's management record."
+          }
+        ],
+        "material_missed_mechanisms": [
+          {
+            "mechanism": "stale_hard_delete",
+            "evidence": "index.html:752-761,828-835 plus index.ts:125-145; replacement affects old records in other browsers and delete/recreate reuse."
+          }
+        ],
+        "risky_proposed_fixes": [
+          {
+            "quote": "Require a separate explicit overwrite operation using an expected ETag if replacement is needed.",
+            "risk": "Sound for write conflict protection, but does not repair stale hard-delete identity if mutable keys remain. Its collision fix is not a complete delete fix."
+          },
+          {
+            "quote": "implement an explicit, coordinated object-retention policy",
+            "risk": "Acceptable only as opt-in new product behavior. Automatically deleting R2 objects to match local history eviction would break intended persistent public links; report correctly says explicit rather than silently deleting."
+          }
+        ],
+        "confidence_and_choices": "History source confidence high; defect/financial impact not established. Missing-ignore is appropriately conditional ('If dotfiles were not omitted'); localStorage and MIME observations correctly request threat-model evidence. Cache modeling is conditional."
+      },
+      {
+        "report": "report-7d0b579e92.txt",
+        "material_true_mechanisms": [
+          {
+            "mechanism": "key_replacement and stale_hard_delete",
+            "evidence": "index.ts:84-103,125-145 and index.html:752-761,828-835; explicitly authenticates trigger and recognizes default random collision is not the practical driver."
+          },
+          {
+            "mechanism": "upload_boundary",
+            "evidence": "index.ts:70-80; index.html:731-736,794-802; OOM/stream length correctly remain risks requiring profiling."
+          }
+        ],
+        "material_false_or_unsupported_findings": [],
+        "deployment_dependent_suggestions": [
+          {
+            "quote": "Public-download cost and deletion freshness depend on uninspected cache state",
+            "assessment": "Accurate uncertainty, not a confirmed product defect; body explicitly says live cache behavior is not confirmed. Medium heading should not be scored as demonstrated medium-severity production harm."
+          }
+        ],
+        "material_missed_mechanisms": [],
+        "risky_proposed_fixes": [
+          {
+            "quote": "If replacement is required, expose it as a separate explicit operation using the expected ETag. Prefer unique keys so delete-by-key remains unambiguous.",
+            "risk": "Write ETag alone does not make old key-only deletion safe after overwrite or delete/recreate. Need enforced distinct/nonreused upload identity or coordinated deletion, not merely a preference."
+          },
+          {
+            "quote": "reject an oversized Content-Length before parseBody",
+            "risk": "Appropriate as additional guard; retaining post-parse check, as report explicitly requires, is necessary. Unknown-length bodies and whole-body limits still need consideration."
+          }
+        ],
+        "confidence_and_choices": "Source confidence for actual mutation paths is high. File.stream known-length concern is not proven; report correctly says integration test needed. Cache recommendation verifies Cache Rule and limits long caching to immutable keys, so it avoids claiming metadata alone ensures caching."
+      },
+      {
+        "report": "report-869ebc8442.txt",
+        "material_true_mechanisms": [
+          {
+            "mechanism": "key_replacement and stale_hard_delete",
+            "evidence": "index.ts:84-103,125-145; index.html:752-761,828-835. Correctly recognizes independent object identity problem and head/delete race."
+          },
+          {
+            "mechanism": "upload_boundary",
+            "evidence": "index.ts:70-80 and index.html:731-736,794-802; memory OOM explicitly not proven."
+          },
+          {
+            "mechanism": "public_content_choice",
+            "evidence": "index.ts:92-103 really preserves uploader MIME, but exploit implication requires deployment context."
+          }
+        ],
+        "material_false_or_unsupported_findings": [
+          {
+            "quote": "Severity: medium \u2014 Documented local secrets lack repository ignore protection",
+            "verdict": "unsupported repository conclusion",
+            "counterevidence": "README.md:78-80,106 expressly states ignore protection. Selected source snapshot omits Git metadata/ignore files and cannot establish actual git ignore state. Its claim that a 'supplied complete 10-file snapshot contains no .gitignore' confuses complete selected review bundle with complete repository."
+          },
+          {
+            "quote": "Confidence: high",
+            "finding": "Documented local secrets lack repository ignore protection",
+            "verdict": "unwarranted confidence",
+            "counterevidence": "No actual git check-ignore/index evidence; actual credentials are not present and README contradicts missing-ignore inference."
+          },
+          {
+            "quote": "Severity: medium \u2014 Public objects inherit attacker-controlled active content types",
+            "verdict": "true capability; unsupported general medium security-defect classification",
+            "counterevidence": "README.md:218,231 explicitly intends public arbitrary-file hosting; index.ts:59-62 requires shared upload credential. No sensitive cookie scope or trusted application on the CDN origin shown. Report qualifies deployed script impact, so do not reinterpret it as an asserted unauthenticated Worker-UI XSS exploit."
+          }
+        ],
+        "material_missed_mechanisms": [],
+        "risky_proposed_fixes": [
+          {
+            "quote": "generate a fresh random suffix even when a custom path is requested",
+            "risk": "Changes documented exact customPath semantics. Good opt-in immutable-object design but needs API migration, not a transparent fix."
+          },
+          {
+            "quote": "Never reuse deleted keys.",
+            "risk": "Correct requirement for stale-delete safety, but ordinary create-only puts do not enforce it after deletion. Enforce namespace/identity policy or tombstones/coordination if claiming a guarantee."
+          },
+          {
+            "quote": "allowlist required inline-safe formats; store everything else as application/octet-stream with Content-Disposition: attachment",
+            "risk": "Changes deliberate arbitrary-file inline-serving behavior and can break HTML/SVG consumers. Appropriate only after choosing a narrower use case/threat model; isolated hostname is deployment hardening."
+          }
+        ],
+        "confidence_and_choices": "Primary destructive-path reasoning is strong and correctly says hard deletion must be disabled/serialized if mutable paths remain. Missing-ignore should become evidence-needed, and MIME handling should be threat-model advice rather than a confirmed source vulnerability. Cache state remains correctly unknown."
+      },
+      {
+        "report": "report-94220ab24c.txt",
+        "material_true_mechanisms": [
+          {
+            "mechanism": "upload_boundary",
+            "evidence": "index.ts:70-80 and index.html:731-736,794-802; plan dependence and unproven memory pressure acknowledged."
+          },
+          {
+            "mechanism": "key_replacement",
+            "evidence": "index.ts:84-103; correctly notes shared-token holder and configured-prefix scope."
+          },
+          {
+            "mechanism": "response_loss",
+            "evidence": "index.ts:94-115; index.html:750-766; utils.ts:73-75. Requires lost response followed by manual/client retry; no automatic UI retry shown."
+          }
+        ],
+        "material_false_or_unsupported_findings": [
+          {
+            "quote": "Severity: medium \u2014 response loss creates duplicate, undiscoverable uploads",
+            "verdict": "duplication mechanism supported; 'undiscoverable' is too broad",
+            "counterevidence": "README.md:229 explicitly says use Cloudflare dashboard or Wrangler when local history is gone. Object is unrecorded in this browser, not undiscoverable to administrator. Report body narrows it to local-history orphan, so this is a wording overstatement, not a fabricated duplication mechanism."
+          }
+        ],
+        "deployment_dependent_suggestions": [
+          {
+            "quote": "Severity: medium \u2014 public-object cache policy is undefined",
+            "assessment": "No cacheControl in source is confirmed, but no deployed cache defect or medium production impact is established. Body correctly keeps actual exposure dependent on cache analytics."
+          }
+        ],
+        "material_missed_mechanisms": [
+          {
+            "mechanism": "stale_hard_delete",
+            "evidence": "index.html:752-761,828-835; index.ts:125-145; silent replacement also lets another browser's old record delete newer content."
+          }
+        ],
+        "risky_proposed_fixes": [
+          {
+            "quote": "If overwrite is required, expose it separately and require an expected ETag.",
+            "risk": "Useful write concurrency fix; still leaves key-only stale hard deletion unsafe."
+          },
+          {
+            "quote": "Treat an already-created matching upload as success.",
+            "risk": "Must verify authenticated request identity, payload/metadata match and deterministic idempotency key; mere key existence is insufficient, and reply-loss idempotency must preserve exact result across retries."
+          },
+          {
+            "quote": "For immutable generated keys, set an explicit long-lived cacheControl.",
+            "risk": "Generated keys are probabilistically unique but server currently permits custom overwrite/delete. Enforce immutability and establish cache/deletion policy first; report does qualify mutable/custom keys and invalidation."
+          }
+        ],
+        "confidence_and_choices": "Lost-response risk is a legitimate optional robustness improvement, not proof that a server listing is required. Source does support its note that different upload batches can overlap (index.html:722-792 and952-963 only changes UI class). No evidence of deployed request volume or exploitation."
+      },
+      {
+        "report": "report-6b1a231071.txt",
+        "material_true_mechanisms": [
+          {
+            "mechanism": "key_replacement and stale_hard_delete",
+            "evidence": "src/index.ts:84-103 accepts and unconditionally writes reused keys; src/index.html:752-761,828-835 and index.ts:125-145 retain/delete by key only. Report correctly requires an authenticated holder and recognizes another browser's stale record."
+          },
+          {
+            "mechanism": "upload_boundary, explicitly including parse-before-size",
+            "evidence": "src/index.ts:70 calls parseBody before file.size at78-80; UI same threshold at index.html:731-736. Report separates conditional edge rejection from unproven parser memory/CPU impact."
+          },
+          {
+            "mechanism": "local tombstones retained after visible deletion",
+            "evidence": "src/index.html:856-863 sets status and resaves record;866-879 filters it from UI. Hard mode first performs separate R2 delete at828-840. This is a real distinction from README198-209's literal 'removes the record' wording, suitable for clarification."
+          },
+          {
+            "mechanism": "test coverage limited to utility tests in supplied snapshot",
+            "evidence": "package.json test command targets tests/*.test.ts and the sole supplied test file covers path/URL helpers, not Worker/browser behavior. Coverage gap is supported; it is not itself proof of an additional runtime defect."
+          }
+        ],
+        "material_false_or_unsupported_findings": [
+          {
+            "quote": "Severity: high \u2014 Local secrets are not actually excluded",
+            "verdict": "unsupported high-confidence repository conclusion",
+            "counterevidence": "README.md:78-80/106 expressly says local files are ignored; a selected10-file snapshot omits gitignore/global exclusions/Git index. Absence here cannot prove git add . would include the files. Actual exposure correctly left unknown does not cure unsupported certainty about the missing control."
+          },
+          {
+            "quote": "Confidence: high for the missing control; unknown for prior leakage.",
+            "verdict": "missing-control confidence unwarranted",
+            "counterevidence": "No Git exclusion/index evidence was inspected; the only project assertion about actual exclusion says files are ignored."
+          },
+          {
+            "quote": "Hard delete does remove R2 content, but local deletion/privacy expectations are false.",
+            "verdict": "retained local metadata is confirmed; material privacy-defect conclusion overstates the documented contract",
+            "counterevidence": "README198-209 has a literal record-removal wording mismatch, but no secure-erasure/privacy promise. Visible local-history removal is implemented; R2 hard deletion also occurs. Existing clearLocalHistory at index.html:710-715 calls store.clear, and automatic prune at882-885 eventually physically deletes old records. Classify as documentation/product-semantics issue unless a privacy/physical-erasure requirement is supplied."
+          },
+          {
+            "quote": "If tombstones are required, document them, give them explicit retention, and expose a purge action.",
+            "verdict": "partly misses existing controls",
+            "counterevidence": "index.html:589-590 wires clearHistoryBtn to clearLocalHistory;710-715 already physically clears the store. HISTORY_LIMIT50 plus pruneHistory882-885 is bounded-count retention, though not time-based/documented tombstone retention."
+          },
+          {
+            "quote": "Severity: medium \u2014 Core behavior is untested",
+            "verdict": "supported selected-snapshot test gap, not standalone confirmed medium reliability failure",
+            "counterevidence": "Source shows no route tests in supplied bundle, but absence of tests does not add a runtime failure mechanism beyond the separately proven paths. Tests should validate agreed behavior, not encode disputed tombstone semantics as automatically defective."
+          }
+        ],
+        "material_missed_mechanisms": [],
+        "risky_proposed_fixes": [
+          {
+            "quote": "If replacement is required, make it explicit and require the expected ETag.",
+            "risk": "Protects overwrites but leaves stale key-only hard deletion unsafe after permitted replacement or delete/recreate; create-only does not enforce key nonreuse after deletion."
+          },
+          {
+            "quote": "delete the IndexedDB record with store.delete(id)",
+            "risk": "Reasonable if literal record-removal semantics are chosen; changes tombstone/audit-history behavior and should not be justified as proven secure erasure or a new R2 deletion fix."
+          },
+          {
+            "quote": "reject Content-Length before parsing",
+            "risk": "Keep actual file/body validation; unknown or misleading length cannot be the sole admission mechanism. Report's missing/incorrect-length test recommendation is appropriate."
+          }
+        ],
+        "confidence_and_choices": "High source confidence warranted for unconditional writes, stale-key delete, parse ordering and retained tombstones. High severity/confidence for missing Git protection is unsupported. Tombstone retention is a real README wording mismatch with an existing purge action, not an established high-impact privacy breach. No additional missed defect quota applied."
+      },
+      {
+        "report": "report-9e66b4779b.txt",
+        "material_true_mechanisms": [
+          {
+            "mechanism": "key_replacement, including local record replacement",
+            "evidence": "src/index.ts:84-103 unconditional put; src/index.html:666 creates keyPath id,752-765 stores id=result.key; same-key put replaces IndexedDB row. Source/default randomness distinguished from low-entropy/custom key reuse."
+          },
+          {
+            "mechanism": "upload_boundary, explicitly including parse-before-size",
+            "evidence": "src/index.ts:70 before78-80; index.html:731-736; report explicitly qualifies Hono materialization, plan and stream-length runtime behavior."
+          },
+          {
+            "mechanism": "homepage invokes Worker and transforms HTML",
+            "evidence": "src/index.ts:46-55 escapes title, computes deleteMode, sets headers and substitutes HTML each request; example config has Text rules but no Static Assets binding. Actual request volume/cost and merit of adding build step unknown."
+          }
+        ],
+        "material_false_or_unsupported_findings": [],
+        "deployment_dependent_suggestions": [
+          {
+            "quote": "Severity: medium \u2014 The public UI consumes Worker requests unnecessarily",
+            "assessment": "Invocation is confirmed; 'unnecessarily' and medium-priority optimization are product/economic judgments, not established correctness defect. README.md:5 expressly prefers no frontend build system. Static Assets migration trades that simplicity for possible request savings; no traffic/budget evidence establishes material harm."
+          },
+          {
+            "quote": "move / to asset delivery if it is intended to be publicly discoverable",
+            "assessment": "Not a required release closure condition from source. Public discovery does not by itself make a tiny Worker-rendered page unacceptable; select after measuring traffic/cost and preserving configuration behavior."
+          },
+          {
+            "quote": "If DELETE_MODE=hard and the bucket is shared, the single bearer secret can delete any accepted key",
+            "assessment": "Accurate conditional administration scope, not an authentication bypass. README.md:5 describes one self-hosted Worker/bucket; root prefix validation is already applied. Dedicated bucket/exclusive prefix is sensible deployment guidance."
+          },
+          {
+            "quote": "If uploaders are not fully trusted, test the public domain\u2019s cookie scope and HTML/SVG handling",
+            "assessment": "Appropriately conditional: README231 intentionally permits any file type. No untrusted-upload or sensitive-cookie deployment is assumed."
+          }
+        ],
+        "material_missed_mechanisms": [
+          {
+            "mechanism": "stale_hard_delete",
+            "evidence": "index.html:752-761,828-835 plus index.ts:125-145: another browser can delete newer bytes after same-key overwrite or delete/recreate. Broad shared-bucket warning does not identify stale upload identity."
+          }
+        ],
+        "risky_proposed_fixes": [
+          {
+            "quote": "Require a separate explicit overwrite operation if replacement is genuinely needed.",
+            "risk": "An explicit overwrite alone does not repair stale key-only hard deletion; preserve per-upload identity/nonreuse or coordinate deletion."
+          },
+          {
+            "quote": "Pre-render those two values during deployment and serve the page as a Worker Static Asset.",
+            "risk": "Optional architecture change adds build/deploy complexity contrary to deliberate no-build simplicity. Preserve escapeHtml for APP_TITLE, DELETE_MODE normalization, and security headers currently set by index.ts:193-229 (via suitable asset/header config); otherwise optimization can regress behavior/security."
+          },
+          {
+            "quote": "Immediately enforce a configurable Content-Length ceiling safely below the domain limit.",
+            "risk": "Good supplementary check, but missing/incorrect length must not bypass actual body/file limits. It cannot prevent an edge413 for a request already rejected before Worker execution."
+          }
+        ],
+        "confidence_and_choices": "Medium confidence on memory/stream/plan effects is appropriately qualified, not failure to notice parse ordering. Source confidence high for per-page Worker invocation, but a material cost issue is unproven. No secret false positives or MIME-vulnerability claim; scanner leads are explicitly dismissed."
+      }
+    ],
+    "missed_mechanism_policy": "No quota of missed findings imposed. Listed misses are direct consequences of the destructive key identity path. Response idempotency, explicit50-history disclosure, cache controls and MIME restrictions are optional robustness/product/deployment concerns; omission alone is not a material audit failure. This bounded source review does not assert an exhaustive vulnerability inventory.",
+    "review_outcome": "Four reports reviewed without ranking. Strongest shared source mechanisms are authenticated unconditional replacement, conditional stale key-only hard deletion, and multipart/file-cap ordering. Main unsupported additions are repository-ignore inference from selected-snapshot absence and treating deliberately public arbitrary MIME hosting or recent-history retention as unconditional defects.",
+    "parse_before_file_size_coverage": {
+      "source_evidence": "source/src/index.ts:70 parses before file.size at78-80; authentication remains earlier at59-62.",
+      "entirely_omits_body_parse_issue": [],
+      "explicit_current_order_count": 5,
+      "implicit_only_reports": [
+        "report-869ebc8442.txt"
+      ],
+      "reports": [
+        {
+          "report": "report-3219b41632.txt",
+          "explicit_order_identified": true,
+          "quote": "Validation occurs only after parseBody().",
+          "assessment": "Explicitly identifies late check; runtime memory effect qualified."
+        },
+        {
+          "report": "report-7d0b579e92.txt",
+          "explicit_order_identified": true,
+          "quote": "The Worker parses the complete multipart form before checking file.size.",
+          "assessment": "Explicitly identifies late check; peak memory and stream-length effects qualified."
+        },
+        {
+          "report": "report-869ebc8442.txt",
+          "explicit_order_identified": false,
+          "implicit_preparse_guard_identified": true,
+          "quote": "reject oversized Content-Length before parseBody()",
+          "other_quote": "parseBody() memory behavior near the 128 MB Worker limit requires runtime measurement; source alone does not prove an OOM.",
+          "assessment": "Current parse-before-file-size ordering is not expressly explained in its finding. It recognizes parser admission/memory concern and proposes pre-parse guard, so it is partial/implicit coverage, not a report that ignores body parsing entirely. Do not equate its proper OOM qualification with a mechanism miss."
+        },
+        {
+          "report": "report-94220ab24c.txt",
+          "explicit_order_identified": true,
+          "quote": "parses the multipart body before checking file.size",
+          "assessment": "Explicitly identifies late check; memory pressure appropriately qualified."
+        },
+        {
+          "report": "report-6b1a231071.txt",
+          "explicit_order_identified": true,
+          "quote": "parses the multipart body before checking file.size",
+          "assessment": "Explicitly identifies late check; plan and parser memory/CPU effects distinguished."
+        },
+        {
+          "report": "report-9e66b4779b.txt",
+          "explicit_order_identified": true,
+          "quote": "The server checks file.size only after parseBody().",
+          "assessment": "Explicitly identifies late check; runtime effects qualified."
+        }
+      ],
+      "scoring_guidance": "Five reports explicitly identify parse-before-size ordering; one addresses parser memory/preparse guard implicitly. Report that threshold/memory effects need runtime measurement is not thereby a parse-order miss. If an evaluation requires explicit current-order explanation, record partial coverage for869ebc8442 rather than a binary full miss."
+    },
+    "supplemental_review_outcome": "Six reports now reviewed without ranking. Existing first-four review entries are unchanged. Two appended reviews distinguish retained local tombstones from a physical-deletion promise, actual existing purge control, and optional static-asset economics. See parse_before_file_size_coverage for explicit versus implicit coverage."
+  },
+  "bytego_mapping": {
+    "report-869ebc8442": "old_skill/run-2",
+    "report-3219b41632": "old_skill/run-1",
+    "report-7d0b579e92": "with_skill/run-2",
+    "report-94220ab24c": "with_skill/run-1",
+    "report-9e66b4779b": "old_skill/run-3",
+    "report-6b1a231071": "with_skill/run-3"
+  },
+  "focused_regression": {
+    "scope": {
+      "project": "brucehart/web-tools",
+      "revision": "f1a09a2e80c9d3bc62786fe06409cad0b118a045",
+      "method": "Blinded source-only review of six regression-review/reports files against frozen raw-inputs/web-tools. No mappings, matched-eval-work, cfdoctor, target code/SQL execution, account access, or external mutations.",
+      "topics": "Session expiry, seed authentication boundary, deployment activation/removal claims, and independent seed-schema drift. No ranking."
+    },
+    "source_findings": {
+      "session_expiry": {
+        "verdict": "confirmed",
+        "evidence": [
+          "src/auth.ts:14-20 token-only sessions/users join omits expires_at.",
+          "src/auth.ts:188-201 writes seven-day expiry and browser Max-Age; internal-test.ts:139-141 writes60-second expiry.",
+          "src/auth.ts:23-26 trusts the returned user; logout98-103 actually deletes token."
+        ],
+        "boundary": "Copied token remains accepted while its database row remains, regardless of elapsed expiry. Browser cookie expiry is not server revocation. /api/auth/me normally reports loggedIn:false with status200 after rejection; protected To-Do routes return401."
+      },
+      "seed_authentication": {
+        "verdict": "secret-authenticated capability, not demonstrated bypass",
+        "evidence": [
+          "src/internal-test.ts:124 requires exact /api/_internal/seed;125 requiresPOST.",
+          "src/internal-test.ts:127-129 reads x-internal-key and returns404 unless expected secret is nonempty AND supplied header equals it.",
+          "src/internal-test.ts:131 and138-143 perform DDL/inserts only after the guard.",
+          "src/index.ts:20-21 always dispatches handler before OAuth routing, but routing order does not remove its own guard.",
+          "wrangler.jsonc does not declare INTERNAL_TEST_KEY; externally provisioned secret state is unknown."
+        ],
+        "boundary": "A valid key holder is authorized by the route's explicit shared-secret policy. That holder can avoid the Google-login flow by design; this does not show an uncredentialed attacker defeating authentication. Secret compromise or accidental production enablement is a conditional operational concern, not proof either happened.",
+        "identity_limits": "Seed generates a new random u_* ID (internal-test.ts:134) and arbitrary email/name, rather than assuming an existing OAuth user's sub ID. Setting allowlisted email satisfies the provided requireAllowedUser helper (auth.ts:29-30,76-83); out-of-scope handlers using it and deployed privilege effects are unknown. It does not by itself prove access to an existing user's owner-scoped todos."
+      },
+      "seed_schema_drift": {
+        "verdict": "genuine independent source defect under seed-first setup",
+        "evidence": [
+          "internal-test.ts:36-48 creates todos including category at43, without migration foreign key.",
+          "migrations/0003_todo.sql creates todos without category and with user foreign key plus user-created/priority indexes.",
+          "migrations/0004_todo_categories.sql:2 unconditionally ALTER TABLE todos ADD COLUMN category.",
+          "internal-test.ts:17-22 omits sessions user foreign key; migration0001:12-19 includes it and user index."
+        ],
+        "witness": "Authorized seed on an empty DB creates category before migration0004; later migration0003's IF NOT EXISTS does not replace table, then0004 attempts duplicate category addition. Seed-only databases also miss some migration constraints/indexes. No target SQL was run.",
+        "boundary": "CREATE TABLE IF NOT EXISTS does not strip constraints from tables already correctly migrated. Schema mismatch is real for seed-first/seed-only initialization, not proof every seed changes an existing production schema."
+      }
+    },
+    "reports": [
+      {
+        "report": "report-63149b68f157.txt",
+        "a_expiry": {
+          "correct": true,
+          "quote": "looks up only token; it never checks expires_at",
+          "assessment": "Correct token replay mechanism and seven-day/one-minute source lifetimes."
+        },
+        "b_bypass": {
+          "demonstrated_bypass_claim": false,
+          "quote": "deployed exposure is conditional\u2014the guard fails closed when the secret is absent",
+          "assessment": "Accurately preserves fail-closed guard. 'configured/leaked key can mint sessions' is a conditional capability concern; configured alone does not give unauthenticated caller a matching header."
+        },
+        "c_activation_removal": {
+          "deployed_activation_overstated": false,
+          "quote": "Confidence: high for source behavior; medium for deployed exposure.",
+          "removal_quote": "Remove the seed route from production and initialize tests from migrations.",
+          "assessment": "Route is source-routable, but deployment enablement remains unknown and is acknowledged. Complete production-route removal is a defensible hardening choice, not a necessity proven by an authentication bypass or known production key."
+        },
+        "d_schema_drift": {
+          "identified": true,
+          "specificity": "omitted foreign keys/indexes",
+          "quote": "Its sessions/todos schemas omit foreign keys and several migration indexes",
+          "assessment": "Source-supported independent schema divergence. 'Tests initialized through this route do not exercise the production schema' must be conditional on seed-only/seed-first setup; tests that migrated first retain proper tables."
+        }
+      },
+      {
+        "report": "report-8e22545d7a9e.txt",
+        "a_expiry": {
+          "correct": true,
+          "quote": "authenticates solely by token",
+          "assessment": "Correct unenforced expires_at and manual replay mechanism."
+        },
+        "b_bypass": {
+          "demonstrated_bypass_claim": false,
+          "unsupported_bypass_label": true,
+          "quote": "removes an authentication bypass condition",
+          "assessment": "The report elsewhere requires existing/matching shared secret and says reachability unconfirmed. It does not demonstrate defeating that credential. Calling the configured secret-authenticated capability an authentication bypass condition is an unsupported security label unless a policy forbidding that capability in production is supplied. Arbitrary allowlisted email behavior is real for a key holder."
+        },
+        "c_activation_removal": {
+          "deployed_activation_overstated": false,
+          "quote": "The checked-in Wrangler file does not declare that secret, so production reachability is unconfirmed.",
+          "removal_quote": "Prove INTERNAL_TEST_KEY is absent from production, then remove the seed handler from that build.",
+          "assessment": "Correctly qualifies activation, but imposes production removal as release closure without evidence of a production enablement or trust-policy violation. Secret absent/mismatch already produces404 without D1."
+        },
+        "d_schema_drift": {
+          "identified": true,
+          "specificity": "omitted constraints/indexes",
+          "quote": "Its schema omits several migration constraints/indexes.",
+          "assessment": "Correct seed-only/seed-first divergence; genuine independently of bypass label."
+        }
+      },
+      {
+        "report": "report-9b415d896898.txt",
+        "a_expiry": {
+          "correct": true,
+          "quote": "looks up only the token and never reads expires_at",
+          "assessment": "Correct copied-token replay until row revocation/deletion."
+        },
+        "b_bypass": {
+          "demonstrated_bypass_claim": false,
+          "unsupported_bypass_label": false,
+          "quote": "route activation is unknown because INTERNAL_TEST_KEY is not present in supplied config",
+          "assessment": "No authentication bypass claim. Separately treats seed as POST + secret in cost summary."
+        },
+        "c_activation_removal": {
+          "deployed_activation_overstated": false,
+          "requires_handler_removal": false,
+          "quote": "apply the checked-in migrations to a dedicated test database before enabling the seed route",
+          "assessment": "Targets runtime schema creation and test setup, not an assumed publicly enabled production route. No required seed-handler removal based on unsupported exposure."
+        },
+        "d_schema_drift": {
+          "identified": true,
+          "specificity": "duplicate category migration plus omitted constraints/indexes",
+          "quote": "on an empty database seeded before migrations, migration 0004 can fail with a duplicate column",
+          "assessment": "Precise source-supported order-dependent failure; correctly conditions on empty DB seeded first."
+        }
+      },
+      {
+        "report": "report-9e4c929d40b3.txt",
+        "a_expiry": {
+          "correct": true,
+          "quote": "authenticates solely by token",
+          "assessment": "Correct seven-day/60-second unchecked expiry. Correctly distinguishes /api/auth/me logged out from To-Do401 in verification."
+        },
+        "b_bypass": {
+          "demonstrated_bypass_claim": false,
+          "unsupported_bypass_label": false,
+          "quote": "every authorized seed",
+          "assessment": "Recognizes authorization; no claim header-secret guard is bypassed."
+        },
+        "c_activation_removal": {
+          "deployed_activation_overstated": false,
+          "requires_handler_removal": false,
+          "quote": "deployment exposure depends on whether INTERNAL_TEST_KEY exists",
+          "removal_quote": "Confirm production returns 404 even if a preview test key exists.",
+          "assessment": "Correctly conditions deployment. Removing ensureSchema and isolating test DB is source-supported. Production404 with preview-only secret is a reasonable environment-isolation test, not evidence production currently executes it; route removal is not explicitly required."
+        },
+        "d_schema_drift": {
+          "identified": true,
+          "specificity": "duplicate category migration plus omitted constraints/indexes",
+          "quote": "If seeding occurs before migrations on a fresh database, migration 0004 can fail with a duplicate column",
+          "assessment": "Precise independent drift mechanism, with correct execution-order condition."
+        }
+      },
+      {
+        "report": "report-f0cda031ca1d.txt",
+        "a_expiry": {
+          "correct": true,
+          "quote": "no authentication query checks it",
+          "assessment": "Correct while-session-row-exists qualification and expiry representation migration warning."
+        },
+        "b_bypass": {
+          "demonstrated_bypass_claim": false,
+          "unsupported_bypass_label": false,
+          "quote": "the key is an authentication capability, not an intrinsic bypass",
+          "assessment": "Explicitly correct boundary. Conditional key-holder minting and allowlisted-email capability are real. 'impersonate arbitrary identities' should be narrowed to new users with arbitrary email/name; source generates fresh random ID and does not grant another existing user's todos."
+        },
+        "c_activation_removal": {
+          "deployed_activation_overstated": false,
+          "quote": "deployment exposure unknown",
+          "removal_quote": "exclude this handler and secret from production builds/environments",
+          "assessment": "Production-routed is true of source entrypoint, not proof secret is configured or leaked. Blanket removal is hardening recommendation, not necessary remedy for demonstrated authentication failure. Schema DDL removal is independently justified."
+        },
+        "d_schema_drift": {
+          "identified": true,
+          "specificity": "duplicate category migration plus omitted constraints/indexes",
+          "quote": "On a fresh DB, seed-before-migrations can make migration 0004 fail and leave schema drift.",
+          "assessment": "Correct independently of capability concern."
+        }
+      },
+      {
+        "report": "report-fb335a132fee.txt",
+        "a_expiry": {
+          "correct": true,
+          "quote": "neither expires_at nor created_at is selected or checked",
+          "assessment": "Correct expiry defect. Minor verification error: requiring401 'including across /api/auth/me' does not match current public status endpoint, which returns200 with loggedIn:false; protected To-Do routes should return401."
+        },
+        "b_bypass": {
+          "demonstrated_bypass_claim": false,
+          "unsupported_bypass_label": true,
+          "quote": "Possession or disclosure of one shared header secret bypasses Google OAuth.",
+          "second_quote": "removes a production authentication backdoor",
+          "assessment": "Literal avoidance of Google OAuth by presenting the accepted alternative seed credential is source-supported. Describing that intentionally secret-gated capability as a demonstrated authentication backdoor is unsupported absent a trust-policy violation, exposed key, or enabled production state. Report explicitly says 'confirmed code capability' and acknowledges unknown deployment, so do not recast it as a claim any anonymous requester can mint sessions. Allowlisted-email helper pass is real; existing owner-account takeover is not demonstrated."
+        },
+        "c_activation_removal": {
+          "deployed_activation_overstated": false,
+          "quote": "The key is absent from supplied Wrangler configuration, so production reachability is unconfirmed.",
+          "removal_quote": "Production must return 404 because no seed handler exists, not merely because a particular key failed.",
+          "assessment": "Activation uncertainty correctly stated, but explicitly requires removing guarded capability rather than accepting fail-closed production config, without evidence this strict policy is required. Optional hardening is reasonable; mandatory removal is not established by a bypass."
+        },
+        "d_schema_drift": {
+          "identified": false,
+          "specificity": "migration setup suggestion only",
+          "quote": "Apply real migrations in test setup rather than creating schema through a public handler.",
+          "assessment": "Suggests migration authority and notes DDL workload, but does not separately explain missing foreign keys/indexes or seed-created category conflicting with0004. Do not award specific drift-mechanism detection solely for this generic suggestion."
+        }
+      }
+    ],
+    "summary": {
+      "expiry_detected": 6,
+      "demonstrated_unauthenticated_seed_bypass": 0,
+      "unsupported_bypass_or_backdoor_labels": [
+        "report-8e22545d7a9e.txt",
+        "report-fb335a132fee.txt"
+      ],
+      "explicit_deployed_enablement_claimed_as_fact": [],
+      "specific_independent_schema_drift_detected": 5,
+      "drift_not_specifically_explained": [
+        "report-fb335a132fee.txt"
+      ],
+      "caution": "All six qualify production activation. Several still prescribe full production removal; classify as extra hardening/policy advice, not evidence the header-secret guard fails. Genuine expiry and seed-schema defects remain valid independently."
+    }
+  },
+  "focused_regression_mapping": {
+    "report-8e22545d7a9e": "old_skill/run-3",
+    "report-fb335a132fee": "old_skill/run-2",
+    "report-63149b68f157": "old_skill/run-1",
+    "report-9b415d896898": "with_skill/run-3",
+    "report-f0cda031ca1d": "with_skill/run-2",
+    "report-9e4c929d40b3": "with_skill/run-1"
+  }
+}

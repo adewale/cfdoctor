@@ -1,0 +1,34 @@
+[
+  {
+    "case": "url-shortener",
+    "old_leads": 8,
+    "initial_candidate_leads": 7,
+    "final_candidate_leads": 7,
+    "old_high": 4,
+    "final_high": 3
+  },
+  {
+    "case": "bytego",
+    "old_leads": 2,
+    "initial_candidate_leads": 1,
+    "final_candidate_leads": 0,
+    "old_high": 2,
+    "final_high": 0
+  },
+  {
+    "case": "status-page",
+    "old_leads": 8,
+    "initial_candidate_leads": 5,
+    "final_candidate_leads": 4,
+    "old_high": 1,
+    "final_high": 0
+  },
+  {
+    "case": "web-tools",
+    "old_leads": 6,
+    "initial_candidate_leads": 1,
+    "final_candidate_leads": 1,
+    "old_high": 2,
+    "final_high": 0
+  }
+]

@@ -8,8 +8,39 @@ For every confirmed finding and recommended action, include a `Source basis` fie
 
 1. **Official current Cloudflare source** — docs, pricing, limits, best-practices docs, API reference, changelog, or Cloudflare dashboard/API evidence fetched during the audit.
 2. **War story** — a public, dated, first-hand incident report, engineering postmortem, maintainer issue, or operator write-up where someone used the wrong primitive/configuration, hit the failure/cost/security issue, and documented the lesson.
+3. **Inspected project source or declared contract** — for application logic demonstrated by that source. Use a primary language/protocol reference when the relevant behavior is not shown locally. This does not establish mutable Cloudflare behavior, quotas or pricing; those still need current official Cloudflare sources.
 
-If neither exists, do not present the item as a recommendation. Put it under **Questions / evidence needed** or label it as an **unsourced hypothesis**.
+If none exists, do not present the item as a recommendation. Put it under **Questions / evidence needed** or label it as an **unsourced hypothesis**.
+
+## Verify the finding and its remedy
+
+Before confirming a material claim, check the smallest source path that could
+disprove it:
+
+- Follow middleware, early returns, cache/optional branches and catches. Count
+  only operations reached on that branch; a caught failure may return a different
+  status from the global error handler. An inventory/search that omitted hidden
+  files does not prove configuration or CI was not supplied.
+- Establish the intended contract from code, docs and tests. Public uploads,
+  bearer capabilities and manual resource setup can be deliberate. Reconcile
+  conflicting promises; distinguish logical access expiry, physical retention
+  and copies already cached. A disclosed policy does not excuse a separate
+  expiry or ownership bypass. Keep deployed activation and consequences unknown
+  unless inspected.
+- Establish the time boundary of an authorization or expiry requirement:
+  admission, start of a side effect, or commit. A request authorized before
+  expiry can finish later under admission semantics. An intervening await alone
+  does not establish a bypass or a requirement to reauthorize; clarify an
+  unspecified stronger policy. Missing expiry validation on an already-expired
+  incoming request is a different, source-provable failure.
+- Validate the proposed change at its enclosing control-flow boundary. A return
+  in an array callback skips that callback; a continue needs an enclosing loop.
+  A fix or test must preserve valid behavior and exercise the actual trigger.
+  A bounded display/history response does not establish the intended storage
+  retention period.
+
+Omit an unsupported detail rather than attaching it to a valid diagnosis. State
+the source proof and the remaining deployment/workload question separately.
 
 Operator design notes/checklists (for example coey.dev Durable Object and Dynamic Worker notes) can motivate scenarios to inspect, but they are not enough by themselves for pricing, limits, or a confirmed Cloudflare recommendation. Pair them with official current Cloudflare docs unless they meet the first-hand war-story criteria below.
 
@@ -18,7 +49,7 @@ Operator design notes/checklists (for example coey.dev Durable Object and Dynami
 - **Pricing, limits, plan behavior, billing meters**: official current Cloudflare docs/pricing only. War stories can motivate severity but cannot establish current price/limit facts.
 - **Product behavior and configuration semantics**: official current Cloudflare docs first. War stories can supplement practical risk.
 - **Operational patterns** such as circuit breakers, kill switches, anti-rework caches, and bounded fanout: cite the closest official Cloudflare primitive docs for the concrete mechanism being recommended (Queues retries/DLQ, Workflows retries, AI Gateway rate limiting/caching, Workers rollbacks, etc.) or cite a war story.
-- **Security findings**: official docs or well-documented first-hand incident/write-up; avoid anonymous lore.
+- **Security findings**: establish the violated protection from inspected guards and the declared contract; use official platform/protocol sources for behavior outside that code. First-hand incidents can supplement the mechanism; avoid anonymous lore.
 
 ## War story acceptance criteria
 

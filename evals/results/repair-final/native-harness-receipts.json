@@ -1,0 +1,142 @@
+{
+  "projects/codex": {
+    "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+    "full_native_benchmark_sha256": "e86e3d9ee5ba2867582f3b3bac02632be9f4103764586adec1b449f82737c5c0",
+    "runs": 60,
+    "execution_valid": 60,
+    "raw_quality_threshold": 4.4,
+    "normalized_quality_threshold": 0.85,
+    "quality_passes": {
+      "old_skill": 8,
+      "with_skill": 11
+    },
+    "budget_passes": {
+      "old_skill": {
+        "elapsed-budget": 30,
+        "token-budget": 0
+      },
+      "with_skill": {
+        "elapsed-budget": 30,
+        "token-budget": 1
+      }
+    },
+    "all_assertions_soft": true,
+    "all_soft_combined_pass_rate": {
+      "old_skill": null,
+      "with_skill": null
+    },
+    "native_default_pairing": {
+      "eligible_pairs": 0,
+      "blocked_pairs": 30,
+      "blocked_reason_counts": {
+        "missing_without_skill": 30
+      }
+    },
+    "command": "skill_benchmark.py benchmark manifest.json --runs runs --split tune --variant old_skill --variant with_skill --judge-results codex-judge-results.jsonl"
+  },
+  "projects/claude": {
+    "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+    "full_native_benchmark_sha256": "4145b59440884474ebe4ac9549676caf3e07e89c962d2c56d615c6dc5f31bb72",
+    "runs": 60,
+    "execution_valid": 60,
+    "raw_quality_threshold": 4.4,
+    "normalized_quality_threshold": 0.85,
+    "quality_passes": {
+      "old_skill": 5,
+      "with_skill": 11
+    },
+    "budget_passes": {
+      "old_skill": {
+        "elapsed-budget": 30,
+        "token-budget": 0
+      },
+      "with_skill": {
+        "elapsed-budget": 30,
+        "token-budget": 1
+      }
+    },
+    "all_assertions_soft": true,
+    "all_soft_combined_pass_rate": {
+      "old_skill": null,
+      "with_skill": null
+    },
+    "native_default_pairing": {
+      "eligible_pairs": 0,
+      "blocked_pairs": 30,
+      "blocked_reason_counts": {
+        "missing_without_skill": 30
+      }
+    },
+    "command": "skill_benchmark.py benchmark manifest.json --runs runs --split tune --variant old_skill --variant with_skill --judge-results claude-judge-results.jsonl"
+  },
+  "regressions/codex": {
+    "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+    "full_native_benchmark_sha256": "eb4a617e138ad1c6942486682db266f0f71004573e9aa6ad0eee6250fe188e92",
+    "runs": 32,
+    "execution_valid": 32,
+    "raw_quality_threshold": 4.4,
+    "normalized_quality_threshold": 0.85,
+    "quality_passes": {
+      "old_skill": 12,
+      "with_skill": 14
+    },
+    "budget_passes": {
+      "old_skill": {
+        "elapsed-budget": 16,
+        "token-budget": 16
+      },
+      "with_skill": {
+        "elapsed-budget": 16,
+        "token-budget": 16
+      }
+    },
+    "all_assertions_soft": true,
+    "all_soft_combined_pass_rate": {
+      "old_skill": null,
+      "with_skill": null
+    },
+    "native_default_pairing": {
+      "eligible_pairs": 0,
+      "blocked_pairs": 16,
+      "blocked_reason_counts": {
+        "missing_without_skill": 16
+      }
+    },
+    "command": "skill_benchmark.py benchmark manifest.json --runs runs --split tune --variant old_skill --variant with_skill --judge-results codex-judge-results.jsonl"
+  },
+  "regressions/claude": {
+    "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+    "full_native_benchmark_sha256": "0b808266194c72426e16c283e6a90b765c909ef70e3dd4721f3cc57265b3e8d8",
+    "runs": 32,
+    "execution_valid": 32,
+    "raw_quality_threshold": 4.4,
+    "normalized_quality_threshold": 0.85,
+    "quality_passes": {
+      "old_skill": 14,
+      "with_skill": 15
+    },
+    "budget_passes": {
+      "old_skill": {
+        "elapsed-budget": 16,
+        "token-budget": 16
+      },
+      "with_skill": {
+        "elapsed-budget": 16,
+        "token-budget": 16
+      }
+    },
+    "all_assertions_soft": true,
+    "all_soft_combined_pass_rate": {
+      "old_skill": null,
+      "with_skill": null
+    },
+    "native_default_pairing": {
+      "eligible_pairs": 0,
+      "blocked_pairs": 16,
+      "blocked_reason_counts": {
+        "missing_without_skill": 16
+      }
+    },
+    "command": "skill_benchmark.py benchmark manifest.json --runs runs --split tune --variant old_skill --variant with_skill --judge-results claude-judge-results.jsonl"
+  }
+}

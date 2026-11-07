@@ -1,0 +1,59 @@
+Historical forward-eval output. The successful partial-erasure claim in finding 2 is unsupported without accounting for the earlier D1 invocation limit; see README.txt.
+
+## Cloudflare Doctor focused audit
+
+Scope inspected: the three requested files, plus the minimum routing, maintenance, deletion-caller, configuration, and migration evidence needed. Static reads only; no target code, installers, account commands, or deployments were run.
+
+Scope not inspected: tests, deployed Worker/configuration, Cloudflare plan, account settings, traffic volumes, prior audits, discussions, answer keys, and sibling directories.
+
+Docs refreshed: [D1 limits](https://developers.cloudflare.com/d1/platform/limits/), [Workers limits](https://developers.cloudflare.com/workers/platform/limits/), [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/), and [Wrangler configuration](https://developers.cloudflare.com/workers/wrangler/configuration/).
+
+### 1. High — Maximum-size identify batches exceed D1 limits
+
+- Severity: High
+- Category: Reliability / cost footgun
+- Evidence: Ingest accepts 200 events ([ingest.ts:32](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L32), [ingest.ts:96](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L96)). Each `$identify` can execute an identity insert and person upsert ([ingest.ts:226](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L226)). `personProperties` chunks its SELECTs but combines every returned ID into one UPDATE ([ingest.ts:316](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L316), [ingest.ts:327](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/ingest.ts#L327)).
+- Why it matters: Just 99 unique identified people bind 101 parameters to that UPDATE—`now`, `project`, and 99 IDs—over D1’s 100-parameter maximum. The preceding per-event statements also exceed the Free-plan limit of 50 queries per invocation well before the advertised 200-event maximum. This is a confirmed source failure; the deployed plan is unknown.
+- Fix: Chunk the UPDATE into at most 98 person IDs. Batch identity/person statements where semantics permit, or lower/adapt the accepted identify-batch size to the invocation budget.
+- Cost / trade-off: More batching logic and partial-failure handling; fewer failed requests and repeated D1 work.
+- Verify: Use a D1-compatible test double enforcing 100 parameters and 50/1000 invocation-query limits; submit 99 and 200 unique `$identify` events and assert either complete success or explicit admission rejection before writes.
+- Source basis: [Cloudflare D1 limits](https://developers.cloudflare.com/d1/platform/limits/).
+- Confidence: High
+
+### 2. High — Person erasure stops after 500 replays
+
+- Severity: High
+- Category: Correctness / reliability
+- Evidence: `deleteReplays` selects at most 500 sessions ([replays.ts:499](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L499)). Retention correctly loops over those slices, but `deletePerson` calls it only once, then deletes the identity links and reports completion ([service.ts:1239](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/service.ts#L1239), [service.ts:1253](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/service.ts#L1253), [service.ts:1259](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/service.ts#L1259)).
+- Why it matters: A person with 501 matching replay sessions retains at least one D1 replay row and its R2 objects while the response claims deletion. Removing identity links also makes safe resumption harder. This is a confirmed source failure, independent of deployed configuration.
+- Fix: Loop resumably until a slice returns fewer than 500, and delete person/identity records only after all replay slices succeed. Preserve progress across invocation-budget exhaustion.
+- Cost / trade-off: Large erasures may require a Queue or Workflow; this adds state but makes completion observable and retryable.
+- Verify: Seed 501 matching sessions with multi-page R2 listings, interrupt after one slice, resume, and assert no replay rows, chunks, summaries, notes, person row, or identity links remain.
+- Source basis: [R2 listing cursors and conditional operations](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/).
+- Confidence: High
+
+### 3. High — Compressed replay input has unbounded expansion
+
+- Severity: High
+- Category: Security / reliability
+- Evidence: `/r` trusts `enc=gzip` and caps only the compressed request at 5 MB ([replays.ts:64](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L64), [replays.ts:87](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L87)). Reads later buffer each object, decompress to a string, parse JSON, retain every chunk, and process six concurrently ([replays.ts:437](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L437), [replays.ts:454](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L454), [replays.ts:462](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/worker/src/replays.ts#L462)).
+- Why it matters: A small, highly compressed upload—or simply a long session—can exceed Workers’ fixed 128 MB isolate limit during playback or scheduled summarisation. The amplification is confirmed; reachability depends on R2 being enabled and a known project ID, while actual deployed exposure is unknown.
+- Fix: Validate gzip while ingesting, enforce decompressed per-chunk and per-session limits during streaming, and avoid retaining all decompressed chunks simultaneously.
+- Cost / trade-off: Streaming validation is more complex and may impose a replay-size ceiling.
+- Verify: Feed a sub-5 MB gzip payload that expands beyond the chosen limit; confirm rejection before full allocation, then test a many-chunk session under the 128 MB budget.
+- Source basis: [Workers memory limits](https://developers.cloudflare.com/workers/platform/limits/).
+- Confidence: High
+
+### 4. Medium — Route generation guesses the wrong zone for multi-label suffixes
+
+- Severity: Medium
+- Category: Misconfiguration
+- Evidence: Provisioning derives `zone_name` from the last two hostname labels ([provision.ts:275](https://github.com/ISNIT0/glass-analytics/blob/689f4baecae918f498dbde903302daf10a57f48c/packages/cli/src/cloudflare/provision.ts#L275)). For `analytics.example.co.uk/_glass/*`, it emits `co.uk`, not the actual `example.co.uk` zone.
+- Why it matters: Wrangler requires `zone_name` to identify the zone associated with the route. Such deployments can fail or target a nonexistent/inaccessible zone. This is a confirmed input-dependent source defect; whether any deployed route is affected is unknown.
+- Fix: Resolve the matching zone through Cloudflare’s API, persist its `zone_id`, and render that ID. Alternatively require an explicit zone name/ID rather than deriving it syntactically.
+- Cost / trade-off: One provisioning lookup and a small config migration.
+- Verify: Render configurations for `example.com`, `example.co.uk`, and deeper subdomains; assert the route uses the account’s exact zone ID.
+- Source basis: [Wrangler route configuration](https://developers.cloudflare.com/workers/wrangler/configuration/).
+- Confidence: High
+
+Cost paths: anonymous ingest can execute up to roughly two per-event D1 writes plus lookup/update statements; exact billed rows and traffic are unknown. Replay upload performs one R2 PUT and one D1 upsert per accepted chunk; replay reads fan out across every stored chunk. No deployed measurements were supplied.

@@ -1,0 +1,16 @@
+{
+  "candidate_freeze": "a1e9c3ae07d6cf61b50fadb44b2c12e0ff681372",
+  "installed_files_after_freeze": "Byte-identical; subsequent commits only align ablation headers and publish evidence.",
+  "real_projects": {
+    "known8": "Previously generated audits and source reviews were available during repairs; these are tuning cases.",
+    "unseen2": "Native cohort name retained for reproducibility. These two independently selected projects had no earlier generated model audits. The operator saw their source keys before final freeze; they are not secret holdouts. No project-specific form-serialization or R2 stream-length answer was added to the skill.",
+    "sampling": "Selected Cloudflare source snapshots, not a random project sample. Three repetitions are not three independent projects."
+  },
+  "regressions": "Eight independently authored synthetic cases in four paired families; used during visible repairs, not generalization evidence. Baseline is the previous PR head, not original main.",
+  "calibration": "Both model judges classify24/24 independently authored near-miss reports correctly. This establishes the selected simple distinctions, not reliability on every full audit. A local extra-report path error was corrected before calibration completed; existing model verdicts were preserved.",
+  "judging": "Native Codex/Claude strict anchored judgments; no manual numeric replacement or selective quality retry. Source adjudication uses agents, not human maintainer review. Exact source corrections and qualified disagreement are retained separately.",
+  "quality": "Four normalized rubric dimensions; not percentage of all project bugs found. Material precision errors are counted separately because a high composite can coexist with one false claim.",
+  "process": "Raw bytes and rendered paired prompts verified. Selected skill/source/docs mounted without answer keys or serialized duplicate source. Command traces support scoped observations, not an operating-system confinement proof. No target behavior was dynamically tested.",
+  "overhead": "Answer-generation tokens and elapsed time only; judge calls excluded. Cached input is a subset of input; reasoning is a subset of output. Provider cache/concurrency and model variation preclude a stable dollar-cost or causal per-file claim.",
+  "historical_results": "Earlier two repair pilots and the previous eight-project run remain visible. Their outputs are excluded from the final92 audits."
+}

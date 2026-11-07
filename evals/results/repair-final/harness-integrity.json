@@ -1,0 +1,8 @@
+{
+  "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+  "tracked_files_verified_against_git_archive": 149,
+  "archive_sha256": "1d5a91ee683621190d88d3005b4d15924cc7344a0f0d1b9e430fdb0a65da15c0",
+  "mismatches": [],
+  "skill_benchmark_py_sha256": "ee0c5012e9a3191071682eec14140a4768ebeab52ca365bd3ecb3967fef309fa",
+  "note": "Runtime uses an extracted pinned archive, not a git checkout. Generated __pycache__ files are outside tracked-source equality."
+}

@@ -1,0 +1,93 @@
+{
+  "method": "Independent agent source adjudication of opaque reports. Numeric judges unchanged. Arm identities added only after the review artifacts were saved and hash-verified; no prior review labels or arm maps supplied to authors. Categories may overlap; confidence/policy overclaims are distinct from false source statements or invalid remedies. Counts describe judgments on selected reports, not universal accuracy.",
+  "cohorts": {
+    "regressions": {
+      "expected": 32,
+      "reviewed": 32,
+      "checks": [
+        {
+          "group": "regressions",
+          "reviews": 32,
+          "frozen_before_unblinding_sha256": "554a70c30dd2d9b444ac3adbb3afb63100057218f4c542183b5d95781a7bc0f8"
+        }
+      ],
+      "by_arm": {
+        "old_skill": {
+          "reports": 16,
+          "all_required_primaries_or_safe_control": 16,
+          "material_false_claims_reports": 1,
+          "material_false_claims_entries": 1,
+          "material_overclaims_reports": 1,
+          "material_overclaims_entries": 2,
+          "invalid_remedies_reports": 0,
+          "invalid_remedies_entries": 0,
+          "source_attribution_findings_reports": 0,
+          "source_attribution_findings_entries": 0,
+          "any_flagged_issue_reports": 2
+        },
+        "with_skill": {
+          "reports": 16,
+          "all_required_primaries_or_safe_control": 16,
+          "material_false_claims_reports": 0,
+          "material_false_claims_entries": 0,
+          "material_overclaims_reports": 0,
+          "material_overclaims_entries": 0,
+          "invalid_remedies_reports": 0,
+          "invalid_remedies_entries": 0,
+          "source_attribution_findings_reports": 0,
+          "source_attribution_findings_entries": 0,
+          "any_flagged_issue_reports": 0
+        }
+      }
+    },
+    "projects": {
+      "expected": 60,
+      "reviewed": 60,
+      "checks": [
+        {
+          "group": "projects/original4",
+          "reviews": 24,
+          "frozen_before_unblinding_sha256": "de8db8cda8fa71bb8561549225028b46b42fa792b9491d2ec7a92b3cc02e70ad"
+        },
+        {
+          "group": "projects/previous4",
+          "reviews": 24,
+          "frozen_before_unblinding_sha256": "0541464ebed08a7debed34643dc2743662f67365d4f6c15d1c74c95ccaa781d3"
+        },
+        {
+          "group": "projects/unseen2",
+          "reviews": 12,
+          "frozen_before_unblinding_sha256": "affc2acc1b1926e4d9888f99bcc44e850bb4b90ca1fc60645ab3e780ee200f92"
+        }
+      ],
+      "by_arm": {
+        "old_skill": {
+          "reports": 30,
+          "all_required_primaries_or_safe_control": 24,
+          "material_false_claims_reports": 9,
+          "material_false_claims_entries": 12,
+          "material_overclaims_reports": 12,
+          "material_overclaims_entries": 13,
+          "invalid_remedies_reports": 6,
+          "invalid_remedies_entries": 8,
+          "source_attribution_findings_reports": 3,
+          "source_attribution_findings_entries": 3,
+          "any_flagged_issue_reports": 21
+        },
+        "with_skill": {
+          "reports": 30,
+          "all_required_primaries_or_safe_control": 28,
+          "material_false_claims_reports": 8,
+          "material_false_claims_entries": 8,
+          "material_overclaims_reports": 11,
+          "material_overclaims_entries": 13,
+          "invalid_remedies_reports": 6,
+          "invalid_remedies_entries": 6,
+          "source_attribution_findings_reports": 1,
+          "source_attribution_findings_entries": 1,
+          "any_flagged_issue_reports": 19
+        }
+      }
+    }
+  }
+}

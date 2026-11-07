@@ -60,7 +60,7 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY | scanner-lead | COST | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §2, §19; proposed in §"Checks to add or strengthen" | Webhook-shaped projects with side effects and no repo-visible delivery/event dedupe key produce a low-confidence lead. Signature-verification ordering remains semantic review work. |
 | CFDOC-FIT-KV-COORDINATION | scanner-lead | FIT | high | [`product-fit-rubric.md`](product-fit-rubric.md) (KV consistency limits) | KV read-modify-write smell for coordination/counters. |
 | CFDOC-PERF-AWAITED-CACHE-PUT | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Cache put awaited in request path. |
-| CFDOC-PERF-D1-N-PLUS-ONE | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Many D1 prepared statements in one file; check for N+1 queries. |
+| CFDOC-PERF-D1-N-PLUS-ONE | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | D1 preparation inside a per-item loop; separate CRUD methods do not establish N+1. |
 | CFDOC-PERF-D1-SELECT-STAR | scanner-lead | PERF | low | [`performance-and-reliability.md`](performance-and-reliability.md) | Projection/schema-coupling review only; `SELECT *` does not itself prove a full scan or extra billed rows. |
 | CFDOC-PERF-PUBLIC-SERVICE-URL | scanner-lead | PERF | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (service bindings) | Public Cloudflare service URL fetch; consider service bindings. |
 | CFDOC-PERF-R2-BUFFERING | scanner-lead | PERF | medium | [`performance-and-reliability.md`](performance-and-reliability.md) (streaming) | R2 object may be buffered instead of streamed. |
@@ -87,6 +87,19 @@ For `scanner-lead` rows, Pillar and Severity come from `--list-checks`. For chec
 | DYNAMIC-WORKER-SANDBOX-CAPABILITIES | scanner-lead | SEC | high | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §16; proposed in §"Checks to add or strengthen" | Dynamic Worker/code execution lacks obvious capability or resource bounds. |
 | KV-VS-DO-STORAGE-FIT | scanner-lead | FIT | low | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §14; proposed in §"Checks to add or strengthen" | Durable Object storage used for possibly read-heavy data. |
 | WORKER-TCP-DB-FIT | scanner-lead | REL | medium | [`war-story-scenario-checklist.md`](war-story-scenario-checklist.md) §20; proposed in §"Checks to add or strengthen" | Worker TCP/external database path lacks obvious pooling/TLS/timeout controls. |
+
+| CFDOC-REL-D1-PARAMETERS | scanner-lead | REL | low | [`workload-boundaries.md`](workload-boundaries.md) | Constructed D1 statement needs a parameter budget. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-REL-D1-QUERY-BUDGET | scanner-lead | REL | low | [`workload-boundaries.md`](workload-boundaries.md) | Per-item D1 work can exceed an invocation query budget. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-CONFIG-R2-JURISDICTION | scanner-lead | CONFIG | low | [`workload-boundaries.md`](workload-boundaries.md) | Bucket creation and generated R2 binding jurisdiction need reconciliation. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-REL-EXPANSION-BOUND | scanner-lead | REL | low | [`workload-boundaries.md`](workload-boundaries.md) | Expanded or accumulated data lacks a proved work bound. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-REL-DELETION-CONTINUATION | scanner-lead | REL | low | [`workload-boundaries.md`](workload-boundaries.md) | Limited deletion helper is used without visible completion tracking. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-REL-CROSS-STORE-IDEMPOTENCY | scanner-lead | REL | low | [`workload-boundaries.md`](workload-boundaries.md) | Object upload and additive metadata need cross-store retry review. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-SEC-INGRESS-POLICY-PARITY | scanner-lead | SEC | low | [`workload-boundaries.md`](workload-boundaries.md) | Sibling POST handlers apply different admission checks. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-COST-METER-COVERAGE | scanner-lead | COST | low | [`workload-boundaries.md`](workload-boundaries.md) | Computed cost estimate omits recognized product meters. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-SEC-RUNTIME-PROVISIONING-TOKEN | scanner-lead | SEC | low | [`workload-boundaries.md`](workload-boundaries.md) | Provisioning token also supplies a runtime secret. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+| CFDOC-REL-TEST-BINDING-CONTRACT | scanner-lead | REL | low | [`workload-boundaries.md`](workload-boundaries.md) | Local binding double omits a platform contract. Bounded syntax lead; generated values, inherited controls and helper behavior remain review work. |
+
+| CFDOC-CONFIG-ROUTE-ZONE-GUESS | scanner-lead | CONFIG | medium | [`workload-boundaries.md`](workload-boundaries.md) | Literal last-two-label derivation feeding zone_name; explicit zone IDs/names do not trigger it. |
 
 ## How to update
 

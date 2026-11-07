@@ -2,6 +2,16 @@
 
 Cost findings should name the billing meter or amplification mechanism. Avoid exact dollar estimates unless the user supplied plan, region, retention, and volume assumptions.
 
+Before comparing an operation count with a limit, identify the counter and its
+scope: external fetches, internal service calls, product operations, per-key
+writes, invocation queries and billed rows are different units. Use the matching row of the current
+[Workers limits](https://developers.cloudflare.com/workers/platform/limits/)
+and product limits, preserving plan and configured overrides. Include redirects
+or retries only on paths that execute them; an optional metadata fetch, cache
+hit or early authentication rejection changes the count. If counter identity or
+the applicable limit is unknown, report the operation shape without asserting
+that a numeric quota is exceeded.
+
 ## General cost model questions
 
 Ask for or infer cautiously:

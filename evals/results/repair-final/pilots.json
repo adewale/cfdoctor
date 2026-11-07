@@ -1,0 +1,668 @@
+{
+  "focus": {
+    "candidate_commit": "6244c95977ab716d417d8904b2b7c251d11a3fe5",
+    "answers": {
+      "successful_balanced_expected_runs": 32,
+      "single_terminal_usage_per_run": true,
+      "native_metadata_matches_trace": true,
+      "cache_and_reasoning_subsets_valid": true
+    },
+    "judges": {
+      "codex": {
+        "by_arm": {
+          "old_skill": {
+            "n": 16,
+            "quality_mean": 0.9453125,
+            "quality_passes": 15,
+            "material_precision_error_reports": 1,
+            "dimension_means": {
+              "recall": 4.6875,
+              "precision": 4.8125,
+              "actionability": 4.8125,
+              "evidence": 4.8125
+            }
+          },
+          "with_skill": {
+            "n": 16,
+            "quality_mean": 0.89453125,
+            "quality_passes": 14,
+            "material_precision_error_reports": 2,
+            "dimension_means": {
+              "recall": 4.5,
+              "precision": 4.5625,
+              "actionability": 4.75,
+              "evidence": 4.5
+            }
+          }
+        },
+        "pairs": [
+          {
+            "case": "repair-c1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": -1.0,
+            "recall_delta": 1.0
+          },
+          {
+            "case": "repair-c1",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-c2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-c2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m1",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m2",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p1",
+            "run": 1,
+            "quality_delta": 0.6875,
+            "precision_delta": 3.0,
+            "recall_delta": 4.0
+          },
+          {
+            "case": "repair-p1",
+            "run": 2,
+            "quality_delta": -0.5625,
+            "precision_delta": -2.0,
+            "recall_delta": -4.0
+          },
+          {
+            "case": "repair-p2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q1",
+            "run": 1,
+            "quality_delta": -0.875,
+            "precision_delta": -4.0,
+            "recall_delta": -4.0
+          },
+          {
+            "case": "repair-q1",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q2",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          }
+        ],
+        "wins": 2,
+        "losses": 4,
+        "ties": 10,
+        "uncertainty": {
+          "clusters": 4,
+          "delta": -0.05078125,
+          "bootstrap_95_ci": [
+            -0.171875,
+            0.0234375
+          ],
+          "exact_sign_flip_p": 0.875,
+          "cluster_effects": {
+            "c": 0.015625,
+            "m": -0.015625,
+            "p": 0.03125,
+            "q": -0.234375
+          }
+        }
+      },
+      "claude": {
+        "by_arm": {
+          "old_skill": {
+            "n": 16,
+            "quality_mean": 0.921875,
+            "quality_passes": 14,
+            "material_precision_error_reports": 1,
+            "dimension_means": {
+              "recall": 4.75,
+              "precision": 4.75,
+              "actionability": 4.6875,
+              "evidence": 4.5625
+            }
+          },
+          "with_skill": {
+            "n": 16,
+            "quality_mean": 0.8515625,
+            "quality_passes": 11,
+            "material_precision_error_reports": 2,
+            "dimension_means": {
+              "recall": 4.25,
+              "precision": 4.4375,
+              "actionability": 4.5,
+              "evidence": 4.4375
+            }
+          }
+        },
+        "pairs": [
+          {
+            "case": "repair-c1",
+            "run": 1,
+            "quality_delta": -0.25,
+            "precision_delta": -1.0,
+            "recall_delta": -1.0
+          },
+          {
+            "case": "repair-c1",
+            "run": 2,
+            "quality_delta": -0.1875,
+            "precision_delta": -1.0,
+            "recall_delta": -1.0
+          },
+          {
+            "case": "repair-c2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-c2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m1",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p1",
+            "run": 1,
+            "quality_delta": 0.125,
+            "precision_delta": 1.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p1",
+            "run": 2,
+            "quality_delta": -0.125,
+            "precision_delta": 0.0,
+            "recall_delta": -2.0
+          },
+          {
+            "case": "repair-p2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q1",
+            "run": 1,
+            "quality_delta": -0.75,
+            "precision_delta": -4.0,
+            "recall_delta": -4.0
+          },
+          {
+            "case": "repair-q1",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q2",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          }
+        ],
+        "wins": 2,
+        "losses": 4,
+        "ties": 10,
+        "uncertainty": {
+          "clusters": 4,
+          "delta": -0.0703125,
+          "bootstrap_95_ci": [
+            -0.140625,
+            0.0
+          ],
+          "exact_sign_flip_p": 0.5,
+          "cluster_effects": {
+            "c": -0.109375,
+            "m": 0.0,
+            "p": 0.0,
+            "q": -0.171875
+          }
+        }
+      }
+    },
+    "source_review_file": "Pilot1/2 raw reviews retained in local archive; selected source-verified errors quoted in README.",
+    "used_for_final_scores": false
+  },
+  "focus-final": {
+    "candidate_commit": "6c4efa42664be6252413145c1c563c92ac81882b",
+    "answers": {
+      "successful_balanced_expected_runs": 32,
+      "single_terminal_usage_per_run": true,
+      "native_metadata_matches_trace": true,
+      "cache_and_reasoning_subsets_valid": true
+    },
+    "judges": {
+      "codex": {
+        "by_arm": {
+          "old_skill": {
+            "n": 16,
+            "quality_mean": 0.8984375,
+            "quality_passes": 14,
+            "material_precision_error_reports": 2,
+            "dimension_means": {
+              "recall": 4.5,
+              "precision": 4.625,
+              "actionability": 4.6875,
+              "evidence": 4.5625
+            }
+          },
+          "with_skill": {
+            "n": 16,
+            "quality_mean": 0.88671875,
+            "quality_passes": 13,
+            "material_precision_error_reports": 4,
+            "dimension_means": {
+              "recall": 4.6875,
+              "precision": 4.375,
+              "actionability": 4.75,
+              "evidence": 4.375
+            }
+          }
+        },
+        "pairs": [
+          {
+            "case": "repair-c1",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-c1",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-c2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-c2",
+            "run": 2,
+            "quality_delta": 0.125,
+            "precision_delta": 1.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m1",
+            "run": 1,
+            "quality_delta": -0.5,
+            "precision_delta": -3.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m1",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p1",
+            "run": 1,
+            "quality_delta": 0.125,
+            "precision_delta": 1.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p1",
+            "run": 2,
+            "quality_delta": 0.25,
+            "precision_delta": 0.0,
+            "recall_delta": 3.0
+          },
+          {
+            "case": "repair-p2",
+            "run": 1,
+            "quality_delta": -0.125,
+            "precision_delta": -2.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p2",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "precision_delta": -1.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q1",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q1",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q2",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          }
+        ],
+        "wins": 5,
+        "losses": 5,
+        "ties": 6,
+        "uncertainty": {
+          "clusters": 4,
+          "delta": -0.01171875,
+          "bootstrap_95_ci": [
+            -0.08203125,
+            0.0546875
+          ],
+          "exact_sign_flip_p": 0.875,
+          "cluster_effects": {
+            "c": 0.0625,
+            "m": -0.125,
+            "p": 0.046875,
+            "q": -0.03125
+          }
+        }
+      },
+      "claude": {
+        "by_arm": {
+          "old_skill": {
+            "n": 16,
+            "quality_mean": 0.92578125,
+            "quality_passes": 14,
+            "material_precision_error_reports": 1,
+            "dimension_means": {
+              "recall": 4.8125,
+              "precision": 4.75,
+              "actionability": 4.5625,
+              "evidence": 4.6875
+            }
+          },
+          "with_skill": {
+            "n": 16,
+            "quality_mean": 0.90234375,
+            "quality_passes": 13,
+            "material_precision_error_reports": 2,
+            "dimension_means": {
+              "recall": 4.625,
+              "precision": 4.5625,
+              "actionability": 4.6875,
+              "evidence": 4.5625
+            }
+          }
+        },
+        "pairs": [
+          {
+            "case": "repair-c1",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-c1",
+            "run": 2,
+            "quality_delta": -0.25,
+            "precision_delta": -1.0,
+            "recall_delta": -1.0
+          },
+          {
+            "case": "repair-c2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-c2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": -1.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m1",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-m2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p1",
+            "run": 1,
+            "quality_delta": 0.1875,
+            "precision_delta": 1.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p1",
+            "run": 2,
+            "quality_delta": -0.4375,
+            "precision_delta": -2.0,
+            "recall_delta": -2.0
+          },
+          {
+            "case": "repair-p2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-p2",
+            "run": 2,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q1",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          },
+          {
+            "case": "repair-q2",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "precision_delta": 0.0,
+            "recall_delta": 0.0
+          }
+        ],
+        "wins": 4,
+        "losses": 3,
+        "ties": 9,
+        "uncertainty": {
+          "clusters": 4,
+          "delta": -0.0234375,
+          "bootstrap_95_ci": [
+            -0.0546875,
+            0.0078125
+          ],
+          "exact_sign_flip_p": 0.5,
+          "cluster_effects": {
+            "c": -0.046875,
+            "m": 0.015625,
+            "p": -0.0625,
+            "q": 0.0
+          }
+        }
+      }
+    },
+    "source_review_file": "Pilot1/2 raw reviews retained in local archive; selected source-verified errors quoted in README.",
+    "used_for_final_scores": false
+  }
+}

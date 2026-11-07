@@ -1,0 +1,38 @@
+{
+  "installed_skill": "a1e9c3ae07d6cf61b50fadb44b2c12e0ff681372",
+  "unit_tests": {
+    "passed": 147,
+    "command": "python3 -m unittest discover -s tests"
+  },
+  "trigger_cases": {
+    "passed": 43,
+    "total": 43
+  },
+  "detection_fixtures": {
+    "original_main_passed": 40,
+    "final_passed": 54,
+    "total": 54,
+    "same_legacy53": {
+      "original_main": 40,
+      "final": 53
+    },
+    "new_terminal_dlq_control": {
+      "original_main": 0,
+      "final": 1
+    }
+  },
+  "npm_test": "pass after publishing evidence; synthetic credential probe moved into excluded validation fixtures",
+  "pinned_shared_manifest_validation": "pass; all7 materialized ablations apply",
+  "shared_manifest_audit": "no blockers",
+  "final_manifests_strict_leakage": "both pass",
+  "ruff": "pass",
+  "whitespace": "pass; final staged diff checked before commit",
+  "independent_code_review": "no actionable findings;104 tests plus6 probes pass",
+  "code_ci": {
+    "head": "e89abc1ae7e6e475575c948a7195a0bfd13c9f9c",
+    "all_checks": "success",
+    "url": "https://github.com/adewale/cfdoctor/actions/runs/42337937230"
+  },
+  "npm_log_sha256": "7c13cff2688d58899c6de3d22460de97b66254c9c9fc4cd142655b1060f6ebe1",
+  "independent_probe_published": "evals/fixtures/validation/repair-final-scanner-probes.py;6 expected results verified"
+}

@@ -1,0 +1,21 @@
+{
+  "expected_reports": 92,
+  "observed_reports": 92,
+  "completed_item_types": {
+    "agent_message": 413,
+    "command_execution": 1757,
+    "todo_list": 1
+  },
+  "network_command_candidates": 0,
+  "external_path_command_candidates": 0,
+  "target_execution_heuristic_candidates": 1,
+  "manual_review": {
+    "case": "fresh-bytego",
+    "variant": "with_skill",
+    "run": 2,
+    "classification": "False positive: npm ci/npm install appear inside quoted rg search patterns; command reads source/README and runs read-only git status. No package install or target execution in that command.",
+    "command": "ls -la project; find project -maxdepth 2 -type f -print | sort; rg -n \"gitignore|package-lock|npm ci|npm install|\\.dev\\.vars|wrangler\\.toml\" project/README.md project/package.json project/wrangler.toml.example; git -C project status --short --ignored 2>&1 || true"
+  },
+  "limits": "Heuristic command candidates require source review. Absence of a candidate is not an OS sandbox or provider-isolation proof. No target behavior was dynamically tested.",
+  "raw_process_receipt_sha256": "40ca9fdc1d25714b6c06615523dfaf6cb7b8acccae616b4140251a82ccf7be31"
+}

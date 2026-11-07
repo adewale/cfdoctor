@@ -1,0 +1,1302 @@
+[
+  {
+    "id": "cal-01-a",
+    "prompt": "Audit this Worker snapshot for material Cloudflare reliability issues. Explain any confirmed issue with source evidence and an actionable fix. Distinguish observed defects from optional hardening.",
+    "files": {
+      "q1/worker.js": "export default {\n  async fetch(request, env) {\n    if (new URL(request.url).pathname !== \"/export\") return new Response(\"Not found\", { status: 404 });\n    const items = [];\n    for (let i = 0; i < 80; i++) {\n      items.push(await env.CATALOG.get(`item:${i}`));\n    }\n    return Response.json(items);\n  }\n};\n",
+      "q1/README.md": "# Catalogue export\nThis service is deployed on Workers Free. GET /export reads exactly 80 catalogue entries and returns their text values. It has no other routes, dependencies, redirect following, retries, or background tasks. Bindings and external targets named below are configured as described. The frozen platform reference is supplied in reference.md for this review. Authentication is handled by an upstream gateway and is outside this snapshot.\nCATALOG is a Workers KV namespace. Each item is a small stored string.\n",
+      "q1/reference.md": "## Subrequests\n\nA subrequest is any request a Worker makes using the [Fetch API](https://developers.cloudflare.com/workers/runtime-apis/fetch/) or to Cloudflare services like [R2](https://developers.cloudflare.com/r2/), [KV](https://developers.cloudflare.com/kv/), or [D1](https://developers.cloudflare.com/d1/).\n\n| Limit | Workers Free | Workers Paid |\n| --- | --- | --- |\n| Subrequests per invocation | 50 | 10,000 (up to 10M) |\n| Subrequests to internal services | 1,000 | Matches configured limit (default 10,000) |\n\nEach subrequest in a redirect chain counts against this limit. The total number of subrequests may exceed the number of `fetch()` calls in your code. You can change the subrequest limit per Worker using the [`limits` configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#limits) in your Wrangler configuration file.\n\nThere is no set time limit on individual subrequests. As long as the client remains connected, the Worker can continue making subrequests. When the client disconnects or the response is complete, outstanding work may be canceled unless it is passed to [`ctx.waitUntil()`](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil), which can extend execution for up to 30 seconds.\n"
+    },
+    "expected_behavior": {
+      "case_id": "q1",
+      "primary_mechanism": "Operation identity: KV internal-service calls are not 50 external fetches.",
+      "source_truth": [
+        "The loop makes 80 sequential KV get operations and zero fetch calls.",
+        "Within the supplied frozen reference the Free internal-services allowance is 1000. 80 is below it. This loop alone does not demonstrate a 50-subrequest breach.",
+        "No claim about zero latency/cost or arbitrary production configuration is established."
+      ],
+      "material_false_claim_traps": [
+        "Applying the external 50 allowance to these 80 KV gets.",
+        "Claiming these KV reads are external network fetches.",
+        "Inferring quota violations merely from iteration count."
+      ],
+      "valid_remedies_or_limits": [
+        "No quota fix is needed for the demonstrated loop. Optional caching or latency measurement is acceptable if described as such."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            5,
+            7
+          ],
+          "text": "    for (let i = 0; i < 80; i++) {\n      items.push(await env.CATALOG.get(`item:${i}`));\n    }"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "This service is deployed on Workers Free. GET /export reads exactly 80 catalogue entries and returns their text values. It has no other routes, dependencies, redirect following, retries, or background tasks. Bindings and external targets named below are configured as described. The frozen platform reference is supplied in reference.md for this review. Authentication is handled by an upstream gateway and is outside this snapshot."
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            8,
+            8
+          ],
+          "text": "| Subrequests to internal services | 1,000 | Matches configured limit (default 10,000) |"
+        }
+      ]
+    },
+    "report": "The /export loop makes 80 sequential KV gets (worker.js:5-7). That is below the supplied Free internal-services allowance of 1,000, so this loop does not establish a 50-external-request breach. Measuring KV latency could be an optional improvement.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "cal-01-b",
+    "prompt": "Audit this Worker snapshot for material Cloudflare reliability issues. Explain any confirmed issue with source evidence and an actionable fix. Distinguish observed defects from optional hardening.",
+    "files": {
+      "q1/worker.js": "export default {\n  async fetch(request, env) {\n    if (new URL(request.url).pathname !== \"/export\") return new Response(\"Not found\", { status: 404 });\n    const items = [];\n    for (let i = 0; i < 80; i++) {\n      items.push(await env.CATALOG.get(`item:${i}`));\n    }\n    return Response.json(items);\n  }\n};\n",
+      "q1/README.md": "# Catalogue export\nThis service is deployed on Workers Free. GET /export reads exactly 80 catalogue entries and returns their text values. It has no other routes, dependencies, redirect following, retries, or background tasks. Bindings and external targets named below are configured as described. The frozen platform reference is supplied in reference.md for this review. Authentication is handled by an upstream gateway and is outside this snapshot.\nCATALOG is a Workers KV namespace. Each item is a small stored string.\n",
+      "q1/reference.md": "## Subrequests\n\nA subrequest is any request a Worker makes using the [Fetch API](https://developers.cloudflare.com/workers/runtime-apis/fetch/) or to Cloudflare services like [R2](https://developers.cloudflare.com/r2/), [KV](https://developers.cloudflare.com/kv/), or [D1](https://developers.cloudflare.com/d1/).\n\n| Limit | Workers Free | Workers Paid |\n| --- | --- | --- |\n| Subrequests per invocation | 50 | 10,000 (up to 10M) |\n| Subrequests to internal services | 1,000 | Matches configured limit (default 10,000) |\n\nEach subrequest in a redirect chain counts against this limit. The total number of subrequests may exceed the number of `fetch()` calls in your code. You can change the subrequest limit per Worker using the [`limits` configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#limits) in your Wrangler configuration file.\n\nThere is no set time limit on individual subrequests. As long as the client remains connected, the Worker can continue making subrequests. When the client disconnects or the response is complete, outstanding work may be canceled unless it is passed to [`ctx.waitUntil()`](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil), which can extend execution for up to 30 seconds.\n"
+    },
+    "expected_behavior": {
+      "case_id": "q1",
+      "primary_mechanism": "Operation identity: KV internal-service calls are not 50 external fetches.",
+      "source_truth": [
+        "The loop makes 80 sequential KV get operations and zero fetch calls.",
+        "Within the supplied frozen reference the Free internal-services allowance is 1000. 80 is below it. This loop alone does not demonstrate a 50-subrequest breach.",
+        "No claim about zero latency/cost or arbitrary production configuration is established."
+      ],
+      "material_false_claim_traps": [
+        "Applying the external 50 allowance to these 80 KV gets.",
+        "Claiming these KV reads are external network fetches.",
+        "Inferring quota violations merely from iteration count."
+      ],
+      "valid_remedies_or_limits": [
+        "No quota fix is needed for the demonstrated loop. Optional caching or latency measurement is acceptable if described as such."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            5,
+            7
+          ],
+          "text": "    for (let i = 0; i < 80; i++) {\n      items.push(await env.CATALOG.get(`item:${i}`));\n    }"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "This service is deployed on Workers Free. GET /export reads exactly 80 catalogue entries and returns their text values. It has no other routes, dependencies, redirect following, retries, or background tasks. Bindings and external targets named below are configured as described. The frozen platform reference is supplied in reference.md for this review. Authentication is handled by an upstream gateway and is outside this snapshot."
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            8,
+            8
+          ],
+          "text": "| Subrequests to internal services | 1,000 | Matches configured limit (default 10,000) |"
+        }
+      ]
+    },
+    "report": "The /export loop makes 80 sequential KV gets (worker.js:5-7). These exceed the Workers Free 50-subrequest ceiling for this workload, so export fails from that limit. Reducing this loop to 50 would address that alleged quota failure.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "cal-02-a",
+    "prompt": "Audit this Worker snapshot for material Cloudflare reliability issues. Explain any confirmed issue with source evidence and an actionable fix. Distinguish observed defects from optional hardening.",
+    "files": {
+      "q2/worker.js": "export default {\n  async fetch(request, env) {\n    if (new URL(request.url).pathname !== \"/export\") return new Response(\"Not found\", { status: 404 });\n    const items = [];\n    for (let i = 0; i < 80; i++) {\n      const response = await fetch(`https://catalog.example.net/items/${i}`, { redirect: \"manual\" });\n      items.push(await response.text());\n    }\n    return Response.json(items);\n  }\n};\n",
+      "q2/README.md": "# Catalogue export\nThis service is deployed on Workers Free. GET /export reads exactly 80 catalogue entries and returns their text values. It has no other routes, dependencies, redirect following, retries, or background tasks. Bindings and external targets named below are configured as described. The frozen platform reference is supplied in reference.md for this review. Authentication is handled by an upstream gateway and is outside this snapshot.\ncatalog.example.net is an external HTTPS origin, not a Worker service binding. Every lookup returns a small 200 response without a redirect.\n",
+      "q2/reference.md": "## Subrequests\n\nA subrequest is any request a Worker makes using the [Fetch API](https://developers.cloudflare.com/workers/runtime-apis/fetch/) or to Cloudflare services like [R2](https://developers.cloudflare.com/r2/), [KV](https://developers.cloudflare.com/kv/), or [D1](https://developers.cloudflare.com/d1/).\n\n| Limit | Workers Free | Workers Paid |\n| --- | --- | --- |\n| Subrequests per invocation | 50 | 10,000 (up to 10M) |\n| Subrequests to internal services | 1,000 | Matches configured limit (default 10,000) |\n\nEach subrequest in a redirect chain counts against this limit. The total number of subrequests may exceed the number of `fetch()` calls in your code. You can change the subrequest limit per Worker using the [`limits` configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#limits) in your Wrangler configuration file.\n\nThere is no set time limit on individual subrequests. As long as the client remains connected, the Worker can continue making subrequests. When the client disconnects or the response is complete, outstanding work may be canceled unless it is passed to [`ctx.waitUntil()`](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil), which can extend execution for up to 30 seconds.\n"
+    },
+    "expected_behavior": {
+      "case_id": "q2",
+      "primary_mechanism": "80 external fetches exceed supplied Workers Free external subrequest allowance.",
+      "source_truth": [
+        "An /export invocation attempts 80 sequential external fetches.",
+        "The target is explicitly external and returns no redirects; response bodies are consumed. No concurrent-connection accumulation is demonstrated.",
+        "80 exceeds the frozen Free allowance of 50 for these external requests; this path cannot reliably finish all lookups under that allowance."
+      ],
+      "material_false_claim_traps": [
+        "Reclassifying global external-origin fetches as KV/internal service calls with a 1000 allowance.",
+        "Claiming Promise.all avoids the per-invocation subrequest count.",
+        "Claiming sequential response consumption itself causes a 6-open-connection violation."
+      ],
+      "valid_remedies_or_limits": [
+        "Reduce external requests per invocation, split work across invocations, consolidate upstream API calls, or use an appropriate supported paid allowance. Parallelism alone does not fix count."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            5,
+            8
+          ],
+          "text": "    for (let i = 0; i < 80; i++) {\n      const response = await fetch(`https://catalog.example.net/items/${i}`, { redirect: \"manual\" });\n      items.push(await response.text());\n    }"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            3,
+            3
+          ],
+          "text": "catalog.example.net is an external HTTPS origin, not a Worker service binding. Every lookup returns a small 200 response without a redirect."
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            7,
+            7
+          ],
+          "text": "| Subrequests per invocation | 50 | 10,000 (up to 10M) |"
+        }
+      ]
+    },
+    "report": "The 80 external-origin fetches exceed the frozen Free allowance of 50 (worker.js:5-8; reference.md). Consuming each body keeps this sequential loop from accumulating open response bodies, but does not reduce request count. Consolidate upstream lookups or split them across invocations.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "cal-02-b",
+    "prompt": "Audit this Worker snapshot for material Cloudflare reliability issues. Explain any confirmed issue with source evidence and an actionable fix. Distinguish observed defects from optional hardening.",
+    "files": {
+      "q2/worker.js": "export default {\n  async fetch(request, env) {\n    if (new URL(request.url).pathname !== \"/export\") return new Response(\"Not found\", { status: 404 });\n    const items = [];\n    for (let i = 0; i < 80; i++) {\n      const response = await fetch(`https://catalog.example.net/items/${i}`, { redirect: \"manual\" });\n      items.push(await response.text());\n    }\n    return Response.json(items);\n  }\n};\n",
+      "q2/README.md": "# Catalogue export\nThis service is deployed on Workers Free. GET /export reads exactly 80 catalogue entries and returns their text values. It has no other routes, dependencies, redirect following, retries, or background tasks. Bindings and external targets named below are configured as described. The frozen platform reference is supplied in reference.md for this review. Authentication is handled by an upstream gateway and is outside this snapshot.\ncatalog.example.net is an external HTTPS origin, not a Worker service binding. Every lookup returns a small 200 response without a redirect.\n",
+      "q2/reference.md": "## Subrequests\n\nA subrequest is any request a Worker makes using the [Fetch API](https://developers.cloudflare.com/workers/runtime-apis/fetch/) or to Cloudflare services like [R2](https://developers.cloudflare.com/r2/), [KV](https://developers.cloudflare.com/kv/), or [D1](https://developers.cloudflare.com/d1/).\n\n| Limit | Workers Free | Workers Paid |\n| --- | --- | --- |\n| Subrequests per invocation | 50 | 10,000 (up to 10M) |\n| Subrequests to internal services | 1,000 | Matches configured limit (default 10,000) |\n\nEach subrequest in a redirect chain counts against this limit. The total number of subrequests may exceed the number of `fetch()` calls in your code. You can change the subrequest limit per Worker using the [`limits` configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#limits) in your Wrangler configuration file.\n\nThere is no set time limit on individual subrequests. As long as the client remains connected, the Worker can continue making subrequests. When the client disconnects or the response is complete, outstanding work may be canceled unless it is passed to [`ctx.waitUntil()`](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil), which can extend execution for up to 30 seconds.\n"
+    },
+    "expected_behavior": {
+      "case_id": "q2",
+      "primary_mechanism": "80 external fetches exceed supplied Workers Free external subrequest allowance.",
+      "source_truth": [
+        "An /export invocation attempts 80 sequential external fetches.",
+        "The target is explicitly external and returns no redirects; response bodies are consumed. No concurrent-connection accumulation is demonstrated.",
+        "80 exceeds the frozen Free allowance of 50 for these external requests; this path cannot reliably finish all lookups under that allowance."
+      ],
+      "material_false_claim_traps": [
+        "Reclassifying global external-origin fetches as KV/internal service calls with a 1000 allowance.",
+        "Claiming Promise.all avoids the per-invocation subrequest count.",
+        "Claiming sequential response consumption itself causes a 6-open-connection violation."
+      ],
+      "valid_remedies_or_limits": [
+        "Reduce external requests per invocation, split work across invocations, consolidate upstream API calls, or use an appropriate supported paid allowance. Parallelism alone does not fix count."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            5,
+            8
+          ],
+          "text": "    for (let i = 0; i < 80; i++) {\n      const response = await fetch(`https://catalog.example.net/items/${i}`, { redirect: \"manual\" });\n      items.push(await response.text());\n    }"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            3,
+            3
+          ],
+          "text": "catalog.example.net is an external HTTPS origin, not a Worker service binding. Every lookup returns a small 200 response without a redirect."
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            7,
+            7
+          ],
+          "text": "| Subrequests per invocation | 50 | 10,000 (up to 10M) |"
+        }
+      ]
+    },
+    "report": "The loop makes 80 fetches to catalog.example.net (worker.js:5-8). This external-origin workload uses the internal-services allowance of 1,000, so the stated Free deployment has enough subrequest quota. Consolidating lookups remains an optional latency improvement.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "cal-03-a",
+    "prompt": "Review this Worker for security and reliability defects against its stated behavior. Trace the relevant request paths and give fixes for confirmed problems.",
+    "files": {
+      "m1/worker.js": "async function dispatch(request, env) {\n  const path = new URL(request.url).pathname;\n  if (path === \"/health\") return new Response(\"ok\");\n  if (path !== \"/upload\") return new Response(\"Not found\", { status: 404 });\n  if (request.headers.get(\"Authorization\") !== `Bearer ${env.WRITE_KEY}`) {\n    return new Response(\"Unauthorized\", { status: 401 });\n  }\n  const body = await request.json();\n  await env.BUCKET.put(\"current\", JSON.stringify(body));\n  return new Response(\"saved\");\n}\nexport default {\n  async fetch(request, env) {\n    let response;\n    try {\n      response = await dispatch(request, env);\n    } catch (error) {\n      response = new Response(\"Internal error\", { status: 500 });\n    }\n    response.headers.set(\"X-Content-Type-Options\", \"nosniff\");\n    return response;\n  }\n};\n",
+      "m1/README.md": "# Upload service\nAll responses, including health, authentication failures, missing routes, malformed JSON and storage errors, must include X-Content-Type-Options: nosniff. BUCKET is an R2 bucket. WRITE_KEY is always configured and secret. Authentication must precede parsing or storing uploads. Public health checks are intentional. All route implementation is in worker.js. A generic 500 for unexpected errors is acceptable for this service.\n"
+    },
+    "expected_behavior": {
+      "case_id": "m1",
+      "primary_mechanism": "Outer finalizer executes after dispatch early returns and after caught errors.",
+      "source_truth": [
+        "Health response is returned from dispatch, then gets header in fetch.",
+        "Authentication failure returns 401 from dispatch, then gets header in fetch.",
+        "Auth check precedes request.json and BUCKET.put.",
+        "Parse/storage rejection is awaited and caught; generic 500 then gets header."
+      ],
+      "material_false_claim_traps": [
+        "A return inside dispatch bypasses the caller header setter.",
+        "The catch is unable to see asynchronous dispatch failures despite await.",
+        "Malformed unauthorized JSON is parsed before authentication."
+      ],
+      "valid_remedies_or_limits": [
+        "No demonstrated header coverage/order fix is required here. Optional input limits can be suggested without alleging absent header coverage."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            3,
+            9
+          ],
+          "text": "  if (path === \"/health\") return new Response(\"ok\");\n  if (path !== \"/upload\") return new Response(\"Not found\", { status: 404 });\n  if (request.headers.get(\"Authorization\") !== `Bearer ${env.WRITE_KEY}`) {\n    return new Response(\"Unauthorized\", { status: 401 });\n  }\n  const body = await request.json();\n  await env.BUCKET.put(\"current\", JSON.stringify(body));"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            14,
+            21
+          ],
+          "text": "    let response;\n    try {\n      response = await dispatch(request, env);\n    } catch (error) {\n      response = new Response(\"Internal error\", { status: 500 });\n    }\n    response.headers.set(\"X-Content-Type-Options\", \"nosniff\");\n    return response;"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "All responses, including health, authentication failures, missing routes, malformed JSON and storage errors, must include X-Content-Type-Options: nosniff. BUCKET is an R2 bucket. WRITE_KEY is always configured and secret. Authentication must precede parsing or storing uploads. Public health checks are intentional. All route implementation is in worker.js. A generic 500 for unexpected errors is acceptable for this service."
+        }
+      ]
+    },
+    "report": "Authentication precedes JSON parsing and storage (worker.js:5-9). A 401 returned by dispatch still resumes fetch, whose common header setter runs; catch-generated 500 responses also reach that setter (worker.js:14-21). No header coverage defect is demonstrated on those paths.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "cal-03-b",
+    "prompt": "Review this Worker for security and reliability defects against its stated behavior. Trace the relevant request paths and give fixes for confirmed problems.",
+    "files": {
+      "m1/worker.js": "async function dispatch(request, env) {\n  const path = new URL(request.url).pathname;\n  if (path === \"/health\") return new Response(\"ok\");\n  if (path !== \"/upload\") return new Response(\"Not found\", { status: 404 });\n  if (request.headers.get(\"Authorization\") !== `Bearer ${env.WRITE_KEY}`) {\n    return new Response(\"Unauthorized\", { status: 401 });\n  }\n  const body = await request.json();\n  await env.BUCKET.put(\"current\", JSON.stringify(body));\n  return new Response(\"saved\");\n}\nexport default {\n  async fetch(request, env) {\n    let response;\n    try {\n      response = await dispatch(request, env);\n    } catch (error) {\n      response = new Response(\"Internal error\", { status: 500 });\n    }\n    response.headers.set(\"X-Content-Type-Options\", \"nosniff\");\n    return response;\n  }\n};\n",
+      "m1/README.md": "# Upload service\nAll responses, including health, authentication failures, missing routes, malformed JSON and storage errors, must include X-Content-Type-Options: nosniff. BUCKET is an R2 bucket. WRITE_KEY is always configured and secret. Authentication must precede parsing or storing uploads. Public health checks are intentional. All route implementation is in worker.js. A generic 500 for unexpected errors is acceptable for this service.\n"
+    },
+    "expected_behavior": {
+      "case_id": "m1",
+      "primary_mechanism": "Outer finalizer executes after dispatch early returns and after caught errors.",
+      "source_truth": [
+        "Health response is returned from dispatch, then gets header in fetch.",
+        "Authentication failure returns 401 from dispatch, then gets header in fetch.",
+        "Auth check precedes request.json and BUCKET.put.",
+        "Parse/storage rejection is awaited and caught; generic 500 then gets header."
+      ],
+      "material_false_claim_traps": [
+        "A return inside dispatch bypasses the caller header setter.",
+        "The catch is unable to see asynchronous dispatch failures despite await.",
+        "Malformed unauthorized JSON is parsed before authentication."
+      ],
+      "valid_remedies_or_limits": [
+        "No demonstrated header coverage/order fix is required here. Optional input limits can be suggested without alleging absent header coverage."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            3,
+            9
+          ],
+          "text": "  if (path === \"/health\") return new Response(\"ok\");\n  if (path !== \"/upload\") return new Response(\"Not found\", { status: 404 });\n  if (request.headers.get(\"Authorization\") !== `Bearer ${env.WRITE_KEY}`) {\n    return new Response(\"Unauthorized\", { status: 401 });\n  }\n  const body = await request.json();\n  await env.BUCKET.put(\"current\", JSON.stringify(body));"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            14,
+            21
+          ],
+          "text": "    let response;\n    try {\n      response = await dispatch(request, env);\n    } catch (error) {\n      response = new Response(\"Internal error\", { status: 500 });\n    }\n    response.headers.set(\"X-Content-Type-Options\", \"nosniff\");\n    return response;"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "All responses, including health, authentication failures, missing routes, malformed JSON and storage errors, must include X-Content-Type-Options: nosniff. BUCKET is an R2 bucket. WRITE_KEY is always configured and secret. Authentication must precede parsing or storing uploads. Public health checks are intentional. All route implementation is in worker.js. A generic 500 for unexpected errors is acceptable for this service."
+        }
+      ]
+    },
+    "report": "Authentication precedes JSON parsing and storage (worker.js:5-9). However the 401 return inside dispatch bypasses fetch's outer header setter, leaving unauthorized responses without nosniff. Add the header directly in that branch.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "cal-04-a",
+    "prompt": "Review this Worker for security and reliability defects against its stated behavior. Trace the relevant request paths and give fixes for confirmed problems.",
+    "files": {
+      "m2/worker.js": "async function dispatch(request, env) {\n  const path = new URL(request.url).pathname;\n  if (path === \"/health\") return new Response(\"ok\");\n  if (path !== \"/upload\") return new Response(\"Not found\", { status: 404 });\n  if (request.headers.get(\"Authorization\") !== `Bearer ${env.WRITE_KEY}`) {\n    return new Response(\"Unauthorized\", { status: 401 });\n  }\n  const body = await request.json();\n  await env.BUCKET.put(\"current\", JSON.stringify(body));\n  return new Response(\"saved\");\n}\nexport default {\n  async fetch(request, env) {\n    if (new URL(request.url).pathname === \"/health\") return new Response(\"ok\");\n    try {\n      const response = await dispatch(request, env);\n      response.headers.set(\"X-Content-Type-Options\", \"nosniff\");\n      return response;\n    } catch (error) {\n      return new Response(\"Internal error\", { status: 500 });\n    }\n  }\n};\n",
+      "m2/README.md": "# Upload service\nAll responses, including health, authentication failures, missing routes, malformed JSON and storage errors, must include X-Content-Type-Options: nosniff. BUCKET is an R2 bucket. WRITE_KEY is always configured and secret. Authentication must precede parsing or storing uploads. Public health checks are intentional. All route implementation is in worker.js. A generic 500 for unexpected errors is acceptable for this service.\n"
+    },
+    "expected_behavior": {
+      "case_id": "m2",
+      "primary_mechanism": "Health early return and catch return bypass the header setter; dispatch 401 does not.",
+      "source_truth": [
+        "Health exits fetch at line 14 before the try/header setter.",
+        "Authorized malformed JSON or R2 errors reach catch and return 500 without the required header.",
+        "401 and 404 returned normally by dispatch pass through header setter.",
+        "Unauthorized malformed JSON returns 401 before parsing and does receive header."
+      ],
+      "material_false_claim_traps": [
+        "All responses lack the header.",
+        "401 bypasses headers merely because its return is in dispatch.",
+        "Auth runs after parsing.",
+        "Caught R2 rejection leaks its raw message in this source."
+      ],
+      "valid_remedies_or_limits": [
+        "Use one finalizer after both normal dispatch and catch, including health; or consistently set required headers in every exit path. Preserve auth-before-parse order."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            3,
+            9
+          ],
+          "text": "  if (path === \"/health\") return new Response(\"ok\");\n  if (path !== \"/upload\") return new Response(\"Not found\", { status: 404 });\n  if (request.headers.get(\"Authorization\") !== `Bearer ${env.WRITE_KEY}`) {\n    return new Response(\"Unauthorized\", { status: 401 });\n  }\n  const body = await request.json();\n  await env.BUCKET.put(\"current\", JSON.stringify(body));"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            13,
+            21
+          ],
+          "text": "  async fetch(request, env) {\n    if (new URL(request.url).pathname === \"/health\") return new Response(\"ok\");\n    try {\n      const response = await dispatch(request, env);\n      response.headers.set(\"X-Content-Type-Options\", \"nosniff\");\n      return response;\n    } catch (error) {\n      return new Response(\"Internal error\", { status: 500 });\n    }"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "All responses, including health, authentication failures, missing routes, malformed JSON and storage errors, must include X-Content-Type-Options: nosniff. BUCKET is an R2 bucket. WRITE_KEY is always configured and secret. Authentication must precede parsing or storing uploads. Public health checks are intentional. All route implementation is in worker.js. A generic 500 for unexpected errors is acceptable for this service."
+        }
+      ]
+    },
+    "report": "Health returns before header application, and catch-generated 500 responses also skip the setter (worker.js:14-20). Normal 401 responses from dispatch do pass through line 17. Move header application to a common finalizer after normal and error handling, and route health through it.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "cal-04-b",
+    "prompt": "Review this Worker for security and reliability defects against its stated behavior. Trace the relevant request paths and give fixes for confirmed problems.",
+    "files": {
+      "m2/worker.js": "async function dispatch(request, env) {\n  const path = new URL(request.url).pathname;\n  if (path === \"/health\") return new Response(\"ok\");\n  if (path !== \"/upload\") return new Response(\"Not found\", { status: 404 });\n  if (request.headers.get(\"Authorization\") !== `Bearer ${env.WRITE_KEY}`) {\n    return new Response(\"Unauthorized\", { status: 401 });\n  }\n  const body = await request.json();\n  await env.BUCKET.put(\"current\", JSON.stringify(body));\n  return new Response(\"saved\");\n}\nexport default {\n  async fetch(request, env) {\n    if (new URL(request.url).pathname === \"/health\") return new Response(\"ok\");\n    try {\n      const response = await dispatch(request, env);\n      response.headers.set(\"X-Content-Type-Options\", \"nosniff\");\n      return response;\n    } catch (error) {\n      return new Response(\"Internal error\", { status: 500 });\n    }\n  }\n};\n",
+      "m2/README.md": "# Upload service\nAll responses, including health, authentication failures, missing routes, malformed JSON and storage errors, must include X-Content-Type-Options: nosniff. BUCKET is an R2 bucket. WRITE_KEY is always configured and secret. Authentication must precede parsing or storing uploads. Public health checks are intentional. All route implementation is in worker.js. A generic 500 for unexpected errors is acceptable for this service.\n"
+    },
+    "expected_behavior": {
+      "case_id": "m2",
+      "primary_mechanism": "Health early return and catch return bypass the header setter; dispatch 401 does not.",
+      "source_truth": [
+        "Health exits fetch at line 14 before the try/header setter.",
+        "Authorized malformed JSON or R2 errors reach catch and return 500 without the required header.",
+        "401 and 404 returned normally by dispatch pass through header setter.",
+        "Unauthorized malformed JSON returns 401 before parsing and does receive header."
+      ],
+      "material_false_claim_traps": [
+        "All responses lack the header.",
+        "401 bypasses headers merely because its return is in dispatch.",
+        "Auth runs after parsing.",
+        "Caught R2 rejection leaks its raw message in this source."
+      ],
+      "valid_remedies_or_limits": [
+        "Use one finalizer after both normal dispatch and catch, including health; or consistently set required headers in every exit path. Preserve auth-before-parse order."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            3,
+            9
+          ],
+          "text": "  if (path === \"/health\") return new Response(\"ok\");\n  if (path !== \"/upload\") return new Response(\"Not found\", { status: 404 });\n  if (request.headers.get(\"Authorization\") !== `Bearer ${env.WRITE_KEY}`) {\n    return new Response(\"Unauthorized\", { status: 401 });\n  }\n  const body = await request.json();\n  await env.BUCKET.put(\"current\", JSON.stringify(body));"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            13,
+            21
+          ],
+          "text": "  async fetch(request, env) {\n    if (new URL(request.url).pathname === \"/health\") return new Response(\"ok\");\n    try {\n      const response = await dispatch(request, env);\n      response.headers.set(\"X-Content-Type-Options\", \"nosniff\");\n      return response;\n    } catch (error) {\n      return new Response(\"Internal error\", { status: 500 });\n    }"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "All responses, including health, authentication failures, missing routes, malformed JSON and storage errors, must include X-Content-Type-Options: nosniff. BUCKET is an R2 bucket. WRITE_KEY is always configured and secret. Authentication must precede parsing or storing uploads. Public health checks are intentional. All route implementation is in worker.js. A generic 500 for unexpected errors is acceptable for this service."
+        }
+      ]
+    },
+    "report": "Health returns before header application, and catch-generated 500 responses also skip the setter (worker.js:14-20). Normal 401 responses from dispatch skip the setter too, because returning inside the auth branch exits fetch. Move header application to a common finalizer.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "cal-05-a",
+    "prompt": "Audit this queue consumer snapshot. Identify material message-processing problems, if any, and include a concrete remedy that fits the callback shown. Cite source evidence.",
+    "files": {
+      "c1/worker.js": "async function deliver(message, env) {\n  const response = await fetch(env.DELIVERY_URL, {\n    method: \"POST\",\n    body: JSON.stringify(message.body),\n    headers: { \"Content-Type\": \"application/json\" }\n  });\n  const ok = response.ok;\n  await response.arrayBuffer();\n  if (!ok) throw new Error(\"Delivery failed\");\n}\nexport default {\n  async queue(batch, env) {\n    for (const message of batch.messages) {\n      try {\n        await deliver(message, env);\n        message.ack();\n      } catch (error) {\n        message.retry();\n      }\n    }\n  }\n};\n",
+      "c1/README.md": "# Delivery consumer\nThis is a Queue consumer only. Delivery URL is a fixed trusted HTTPS target and is configured. Each body contains an eventId; the destination deduplicates by that eventId, so redelivery is safe. Every message must either complete delivery or request retry on delivery failure. Transient network errors and non-2xx responses happen in normal use. No hidden middleware, framework context or imports exist. The callback parameters shown are the only local bindings. Deploy configuration already connects the consumer and DLQ; changes to those are outside this review. reference.md is frozen documentation for this task.\n",
+      "c1/reference.md": "## Explicit acknowledgement and retries\n\nYou can acknowledge individual messages within a batch by explicitly acknowledging each message as it is processed. Messages that are explicitly acknowledged will not be re-delivered, even if your queue consumer fails on a subsequent message and/or fails to return successfully when processing a batch.\n\n- Each message can be acknowledged as you process it within a batch, and avoids the entire batch from being re-delivered if your consumer throws an error during batch processing.\n- Acknowledging individual messages is useful when you are calling external APIs, writing messages to a database, or otherwise performing non-idempotent (state changing) actions on individual messages.\n\nTo explicitly acknowledge a message as delivered, call the `ack()` method on the message.\n\nYou can also call `retry()` to explicitly force a message to be redelivered in a subsequent batch. This is referred to as \"negative acknowledgement\". This can be particularly useful when you want to process the rest of the messages in that batch without throwing an error that would force the entire batch to be redelivered.\n\nYou can also acknowledge or negatively acknowledge messages at a batch level with `ackAll()` and `retryAll()`. Calling `ackAll()` on the batch of messages (`MessageBatch`) delivered to your consumer Worker has the same behaviour as a consumer Worker that successfully returns (does not throw an error).\n\nNote that calls to `ack()`, `retry()` and their `ackAll()` / `retryAll()` equivalents follow the below precedence rules:\n\n- If you call `ack()` on a message, subsequent calls to `ack()` or `retry()` are silently ignored.\n- If you call `retry()` on a message and then call `ack()`: the `ack()` is ignored. The first method call wins in all cases.\n- If you call either `ack()` or `retry()` on a single message, and then either/any of `ackAll()` or `retryAll()` on the batch, the call on the single message takes precedence. That is, the batch-level call does not apply to that message (or messages, if multiple calls were made).\n"
+    },
+    "expected_behavior": {
+      "case_id": "c1",
+      "primary_mechanism": "Queue callback awaits delivery; explicit ack/retry belongs to the message and survives handler success.",
+      "source_truth": [
+        "Callback uses awaited sequential for-of.",
+        "Successful delivery is acknowledged after fetch completion and body consumption.",
+        "Network error, response-read error or non-2xx causes message.retry().",
+        "Explicit retry is not overridden by successful return of queue callback."
+      ],
+      "material_false_claim_traps": [
+        "All caught failures are silently acknowledged because queue callback resolves.",
+        "for-of with await behaves like discarded async forEach.",
+        "Existing callback defines ctx or a Hono c binding."
+      ],
+      "valid_remedies_or_limits": [
+        "Current ack/retry flow satisfies the stated delivery contract under given deduplication assumption. Awaited Promise.all with per-message retry handling could be an optional throughput change."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            7,
+            9
+          ],
+          "text": "  const ok = response.ok;\n  await response.arrayBuffer();\n  if (!ok) throw new Error(\"Delivery failed\");"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            12,
+            21
+          ],
+          "text": "  async queue(batch, env) {\n    for (const message of batch.messages) {\n      try {\n        await deliver(message, env);\n        message.ack();\n      } catch (error) {\n        message.retry();\n      }\n    }\n  }"
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            18,
+            18
+          ],
+          "text": "- If you call either `ack()` or `retry()` on a single message, and then either/any of `ackAll()` or `retryAll()` on the batch, the call on the single message takes precedence. That is, the batch-level call does not apply to that message (or messages, if multiple calls were made)."
+        }
+      ]
+    },
+    "report": "Delivery is awaited before ack; the catch explicitly requests retry (worker.js:13-18). Successful return of the queue handler does not cancel that message-level retry under reference.md. An awaited Promise.all implementation could improve throughput while retaining the same per-message outcomes.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "cal-05-b",
+    "prompt": "Audit this queue consumer snapshot. Identify material message-processing problems, if any, and include a concrete remedy that fits the callback shown. Cite source evidence.",
+    "files": {
+      "c1/worker.js": "async function deliver(message, env) {\n  const response = await fetch(env.DELIVERY_URL, {\n    method: \"POST\",\n    body: JSON.stringify(message.body),\n    headers: { \"Content-Type\": \"application/json\" }\n  });\n  const ok = response.ok;\n  await response.arrayBuffer();\n  if (!ok) throw new Error(\"Delivery failed\");\n}\nexport default {\n  async queue(batch, env) {\n    for (const message of batch.messages) {\n      try {\n        await deliver(message, env);\n        message.ack();\n      } catch (error) {\n        message.retry();\n      }\n    }\n  }\n};\n",
+      "c1/README.md": "# Delivery consumer\nThis is a Queue consumer only. Delivery URL is a fixed trusted HTTPS target and is configured. Each body contains an eventId; the destination deduplicates by that eventId, so redelivery is safe. Every message must either complete delivery or request retry on delivery failure. Transient network errors and non-2xx responses happen in normal use. No hidden middleware, framework context or imports exist. The callback parameters shown are the only local bindings. Deploy configuration already connects the consumer and DLQ; changes to those are outside this review. reference.md is frozen documentation for this task.\n",
+      "c1/reference.md": "## Explicit acknowledgement and retries\n\nYou can acknowledge individual messages within a batch by explicitly acknowledging each message as it is processed. Messages that are explicitly acknowledged will not be re-delivered, even if your queue consumer fails on a subsequent message and/or fails to return successfully when processing a batch.\n\n- Each message can be acknowledged as you process it within a batch, and avoids the entire batch from being re-delivered if your consumer throws an error during batch processing.\n- Acknowledging individual messages is useful when you are calling external APIs, writing messages to a database, or otherwise performing non-idempotent (state changing) actions on individual messages.\n\nTo explicitly acknowledge a message as delivered, call the `ack()` method on the message.\n\nYou can also call `retry()` to explicitly force a message to be redelivered in a subsequent batch. This is referred to as \"negative acknowledgement\". This can be particularly useful when you want to process the rest of the messages in that batch without throwing an error that would force the entire batch to be redelivered.\n\nYou can also acknowledge or negatively acknowledge messages at a batch level with `ackAll()` and `retryAll()`. Calling `ackAll()` on the batch of messages (`MessageBatch`) delivered to your consumer Worker has the same behaviour as a consumer Worker that successfully returns (does not throw an error).\n\nNote that calls to `ack()`, `retry()` and their `ackAll()` / `retryAll()` equivalents follow the below precedence rules:\n\n- If you call `ack()` on a message, subsequent calls to `ack()` or `retry()` are silently ignored.\n- If you call `retry()` on a message and then call `ack()`: the `ack()` is ignored. The first method call wins in all cases.\n- If you call either `ack()` or `retry()` on a single message, and then either/any of `ackAll()` or `retryAll()` on the batch, the call on the single message takes precedence. That is, the batch-level call does not apply to that message (or messages, if multiple calls were made).\n"
+    },
+    "expected_behavior": {
+      "case_id": "c1",
+      "primary_mechanism": "Queue callback awaits delivery; explicit ack/retry belongs to the message and survives handler success.",
+      "source_truth": [
+        "Callback uses awaited sequential for-of.",
+        "Successful delivery is acknowledged after fetch completion and body consumption.",
+        "Network error, response-read error or non-2xx causes message.retry().",
+        "Explicit retry is not overridden by successful return of queue callback."
+      ],
+      "material_false_claim_traps": [
+        "All caught failures are silently acknowledged because queue callback resolves.",
+        "for-of with await behaves like discarded async forEach.",
+        "Existing callback defines ctx or a Hono c binding."
+      ],
+      "valid_remedies_or_limits": [
+        "Current ack/retry flow satisfies the stated delivery contract under given deduplication assumption. Awaited Promise.all with per-message retry handling could be an optional throughput change."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            7,
+            9
+          ],
+          "text": "  const ok = response.ok;\n  await response.arrayBuffer();\n  if (!ok) throw new Error(\"Delivery failed\");"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            12,
+            21
+          ],
+          "text": "  async queue(batch, env) {\n    for (const message of batch.messages) {\n      try {\n        await deliver(message, env);\n        message.ack();\n      } catch (error) {\n        message.retry();\n      }\n    }\n  }"
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            18,
+            18
+          ],
+          "text": "- If you call either `ack()` or `retry()` on a single message, and then either/any of `ackAll()` or `retryAll()` on the batch, the call on the single message takes precedence. That is, the batch-level call does not apply to that message (or messages, if multiple calls were made)."
+        }
+      ]
+    },
+    "report": "Delivery is awaited before ack; the catch explicitly requests retry (worker.js:13-18). However successful return of this queue handler overrides message.retry and acknowledges failed messages, so this implementation loses the retries. Throw after retry to prevent that override.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "cal-06-a",
+    "prompt": "Audit this queue consumer snapshot. Identify material message-processing problems, if any, and include a concrete remedy that fits the callback shown. Cite source evidence.",
+    "files": {
+      "c2/worker.js": "async function deliver(message, env) {\n  const response = await fetch(env.DELIVERY_URL, {\n    method: \"POST\",\n    body: JSON.stringify(message.body),\n    headers: { \"Content-Type\": \"application/json\" }\n  });\n  const ok = response.ok;\n  await response.arrayBuffer();\n  if (!ok) throw new Error(\"Delivery failed\");\n}\nexport default {\n  async queue(batch, env) {\n    batch.messages.forEach(async (message) => {\n      try {\n        await deliver(message, env);\n        message.ack();\n      } catch (error) {\n        console.error(\"Delivery failed\", error);\n      }\n    });\n  }\n};\n",
+      "c2/README.md": "# Delivery consumer\nThis is a Queue consumer only. Delivery URL is a fixed trusted HTTPS target and is configured. Each body contains an eventId; the destination deduplicates by that eventId, so redelivery is safe. Every message must either complete delivery or request retry on delivery failure. Transient network errors and non-2xx responses happen in normal use. No hidden middleware, framework context or imports exist. The callback parameters shown are the only local bindings. Deploy configuration already connects the consumer and DLQ; changes to those are outside this review. reference.md is frozen documentation for this task.\n",
+      "c2/reference.md": "## Explicit acknowledgement and retries\n\nYou can acknowledge individual messages within a batch by explicitly acknowledging each message as it is processed. Messages that are explicitly acknowledged will not be re-delivered, even if your queue consumer fails on a subsequent message and/or fails to return successfully when processing a batch.\n\n- Each message can be acknowledged as you process it within a batch, and avoids the entire batch from being re-delivered if your consumer throws an error during batch processing.\n- Acknowledging individual messages is useful when you are calling external APIs, writing messages to a database, or otherwise performing non-idempotent (state changing) actions on individual messages.\n\nTo explicitly acknowledge a message as delivered, call the `ack()` method on the message.\n\nYou can also call `retry()` to explicitly force a message to be redelivered in a subsequent batch. This is referred to as \"negative acknowledgement\". This can be particularly useful when you want to process the rest of the messages in that batch without throwing an error that would force the entire batch to be redelivered.\n\nYou can also acknowledge or negatively acknowledge messages at a batch level with `ackAll()` and `retryAll()`. Calling `ackAll()` on the batch of messages (`MessageBatch`) delivered to your consumer Worker has the same behaviour as a consumer Worker that successfully returns (does not throw an error).\n\nNote that calls to `ack()`, `retry()` and their `ackAll()` / `retryAll()` equivalents follow the below precedence rules:\n\n- If you call `ack()` on a message, subsequent calls to `ack()` or `retry()` are silently ignored.\n- If you call `retry()` on a message and then call `ack()`: the `ack()` is ignored. The first method call wins in all cases.\n- If you call either `ack()` or `retry()` on a single message, and then either/any of `ackAll()` or `retryAll()` on the batch, the call on the single message takes precedence. That is, the batch-level call does not apply to that message (or messages, if multiple calls were made).\n"
+    },
+    "expected_behavior": {
+      "case_id": "c2",
+      "primary_mechanism": "Discarded async forEach callbacks let queue handler finish without awaiting delivery; swallowed failure requests no retry.",
+      "source_truth": [
+        "forEach does not aggregate or await returned callback promises.",
+        "Handler can resolve while external delivery remains pending, allowing successful-consumer acknowledgement before delivery finishes.",
+        "Failure catch only logs; it calls neither retry nor throw.",
+        "The shown parameters are batch and env; ctx and c are undefined identifiers in this module."
+      ],
+      "material_false_claim_traps": [
+        "The async modifier on queue automatically awaits all async forEach callbacks.",
+        "console.error triggers queue retry.",
+        "A proposed replacement using ctx.waitUntil as shown is valid without adding or threading a ctx binding.",
+        "HTTP response-return advice alone repairs this queue callback."
+      ],
+      "valid_remedies_or_limits": [
+        "Replace forEach with an awaited for-of loop, ack after successful deliver, retry in catch (c1 is one valid shape).",
+        "An awaited Promise.all over mapped tasks with correct per-message outcomes can also work. Do not require one wording or ban a properly scoped additional ctx parameter as a principle."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            12,
+            21
+          ],
+          "text": "  async queue(batch, env) {\n    batch.messages.forEach(async (message) => {\n      try {\n        await deliver(message, env);\n        message.ack();\n      } catch (error) {\n        console.error(\"Delivery failed\", error);\n      }\n    });\n  }"
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            12,
+            12
+          ],
+          "text": "You can also acknowledge or negatively acknowledge messages at a batch level with `ackAll()` and `retryAll()`. Calling `ackAll()` on the batch of messages (`MessageBatch`) delivered to your consumer Worker has the same behaviour as a consumer Worker that successfully returns (does not throw an error)."
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "This is a Queue consumer only. Delivery URL is a fixed trusted HTTPS target and is configured. Each body contains an eventId; the destination deduplicates by that eventId, so redelivery is safe. Every message must either complete delivery or request retry on delivery failure. Transient network errors and non-2xx responses happen in normal use. No hidden middleware, framework context or imports exist. The callback parameters shown are the only local bindings. Deploy configuration already connects the consumer and DLQ; changes to those are outside this review. reference.md is frozen documentation for this task."
+        }
+      ]
+    },
+    "report": "The async forEach callbacks are discarded and delivery failures only log (worker.js:13-20). The queue callback can finish before delivery settles. Replace forEach with an awaited for-of loop, ack each successful delivery, and call message.retry() in catch; all those names are available in the shown callback.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "cal-06-b",
+    "prompt": "Audit this queue consumer snapshot. Identify material message-processing problems, if any, and include a concrete remedy that fits the callback shown. Cite source evidence.",
+    "files": {
+      "c2/worker.js": "async function deliver(message, env) {\n  const response = await fetch(env.DELIVERY_URL, {\n    method: \"POST\",\n    body: JSON.stringify(message.body),\n    headers: { \"Content-Type\": \"application/json\" }\n  });\n  const ok = response.ok;\n  await response.arrayBuffer();\n  if (!ok) throw new Error(\"Delivery failed\");\n}\nexport default {\n  async queue(batch, env) {\n    batch.messages.forEach(async (message) => {\n      try {\n        await deliver(message, env);\n        message.ack();\n      } catch (error) {\n        console.error(\"Delivery failed\", error);\n      }\n    });\n  }\n};\n",
+      "c2/README.md": "# Delivery consumer\nThis is a Queue consumer only. Delivery URL is a fixed trusted HTTPS target and is configured. Each body contains an eventId; the destination deduplicates by that eventId, so redelivery is safe. Every message must either complete delivery or request retry on delivery failure. Transient network errors and non-2xx responses happen in normal use. No hidden middleware, framework context or imports exist. The callback parameters shown are the only local bindings. Deploy configuration already connects the consumer and DLQ; changes to those are outside this review. reference.md is frozen documentation for this task.\n",
+      "c2/reference.md": "## Explicit acknowledgement and retries\n\nYou can acknowledge individual messages within a batch by explicitly acknowledging each message as it is processed. Messages that are explicitly acknowledged will not be re-delivered, even if your queue consumer fails on a subsequent message and/or fails to return successfully when processing a batch.\n\n- Each message can be acknowledged as you process it within a batch, and avoids the entire batch from being re-delivered if your consumer throws an error during batch processing.\n- Acknowledging individual messages is useful when you are calling external APIs, writing messages to a database, or otherwise performing non-idempotent (state changing) actions on individual messages.\n\nTo explicitly acknowledge a message as delivered, call the `ack()` method on the message.\n\nYou can also call `retry()` to explicitly force a message to be redelivered in a subsequent batch. This is referred to as \"negative acknowledgement\". This can be particularly useful when you want to process the rest of the messages in that batch without throwing an error that would force the entire batch to be redelivered.\n\nYou can also acknowledge or negatively acknowledge messages at a batch level with `ackAll()` and `retryAll()`. Calling `ackAll()` on the batch of messages (`MessageBatch`) delivered to your consumer Worker has the same behaviour as a consumer Worker that successfully returns (does not throw an error).\n\nNote that calls to `ack()`, `retry()` and their `ackAll()` / `retryAll()` equivalents follow the below precedence rules:\n\n- If you call `ack()` on a message, subsequent calls to `ack()` or `retry()` are silently ignored.\n- If you call `retry()` on a message and then call `ack()`: the `ack()` is ignored. The first method call wins in all cases.\n- If you call either `ack()` or `retry()` on a single message, and then either/any of `ackAll()` or `retryAll()` on the batch, the call on the single message takes precedence. That is, the batch-level call does not apply to that message (or messages, if multiple calls were made).\n"
+    },
+    "expected_behavior": {
+      "case_id": "c2",
+      "primary_mechanism": "Discarded async forEach callbacks let queue handler finish without awaiting delivery; swallowed failure requests no retry.",
+      "source_truth": [
+        "forEach does not aggregate or await returned callback promises.",
+        "Handler can resolve while external delivery remains pending, allowing successful-consumer acknowledgement before delivery finishes.",
+        "Failure catch only logs; it calls neither retry nor throw.",
+        "The shown parameters are batch and env; ctx and c are undefined identifiers in this module."
+      ],
+      "material_false_claim_traps": [
+        "The async modifier on queue automatically awaits all async forEach callbacks.",
+        "console.error triggers queue retry.",
+        "A proposed replacement using ctx.waitUntil as shown is valid without adding or threading a ctx binding.",
+        "HTTP response-return advice alone repairs this queue callback."
+      ],
+      "valid_remedies_or_limits": [
+        "Replace forEach with an awaited for-of loop, ack after successful deliver, retry in catch (c1 is one valid shape).",
+        "An awaited Promise.all over mapped tasks with correct per-message outcomes can also work. Do not require one wording or ban a properly scoped additional ctx parameter as a principle."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            12,
+            21
+          ],
+          "text": "  async queue(batch, env) {\n    batch.messages.forEach(async (message) => {\n      try {\n        await deliver(message, env);\n        message.ack();\n      } catch (error) {\n        console.error(\"Delivery failed\", error);\n      }\n    });\n  }"
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            12,
+            12
+          ],
+          "text": "You can also acknowledge or negatively acknowledge messages at a batch level with `ackAll()` and `retryAll()`. Calling `ackAll()` on the batch of messages (`MessageBatch`) delivered to your consumer Worker has the same behaviour as a consumer Worker that successfully returns (does not throw an error)."
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "This is a Queue consumer only. Delivery URL is a fixed trusted HTTPS target and is configured. Each body contains an eventId; the destination deduplicates by that eventId, so redelivery is safe. Every message must either complete delivery or request retry on delivery failure. Transient network errors and non-2xx responses happen in normal use. No hidden middleware, framework context or imports exist. The callback parameters shown are the only local bindings. Deploy configuration already connects the consumer and DLQ; changes to those are outside this review. reference.md is frozen documentation for this task."
+        }
+      ]
+    },
+    "report": "The async forEach callbacks are discarded and delivery failures only log (worker.js:13-20). The queue callback can finish before delivery settles. A valid drop-in repair within the current two-parameter callback is ctx.waitUntil(Promise.all(batch.messages.map(message => deliver(message, env)))).\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "cal-07-a",
+    "prompt": "Audit the supplied artifact-library Worker and its operating contract. Report confirmed authorization or Cloudflare reliability bugs with evidence and practical fixes; keep optional design recommendations separate.",
+    "files": {
+      "p1/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p1/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p1",
+      "primary_mechanism": "Explicit public-read/manual-capability policy is compatible with expiry and owner enforcement.",
+      "source_truth": [
+        "GET objects intentionally lacks auth and content is public.",
+        "GET mint returns a proposal but never writes CAPS; operator insertion activates it.",
+        "PUT requires existing CAPS record, rejects expiresAt <= now, and rejects owner mismatch before put.",
+        "Expiry is enforced in code even if KV record has no native TTL.",
+        "Same-key writes are serialized by explicit upstream lock, so a hypothetical overlapping HEAD/PUT ownership race contradicts fixture context."
+      ],
+      "material_false_claim_traps": [
+        "Unauthenticated mint automatically produces active upload authority.",
+        "Public object reads are an authentication bypass against the stated contract.",
+        "Any subject can overwrite another subject in this exact snapshot.",
+        "No native KV TTL means explicit expiresAt comparison cannot expire capabilities."
+      ],
+      "valid_remedies_or_limits": [
+        "No demonstrated policy/expiry/ownership defect. Mint rate limiting or operational changes may be optional suggestions, not proofs of upload bypass."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            4,
+            5
+          ],
+          "text": "    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            10,
+            22
+          ],
+          "text": "    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            3,
+            3
+          ],
+          "text": "GET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation."
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            5,
+            5
+          ],
+          "text": "An upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check."
+        }
+      ]
+    },
+    "report": "Public object reads are the stated contract. /mint only returns a proposal; it never inserts an active CAPS record (worker.js:4-5). PUT requires an activated record, checks expiry and denies cross-owner overwrite (worker.js:17-22). Optional rate limiting on proposal generation would not establish an existing upload bypass.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "cal-07-b",
+    "prompt": "Audit the supplied artifact-library Worker and its operating contract. Report confirmed authorization or Cloudflare reliability bugs with evidence and practical fixes; keep optional design recommendations separate.",
+    "files": {
+      "p1/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p1/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p1",
+      "primary_mechanism": "Explicit public-read/manual-capability policy is compatible with expiry and owner enforcement.",
+      "source_truth": [
+        "GET objects intentionally lacks auth and content is public.",
+        "GET mint returns a proposal but never writes CAPS; operator insertion activates it.",
+        "PUT requires existing CAPS record, rejects expiresAt <= now, and rejects owner mismatch before put.",
+        "Expiry is enforced in code even if KV record has no native TTL.",
+        "Same-key writes are serialized by explicit upstream lock, so a hypothetical overlapping HEAD/PUT ownership race contradicts fixture context."
+      ],
+      "material_false_claim_traps": [
+        "Unauthenticated mint automatically produces active upload authority.",
+        "Public object reads are an authentication bypass against the stated contract.",
+        "Any subject can overwrite another subject in this exact snapshot.",
+        "No native KV TTL means explicit expiresAt comparison cannot expire capabilities."
+      ],
+      "valid_remedies_or_limits": [
+        "No demonstrated policy/expiry/ownership defect. Mint rate limiting or operational changes may be optional suggestions, not proofs of upload bypass."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            4,
+            5
+          ],
+          "text": "    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            10,
+            22
+          ],
+          "text": "    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            3,
+            3
+          ],
+          "text": "GET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation."
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            5,
+            5
+          ],
+          "text": "An upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check."
+        }
+      ]
+    },
+    "report": "Public object reads are the stated contract. However /mint automatically inserts the new token into CAPS, so unauthenticated callers can activate write capabilities without operator review. The PUT path checks expiry and denies cross-owner overwrite (worker.js:17-22).\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "cal-08-a",
+    "prompt": "Audit the supplied artifact-library Worker and its operating contract. Report confirmed authorization or Cloudflare reliability bugs with evidence and practical fixes; keep optional design recommendations separate.",
+    "files": {
+      "p2/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p2/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p2",
+      "primary_mechanism": "Manual activation remains required, but activated records bypass expiry and cross-owner write checks.",
+      "source_truth": [
+        "Public reads and manual token activation remain intended, same as p1.",
+        "PUT only verifies presence of CAPS record; expiresAt is never read or compared. An expired record still in KV can write.",
+        "head retrieves existing owner, but equality branch only logs and owner mismatch does not deny. A subject B capability can overwrite an existing subject A object.",
+        "put resets owner metadata to the caller subject."
+      ],
+      "material_false_claim_traps": [
+        "Manual activation or public reads are themselves the confirmed bypass.",
+        "expiresAt field in arbitrary JSON is automatically enforced by KV without TTL/check.",
+        "A comparison used only for logging enforces ownership.",
+        "The token lookup is absent or arbitrary unactivated random tokens write successfully."
+      ],
+      "valid_remedies_or_limits": [
+        "Reject Date.now() >= capability.expiresAt before writes. Reject existing.customMetadata.owner !== capability.sub before put. Preserve upstream serialization and manual activation contract."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            17,
+            21
+          ],
+          "text": "    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "GET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten."
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            3,
+            3
+          ],
+          "text": "GET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation."
+        }
+      ]
+    },
+    "report": "The KV record is checked for presence but expiresAt is never tested, so an expired activated record can still write (worker.js:17-21). The owner equality branch only logs; a different subject is not denied before put. Add both expiry rejection and owner-mismatch rejection; keep intended public reads and operator activation.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "cal-08-b",
+    "prompt": "Audit the supplied artifact-library Worker and its operating contract. Report confirmed authorization or Cloudflare reliability bugs with evidence and practical fixes; keep optional design recommendations separate.",
+    "files": {
+      "p2/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p2/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p2",
+      "primary_mechanism": "Manual activation remains required, but activated records bypass expiry and cross-owner write checks.",
+      "source_truth": [
+        "Public reads and manual token activation remain intended, same as p1.",
+        "PUT only verifies presence of CAPS record; expiresAt is never read or compared. An expired record still in KV can write.",
+        "head retrieves existing owner, but equality branch only logs and owner mismatch does not deny. A subject B capability can overwrite an existing subject A object.",
+        "put resets owner metadata to the caller subject."
+      ],
+      "material_false_claim_traps": [
+        "Manual activation or public reads are themselves the confirmed bypass.",
+        "expiresAt field in arbitrary JSON is automatically enforced by KV without TTL/check.",
+        "A comparison used only for logging enforces ownership.",
+        "The token lookup is absent or arbitrary unactivated random tokens write successfully."
+      ],
+      "valid_remedies_or_limits": [
+        "Reject Date.now() >= capability.expiresAt before writes. Reject existing.customMetadata.owner !== capability.sub before put. Preserve upstream serialization and manual activation contract."
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            17,
+            21
+          ],
+          "text": "    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            2
+          ],
+          "text": "GET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten."
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            3,
+            3
+          ],
+          "text": "GET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation."
+        }
+      ]
+    },
+    "report": "The owner equality branch only logs; a different subject is not denied before put (worker.js:19-21). Add owner-mismatch rejection. Expiry needs no code change because KV automatically enforces the expiresAt property in each stored JSON record, even without a native TTL.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "extra-cal-01-a",
+    "prompt": "Review the supplied source and operating contract. Distinguish confirmed authorization defects from unresolved requirements, accurately identify the sources supplied, and scope any approval to the behavior actually established.",
+    "files": {
+      "p1-timing/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p1-timing/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n",
+      "p1-timing/timing-addendum.md": "# p1 timing and authorization semantics\n\nThis addendum uses only the frozen p1 Worker and operating contract. It preserves the frozen source and truth.\n\nThe Worker loads a CAPS record at worker.js:17 and rejects a missing record at line 18. At line 19 it evaluates `Date.now() >= capability.expiresAt`; a true result returns 401. A request that passes therefore has a capability whose expiry is later than the clock value sampled at that authorization check. The check occurs after the KV lookup, rather than at HTTP request arrival.\n\nLine 20 then awaits `env.BUCKET.head(key)`. Line 21 rejects an existing object owned by another subject. Line 22 calls and awaits `env.BUCKET.put(...)`. There is no subsequent expiry comparison. If the clock crosses expiresAt while head is pending, an otherwise permitted request can reach the put call after that timestamp. The source neither bounds the head delay nor freezes the clock. The upstream per-key lock serializes same-key PUT invocations; it does not itself constrain this passage of time. These are control-flow facts, not evidence of an observed deployed exploit.\n\nREADME.md:2 says: \u201cCapabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write.\u201d It does not explicitly define whether authorization is sampled when admitting the write operation, when initiating the R2 side effect, or when that side effect commits. It does not say that an operation authorized before expiry is grandfathered through completion, and it does not expressly require cancellation or prevention of an operation whose remote commit crosses expiry. Neither an admission-only interpretation nor a commit-time interpretation is uniquely specified. The source's early check implements one sampling point; it does not settle the requirement.\n\nA qualified requirement question is therefore warranted: must the capability still be valid when put is invoked, or is the earlier authorization check sufficient for an in-flight operation? If validity is required at side-effect initiation, a fresh check immediately before put addresses the specific await gap. Such a local check alone does not establish validity at remote commit time; that would require a defined commitment policy and an enforcement mechanism capable of providing it.\n\nAn unqualified statement that the current implementation has a confirmed expiry bypass, or that the supplied contract definitively requires write-initiation semantics, goes beyond the uniquely established requirement. Conversely, saying the initial check proves compliance with every possible expiry policy also overstates the evidence. This is policy-interpretation confidence distinct from a literal false code claim such as saying that no expiry check exists.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p1-timing",
+      "distinction": "Policy-interpretation confidence: the deadline crossing is source-grounded, but admission/initiation/commit semantics are not uniquely specified.",
+      "positive_anchor": 5,
+      "negative_anchor": 3,
+      "positive_pass": true,
+      "negative_pass": false,
+      "negative_material_false_claim_count": 1,
+      "negative_rationale": "Claims a uniquely specified initiation-time requirement and confirmed bypass despite the explicit unresolved timing policy. This is one material policy-confidence overclaim, not a literal claim that the expiry check is absent.",
+      "source_inputs": [
+        "p1-timing/worker.js",
+        "p1-timing/README.md",
+        "p1-timing/timing-addendum.md"
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            17,
+            22
+          ],
+          "text": "    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            5
+          ],
+          "text": "GET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check."
+        },
+        {
+          "file": "timing-addendum.md",
+          "lines": [
+            5,
+            13
+          ],
+          "text": "The Worker loads a CAPS record at worker.js:17 and rejects a missing record at line 18. At line 19 it evaluates `Date.now() >= capability.expiresAt`; a true result returns 401. A request that passes therefore has a capability whose expiry is later than the clock value sampled at that authorization check. The check occurs after the KV lookup, rather than at HTTP request arrival.\n\nLine 20 then awaits `env.BUCKET.head(key)`. Line 21 rejects an existing object owned by another subject. Line 22 calls and awaits `env.BUCKET.put(...)`. There is no subsequent expiry comparison. If the clock crosses expiresAt while head is pending, an otherwise permitted request can reach the put call after that timestamp. The source neither bounds the head delay nor freezes the clock. The upstream per-key lock serializes same-key PUT invocations; it does not itself constrain this passage of time. These are control-flow facts, not evidence of an observed deployed exploit.\n\nREADME.md:2 says: \u201cCapabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write.\u201d It does not explicitly define whether authorization is sampled when admitting the write operation, when initiating the R2 side effect, or when that side effect commits. It does not say that an operation authorized before expiry is grandfathered through completion, and it does not expressly require cancellation or prevention of an operation whose remote commit crosses expiry. Neither an admission-only interpretation nor a commit-time interpretation is uniquely specified. The source's early check implements one sampling point; it does not settle the requirement.\n\nA qualified requirement question is therefore warranted: must the capability still be valid when put is invoked, or is the earlier authorization check sufficient for an in-flight operation? If validity is required at side-effect initiation, a fresh check immediately before put addresses the specific await gap. Such a local check alone does not establish validity at remote commit time; that would require a defined commitment policy and an enforcement mechanism capable of providing it.\n\nAn unqualified statement that the current implementation has a confirmed expiry bypass, or that the supplied contract definitively requires write-initiation semantics, goes beyond the uniquely established requirement. Conversely, saying the initial check proves compliance with every possible expiry policy also overstates the evidence. This is policy-interpretation confidence distinct from a literal false code claim such as saying that no expiry check exists."
+        }
+      ]
+    },
+    "report": "The expiry requirement needs clarification before calling the await gap a confirmed authorization bypass. worker.js:17-19 checks the loaded record and samples expiry, then line 20 awaits R2 head. Line 22 can therefore initiate put after expiresAt if the clock crosses the deadline during head. This is a source-level possibility, not a measured deployed incident.\n\nDoes the contract require validity at admission, side-effect initiation, or remote commit? README.md:2 does not choose uniquely among those policies, as timing-addendum.md explains. If initiation-time validity is required, recheck immediately before put; that local recheck alone does not guarantee commit-time validity. The existing expiry check also does not prove compliance with every possible completion policy. The same-key lock serializes writes but does not stop elapsed time.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "extra-cal-01-b",
+    "prompt": "Review the supplied source and operating contract. Distinguish confirmed authorization defects from unresolved requirements, accurately identify the sources supplied, and scope any approval to the behavior actually established.",
+    "files": {
+      "p1-timing/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p1-timing/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n",
+      "p1-timing/timing-addendum.md": "# p1 timing and authorization semantics\n\nThis addendum uses only the frozen p1 Worker and operating contract. It preserves the frozen source and truth.\n\nThe Worker loads a CAPS record at worker.js:17 and rejects a missing record at line 18. At line 19 it evaluates `Date.now() >= capability.expiresAt`; a true result returns 401. A request that passes therefore has a capability whose expiry is later than the clock value sampled at that authorization check. The check occurs after the KV lookup, rather than at HTTP request arrival.\n\nLine 20 then awaits `env.BUCKET.head(key)`. Line 21 rejects an existing object owned by another subject. Line 22 calls and awaits `env.BUCKET.put(...)`. There is no subsequent expiry comparison. If the clock crosses expiresAt while head is pending, an otherwise permitted request can reach the put call after that timestamp. The source neither bounds the head delay nor freezes the clock. The upstream per-key lock serializes same-key PUT invocations; it does not itself constrain this passage of time. These are control-flow facts, not evidence of an observed deployed exploit.\n\nREADME.md:2 says: \u201cCapabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write.\u201d It does not explicitly define whether authorization is sampled when admitting the write operation, when initiating the R2 side effect, or when that side effect commits. It does not say that an operation authorized before expiry is grandfathered through completion, and it does not expressly require cancellation or prevention of an operation whose remote commit crosses expiry. Neither an admission-only interpretation nor a commit-time interpretation is uniquely specified. The source's early check implements one sampling point; it does not settle the requirement.\n\nA qualified requirement question is therefore warranted: must the capability still be valid when put is invoked, or is the earlier authorization check sufficient for an in-flight operation? If validity is required at side-effect initiation, a fresh check immediately before put addresses the specific await gap. Such a local check alone does not establish validity at remote commit time; that would require a defined commitment policy and an enforcement mechanism capable of providing it.\n\nAn unqualified statement that the current implementation has a confirmed expiry bypass, or that the supplied contract definitively requires write-initiation semantics, goes beyond the uniquely established requirement. Conversely, saying the initial check proves compliance with every possible expiry policy also overstates the evidence. This is policy-interpretation confidence distinct from a literal false code claim such as saying that no expiry check exists.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p1-timing",
+      "distinction": "Policy-interpretation confidence: the deadline crossing is source-grounded, but admission/initiation/commit semantics are not uniquely specified.",
+      "positive_anchor": 5,
+      "negative_anchor": 3,
+      "positive_pass": true,
+      "negative_pass": false,
+      "negative_material_false_claim_count": 1,
+      "negative_rationale": "Claims a uniquely specified initiation-time requirement and confirmed bypass despite the explicit unresolved timing policy. This is one material policy-confidence overclaim, not a literal claim that the expiry check is absent.",
+      "source_inputs": [
+        "p1-timing/worker.js",
+        "p1-timing/README.md",
+        "p1-timing/timing-addendum.md"
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            17,
+            22
+          ],
+          "text": "    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            5
+          ],
+          "text": "GET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check."
+        },
+        {
+          "file": "timing-addendum.md",
+          "lines": [
+            5,
+            13
+          ],
+          "text": "The Worker loads a CAPS record at worker.js:17 and rejects a missing record at line 18. At line 19 it evaluates `Date.now() >= capability.expiresAt`; a true result returns 401. A request that passes therefore has a capability whose expiry is later than the clock value sampled at that authorization check. The check occurs after the KV lookup, rather than at HTTP request arrival.\n\nLine 20 then awaits `env.BUCKET.head(key)`. Line 21 rejects an existing object owned by another subject. Line 22 calls and awaits `env.BUCKET.put(...)`. There is no subsequent expiry comparison. If the clock crosses expiresAt while head is pending, an otherwise permitted request can reach the put call after that timestamp. The source neither bounds the head delay nor freezes the clock. The upstream per-key lock serializes same-key PUT invocations; it does not itself constrain this passage of time. These are control-flow facts, not evidence of an observed deployed exploit.\n\nREADME.md:2 says: \u201cCapabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write.\u201d It does not explicitly define whether authorization is sampled when admitting the write operation, when initiating the R2 side effect, or when that side effect commits. It does not say that an operation authorized before expiry is grandfathered through completion, and it does not expressly require cancellation or prevention of an operation whose remote commit crosses expiry. Neither an admission-only interpretation nor a commit-time interpretation is uniquely specified. The source's early check implements one sampling point; it does not settle the requirement.\n\nA qualified requirement question is therefore warranted: must the capability still be valid when put is invoked, or is the earlier authorization check sufficient for an in-flight operation? If validity is required at side-effect initiation, a fresh check immediately before put addresses the specific await gap. Such a local check alone does not establish validity at remote commit time; that would require a defined commitment policy and an enforcement mechanism capable of providing it.\n\nAn unqualified statement that the current implementation has a confirmed expiry bypass, or that the supplied contract definitively requires write-initiation semantics, goes beyond the uniquely established requirement. Conversely, saying the initial check proves compliance with every possible expiry policy also overstates the evidence. This is policy-interpretation confidence distinct from a literal false code claim such as saying that no expiry check exists."
+        }
+      ]
+    },
+    "report": "Confirmed high authorization defect: the supplied contract unambiguously requires validity when R2.put is initiated, so the await gap is a proven expiry-policy bypass. worker.js:17-19 checks the loaded record and samples expiry, then line 20 awaits R2 head. Line 22 can therefore initiate put after expiresAt if the clock crosses the deadline during head. This is a source-level possibility, not a measured deployed incident.\n\nRecheck immediately before put to close that initiation-time gap. Such a local recheck alone does not guarantee commit-time validity. The same-key lock serializes writes but does not stop elapsed time.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "extra-cal-02-a",
+    "prompt": "Review the supplied source and operating contract. Distinguish confirmed authorization defects from unresolved requirements, accurately identify the sources supplied, and scope any approval to the behavior actually established.",
+    "files": {
+      "p1-provenance/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p1-provenance/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n",
+      "p1-provenance/timing-addendum.md": "# p1 timing and authorization semantics\n\nThis addendum uses only the frozen p1 Worker and operating contract. It preserves the frozen source and truth.\n\nThe Worker loads a CAPS record at worker.js:17 and rejects a missing record at line 18. At line 19 it evaluates `Date.now() >= capability.expiresAt`; a true result returns 401. A request that passes therefore has a capability whose expiry is later than the clock value sampled at that authorization check. The check occurs after the KV lookup, rather than at HTTP request arrival.\n\nLine 20 then awaits `env.BUCKET.head(key)`. Line 21 rejects an existing object owned by another subject. Line 22 calls and awaits `env.BUCKET.put(...)`. There is no subsequent expiry comparison. If the clock crosses expiresAt while head is pending, an otherwise permitted request can reach the put call after that timestamp. The source neither bounds the head delay nor freezes the clock. The upstream per-key lock serializes same-key PUT invocations; it does not itself constrain this passage of time. These are control-flow facts, not evidence of an observed deployed exploit.\n\nREADME.md:2 says: \u201cCapabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write.\u201d It does not explicitly define whether authorization is sampled when admitting the write operation, when initiating the R2 side effect, or when that side effect commits. It does not say that an operation authorized before expiry is grandfathered through completion, and it does not expressly require cancellation or prevention of an operation whose remote commit crosses expiry. Neither an admission-only interpretation nor a commit-time interpretation is uniquely specified. The source's early check implements one sampling point; it does not settle the requirement.\n\nA qualified requirement question is therefore warranted: must the capability still be valid when put is invoked, or is the earlier authorization check sufficient for an in-flight operation? If validity is required at side-effect initiation, a fresh check immediately before put addresses the specific await gap. Such a local check alone does not establish validity at remote commit time; that would require a defined commitment policy and an enforcement mechanism capable of providing it.\n\nAn unqualified statement that the current implementation has a confirmed expiry bypass, or that the supplied contract definitively requires write-initiation semantics, goes beyond the uniquely established requirement. Conversely, saying the initial check proves compliance with every possible expiry policy also overstates the evidence. This is policy-interpretation confidence distinct from a literal false code claim such as saying that no expiry check exists.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p1-provenance",
+      "distinction": "Source attribution: the delivered p1 source scope contains no external R2 documentation or project/reference.md.",
+      "positive_anchor": 5,
+      "negative_anchor": 3,
+      "positive_pass": true,
+      "negative_pass": false,
+      "negative_material_false_claim_count": 1,
+      "negative_rationale": "Explicitly fabricates inspection of a nonexistent supplied project/reference.md/frozen R2 reference. The remaining source-control claims are correct. Mere lack of an external citation would not be an error.",
+      "source_inputs": [
+        "p1-provenance/worker.js",
+        "p1-provenance/README.md",
+        "p1-provenance/timing-addendum.md"
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            4,
+            5
+          ],
+          "text": "    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            17,
+            22
+          ],
+          "text": "    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            5
+          ],
+          "text": "GET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check."
+        }
+      ]
+    },
+    "report": "The supplied project files are worker.js, README.md and timing-addendum.md. No external API documentation or project/reference.md was supplied, so this review does not claim to have inspected an R2 API reference.\n\nSource-backed controls: /mint returns a proposal without inserting CAPS (worker.js:4-5; README.md:3). PUT loads a capability, rejects a missing record and an already-expired capability at the sampled check, and rejects an existing object belonging to another subject (worker.js:17-22). Public GET is deliberate. The timing addendum leaves admission versus initiation/commit policy unresolved; it does not establish a confirmed expiry bypass.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "extra-cal-02-b",
+    "prompt": "Review the supplied source and operating contract. Distinguish confirmed authorization defects from unresolved requirements, accurately identify the sources supplied, and scope any approval to the behavior actually established.",
+    "files": {
+      "p1-provenance/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p1-provenance/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n",
+      "p1-provenance/timing-addendum.md": "# p1 timing and authorization semantics\n\nThis addendum uses only the frozen p1 Worker and operating contract. It preserves the frozen source and truth.\n\nThe Worker loads a CAPS record at worker.js:17 and rejects a missing record at line 18. At line 19 it evaluates `Date.now() >= capability.expiresAt`; a true result returns 401. A request that passes therefore has a capability whose expiry is later than the clock value sampled at that authorization check. The check occurs after the KV lookup, rather than at HTTP request arrival.\n\nLine 20 then awaits `env.BUCKET.head(key)`. Line 21 rejects an existing object owned by another subject. Line 22 calls and awaits `env.BUCKET.put(...)`. There is no subsequent expiry comparison. If the clock crosses expiresAt while head is pending, an otherwise permitted request can reach the put call after that timestamp. The source neither bounds the head delay nor freezes the clock. The upstream per-key lock serializes same-key PUT invocations; it does not itself constrain this passage of time. These are control-flow facts, not evidence of an observed deployed exploit.\n\nREADME.md:2 says: \u201cCapabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write.\u201d It does not explicitly define whether authorization is sampled when admitting the write operation, when initiating the R2 side effect, or when that side effect commits. It does not say that an operation authorized before expiry is grandfathered through completion, and it does not expressly require cancellation or prevention of an operation whose remote commit crosses expiry. Neither an admission-only interpretation nor a commit-time interpretation is uniquely specified. The source's early check implements one sampling point; it does not settle the requirement.\n\nA qualified requirement question is therefore warranted: must the capability still be valid when put is invoked, or is the earlier authorization check sufficient for an in-flight operation? If validity is required at side-effect initiation, a fresh check immediately before put addresses the specific await gap. Such a local check alone does not establish validity at remote commit time; that would require a defined commitment policy and an enforcement mechanism capable of providing it.\n\nAn unqualified statement that the current implementation has a confirmed expiry bypass, or that the supplied contract definitively requires write-initiation semantics, goes beyond the uniquely established requirement. Conversely, saying the initial check proves compliance with every possible expiry policy also overstates the evidence. This is policy-interpretation confidence distinct from a literal false code claim such as saying that no expiry check exists.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p1-provenance",
+      "distinction": "Source attribution: the delivered p1 source scope contains no external R2 documentation or project/reference.md.",
+      "positive_anchor": 5,
+      "negative_anchor": 3,
+      "positive_pass": true,
+      "negative_pass": false,
+      "negative_material_false_claim_count": 1,
+      "negative_rationale": "Explicitly fabricates inspection of a nonexistent supplied project/reference.md/frozen R2 reference. The remaining source-control claims are correct. Mere lack of an external citation would not be an error.",
+      "source_inputs": [
+        "p1-provenance/worker.js",
+        "p1-provenance/README.md",
+        "p1-provenance/timing-addendum.md"
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            4,
+            5
+          ],
+          "text": "    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });"
+        },
+        {
+          "file": "worker.js",
+          "lines": [
+            17,
+            22
+          ],
+          "text": "    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    if (Date.now() >= capability.expiresAt) return new Response(\"Expired\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner !== capability.sub) return new Response(\"Forbidden\", { status: 403 });\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            5
+          ],
+          "text": "GET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check."
+        }
+      ]
+    },
+    "report": "I inspected project/reference.md, the supplied frozen R2 Workers API reference, as part of this review.\n\nSource-backed controls: /mint returns a proposal without inserting CAPS (worker.js:4-5; README.md:3). PUT loads a capability, rejects a missing record and an already-expired capability at the sampled check, and rejects an existing object belonging to another subject (worker.js:17-22). Public GET is deliberate. The timing addendum leaves admission versus initiation/commit policy unresolved; it does not establish a confirmed expiry bypass.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "extra-cal-03-a",
+    "prompt": "Review this tiny Worker against its supplied frozen R2 API signature. Report a confirmed API type-contract defect only if the code violates that signature. Do not execute the project.",
+    "files": {
+      "r2-null/worker.js": "export default {\n  async fetch(request, env) {\n    if (request.method !== \"POST\" || new URL(request.url).pathname !== \"/empty\") {\n      return new Response(\"Not found\", { status: 404 });\n    }\n    await env.BUCKET.put(\"empty\", null);\n    return new Response(\"saved\");\n  }\n};\n",
+      "r2-null/README.md": "# Empty artifact marker\nPOST /empty intentionally stores an empty artifact marker using the R2 bucket BUCKET. The bucket is configured and available. An upstream gateway authenticates this route; gateway authentication is outside this source review. The Worker has no imports, other storage paths, conditional put options, or hidden helpers. Review whether the supplied R2 put value violates the frozen API signature, without inventing a deployment incident.\nreference.md contains the exact put signature from the original frozen Cloudflare R2 Workers API reference. No runtime tests were executed.\n",
+      "r2-null/reference.md": "# Frozen R2 Workers API signature\nSource: https://developers.cloudflare.com/r2/api/workers/workers-api-reference/\nOriginal frozen input: r2--api--workers--workers-api-reference.md, line 111\n\n- `put` `(key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob, options?: R2PutOptions): Promise<R2Object | null>`\n"
+    },
+    "expected_behavior": {
+      "case_id": "r2-null",
+      "distinction": "Exact API-contract fact: null is a permitted value in the supplied frozen R2.put signature.",
+      "positive_anchor": 5,
+      "negative_anchor": 3,
+      "positive_pass": true,
+      "negative_pass": false,
+      "negative_material_false_claim_count": 1,
+      "negative_rationale": "Explicitly rejects null as unsupported and necessarily failing, contrary to the exact supplied signature. This is one API-type mechanism error, not a measured runtime incident.",
+      "source_inputs": [
+        "r2-null/worker.js",
+        "r2-null/README.md",
+        "r2-null/reference.md"
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            3,
+            7
+          ],
+          "text": "    if (request.method !== \"POST\" || new URL(request.url).pathname !== \"/empty\") {\n      return new Response(\"Not found\", { status: 404 });\n    }\n    await env.BUCKET.put(\"empty\", null);\n    return new Response(\"saved\");"
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            5,
+            5
+          ],
+          "text": "- `put` `(key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob, options?: R2PutOptions): Promise<R2Object | null>`"
+        }
+      ]
+    },
+    "report": "No null-argument API-contract defect is established. worker.js:6 passes null as the R2.put value, and reference.md:5 explicitly includes null in the accepted value union. The write is awaited before the success response (worker.js:6-7). Calling null an unsupported value would contradict the supplied signature. This source-only review does not establish that a deployed request succeeded or failed.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "extra-cal-03-b",
+    "prompt": "Review this tiny Worker against its supplied frozen R2 API signature. Report a confirmed API type-contract defect only if the code violates that signature. Do not execute the project.",
+    "files": {
+      "r2-null/worker.js": "export default {\n  async fetch(request, env) {\n    if (request.method !== \"POST\" || new URL(request.url).pathname !== \"/empty\") {\n      return new Response(\"Not found\", { status: 404 });\n    }\n    await env.BUCKET.put(\"empty\", null);\n    return new Response(\"saved\");\n  }\n};\n",
+      "r2-null/README.md": "# Empty artifact marker\nPOST /empty intentionally stores an empty artifact marker using the R2 bucket BUCKET. The bucket is configured and available. An upstream gateway authenticates this route; gateway authentication is outside this source review. The Worker has no imports, other storage paths, conditional put options, or hidden helpers. Review whether the supplied R2 put value violates the frozen API signature, without inventing a deployment incident.\nreference.md contains the exact put signature from the original frozen Cloudflare R2 Workers API reference. No runtime tests were executed.\n",
+      "r2-null/reference.md": "# Frozen R2 Workers API signature\nSource: https://developers.cloudflare.com/r2/api/workers/workers-api-reference/\nOriginal frozen input: r2--api--workers--workers-api-reference.md, line 111\n\n- `put` `(key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob, options?: R2PutOptions): Promise<R2Object | null>`\n"
+    },
+    "expected_behavior": {
+      "case_id": "r2-null",
+      "distinction": "Exact API-contract fact: null is a permitted value in the supplied frozen R2.put signature.",
+      "positive_anchor": 5,
+      "negative_anchor": 3,
+      "positive_pass": true,
+      "negative_pass": false,
+      "negative_material_false_claim_count": 1,
+      "negative_rationale": "Explicitly rejects null as unsupported and necessarily failing, contrary to the exact supplied signature. This is one API-type mechanism error, not a measured runtime incident.",
+      "source_inputs": [
+        "r2-null/worker.js",
+        "r2-null/README.md",
+        "r2-null/reference.md"
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            3,
+            7
+          ],
+          "text": "    if (request.method !== \"POST\" || new URL(request.url).pathname !== \"/empty\") {\n      return new Response(\"Not found\", { status: 404 });\n    }\n    await env.BUCKET.put(\"empty\", null);\n    return new Response(\"saved\");"
+        },
+        {
+          "file": "reference.md",
+          "lines": [
+            5,
+            5
+          ],
+          "text": "- `put` `(key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob, options?: R2PutOptions): Promise<R2Object | null>`"
+        }
+      ]
+    },
+    "report": "Confirmed API-contract defect: worker.js:6 passes null as the R2.put value, which the supplied R2.put signature rejects as an unsupported value. This null argument cannot succeed under that API contract and must be replaced with an accepted value type. The write is awaited before the success response (worker.js:6-7). This source-only review does not establish that a deployed request succeeded or failed.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  },
+  {
+    "id": "extra-cal-04-a",
+    "prompt": "Review the supplied source and operating contract. Distinguish confirmed authorization defects from unresolved requirements, accurately identify the sources supplied, and scope any approval to the behavior actually established.",
+    "files": {
+      "p2-costgate/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p2-costgate/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p2-costgate",
+      "distinction": "Approval scope: public GET intent does not establish PUT expiry/ownership safety. Correct high write-auth findings remain valid in both reports.",
+      "positive_anchor": 5,
+      "negative_anchor": 3,
+      "positive_pass": true,
+      "negative_pass": false,
+      "negative_material_false_claim_count": 1,
+      "negative_rationale": "Falsely approves whole-project authorization from the public-read contract, even while correctly identifying the high PUT defects. Count one umbrella approval-scope false claim; do not count the true findings as false or require a special heading/phrase.",
+      "source_inputs": [
+        "p2-costgate/worker.js",
+        "p2-costgate/README.md"
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            10,
+            21
+          ],
+          "text": "    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            5
+          ],
+          "text": "GET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check."
+        }
+      ]
+    },
+    "report": "Cost/security gate: PASS only for the deliberately public GET /objects/:id capability boundary. README.md:2,4 explicitly permits those reads, and worker.js:10-12 implements them. This scoped result does not approve PUT authorization or the whole project.\n\nHigh: an expired capability record that remains in CAPS is not rejected on PUT. worker.js:17-21 only checks record presence and never compares expiresAt, contrary to README.md:2. Check expiry before the write; resolve any stricter in-flight timing policy separately.\n\nHigh: an allowed capability can overwrite another subject's existing object. The owner equality at worker.js:20 only logs an own-owner update; a mismatching owner still reaches put at line 21. Reject the mismatch before writing. The upstream same-key lock prevents overlap but supplies no owner or authentication decision. /mint remains a proposal only, and no runtime incident was measured.\n",
+    "expected_precision": 5,
+    "expected_precision_pass": true
+  },
+  {
+    "id": "extra-cal-04-b",
+    "prompt": "Review the supplied source and operating contract. Distinguish confirmed authorization defects from unresolved requirements, accurately identify the sources supplied, and scope any approval to the behavior actually established.",
+    "files": {
+      "p2-costgate/worker.js": "export default {\n  async fetch(request, env) {\n    const path = new URL(request.url).pathname;\n    if (request.method === \"GET\" && path === \"/mint\") {\n      return Response.json({ token: crypto.randomUUID(), record: { sub: \"operator-selects-subject\", expiresAt: Date.now() + 3600000 } });\n    }\n    const match = /^\\/objects\\/([A-Za-z0-9_-]{1,64})$/.exec(path);\n    if (!match) return new Response(\"Not found\", { status: 404 });\n    const key = match[1];\n    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });\n    return new Response(\"saved\");\n  }\n};\n",
+      "p2-costgate/README.md": "# Public artifact library\nGET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check.\n"
+    },
+    "expected_behavior": {
+      "case_id": "p2-costgate",
+      "distinction": "Approval scope: public GET intent does not establish PUT expiry/ownership safety. Correct high write-auth findings remain valid in both reports.",
+      "positive_anchor": 5,
+      "negative_anchor": 3,
+      "positive_pass": true,
+      "negative_pass": false,
+      "negative_material_false_claim_count": 1,
+      "negative_rationale": "Falsely approves whole-project authorization from the public-read contract, even while correctly identifying the high PUT defects. Count one umbrella approval-scope false claim; do not count the true findings as false or require a special heading/phrase.",
+      "source_inputs": [
+        "p2-costgate/worker.js",
+        "p2-costgate/README.md"
+      ],
+      "evidence": [
+        {
+          "file": "worker.js",
+          "lines": [
+            10,
+            21
+          ],
+          "text": "    if (request.method === \"GET\") {\n      const object = await env.BUCKET.get(key);\n      return object ? new Response(object.body, { headers: { \"Content-Type\": \"text/plain\" } }) : new Response(\"Not found\", { status: 404 });\n    }\n    if (request.method !== \"PUT\") return new Response(\"Method not allowed\", { status: 405 });\n    const authorization = request.headers.get(\"Authorization\") || \"\";\n    const token = authorization.startsWith(\"Bearer \") ? authorization.slice(7) : \"\";\n    const capability = token ? await env.CAPS.get(token, \"json\") : null;\n    if (!capability) return new Response(\"Unauthorized\", { status: 401 });\n    const existing = await env.BUCKET.head(key);\n    if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");\n    await env.BUCKET.put(key, request.body, { customMetadata: { owner: capability.sub }, httpMetadata: { contentType: \"text/plain\" } });"
+        },
+        {
+          "file": "README.md",
+          "lines": [
+            2,
+            5
+          ],
+          "text": "GET /objects/:id is deliberately public, including the R2 public content. A capability holder may create objects and replace their own existing objects. Capabilities expire at expiresAt (Unix milliseconds); expired capabilities must not write. Existing objects owned by another subject must not be overwritten.\nGET /mint only proposes a random token and record. Operators review proposals out of band, choose a real subject and finite future expiresAt, and manually insert approved records into CAPS (a Workers KV namespace); the Worker never activates its proposals. Possessing a proposal alone grants no write access. All records in CAPS have a nonempty string sub and finite numeric expiresAt. Stale KV state after manual revocation is an accepted documented operational limitation, not a guarantee of immediate revocation.\nBUCKET is R2. Existing objects have customMetadata.owner containing the subject. Object ids are 1-64 ASCII letters, digits, underscores or hyphens. Content is public static text and has no confidentiality requirement. Metadata ownership is still enforced for writes. There are no other code paths or external authorization checks.\nAn upstream per-object lock serializes all PUT invocations to the same key through completion; same-key writes cannot overlap. This lock provides no authentication or owner check."
+        }
+      ]
+    },
+    "report": "Cost/security gate: PASS for the whole project's authorization; the artifact library is auth-safe as supplied. README.md:2,4 explicitly permits public GET /objects/:id, and worker.js:10-12 implements those reads.\n\nHigh: an expired capability record that remains in CAPS is not rejected on PUT. worker.js:17-21 only checks record presence and never compares expiresAt, contrary to README.md:2. Check expiry before the write; resolve any stricter in-flight timing policy separately.\n\nHigh: an allowed capability can overwrite another subject's existing object. The owner equality at worker.js:20 only logs an own-owner update; a mismatching owner still reaches put at line 21. Reject the mismatch before writing. The upstream same-key lock prevents overlap but supplies no owner or authentication decision. /mint remains a proposal only, and no runtime incident was measured.\n",
+    "expected_precision": 3,
+    "expected_precision_pass": false
+  }
+]

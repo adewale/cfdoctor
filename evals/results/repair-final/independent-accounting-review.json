@@ -1,0 +1,505 @@
+{
+  "version": 1,
+  "stage": "complete_native_numerical_accounting",
+  "checked_at_utc": "2026-11-07T05:14:49.187671+00:00",
+  "status": "92_answers_and184_judgments_and4_native_benchmarks_numerically_verified",
+  "open_actionable_defects": [],
+  "corrected_defects": [
+    {
+      "severity": "publication_blocker",
+      "file": "repair-eval-work/publish_statistics.py:15",
+      "problem": "Native harness rounds normalized quality to 4 decimals; analytic summary retains exact mean. Former tolerance1e-12 comparison against unrounded mean would fail on actual half-point verdicts (0.84375 versus0.8438).",
+      "correction_verified": "Exporter now compares native quality with round(expected quality,4), leaving exact analytic means intact.",
+      "native_source": "repair-eval-work/harness/skill_benchmark.py:6423"
+    }
+  ],
+  "verified_design": [
+    "Baselines7eefbc7(projects) and4bdd6c5(regressions) remain separate; same final candidatea1e9c3ae and no pooled quality estimate.",
+    "Expected92 unique answer identities =60 project runs +32 regression runs; matched within-case/run arms.",
+    "Regressions use4 mechanism-family clusters; projects use10 project clusters. Repetitions are averaged inside clusters before bootstrap/sign-flip inference; they are not independent samples.",
+    "Quality is mean of(score-1)/4 over4 dimensions. Raw threshold4.4 maps to0.85. Native four-decimal score storage is handled separately.",
+    "Material precision-error reports use precision<=3, separately from composite quality/pass counts and source-adjudication categories.",
+    "Failed/missing/timed-out runs cannot enter final quality publication: summarize validates exact population and success, judge scheduler requires all expected successes, publisher asserts execution_valid.",
+    "Cached input is subset of input; reasoning is subset of output. Total=input+output; uncached=input-cached; nonreasoning=output-reasoning, with trace/metadata consistency.",
+    "Resource bootstrap is paired by preregistered clusters. For this balanced population the equal-cluster ratio-of-means bootstrap matches the stated point estimand; provider cache/concurrency remain uncontrolled.",
+    "Native all-soft combined pass channels are retained as harness metadata, not substituted for the explicit quality threshold.",
+    "Source combiner keeps false claims, requirement overclaims, attribution and invalid remedies distinct; source labels do not overwrite judge scores."
+  ],
+  "source_integrity": {
+    "checked_bundles": [
+      {
+        "cohort": "regressions",
+        "case": "repair-q1",
+        "bundle_sha256": "48042e881f7f62e33f4ddd04d6bdc651d6f6b5e259b862fa67cc71dff990ec5d",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 0
+      },
+      {
+        "cohort": "regressions",
+        "case": "repair-q2",
+        "bundle_sha256": "6b523f35ce8cdf15bd4dc816344f891340038863dafaf208c5a257c3edb938aa",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 0
+      },
+      {
+        "cohort": "regressions",
+        "case": "repair-m1",
+        "bundle_sha256": "c95e785d9aee8d7437f27bbd3b00c56f5ce06c3901d6a3721c837dd33338d231",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 0
+      },
+      {
+        "cohort": "regressions",
+        "case": "repair-m2",
+        "bundle_sha256": "0d6ca1536af53e5666e6fba319f9402184e10ca05bd676faec5827191959d036",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 0
+      },
+      {
+        "cohort": "regressions",
+        "case": "repair-c1",
+        "bundle_sha256": "7506fb46d4ab2774ac4af4a38ceba8e69213a1efd311deabe8993c25067b8afd",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 0
+      },
+      {
+        "cohort": "regressions",
+        "case": "repair-c2",
+        "bundle_sha256": "fa8717534aa89cd7b12134dd519103d0748531595d8a4e794c994aa0fc7059da",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 0
+      },
+      {
+        "cohort": "regressions",
+        "case": "repair-p1",
+        "bundle_sha256": "cf30a700211c409cbe60e8fa7339c23450547f8a54aed22fc012d5b17bfd36c5",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 0
+      },
+      {
+        "cohort": "regressions",
+        "case": "repair-p2",
+        "bundle_sha256": "c2de74b665dd43613928d5ad5365c82ff30a78c5a18d27ed3c1bee180c38c11f",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 0
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-url-shortener",
+        "bundle_sha256": "dc5452dcb614aec97f5ff2de071fa7aab69d0a7a441f165a0063387db4b4cec1",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 9
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-bytego",
+        "bundle_sha256": "d9a7aceea5570c7289c284ff79855a31e0033c39f11d4288cfca1f75726b4aa2",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 9
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-status-page",
+        "bundle_sha256": "b6defdd83c19277525a54bce61755504eba0b4765ae2361b7aa468388c57e9cd",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 9
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-web-tools",
+        "bundle_sha256": "5d5ffdd0fcd4ad211f9952ac2aca41483ba41c86633cd96959dbb865d2bf7eda",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 9
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-hookrelay",
+        "bundle_sha256": "2142cfbdd62920d0a16eafa59b58400c5e83fbddc0ad616984e6b04c2bad6393",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 4
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-workers-chat-demo",
+        "bundle_sha256": "6cf84e8117ff3c6ca6e999c24513c9aa70ee4cfd4ebee963636f8895cb2584ff",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 3
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-pastebin-d1",
+        "bundle_sha256": "08abb7a073e37004e403f2e8fa3ad0f8889c420e299bb1d3625772e66919df71",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 4
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-reia-lfs-r2",
+        "bundle_sha256": "45e7301c9271a9cd69f6751bfcdd12a87ec9caf2328930063ce8d7eb9155ba69",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 3
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-anynote",
+        "bundle_sha256": "7241ca14282f54d2f37d568a2698bb6af57b5c5341f9d83d68a7d7ee02b57616",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 4
+      },
+      {
+        "cohort": "projects",
+        "case": "fresh-bashupload-r2",
+        "bundle_sha256": "fbac41a2f3f801717610712a9f8c70b4f2edc9d9a1c96343dae7ed6422ed9bb9",
+        "frozen_source_match": true,
+        "frozen_reference_files_checked": 3
+      }
+    ],
+    "original_regression_frozen_artifacts_checked": 41,
+    "regression_source_review_freeze_verified": true,
+    "preflight_receipt_entries": 92,
+    "preflight_matched_pairs": 46,
+    "all_manifest_protocol_hashes_match": true,
+    "all_candidate_snapshot_hashes_match": true,
+    "all_baseline_snapshot_files_match_declared_git_commits": true
+  },
+  "final_numbers_pending": [],
+  "code_sha256": {
+    "repair-eval-work/summarize_round.py": "ba096e4b2310debf3422af3ba8bbd3a3e9e2e0c681714ca3a740c92e9774c3d4",
+    "repair-eval-work/publish_statistics.py": "949ccee5d831c965504205e88bf9385e3e62e0517497c7023bd0f68a7cf221fd",
+    "repair-eval-work/combine_source_reviews.py": "4e6be0bb192b755d0c185855198b6b958cdd3009c6fac3a05b78618591ec7a4b",
+    "repair-eval-work/finalize_suite.py": "3bbf5eaa6183d9b9a4a93ff49b6827eae8b1d3edf996b4bc2d4f9f776acf6c69",
+    "repair-eval-work/run_round.py": "57cca3ea856b38e059f65c7c2e04692cb2f84df0d7ce713603a358dc5a43ae9a",
+    "repair-eval-work/judge_round.py": "3f112cca8dd89b04b84d757cac043a01da6344be457920f7687733c9ee009762",
+    "repair-eval-work/suite_r3_judge_scheduler.py": "c3e2df7e37db41fcd77f61ce86144c0c0c4dabd36c40c6eb46282e032cfece93",
+    "cfdoctor/evals/results/repair-final/overhead_uncertainty.py": "6f27e6d7b4a33039d15d9de817e871720c849f684207dd94c596b47026dea016",
+    "cfdoctor/evals/results/final-expanded/analyze_overhead.py": "b6410cb3849d2908bcf506e9523d0538d34717b55c1d56f7b334b0f982363084",
+    "repair-eval-work/harness/skill_benchmark.py": "ee0c5012e9a3191071682eec14140a4768ebeab52ca365bd3ecb3967fef309fa"
+  },
+  "constraints": "Read-only accounting/source inspection and local arithmetic/hash checks only. No candidate edits, target execution or new model calls. The32 frozen independent source reviews were not edited.",
+  "initial_population_snapshot": {
+    "regressions": {
+      "planned_runs": 32,
+      "cases": 8,
+      "repeats_per_arm": 2,
+      "independent_clusters": 4,
+      "baseline": {
+        "commit": "4bdd6c5d4c4e3c7988cc88451edfb7a2d11c1941",
+        "files": 19,
+        "all_snapshot_files_match_git_archive": true
+      },
+      "candidate_commit": "a1e9c3ae07d6cf61b50fadb44b2c12e0ff681372",
+      "candidate_files_sha256_checked": 19,
+      "manifest_sha256": "ca8009b016df6167515028f50222a9782dc153a6848f5c20aa8b1b0308bdaa97",
+      "successful_recorded_runs": 32,
+      "pending_identities": [],
+      "failed_runs": [],
+      "validated_terminal_usage_records": 32,
+      "judges": {
+        "codex": {
+          "available": 32,
+          "valid": 32,
+          "invalid": [],
+          "all_available_scores_match_native_4_decimal_rule": true,
+          "rounding_examples": [],
+          "unjudged_expected": 0
+        },
+        "claude": {
+          "available": 32,
+          "valid": 32,
+          "invalid": [],
+          "all_available_scores_match_native_4_decimal_rule": true,
+          "rounding_examples": [],
+          "unjudged_expected": 0
+        }
+      },
+      "final_summary_exists": false,
+      "native_benchmarks_exist": {
+        "codex": false,
+        "claude": false
+      }
+    },
+    "projects": {
+      "planned_runs": 60,
+      "cases": 10,
+      "repeats_per_arm": 3,
+      "independent_clusters": 10,
+      "baseline": {
+        "commit": "7eefbc7411b634d9a665f9f9240a761f0b2f4314",
+        "files": 17,
+        "all_snapshot_files_match_git_archive": true
+      },
+      "candidate_commit": "a1e9c3ae07d6cf61b50fadb44b2c12e0ff681372",
+      "candidate_files_sha256_checked": 19,
+      "manifest_sha256": "4eed8b764d88e3de804365ec44545bd969b8de5d7fabdff06a8a4f24e8e15672",
+      "successful_recorded_runs": 59,
+      "pending_identities": [
+        [
+          "fresh-pastebin-d1",
+          "with_skill",
+          3
+        ]
+      ],
+      "failed_runs": [],
+      "validated_terminal_usage_records": 59,
+      "judges": {
+        "codex": {
+          "available": 59,
+          "valid": 59,
+          "invalid": [],
+          "all_available_scores_match_native_4_decimal_rule": true,
+          "rounding_examples": [
+            {
+              "identity": [
+                "fresh-hookrelay",
+                "with_skill",
+                3
+              ],
+              "exact_quality": 0.84375,
+              "native_rounded_quality": 0.8438
+            },
+            {
+              "identity": [
+                "fresh-hookrelay",
+                "old_skill",
+                2
+              ],
+              "exact_quality": 0.59375,
+              "native_rounded_quality": 0.5938
+            }
+          ],
+          "unjudged_expected": 1
+        },
+        "claude": {
+          "available": 57,
+          "valid": 57,
+          "invalid": [],
+          "all_available_scores_match_native_4_decimal_rule": true,
+          "rounding_examples": [],
+          "unjudged_expected": 3
+        }
+      },
+      "final_summary_exists": false,
+      "native_benchmarks_exist": {
+        "codex": false,
+        "claude": false
+      }
+    }
+  },
+  "final_numerical_checks": {
+    "projects": {
+      "planned_and_successful": 60,
+      "per_arm": 30,
+      "matched_pairs": 30,
+      "independent_clusters": 10,
+      "all_judge_aggregates_and_slices_recomputed": true,
+      "all_quality_bootstrap_intervals_and_sign_flip_tests_recomputed": true,
+      "resource_core_means_medians_ratios_and_bootstrap_intervals_recomputed": true,
+      "all_native_scores_passes_budgets_and_execution_flags_verified": true,
+      "baseline_commit": "7eefbc7411b634d9a665f9f9240a761f0b2f4314",
+      "manifest_hash": "4eed8b764d88e3de804365ec44545bd969b8de5d7fabdff06a8a4f24e8e15672"
+    },
+    "regressions": {
+      "planned_and_successful": 32,
+      "per_arm": 16,
+      "matched_pairs": 16,
+      "independent_clusters": 4,
+      "all_judge_aggregates_and_slices_recomputed": true,
+      "all_quality_bootstrap_intervals_and_sign_flip_tests_recomputed": true,
+      "resource_core_means_medians_ratios_and_bootstrap_intervals_recomputed": true,
+      "all_native_scores_passes_budgets_and_execution_flags_verified": true,
+      "baseline_commit": "4bdd6c5d4c4e3c7988cc88451edfb7a2d11c1941",
+      "manifest_hash": "ca8009b016df6167515028f50222a9782dc153a6848f5c20aa8b1b0308bdaa97"
+    }
+  },
+  "native_benchmark_checks": {
+    "projects/codex": {
+      "runs": 60,
+      "all_execution_valid": true,
+      "native_rounded_scores_and_threshold_flags_match": true,
+      "budget_flags_recomputed_from_metadata": true,
+      "native_default_pairing": {
+        "eligible_pairs": 0,
+        "blocked_pairs": 30,
+        "blocked_reason_counts": {
+          "missing_without_skill": 30
+        }
+      }
+    },
+    "projects/claude": {
+      "runs": 60,
+      "all_execution_valid": true,
+      "native_rounded_scores_and_threshold_flags_match": true,
+      "budget_flags_recomputed_from_metadata": true,
+      "native_default_pairing": {
+        "eligible_pairs": 0,
+        "blocked_pairs": 30,
+        "blocked_reason_counts": {
+          "missing_without_skill": 30
+        }
+      }
+    },
+    "regressions/codex": {
+      "runs": 32,
+      "all_execution_valid": true,
+      "native_rounded_scores_and_threshold_flags_match": true,
+      "budget_flags_recomputed_from_metadata": true,
+      "native_default_pairing": {
+        "eligible_pairs": 0,
+        "blocked_pairs": 16,
+        "blocked_reason_counts": {
+          "missing_without_skill": 16
+        }
+      }
+    },
+    "regressions/claude": {
+      "runs": 32,
+      "all_execution_valid": true,
+      "native_rounded_scores_and_threshold_flags_match": true,
+      "budget_flags_recomputed_from_metadata": true,
+      "native_default_pairing": {
+        "eligible_pairs": 0,
+        "blocked_pairs": 16,
+        "blocked_reason_counts": {
+          "missing_without_skill": 16
+        }
+      }
+    }
+  },
+  "headline_metrics": {
+    "projects": {
+      "judges": {
+        "codex": {
+          "quality_means": {
+            "old_skill": 0.7322916666666667,
+            "with_skill": 0.7947916666666667
+          },
+          "quality_passes": {
+            "old_skill": 8,
+            "with_skill": 11
+          },
+          "material_precision_error_reports": {
+            "old_skill": 20,
+            "with_skill": 18
+          },
+          "cluster_delta": 0.0625,
+          "cluster_bootstrap_95_ci": [
+            0.03333333333333333,
+            0.09166666666666667
+          ],
+          "exact_sign_flip_p": 0.0078125
+        },
+        "claude": {
+          "quality_means": {
+            "old_skill": 0.7104166666666667,
+            "with_skill": 0.7708333333333334
+          },
+          "quality_passes": {
+            "old_skill": 5,
+            "with_skill": 11
+          },
+          "material_precision_error_reports": {
+            "old_skill": 13,
+            "with_skill": 6
+          },
+          "cluster_delta": 0.06041666666666667,
+          "cluster_bootstrap_95_ci": [
+            0.002083333333333334,
+            0.12083333333333333
+          ],
+          "exact_sign_flip_p": 0.1015625
+        }
+      },
+      "resource_changes_percent": {
+        "total_tokens": 3.117399882709271,
+        "uncached_input_tokens": -0.16339639055329425,
+        "elapsed_seconds": 3.5914349911261523
+      },
+      "total_token_cluster_95_ci": [
+        -7.83320411339502,
+        16.821072168327333
+      ]
+    },
+    "regressions": {
+      "judges": {
+        "codex": {
+          "quality_means": {
+            "old_skill": 0.85546875,
+            "with_skill": 0.92578125
+          },
+          "quality_passes": {
+            "old_skill": 12,
+            "with_skill": 14
+          },
+          "material_precision_error_reports": {
+            "old_skill": 3,
+            "with_skill": 2
+          },
+          "cluster_delta": 0.0703125,
+          "cluster_bootstrap_95_ci": [
+            -0.015625,
+            0.1875
+          ],
+          "exact_sign_flip_p": 0.5
+        },
+        "claude": {
+          "quality_means": {
+            "old_skill": 0.89453125,
+            "with_skill": 0.95703125
+          },
+          "quality_passes": {
+            "old_skill": 14,
+            "with_skill": 15
+          },
+          "material_precision_error_reports": {
+            "old_skill": 2,
+            "with_skill": 0
+          },
+          "cluster_delta": 0.0625,
+          "cluster_bootstrap_95_ci": [
+            0.0,
+            0.15625
+          ],
+          "exact_sign_flip_p": 0.375
+        }
+      },
+      "resource_changes_percent": {
+        "total_tokens": -15.075738777788983,
+        "uncached_input_tokens": -13.677622597920823,
+        "elapsed_seconds": -11.00752639702769
+      },
+      "total_token_cluster_95_ci": [
+        -23.633160971368884,
+        -0.9091990281639872
+      ]
+    }
+  },
+  "source_review_coverage_at_check": {
+    "regressions": {
+      "reviewed": 32,
+      "expected": 32,
+      "complete": true,
+      "all_current_review_output_hashes_verified": true
+    },
+    "projects": {
+      "reviewed": 60,
+      "expected": 60,
+      "complete": true,
+      "all_current_review_output_hashes_verified": true
+    }
+  },
+  "remaining_limitations": [
+    "Independent project source adjudication is complete only when all60 hashed reviews exist; current coverage is explicitly recorded, not inferred from native completion.",
+    "Different baseline commits imply separate project and focused-regression estimands; quality/resource deltas are not pooled.",
+    "Regression inference has4 mechanism-family clusters; project inference has10 selected projects and only2 newly unseen. Repetitions are not independent.",
+    "Native default pairing has0 eligible old_skill pairs because it expects without_skill. Validated custom matched cluster analysis supplies lift/uncertainty, not unavailable native paired-lift.",
+    "Composite quality-pass is distinct from precision-error-free reports and independent source-review categories.",
+    "Resource intervals are descriptive: provider cache, concurrency and timing uncontrolled. No stable dollar-savings inference.",
+    "All-soft native combined pass rates are null; token and elapsed budgets remain independent. Nearly all project runs exceed350000-token soft budget."
+  ],
+  "published_artifact_sha256": {
+    "results.json": "c1a9f7f39dcec9910e77b1ac0d2d8ba77c52efd342d71533ec6b570bd6b15610",
+    "run-metrics.jsonl": "434f08cae644dec8f8fdc15722f5e641266647a4cddf64fb83c3c5f3985142f0",
+    "native-harness-receipts.json": "f13ff102c3b205bd666ba7b3abf1170159dd1c773ce5df30f8d9978afcabeabd"
+  },
+  "original_private_receipt_sha256": "4fad4dfc37c6e9cd99b00c9d9dc4075578545cefa562db9c4754cfcccbce4996"
+}

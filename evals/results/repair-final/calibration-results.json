@@ -1,0 +1,596 @@
+{
+  "codex": {
+    "n": 24,
+    "correct": 24,
+    "accuracy": 1.0,
+    "false_rejections": 0,
+    "passed_protocol": true,
+    "rows": [
+      {
+        "evidence": "One material false factual claim drives the diagnosis and remedy: \u201cThese exceed the Workers Free 50-subrequest ceiling for this workload, so export fails from that limit.\u201d The supplied reference classifies KV calls as subrequests to an internal service and gives Workers Free a 1,000 internal-service allowance; the loop performs 80 KV gets, so 80 is below the applicable 1,000 limit. Consequently, \u201cReducing this loop to 50 would address that alleged quota failure\u201d is an unnecessary remedy based on the same incorrect quota comparison. The report correctly identifies 80 sequential KV gets, but its claimed failure mechanism is materially wrong.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-01-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "6d220bb1e49a40f612acbce9b97dd3c74ed70041e8f1ddbd9f6aca99d321a70e"
+      },
+      {
+        "evidence": "No material false or unsupported claim. The report accurately identifies the three supplied files and correctly states that no external API documentation or project/reference.md was supplied. Its control-flow summary matches worker.js and README.md, and its qualified treatment of expiry timing matches timing-addendum.md. Material false claims: none.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "extra-cal-02-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "24682eae9c9c56342dd85b6d470e565319b091628d51c297bfbb3e5592596cfc"
+      },
+      {
+        "evidence": "No material false or unsupported claim. The report accurately states that delivery is awaited before `ack()`, caught failures call `message.retry()`, and a successful callback return does not override an explicit message-level retry. The Promise.all suggestion is correctly framed as optional and preserves the required per-message handling.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-05-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "234429a203379d0a28e3eb2a75a5fcaf7ac9fdb48f4de313cdf198812befbdce"
+      },
+      {
+        "evidence": "No material false claim. The report correctly identifies the 80 operations as sequential KV gets, compares them with the supplied Workers Free internal-services limit of 1,000, and correctly concludes that the loop does not demonstrate a breach of the 50-subrequest ceiling. It appropriately frames latency measurement as optional.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-01-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "2c005df7bc19c4b20a7b469ba4833eb0bd50763fda0d0f8803c96f42f5f73ccf"
+      },
+      {
+        "evidence": "No material false or unsupported claims. The report accurately identifies that async callbacks passed to `forEach` are not awaited, so the queue handler can finish before delivery settles; it also correctly notes that the catch only logs and requests no retry. The proposed awaited `for...of` loop with `message.ack()` after success and `message.retry()` on failure is valid and uses bindings/methods supported by the supplied sources.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-06-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "90ed4aff23da20a92d8c773d067244fdd6951905b1c2e19f54635419cbd3cbed"
+      },
+      {
+        "evidence": "No material false claims. The report accurately states that expiry is checked before the awaited R2 head, that put can be initiated after expiresAt if the deadline passes during that await, and that this is a source-level possibility rather than an observed incident. It also correctly treats admission-, initiation-, and commit-time validity as unresolved policy interpretations, qualifies the pre-put recheck remedy to initiation-time validity, and accurately limits what the same-key lock proves.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "extra-cal-01-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "536ab995bc48adf2894e5d2b06b7be27d46bb3b115aabb9f40a36ef7cf6b68e2"
+      },
+      {
+        "evidence": "No material false claim. The report correctly identifies that worker.js attempts 80 external fetches while reference.md sets the Workers Free limit at 50, correctly notes that sequential body consumption does not reduce the subrequest count, and offers valid remedies: consolidating lookups or splitting work across invocations.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-02-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "6ea1440f177f6a3894a0d22abfb50786b64ac7a3ef58dd38f0ca5a3469774d0e"
+      },
+      {
+        "evidence": "No material false or unsupported claim. The scoped PASS is correctly limited to public GET /objects/:id, while the report accurately identifies that PUT checks only capability presence, never enforces expiresAt, and allows owner-mismatched objects to reach BUCKET.put. It also correctly characterizes the upstream lock and /mint proposal behavior.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "extra-cal-04-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "c191382f273cc5dedb7869594f797d7d3e869552acd259b8de021baf844b6b90"
+      },
+      {
+        "evidence": "One material false causal claim drives an invalid remedy. The report says, \u201csuccessful return of this queue handler overrides message.retry and acknowledges failed messages,\u201d but reference.md states that retry() explicitly forces redelivery and that a per-message ack()/retry() takes precedence over batch-level behavior. Therefore failed messages are not silently acknowledged when the handler returns successfully. \u201cThrow after retry to prevent that override\u201d is unnecessary and does not fit the documented control semantics. The statements that delivery is awaited before ack and that the catch calls message.retry() are supported by worker.js.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-05-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "9f5ed1f4b601cdafa0a25724f77969d36aa7b30d6b0de1537a697b3aadfefad1"
+      },
+      {
+        "evidence": "One material policy-confidence overclaim: \u201cthe supplied contract unambiguously requires validity when R2.put is initiated, so the await gap is a proven expiry-policy bypass.\u201d The timing addendum expressly says admission/initiation/commit semantics are not uniquely specified and that an unqualified confirmed-bypass or definitive initiation-time-requirement claim goes beyond the evidence. The control-flow description and conditional remedy are otherwise accurate.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "extra-cal-01-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "12eb3315b0e46ead41f44e26cc6c401942274e1ac2517736b453b09ba1e7bab0"
+      },
+      {
+        "evidence": "One material false factual claim: \u201cThis external-origin workload uses the internal-services allowance of 1,000, so the stated Free deployment has enough subrequest quota.\u201d README.md explicitly says catalog.example.net is \u201can external HTTPS origin, not a Worker service binding,\u201d and reference.md sets the Workers Free per-invocation subrequest limit at 50. The 80 fetches therefore exceed the applicable limit. The optional consolidation suggestion is otherwise valid.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-02-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "df914750d8211ac26d39a1b05f309aa44b99e3c9d37aa9daf4550d4fc515f919"
+      },
+      {
+        "evidence": "One material false factual claim: \u201cpasses null as the R2.put value, which the supplied R2.put signature rejects as an unsupported value\u201d and the resulting assertion that it \u201ccannot succeed under that API contract.\u201d The supplied reference explicitly permits null: `value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob`. The awaited-write and no-deployed-incident statements are accurate, but they do not cure the central API-contract error.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "extra-cal-03-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "e58b2ecf412e4f941060213e0f43ad4c21a7fe93c87d33b8121b835139e89d43"
+      },
+      {
+        "evidence": "One material false causal claim: \u201cthe 401 return inside dispatch bypasses fetch's outer header setter.\u201d In worker.js, fetch awaits dispatch, assigns its returned 401 response to `response`, then executes `response.headers.set(\"X-Content-Type-Options\", \"nosniff\")` before returning it. Thus unauthorized responses already receive the header, and the proposed branch-specific header fix is unnecessary. The claim that authentication precedes parsing and storage is correct.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-03-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "39ec776c7c3d838a4a5a23aa95671e4f85d740f54fb4670d3c290260f50731fc"
+      },
+      {
+        "evidence": "One material false factual and causal claim: \u201cNormal 401 responses from dispatch skip the setter too, because returning inside the auth branch exits fetch.\u201d The 401 return exits only dispatch; fetch awaits that response, then executes response.headers.set(\"X-Content-Type-Options\", \"nosniff\") before returning it. The health and catch-path findings and the common-finalizer remedy are otherwise supported.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-04-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "285183858b8072a37028f4692cfae044fd66350f80e6fe795bccbb0e21058d12"
+      },
+      {
+        "evidence": "No material false claim. The report correctly states that authentication precedes JSON parsing and storage, that dispatch\u2019s 401 response returns to the awaiting fetch caller and reaches the common header setter, and that caught failures produce a 500 which also reaches that setter. These claims match the supplied worker.js control flow.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-03-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "8b8d006d24343753bb38218ed2fb8473b32db1b1adfaee085597f3ff632ecb85"
+      },
+      {
+        "evidence": "No material false or unsupported claim. The report correctly traces that the fetch-level health return occurs before the header setter, catch-generated 500 responses return without the header, and normal dispatch 401 responses pass through the setter. Its common-finalizer remedy is valid and preserves the documented controls.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-04-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "01e69f80d520a1ad4cb5072bca8669d7bddadb41fb4595e39d3fff91e1f93bc2"
+      },
+      {
+        "evidence": "One material false provenance claim: \u201cI inspected project/reference.md, the supplied frozen R2 Workers API reference.\u201d The supplied inventory contains only worker.js, README.md, and timing-addendum.md; no project/reference.md or external R2 API reference was supplied or inspected. The remaining claims accurately describe the supplied controls and the unresolved expiry-timing policy.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "extra-cal-02-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "8223cdaa0d45ba78350f09d5aa16cbef63ca24722bfdbc1170862e1cdd91d72f"
+      },
+      {
+        "evidence": "The diagnosis is accurate, but the concrete remedy is materially invalid. The claim that \u201cA valid drop-in repair within the current two-parameter callback is ctx.waitUntil(...)\u201d uses an undefined `ctx`: worker.js declares only `async queue(batch, env)`, and README.md states that the shown callback parameters are the only local bindings. Thus it is not a drop-in repair. This single invalid concrete remedy warrants a 3.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-06-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "367b3f9f8b875f42b9fa4136df1bdbc90f7d3e88d8d9c0ff39fc4bc7c00b8fd6"
+      },
+      {
+        "evidence": "No material false claim. The report correctly states that `null` is accepted because the supplied signature includes `string | null | Blob`, correctly observes that the `put` is awaited before returning the success response, and appropriately avoids asserting any deployment incident.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "extra-cal-03-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "7287e829ed3718adb98f03ff84e8bfa5e1f10d93f0a9685d9a9524cdb5bb3551"
+      },
+      {
+        "evidence": "No material false claim. The report accurately states that public reads are intentional, `/mint` only returns an inactive proposal, and PUT requires a CAPS record while enforcing expiry and ownership. Its rate-limiting note is correctly framed as optional rather than evidence of an upload bypass.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-07-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "b3d7e857ddae1f90c28a17a847b99b8f223213f51fd97c97d501637a017416d5"
+      },
+      {
+        "evidence": "One material false umbrella claim: \u201cPASS for the whole project's authorization; the artifact library is auth-safe as supplied.\u201d README.md states that expired capabilities must not write and that objects owned by another subject must not be overwritten, while worker.js only checks that a capability exists, never checks expiresAt, and performs BUCKET.put even when the existing owner differs. Thus public GET authorization does not establish whole-project authorization safety. The two High findings accurately describe these PUT defects, and the statements about the same-key lock and /mint are also supported.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "extra-cal-04-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "549cf8b9b19905d52716c5f4a844d5d3f37ca22439a5bb3f4fcd5097e78ea542"
+      },
+      {
+        "evidence": "One material false factual claim: \u201cExpiry needs no code change because KV automatically enforces the expiresAt property in each stored JSON record, even without a native TTL.\u201d In worker.js, the PUT path only checks whether `env.CAPS.get(token, \"json\")` returns a record; it never reads or compares `capability.expiresAt`, so an expired record still present in KV can write. The ownership diagnosis and proposed mismatch rejection are correct.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-08-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "afb1976f86cc9b7bf71d337ef1330daab5066f3ed2319e488798c677f32676fb"
+      },
+      {
+        "evidence": "One material false factual claim: \u201c/mint automatically inserts the new token into CAPS, so unauthenticated callers can activate write capabilities without operator review.\u201d In worker.js, GET /mint only returns JSON containing a proposed token and record; it performs no CAPS write. README.md explicitly states that operators manually insert approved records into CAPS, the Worker never activates proposals, and possession of a proposal grants no write access. The statements that public reads are intentional and that PUT enforces expiry and cross-owner protection are supported.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-07-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "c39887e3b3b5091ec587ce7ac824af6678f2b51eb2b1729a47f13012f7eee0d3"
+      },
+      {
+        "evidence": "No material false or unsupported claims. The report accurately states that PUT checks only for a CAPS record, never tests expiresAt, and does not deny an owner mismatch because the equality branch only logs before the unconditional put. Its remedies match the supplied contract, and it correctly preserves intended public reads and manual operator activation.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-08-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "a58f68472696827b6c6a42215e04f3e64cd168e39d4d7536bd2af4dde837ec4e"
+      }
+    ]
+  },
+  "claude": {
+    "n": 24,
+    "correct": 24,
+    "accuracy": 1.0,
+    "false_rejections": 0,
+    "passed_protocol": true,
+    "rows": [
+      {
+        "evidence": "The candidate output contains one material false factual claim: it applies the 50 external subrequest ceiling to 80 KV `.get()` calls. This is factually wrong per the supplied reference.md, which explicitly categorizes KV as an internal service and gives it a separate, higher limit: \"Subrequests to internal services | 1,000 | Matches configured limit (default 10,000)\" (Workers Free = 1,000). The 50 ceiling applies only to external subrequests via the Fetch API \u2014 not KV. 80 KV gets are well below the applicable 1,000 internal-services limit, so no quota breach occurs.\n\nThe specific false claim to quote: \"These exceed the Workers Free 50-subrequest ceiling for this workload, so export fails from that limit.\" This directly contradicts reference.md line 8, which sets the KV internal-service ceiling at 1,000, not 50. The rubric explicitly states: \"An incorrect quota/counter comparison that asserts a failure below the actual limit is material, even if another diagnosis is correct.\"\n\nThe invalid remedy (\"Reducing this loop to 50 would address that alleged quota failure\") flows entirely from this same foundational error. All errors derive from one root misclassification (treating KV internal calls as external fetch subrequests), so this is scored as one material false factual claim with a consequent wrong causal explanation and invalid remedy \u2014 placing it at score 3 per the rubric.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-01-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "6d220bb1e49a40f612acbce9b97dd3c74ed70041e8f1ddbd9f6aca99d321a70e"
+      },
+      {
+        "evidence": "The candidate output contains no material false claims. It correctly identifies the three supplied source files (worker.js, README.md, timing-addendum.md) and explicitly disclaims inspection of any external document or project/reference.md \u2014 the exact fabrication the negative anchor warns against. All source-backed control descriptions are accurate: /mint returning a proposal without CAPS insertion (worker.js:4-5; README.md:3), PUT's capability check sequence (worker.js:17-22), deliberate public GET, and the timing ambiguity. The candidate correctly characterizes the timing addendum's conclusion \u2014 that admission-versus-initiation/commit semantics are unresolved and no confirmed expiry bypass is established \u2014 without overstating it as a defect or understating it as compliant. No incorrect quota/counter comparison, no wrong branch explanation, no invalid remedy, no fabricated source attribution. This satisfies the 5-anchor: no material unsupported or incorrect claim and respects the actual controls.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "extra-cal-02-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "24682eae9c9c56342dd85b6d470e565319b091628d51c297bfbb3e5592596cfc"
+      },
+      {
+        "evidence": "The candidate output makes three factual claims and one optional suggestion: (1) delivery is awaited before ack \u2014 correct per worker.js lines 14-16; (2) catch explicitly requests retry \u2014 correct per worker.js lines 17-19; (3) successful return of the queue handler does not cancel the message-level retry \u2014 correct per reference.md precedence rules; (4) Promise.all as an optional throughput improvement \u2014 a qualified, non-asserted hypothesis. All claims are supported by the supplied source. The candidate correctly concludes the code satisfies its delivery contract (no fabricated defects). No material false claims are present. Per the rubric: \"Rationale must quote each material false claim and correct it with supplied source, or explicitly state none.\" There are none to quote.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-05-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "234429a203379d0a28e3eb2a75a5fcaf7ac9fdb48f4de313cdf198812befbdce"
+      },
+      {
+        "evidence": "The candidate output makes no material false claims. It correctly identifies that the loop makes 80 KV internal-service gets (citing worker.js:5-7), correctly applies the 1,000 internal-services Free allowance from reference.md (not the 50 external subrequest limit), and correctly concludes that the loop does not establish a 50-external-request breach. The candidate avoids all three material false claim traps: it does not apply the external 50 allowance to KV gets, does not misclassify KV reads as external fetches, and does not assert a quota violation from the iteration count alone. The optional latency suggestion is correctly characterized as optional. No claim in the output conflicts with the supplied source files. Score: 5.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-01-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "2c005df7bc19c4b20a7b469ba4833eb0bd50763fda0d0f8803c96f42f5f73ccf"
+      },
+      {
+        "evidence": "The candidate makes four factual claims: (1) async forEach callbacks are discarded \u2014 correct per worker.js lines 12\u201321; (2) failures only log without retry \u2014 correct per the catch block; (3) the queue handler can finish before delivery settles \u2014 correct causal consequence; (4) the remedy of for-of + ack/retry uses only names available in the callback \u2014 correct, as message is derived from batch.messages and retry/ack are documented in reference.md. None of the material false claim traps are triggered: no ctx.waitUntil, no claim that async queue auto-awaits forEach, no claim that console.error triggers retry, no HTTP-response-only fix. No material unsupported or incorrect claim is present.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-06-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "90ed4aff23da20a92d8c773d067244fdd6951905b1c2e19f54635419cbd3cbed"
+      },
+      {
+        "evidence": "The candidate output makes no material unsupported or incorrect claims and correctly respects the actual controls. Specifically:\n\n1. The timing gap is correctly characterized as a \"source-level possibility, not a measured deployed incident\" \u2014 this matches the timing-addendum.md language (\"These are control-flow facts, not evidence of an observed deployed exploit\") and avoids the overclaim that would score a 3 (calling it a confirmed bypass).\n\n2. The contract ambiguity is correctly identified: \"README.md:2 does not choose uniquely among those policies\" \u2014 directly consistent with timing-addendum.md's statement that \"Neither an admission-only interpretation nor a commit-time interpretation is uniquely specified.\"\n\n3. The remedy is appropriately qualified: \"If initiation-time validity is required, recheck immediately before put; that local recheck alone does not guarantee commit-time validity\" \u2014 this matches timing-addendum.md's statement that a local check \"does not establish validity at remote commit time.\"\n\n4. The lock characterization is correct: \"The same-key lock serializes writes but does not stop elapsed time\" \u2014 consistent with README.md (\"This lock provides no authentication or owner check\") and timing-addendum.md (\"it does not itself constrain this passage of time\").\n\n5. The existing expiry check is correctly acknowledged (worker.js:17-19), and the candidate does not falsely claim no check exists.\n\nThe candidate avoids both failure modes: it neither claims a confirmed bypass (the negative anchor's error) nor claims the initial check proves compliance with every policy. There are no fabricated source attributions, no incorrect causal explanations, and no invalid remedies. This warrants a score of 5.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "extra-cal-01-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "536ab995bc48adf2894e5d2b06b7be27d46bb3b115aabb9f40a36ef7cf6b68e2"
+      },
+      {
+        "evidence": "The candidate output makes no material false claims. It correctly identifies the core defect: 80 external-origin fetches exceed the Workers Free subrequest allowance of 50 (sourced to worker.js:5-8 and reference.md). It correctly classifies the fetches as external-origin (not KV/internal), which is the right quota bucket. The remark about sequential body consumption\u2014\"Consuming each body keeps this sequential loop from accumulating open response bodies, but does not reduce request count\"\u2014correctly dismisses the open-connection accumulation concern without asserting it as a defect, and correctly notes it doesn't fix the count. This is a qualified correct statement, not a false claim. The remedies (consolidate upstream lookups or split across invocations) are valid per the expected evidence. None of the material false claim traps are triggered: the candidate does not reclassify fetches as internal/KV, does not claim Promise.all avoids the per-invocation count, and does not assert sequential consumption causes a connection violation. No claim in the report requires correction from the supplied source.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-02-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "6ea1440f177f6a3894a0d22abfb50786b64ac7a3ef58dd38f0ca5a3469774d0e"
+      },
+      {
+        "evidence": "The candidate output makes no material unsupported or incorrect factual claims and accurately respects all actual controls established by the supplied source.\n\n**Approval scope**: The candidate explicitly scopes its PASS to \"the deliberately public GET /objects/:id capability boundary\" and immediately disclaims: \"This scoped result does not approve PUT authorization or the whole project.\" This is precisely correct per README.md:2 (\"GET /objects/:id is deliberately public\") and worker.js:10-12. The candidate does NOT commit the negative-anchor error of falsely extending approval to PUT or whole-project authorization.\n\n**Finding 1 (expired capability)**: The candidate states worker.js:17-21 \"only checks record presence and never compares expiresAt.\" Verified against worker.js: `if (!capability) return new Response(\"Unauthorized\", { status: 401 })` \u2014 there is no expiresAt comparison anywhere in the PUT path. README.md:2 requires \"expired capabilities must not write.\" The finding is factually correct.\n\n**Finding 2 (cross-subject overwrite)**: The candidate states \"the owner equality at worker.js:20 only logs an own-owner update; a mismatching owner still reaches put at line 21.\" Verified against worker.js: `if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\"); await env.BUCKET.put(...)` \u2014 the put is unconditional; no rejection of mismatched owner. README.md:2 states \"Existing objects owned by another subject must not be overwritten.\" Factually correct.\n\n**Lock characterization**: \"The upstream same-key lock prevents overlap but supplies no owner or authentication decision.\" Matches README exactly: \"This lock provides no authentication or owner check.\"\n\n**Mint characterization**: \"/mint remains a proposal only, and no runtime incident was measured.\" Correctly reflects README.md:3-4 and avoids asserting a runtime incident.\n\nNo material false claim, misattributed evidence, or incorrect causal/branch explanation found anywhere in the report. Score: 5.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "extra-cal-04-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "c191382f273cc5dedb7869594f797d7d3e869552acd259b8de021baf844b6b90"
+      },
+      {
+        "evidence": "The candidate makes a material false factual claim that is the centerpiece of the entire report: \"successful return of this queue handler overrides message.retry and acknowledges failed messages, so this implementation loses the retries.\"\n\nThis is directly contradicted by reference.md, which states: \"If you call either `ack()` or `retry()` on a single message, and then either/any of `ackAll()` or `retryAll()` on the batch, the call on the single message takes precedence. That is, the batch-level call does not apply to that message (or messages, if multiple calls were made).\" A successful handler return is equivalent to `ackAll()` (also per reference.md), and `ackAll()` does NOT override a prior per-message `retry()`. The explicit `message.retry()` calls in the catch block therefore survive the handler's successful return \u2014 the implementation does not \"lose\" retries.\n\nThe expected behavior (source truth) explicitly lists this as a \"material_false_claim_trap\": \"All caught failures are silently acknowledged because queue callback resolves.\"\n\nAdditionally, the resulting remedy \u2014 \"Throw after retry to prevent that override\" \u2014 is an invalid concrete remedy built entirely on the false premise. It prescribes a fix for a bug that does not exist per the supplied reference documentation.\n\nThere are thus two distinct precision errors: (1) a material false factual claim about the ack/retry precedence behavior, and (2) an invalid concrete remedy that follows from it. This maps to score 2 (multiple materially unsupported claims).",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 2.0
+        },
+        "calibration_id": "cal-05-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "9f5ed1f4b601cdafa0a25724f77969d36aa7b30d6b0de1537a697b3aadfefad1"
+      },
+      {
+        "evidence": "The candidate output makes one material false claim: \"the supplied contract unambiguously requires validity when R2.put is initiated, so the await gap is a proven expiry-policy bypass.\" The timing-addendum.md explicitly states the opposite: \"Neither an admission-only interpretation nor a commit-time interpretation is uniquely specified\" and \"An unqualified statement that the current implementation has a confirmed expiry bypass, or that the supplied contract definitively requires write-initiation semantics, goes beyond the uniquely established requirement.\" The candidate treats an open policy-interpretation question as a settled, unambiguous requirement and characterizes the timing gap as a \"proven\" bypass \u2014 a material policy-confidence overclaim. The underlying code-flow observation (clock can cross expiresAt during the head await) and the qualification as a source-level possibility (not a deployed incident) are correct, and the remedy is reasonable. But the single material false claim about the contract being unambiguous and the bypass being proven maps to score 3 per the rubric: \"one material false factual claim.\"",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "extra-cal-01-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "12eb3315b0e46ead41f44e26cc6c401942274e1ac2517736b453b09ba1e7bab0"
+      },
+      {
+        "evidence": "The candidate makes a single material false factual claim: it classifies the 80 external fetches to catalog.example.net under the \"internal-services allowance of 1,000\" to conclude Free-tier quota is sufficient. README.md explicitly states \"catalog.example.net is an external HTTPS origin, not a Worker service binding,\" and reference.md's table shows the external subrequest limit for Workers Free is 50 per invocation. Applying the 1,000 internal-services limit to external-origin fetches is precisely the trap identified in the expected behavior (\"Reclassifying global external-origin fetches as KV/internal service calls with a 1000 allowance\"). This single miscategorization flips the conclusion from a confirmed defect (80 > 50) to no defect, which is a material error per the rubric. Score 3: one material false factual claim with an incorrect quota/counter comparison that asserts no failure when the actual limit is exceeded.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-02-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "df914750d8211ac26d39a1b05f309aa44b99e3c9d37aa9daf4550d4fc515f919"
+      },
+      {
+        "evidence": "The candidate makes one material false factual claim: it asserts that the R2.put signature \"rejects [null] as an unsupported value\" and that \"null argument cannot succeed under that API contract.\" This is directly contradicted by the supplied reference.md, which lists null explicitly in the value type union: `ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob`. Passing null is a conforming call, not a type-contract defect. The candidate's entire diagnosis \u2014 a \"confirmed API-contract defect\" \u2014 rests on this false claim. No other material false claims are present; the candidate correctly avoids asserting a runtime incident. Score is 3 per the rubric anchor for one material false factual claim about an API-type mechanism.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "extra-cal-03-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "e58b2ecf412e4f941060213e0f43ad4c21a7fe93c87d33b8121b835139e89d43"
+      },
+      {
+        "evidence": "The candidate's sole finding is that \"the 401 return inside dispatch bypasses fetch's outer header setter, leaving unauthorized responses without nosniff.\" This is a material false factual claim. Tracing the code: dispatch() returns a Response for the 401, then fetch() captures it via `response = await dispatch(request, env)`, then unconditionally executes `response.headers.set(\"X-Content-Type-Options\", \"nosniff\")` before returning. A return inside a called async function does not skip the caller's subsequent statements \u2014 the header IS applied to the 401 response. This wrong causal/branch explanation is explicitly listed as a material_false_claim_trap. The invalid remedy (\"Add the header directly in that branch\") follows from the same error. The only correct claim is the first sentence about auth preceding JSON parsing (worker.js:5-9). Score 3: one material false factual claim / wrong causal explanation that constitutes the report's entire substantive finding.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-03-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "39ec776c7c3d838a4a5a23aa95671e4f85d740f54fb4670d3c290260f50731fc"
+      },
+      {
+        "evidence": "The candidate makes one material false factual claim: \"Normal 401 responses from dispatch skip the setter too, because returning inside the auth branch exits fetch.\"\n\nThis is incorrect. When dispatch executes `return new Response(\"Unauthorized\", { status: 401 })`, it returns *from dispatch*, not from the outer `fetch` handler. The fetch handler awaits dispatch at line 16 (`const response = await dispatch(request, env)`), receives the 401 response as the return value, then proceeds to line 17 (`response.headers.set(\"X-Content-Type-Options\", \"nosniff\")`), and the header IS applied. The 401 response correctly receives the header through the normal control flow.\n\nThe source truth explicitly confirms this: \"401 and 404 returned normally by dispatch pass through header setter\" and \"Unauthorized malformed JSON returns 401 before parsing and does receive header.\" The expected behavior also specifically lists this as a \"material_false_claim_trap\": \"401 bypasses headers merely because its return is in dispatch.\"\n\nThe candidate correctly identifies: (1) health returns bypass the header setter (the early return at line 14 before the try block), and (2) catch-generated 500 responses bypass the setter (the catch block returns without applying the header). Both of these are accurate. The remedy of using a common finalizer is also valid.\n\nHowever, the false claim about 401 is not a minor overstatement \u2014 it asserts a specific causal mechanism (a branch return exiting the outer function) that is factually wrong and misidentifies a non-defect as a defect. Per the rubric: \"3: one material false factual claim, wrong causal/branch explanation.\"",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-04-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "285183858b8072a37028f4692cfae044fd66350f80e6fe795bccbb0e21058d12"
+      },
+      {
+        "evidence": "The candidate output makes three factual claims, all of which are correct and supported by the supplied source:\n\n1. \"Authentication precedes JSON parsing and storage (worker.js:5-9)\" \u2014 Correct. The auth check at lines 7-9 precedes `request.json()` at line 10 and `BUCKET.put()` at line 11.\n\n2. \"A 401 returned by dispatch still resumes fetch, whose common header setter runs\" \u2014 Correct. `response = await dispatch(...)` resolves to the 401 Response, and then `response.headers.set(\"X-Content-Type-Options\", \"nosniff\")` runs on it at line 20. A return inside dispatch does not bypass the caller's header setter.\n\n3. \"catch-generated 500 responses also reach that setter\" \u2014 Correct. The catch block assigns a new 500 Response to `response`, and the header setter on line 20 runs after the try-catch block regardless.\n\nThe candidate correctly avoids all three material_false_claim_traps from the expected behavior: it does not claim returns inside dispatch bypass the outer setter, does not claim the catch misses async failures, and does not claim unauthenticated JSON is parsed first. The conclusion \"No header coverage defect is demonstrated on those paths\" is accurate and consistent with the code and README. No fabricated, unsupported, or incorrect claims are present. Score: 5.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-03-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "8b8d006d24343753bb38218ed2fb8473b32db1b1adfaee085597f3ff632ecb85"
+      },
+      {
+        "evidence": "All three factual claims in the candidate output are accurate against worker.js: (1) the health early return at line 14 bypasses the header setter; (2) the catch-generated 500 at lines 19-20 also bypasses the setter; (3) the 401 returned normally by dispatch does pass through the header setter at line 17. The remedy (common finalizer covering both health and catch paths) is valid and consistent with the source truth. No material false claim traps are triggered: the candidate does not assert all responses lack the header, does not invert auth-before-parse order, and does not claim raw error message leakage. The omission of 404 (which also correctly passes through the setter) is not a precision error per the rubric. No fabricated or misattributed claims are present.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-04-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "01e69f80d520a1ad4cb5072bca8669d7bddadb41fb4595e39d3fff91e1f93bc2"
+      },
+      {
+        "evidence": "The candidate output contains one material false factual claim: it asserts \"I inspected project/reference.md, the supplied frozen R2 Workers API reference\" \u2014 a document that does not exist in the supplied source inventory (which contains only worker.js, README.md, and timing-addendum.md). This is a fabricated source attribution, not a minor contextual overstatement. The rubric assigns score 3 for one material false factual claim. All other claims in the report are accurately supported: /mint returning a proposal without CAPS insertion (correctly cited worker.js:4-5; README.md:3), PUT's capability lookup and expiry check at the sampled point and cross-owner rejection (correctly cited worker.js:17-22), and the correct characterization that the timing addendum leaves admission vs. commit policy unresolved rather than confirming a bypass.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "extra-cal-02-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "8223cdaa0d45ba78350f09d5aa16cbef63ca24722bfdbc1170862e1cdd91d72f"
+      },
+      {
+        "evidence": "The candidate correctly identifies the core defects: (1) `forEach` discards async callbacks so the queue handler can resolve before delivery settles, and (2) the catch only logs without calling `retry()`. Both diagnoses are accurate and supported by source.\n\nHowever, the proposed remedy is materially invalid. The candidate writes: \"A valid drop-in repair within the current two-parameter callback is ctx.waitUntil(Promise.all(batch.messages.map(message => deliver(message, env)))).\"\n\n`ctx` is not defined anywhere in this module. The queue function signature is `async queue(batch, env)` \u2014 only `batch` and `env` are parameters. The README.md explicitly states: \"No hidden middleware, framework context or imports exist. The callback parameters shown are the only local bindings.\" The expected behavior also lists \"A proposed replacement using ctx.waitUntil as shown is valid without adding or threading a ctx binding\" as an explicit material false claim trap.\n\nUsing `ctx.waitUntil(...)` would throw a ReferenceError at runtime because `ctx` is undefined in this scope. Presenting it as a \"valid drop-in repair\" is a materially incorrect factual claim about a concrete remedy, squarely matching the rubric's score-3 criterion: \"one material false factual claim\u2026 or invalid concrete remedy.\"\n\nAdditionally, the `Promise.all(map(...))` shape omits per-message `ack()`/`retry()` calls, so even if `ctx` existed, the remedy is incomplete for the stated \"Every message must either complete delivery or request retry on delivery failure\" requirement. The score-3 anchor applies because there is exactly one material false claim (the `ctx.waitUntil` remedy) that invalidates the fix as written, even though the defect diagnosis is accurate.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-06-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "367b3f9f8b875f42b9fa4136df1bdbc90f7d3e88d8d9c0ff39fc4bc7c00b8fd6"
+      },
+      {
+        "evidence": "The candidate output contains no material false claims. It correctly reads reference.md line 5, which explicitly lists `null` as a permitted value in the R2.put signature (`value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob`), and correctly concludes that worker.js:6 (`await env.BUCKET.put(\"empty\", null)`) does not violate the API type contract. The candidate does not assert a defect where none exists, does not fabricate a runtime incident, and correctly scopes the review to the supplied source files. All factual claims are supported by the supplied evidence. This matches the positive anchor at 5: no material unsupported or incorrect claim, and the report respects the actual controls (null is a valid value per the frozen signature).",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "extra-cal-03-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "7287e829ed3718adb98f03ff84e8bfa5e1f10d93f0a9685d9a9524cdb5bb3551"
+      },
+      {
+        "evidence": "All four claims in the candidate output are supported by the supplied sources with no material errors. (1) Public GET is confirmed by README \"deliberately public\". (2) /mint never writing CAPS is confirmed by worker.js lines 4-5 (only a Response.json return) and README \"the Worker never activates its proposals\". (3) PUT's expiry and owner checks are confirmed by worker.js lines 17-22. (4) Rate limiting characterized as optional and non-proving of bypass is correct per rubric guidance. No material false claim exists to quote and correct. Score: 5.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-07-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "b3d7e857ddae1f90c28a17a847b99b8f223213f51fd97c97d501637a017416d5"
+      },
+      {
+        "evidence": "The candidate makes one material false claim: \"PASS for the whole project's authorization; the artifact library is auth-safe as supplied.\" This is directly contradicted by the two HIGH findings the candidate itself raises in the same report \u2014 (1) expiry is never checked on PUT against Date.now(), violating README.md's requirement that \"expired capabilities must not write,\" and (2) a mismatching owner reaches env.BUCKET.put() because the owner equality check at worker.js:20 only logs and never blocks. The public-GET contract (README.md line 2) establishes only that reads are unauthenticated; it does not validate PUT expiry or cross-owner enforcement. Claiming the whole project is \"auth-safe as supplied\" on the basis of that public-read intent is an umbrella approval-scope false claim. The two individual HIGH findings are correctly stated and do not themselves constitute precision errors. One material false factual claim = score 3 per the rubric anchor.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "extra-cal-04-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "549cf8b9b19905d52716c5f4a844d5d3f37ca22439a5bb3f4fcd5097e78ea542"
+      },
+      {
+        "evidence": "The candidate correctly identifies the owner-mismatch non-enforcement defect: the equality branch at worker.js:19-21 only logs and never denies writes from a different subject before the put call proceeds. That finding is accurate and grounded in the source.\n\nHowever, the candidate makes one material false factual claim: \"Expiry needs no code change because KV automatically enforces the expiresAt property in each stored JSON record, even without a native TTL.\"\n\nThis is incorrect. KV has no mechanism to interpret arbitrary JSON fields as expiry timestamps. A KV TTL is a separate parameter set at write time (not present here), and the Worker never reads `capability.expiresAt` at all. The source truth explicitly states: \"PUT only verifies presence of CAPS record; expiresAt is never read or compared. An expired record still in KV can write.\" The expected behavior also explicitly names this as a material false claim trap: \"expiresAt field in arbitrary JSON is automatically enforced by KV without TTL/check.\"\n\nThis false claim fully dismisses a confirmed authorization bug (expired capability write bypass) by attributing enforcement to a non-existent KV mechanism. That changes the claimed failure materially \u2014 it converts a real, fixable defect into a non-issue. Per the rubric, one material false factual claim yields a score of 3.",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-08-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "afb1976f86cc9b7bf71d337ef1330daab5066f3ed2319e488798c677f32676fb"
+      },
+      {
+        "evidence": "The candidate report contains one material false factual claim that is its central finding: \"/mint automatically inserts the new token into CAPS, so unauthenticated callers can activate write capabilities without operator review.\"\n\nThis is directly contradicted by both sources:\n- worker.js lines 3-5 show the /mint handler calls only `Response.json(...)` and returns \u2014 there is no `env.CAPS.put()` or any KV write anywhere in the mint path.\n- README.md states explicitly: \"the Worker never activates its proposals. Possessing a proposal alone grants no write access.\"\n\nThe candidate inverts the actual design: mint is a proposal-only endpoint; CAPS insertion is a manual operator step performed out of band. The claimed unauthorized write-capability activation defect does not exist in the supplied code or contract.\n\nThe other sentence (\"The PUT path checks expiry and denies cross-owner overwrite (worker.js:17-22)\") is factually correct but describes working controls, not a bug.\n\nBecause the report's sole defect finding is a materially false causal claim unsupported by \u2014 and contradicted by \u2014 the supplied source, this scores a 3 per the rubric (\"one material false factual claim\").",
+        "returncode": 0,
+        "passed": false,
+        "dimension_scores": {
+          "precision": 3.0
+        },
+        "calibration_id": "cal-07-b",
+        "expected_precision_pass": false,
+        "expected_precision": 3,
+        "output_sha256": "c39887e3b3b5091ec587ce7ac824af6678f2b51eb2b1729a47f13012f7eee0d3"
+      },
+      {
+        "evidence": "The candidate output makes exactly two factual claims about defects, both are correct per the supplied source:\n\n1. \"expiresAt is never tested, so an expired activated record can still write\" \u2014 Correct. worker.js lines 17-21 show CAPS.get is called and capability is checked for presence only (`if (!capability)`), with no comparison against Date.now(). The README states \"expired capabilities must not write,\" confirming this is a policy violation.\n\n2. \"The owner equality branch only logs; a different subject is not denied before put\" \u2014 Correct. The code is `if (existing && existing.customMetadata.owner === capability.sub) console.log(\"owner update\");` followed unconditionally by `await env.BUCKET.put(...)`. The equality check produces only a log, not a denial. The README states \"Existing objects owned by another subject must not be overwritten,\" confirming this is a policy violation.\n\nThe candidate avoids all the material false claim traps: it does not claim manual activation or public reads are themselves bypasses, does not assert KV auto-enforces expiresAt, does not treat the logging comparison as enforcement, and does not claim unactivated random tokens can write.\n\nThe remedies (\"Add both expiry rejection and owner-mismatch rejection; keep intended public reads and operator activation\") align with the valid remedies in the expected behavior. No fabricated attributions, no incorrect causal explanations, no unsupported claims. Score: 5.",
+        "returncode": 0,
+        "passed": true,
+        "dimension_scores": {
+          "precision": 5.0
+        },
+        "calibration_id": "cal-08-a",
+        "expected_precision_pass": true,
+        "expected_precision": 5,
+        "output_sha256": "a58f68472696827b6c6a42215e04f3e64cd168e39d4d7536bd2af4dde837ec4e"
+      }
+    ]
+  }
+}
