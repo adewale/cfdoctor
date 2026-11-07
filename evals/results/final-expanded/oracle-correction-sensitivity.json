@@ -1,0 +1,3119 @@
+{
+  "initial_slices": {
+    "codex": {
+      "all8": {
+        "by_arm": {
+          "old_skill": {
+            "n": 24,
+            "quality_mean": 0.83203125,
+            "quality_threshold_passes": 12,
+            "dimension_means": {
+              "recall": 4.3125,
+              "precision": 4.0,
+              "actionability": 4.708333333333333,
+              "evidence": 4.291666666666667
+            }
+          },
+          "with_skill": {
+            "n": 24,
+            "quality_mean": 0.8151041666666666,
+            "quality_threshold_passes": 12,
+            "dimension_means": {
+              "recall": 4.583333333333333,
+              "precision": 3.75,
+              "actionability": 4.666666666666667,
+              "evidence": 4.041666666666667
+            }
+          }
+        },
+        "paired_runs": 24,
+        "pair_wins": 8,
+        "pair_losses": 12,
+        "pair_ties": 4,
+        "uncertainty": {
+          "case_clusters": 8,
+          "quality_delta": -0.016927083333333332,
+          "bootstrap_95_ci": [
+            -0.07421875,
+            0.0390625
+          ],
+          "exact_two_sided_sign_flip_p": 0.625,
+          "case_deltas": {
+            "fresh-url-shortener": -0.14583333333333334,
+            "fresh-bytego": 0.10416666666666667,
+            "fresh-status-page": 0.0625,
+            "fresh-web-tools": -0.020833333333333332,
+            "fresh-hookrelay": 0.052083333333333336,
+            "fresh-workers-chat-demo": -0.020833333333333332,
+            "fresh-pastebin-d1": -0.125,
+            "fresh-reia-lfs-r2": -0.041666666666666664
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-url-shortener",
+            "run": 1,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -2.0,
+              "actionability": 0.0,
+              "evidence": -2.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 3.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 3,
+            "quality_delta": 0.25,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 1.0,
+              "actionability": 2.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 2,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 1,
+            "quality_delta": 0.15625,
+            "dimension_deltas": {
+              "recall": 1.5,
+              "precision": 1.0,
+              "actionability": -1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 2,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": -2.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 3,
+            "quality_delta": -0.1875,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": -2.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          }
+        ]
+      },
+      "previous4": {
+        "by_arm": {
+          "old_skill": {
+            "n": 12,
+            "quality_mean": 0.921875,
+            "quality_threshold_passes": 9,
+            "dimension_means": {
+              "recall": 4.5,
+              "precision": 4.666666666666667,
+              "actionability": 4.75,
+              "evidence": 4.833333333333333
+            }
+          },
+          "with_skill": {
+            "n": 12,
+            "quality_mean": 0.921875,
+            "quality_threshold_passes": 10,
+            "dimension_means": {
+              "recall": 5.0,
+              "precision": 4.333333333333333,
+              "actionability": 5.0,
+              "evidence": 4.416666666666667
+            }
+          }
+        },
+        "paired_runs": 12,
+        "pair_wins": 4,
+        "pair_losses": 5,
+        "pair_ties": 3,
+        "uncertainty": {
+          "case_clusters": 4,
+          "quality_delta": -8.673617379884035e-19,
+          "bootstrap_95_ci": [
+            -0.09375,
+            0.08333333333333334
+          ],
+          "exact_two_sided_sign_flip_p": 1.0,
+          "case_deltas": {
+            "fresh-url-shortener": -0.14583333333333334,
+            "fresh-bytego": 0.10416666666666667,
+            "fresh-status-page": 0.0625,
+            "fresh-web-tools": -0.020833333333333332
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-url-shortener",
+            "run": 1,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -2.0,
+              "actionability": 0.0,
+              "evidence": -2.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 3.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 3,
+            "quality_delta": 0.25,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 1.0,
+              "actionability": 2.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 2,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          }
+        ]
+      },
+      "new4": {
+        "by_arm": {
+          "old_skill": {
+            "n": 12,
+            "quality_mean": 0.7421875,
+            "quality_threshold_passes": 3,
+            "dimension_means": {
+              "recall": 4.125,
+              "precision": 3.3333333333333335,
+              "actionability": 4.666666666666667,
+              "evidence": 3.75
+            }
+          },
+          "with_skill": {
+            "n": 12,
+            "quality_mean": 0.7083333333333334,
+            "quality_threshold_passes": 2,
+            "dimension_means": {
+              "recall": 4.166666666666667,
+              "precision": 3.1666666666666665,
+              "actionability": 4.333333333333333,
+              "evidence": 3.6666666666666665
+            }
+          }
+        },
+        "paired_runs": 12,
+        "pair_wins": 4,
+        "pair_losses": 7,
+        "pair_ties": 1,
+        "uncertainty": {
+          "case_clusters": 4,
+          "quality_delta": -0.033854166666666664,
+          "bootstrap_95_ci": [
+            -0.09895833333333333,
+            0.028645833333333336
+          ],
+          "exact_two_sided_sign_flip_p": 0.5,
+          "case_deltas": {
+            "fresh-hookrelay": 0.052083333333333336,
+            "fresh-workers-chat-demo": -0.020833333333333332,
+            "fresh-pastebin-d1": -0.125,
+            "fresh-reia-lfs-r2": -0.041666666666666664
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-hookrelay",
+            "run": 1,
+            "quality_delta": 0.15625,
+            "dimension_deltas": {
+              "recall": 1.5,
+              "precision": 1.0,
+              "actionability": -1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 2,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": -2.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 3,
+            "quality_delta": -0.1875,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": -2.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          }
+        ]
+      }
+    },
+    "claude": {
+      "all8": {
+        "by_arm": {
+          "old_skill": {
+            "n": 24,
+            "quality_mean": 0.7109375,
+            "quality_threshold_passes": 5,
+            "dimension_means": {
+              "recall": 3.9166666666666665,
+              "precision": 3.5416666666666665,
+              "actionability": 3.9166666666666665,
+              "evidence": 4.0
+            }
+          },
+          "with_skill": {
+            "n": 24,
+            "quality_mean": 0.7578125,
+            "quality_threshold_passes": 7,
+            "dimension_means": {
+              "recall": 4.166666666666667,
+              "precision": 3.7083333333333335,
+              "actionability": 4.041666666666667,
+              "evidence": 4.208333333333333
+            }
+          }
+        },
+        "paired_runs": 24,
+        "pair_wins": 10,
+        "pair_losses": 4,
+        "pair_ties": 10,
+        "uncertainty": {
+          "case_clusters": 8,
+          "quality_delta": 0.046875,
+          "bootstrap_95_ci": [
+            -0.0078125,
+            0.1015625
+          ],
+          "exact_two_sided_sign_flip_p": 0.1875,
+          "case_deltas": {
+            "fresh-url-shortener": 0.0,
+            "fresh-bytego": 0.16666666666666666,
+            "fresh-status-page": 0.10416666666666667,
+            "fresh-web-tools": 0.041666666666666664,
+            "fresh-hookrelay": -0.08333333333333333,
+            "fresh-workers-chat-demo": 0.020833333333333332,
+            "fresh-pastebin-d1": -0.020833333333333332,
+            "fresh-reia-lfs-r2": 0.14583333333333334
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-url-shortener",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 1,
+            "quality_delta": 0.5,
+            "dimension_deltas": {
+              "recall": 3.0,
+              "precision": 2.0,
+              "actionability": 1.0,
+              "evidence": 2.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 2,
+            "quality_delta": 0.3125,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 1.0,
+              "actionability": 1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 3,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 1,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 2,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": -1.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 3,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 3,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 1,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 2,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          }
+        ]
+      },
+      "previous4": {
+        "by_arm": {
+          "old_skill": {
+            "n": 12,
+            "quality_mean": 0.765625,
+            "quality_threshold_passes": 5,
+            "dimension_means": {
+              "recall": 4.416666666666667,
+              "precision": 3.5833333333333335,
+              "actionability": 4.083333333333333,
+              "evidence": 4.166666666666667
+            }
+          },
+          "with_skill": {
+            "n": 12,
+            "quality_mean": 0.84375,
+            "quality_threshold_passes": 6,
+            "dimension_means": {
+              "recall": 4.666666666666667,
+              "precision": 3.9166666666666665,
+              "actionability": 4.416666666666667,
+              "evidence": 4.5
+            }
+          }
+        },
+        "paired_runs": 12,
+        "pair_wins": 5,
+        "pair_losses": 1,
+        "pair_ties": 6,
+        "uncertainty": {
+          "case_clusters": 4,
+          "quality_delta": 0.078125,
+          "bootstrap_95_ci": [
+            0.020833333333333332,
+            0.13541666666666666
+          ],
+          "exact_two_sided_sign_flip_p": 0.25,
+          "case_deltas": {
+            "fresh-url-shortener": 0.0,
+            "fresh-bytego": 0.16666666666666666,
+            "fresh-status-page": 0.10416666666666667,
+            "fresh-web-tools": 0.041666666666666664
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-url-shortener",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 1,
+            "quality_delta": 0.5,
+            "dimension_deltas": {
+              "recall": 3.0,
+              "precision": 2.0,
+              "actionability": 1.0,
+              "evidence": 2.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 2,
+            "quality_delta": 0.3125,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 1.0,
+              "actionability": 1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 3,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          }
+        ]
+      },
+      "new4": {
+        "by_arm": {
+          "old_skill": {
+            "n": 12,
+            "quality_mean": 0.65625,
+            "quality_threshold_passes": 0,
+            "dimension_means": {
+              "recall": 3.4166666666666665,
+              "precision": 3.5,
+              "actionability": 3.75,
+              "evidence": 3.8333333333333335
+            }
+          },
+          "with_skill": {
+            "n": 12,
+            "quality_mean": 0.671875,
+            "quality_threshold_passes": 1,
+            "dimension_means": {
+              "recall": 3.6666666666666665,
+              "precision": 3.5,
+              "actionability": 3.6666666666666665,
+              "evidence": 3.9166666666666665
+            }
+          }
+        },
+        "paired_runs": 12,
+        "pair_wins": 5,
+        "pair_losses": 3,
+        "pair_ties": 4,
+        "uncertainty": {
+          "case_clusters": 4,
+          "quality_delta": 0.015625000000000003,
+          "bootstrap_95_ci": [
+            -0.057291666666666664,
+            0.10416666666666667
+          ],
+          "exact_two_sided_sign_flip_p": 0.875,
+          "case_deltas": {
+            "fresh-hookrelay": -0.08333333333333333,
+            "fresh-workers-chat-demo": 0.020833333333333332,
+            "fresh-pastebin-d1": -0.020833333333333332,
+            "fresh-reia-lfs-r2": 0.14583333333333334
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-hookrelay",
+            "run": 1,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 2,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": -1.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 3,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 3,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 1,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 2,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "initial_affected_judgments": [
+    {
+      "backend": "codex",
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 2,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 2.0,
+        "actionability": 3.0,
+        "evidence": 3.0
+      },
+      "rationale": "Recall: SC-D1-01 is fully identified: the PB-bound KV commands target an undeclared binding, cannot manage authoritative D1 rows, and merely switching to KV would mishandle the split lifecycle. The fix and small/large-paste verification are appropriate. No primary was missed; SC-D1-H1 is secondary and optional. Precision: several material problems remain. The report improperly elevates intentionally retained KV payloads into a high-severity undisclosed lifecycle/cost defect; treats the explicitly disclosed destructive initialization schema as an unsafe migration defect; overstates README instructions as requiring checked-in credentials; and frames intentional anonymous/public operation and URL capabilities as high-severity defects without enough deployment evidence. The expiry-template behavior, 210-day `M` calculation, weak `Math.random()` generation, unnecessary KV reads, and administrator-tool mismatch are source-supported. Actionability: fixes and fault/expiry/admin verification are generally concrete, but fail-closed uploads and removing URL capabilities materially redesign intended behavior, while mandatory KV cleanup conflicts with the documented retention tradeoff. Evidence: source locations and supplied Cloudflare snapshots are mostly cited accurately, and live protections/measurements are usually qualified. However, high confidence is assigned to conditional stale-read effects and several conclusions ignore explicit source context or safe controls, creating meaningful confidence gaps."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 1,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 3.0
+      },
+      "rationale": "Recall: SC-D1-01 is found with the complete mechanism: the advertised PB-bound KV commands reference an undeclared binding, while D1 is authoritative, so changing only the binding would still not list/delete D1 rows; no primary was missed. Precision: most additional mechanisms are valid, including the expired-template passwordless PUT path, pre-auth body/KV work, the create-check/INSERT OR REPLACE race, Math.random secrets, and un-awaited test promises. Material overstatements are the \u201ccritical\u201d expiry rating without deployment/impact evidence, and especially presenting documented intentional KV payload retention as a confirmed high-severity security/deletion defect; the broader migration finding also treats disclosed manual/destructive schema setup as a confirmed defect rather than an operational hypothesis. Actionability: fixes and boundary/failure tests are source-specific and generally strong, but versioning plus deleting/cleaning all KV payloads is not the smallest fix and changes the documented write-saving retention behavior. Evidence: source locations and supplied canonical documentation are cited well, and observed versus possible multi-region effects are mostly distinguished, but high-confidence/high-severity conclusions for KV retention and migration safety exceed the supplied evidence."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 3,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 2.0,
+        "actionability": 3.0,
+        "evidence": 4.0
+      },
+      "rationale": "Recall: SC-D1-01 is found with the complete mechanism: the advertised PB/KV commands reference an undeclared binding and cannot list/delete authoritative D1 rows; simply changing the binding would still mishandle large-paste lifecycle. No primary was missed. The candidate also correctly identifies the qualified concurrent-create/INSERT OR REPLACE race. Precision: multiple material claims are unsupported or misclassified. It promotes intentionally documented KV retention after D1 expiry/deletion into a high-severity lifecycle defect, although the 200 expired-placeholder behavior is a valid separate finding. It also treats optional BASIC_AUTH and public uploads as a security defect requiring fail-closed authentication, contrary to the expressly intended public-pastebin behavior; absent repository rate limiting does not prove unsafe deployed admission. The migration discussion overstates lack of automated migrations as a proven deployment defect despite the documented manual schema procedure. The reflected attribute injection and weak Math.random capability generation are source-supported additional findings. Actionability: race, XSS, and administrator-tool fixes include concrete implementation and boundary tests, but several recommendations are broader than the smallest safe fix and would change intended public-upload and KV-retention behavior. Evidence: source locations and supplied Cloudflare snapshots are cited accurately, execution/account limits are disclosed, and stale KV effects are qualified as unmeasured; the main gap is assigning high confidence/severity to behavior that the stated controls identify as intentional."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 2,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 5.0,
+        "evidence": 4.0
+      },
+      "rationale": "SC-D1-01 is fully found: the report identifies the undeclared PB binding, explains that D1 is authoritative, and correctly notes that merely switching the command to KV would leave the D1 row and can yield empty successful reads. It also correctly identifies secondary SC-D1-H1's check-then-REPLACE race. Precision is reduced because it promotes intentionally documented KV retention into a high-severity security/cost leak and treats the explicitly destructive, explicitly warned bootstrap schema as a migration defect; it also falsely states that no CI files were supplied despite both workflow files being present. Fixes and verification are unusually concrete, including coordinated D1/KV administration, atomic conflict handling, failure injection, and small/large-paste tests. Evidence is otherwise strong and usually distinguishes confirmed source behavior from runtime-dependent consistency/cache effects, but the CI scope error prevents a top score."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 1,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "rationale": "Recall: both primaries are fully identified. S1 is traced from an uncaught rejected/stalled monitor or location fetch through skipped later checks and the unreached final KV write; S2 is traced from deleting a removed monitor to dereferencing its now-undefined checks and never saving. Precision: no material false claims. Additional findings about conditional KV write conflicts, notification-delivery loss, cleanup exit handling, and the Free-plan write quota are supported and appropriately qualified where deployment/account evidence is needed; safe waitUntil controls are respected. Actionability: fixes are source-specific and paired with meaningful failure and overlap tests, including throw/hang isolation, cleanup fixtures, notification HTTP/rejection cases, and plan/usage verification. Evidence: source locations and supplied official documentation are accurately cited, the supplied-snapshot constraint is disclosed, and confirmed source behavior is consistently separated from unmeasured runtime, concurrency, cache, and account-plan effects."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 2,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "rationale": "Recall: identifies both primaries S1 and S2 with their exact triggers and consequences: an unguarded rejected probe prevents later checks and the sole KV write, while cleanup deletes a removed monitor and then dereferences its missing checks before saving. Precision: no material false claims; additional notification-loss and concurrent KV read-modify-write findings are supported by the supplied source and KV semantics, and conditional cadence/account effects are properly qualified. Actionability: fixes are source-specific and paired with meaningful rejection, timeout, HTTP-error, race, and plan-metric verification. Evidence: accurately cites inspected lines and supplied canonical documentation, respects waitUntil controls, and distinguishes confirmed source behavior from runtime/account-dependent occurrence."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 1,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 5.0,
+        "evidence": 3.0
+      },
+      "rationale": "Recall: SC-D1-01 is fully identified\u2014the PB binding is undeclared, KV-only deletion/listing cannot manage the authoritative D1 rows, and merely changing PB to KV would still be unsafe. Precision: most mechanisms are correct, including SC-D1-H1 and expired-template behavior, but the report materially overstates severity by promoting intentionally documented KV retention into a high security/cost defect and treating an inferred legacy in-place migration/backfill requirement as a confirmed high defect. No SQL-injection, auth-bypass, credential, or measured-runtime false claims are made. Actionability: fixes are source-specific and include strong race, partial-failure, large-object, expiry, and administrator-tool verification. Evidence: citations generally match the supplied source and documentation, but the confirmed/high framing does not adequately separate source-proven cross-store mechanics from unmeasured operational impact, nor the hypothetical existence of legacy data requiring migration."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 3,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "rationale": "Recall: identifies both primaries. S1 is accurately traced from an unguarded awaited monitor/location fetch through loop abortion to the unreached final KV write, with rejected fetches distinguished from HTTP 500 responses. S2 is accurately traced from deleting a removed monitor to immediately dereferencing its deleted `checks`, preventing cleanup persistence while the CLI exits successfully. It also correctly presents S3 as Free-plan-conditional. Precision: no material false claims. Additional findings about stale read-modify-write races and notification delivery loss are supported by source and explicitly distinguish confirmed behavior from runtime-dependent incidence; safe controls around awaited KV persistence, `waitUntil`, and the inert API route are respected. Actionability: fixes are source-specific and behavior-preserving, with strong failure-boundary tests for rejection, stalls, HTTP errors, removed monitors, API failures, retry behavior, and UTC quota boundaries. Evidence: source locations and supplied canonical Cloudflare documentation are used accurately; plan, deployment, cache, concurrency, and observed-runtime effects are appropriately qualified rather than invented."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 1,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "rationale": "Recall: identifies both primary defects\u2014S1, an uncaught rejected probe/location fetch aborting the loop before the sole KV commit, and S2, cleanup deleting a monitor then dereferencing its checks before saving\u2014with complete triggers and consequences. Precision: no material false claims; additional notification-delivery, conditional concurrency, subrequest, and Free-plan quota findings are source-supported and appropriately qualified, while safe controls such as waitUntil registration and the inert API route are respected. Actionability: fixes are source-specific and paired with meaningful rejection, timeout, non-2xx, quota, removed-monitor, and concurrent-writer verification. Evidence: source locations and supplied canonical Cloudflare documentation are cited accurately, and confirmed behavior is consistently separated from uninspected plan, deployment, caching, overlap, and runtime effects."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 3,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 5.0,
+        "actionability": 5.0,
+        "evidence": 5.0
+      },
+      "rationale": "Recall: identifies both primaries\u2014S1, per-monitor fetch rejection aborting the loop before the sole KV write, and S2, deleting a stale monitor then dereferencing its missing checks\u2014and explains their triggers and consequences. Precision: no material false claim; additional notification-delivery and concurrent KV read/modify/write findings are source-supported and appropriately distinguish confirmed design gaps from runtime-dependent occurrence, while safe controls such as waitUntil registration are respected. Actionability: fixes are source-specific and paired with meaningful rejection, timeout, API-failure, concurrency, and cleanup verification. Evidence: cites relevant source locations and supplied canonical documentation, discloses the snapshots, and clearly separates deterministic source behavior from plan, deployment, overlap, and runtime conditions."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 2,
+      "dimension_scores": {
+        "recall": 3.0,
+        "precision": 5.0,
+        "actionability": 4.0,
+        "evidence": 5.0
+      },
+      "rationale": "Recall: S1 is identified with the correct mechanism, trigger, and consequence: rejected location/monitor fetches escape the serial loop and prevent the final KV write, while HTTP status failures are not conflated with transport rejection. S2 is missed: the report never identifies that gcMonitors deletes an absent monitor and then immediately dereferences that deleted monitor's checks, throwing before any save. The conditional Free-plan quota issue S3 is correctly identified but cannot substitute for S2. Precision: no material false claim. The concurrency and notification findings are supported by source and appropriately distinguish confirmed design behavior from runtime-dependent collisions or delivery failures; safe controls around awaited persistence and waitUntil are respected. Actionability: fixes and failure-injection checks are generally concrete, especially for S1, notifications, and quota handling. However, the cleanup remediation does not fix S2's delete-then-dereference bug, and the Durable Object migration is substantially larger than the smallest safe fix requested; an immediate reread verification also needs an eventual-consistency caveat. Evidence: source locations and supplied canonical documentation URLs are used accurately, the supplied-snapshot limitation is disclosed, and account plan, collision occurrence, cache behavior, and runtime outcomes are explicitly treated as unmeasured or conditional."
+    },
+    {
+      "backend": "codex",
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 3,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 5.0,
+        "evidence": 4.0
+      },
+      "rationale": "Recall: SC-D1-01 is fully identified\u2014the PB-bound KV commands cannot administer authoritative D1 rows, and merely changing the binding would not fix small-paste deletion or metadata lifecycle. The candidate also correctly identifies secondary SC-D1-H1 and qualifies its concurrent interleaving. Precision: the material overreach is presenting the disclosed reset-only schema procedure and absence of automated migrations as a confirmed high-severity defect; the documented fresh-deployment sequence applies schema before deployment, while an unsafe upgrade or omitted external process is only hypothetical. It also unnecessarily folds intentionally documented KV retention into the high-severity consistency finding, though the missing/stale-KV mechanism itself is well supported. The Math.random token concern, expiration defects, inert tests, and missing awaits are supported by source. Actionability is excellent: fixes are source-specific, preserve intended authorization semantics, and include race, fault, migration, expiry, and small/large-object boundary verification. Evidence is strong and generally distinguishes source behavior from unmeasured runtime incidence, cites the supplied canonical snapshots, and avoids invented executions; it loses one point because the schema conclusion and associated confidence/severity exceed what the supplied workflow proves."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 2,
+      "dimension_scores": {
+        "recall": 4.0,
+        "precision": 3.0,
+        "actionability": 3.0,
+        "evidence": 4.0
+      },
+      "rationale": "**Recall (4):** The oracle's sole primary defect is SC-D1-01 \u2014 administrator tooling (package.json `delete-paste`, README KV list) targets the undeclared `PB` binding while authoritative records live in D1. The candidate's finding #5 (\"Schema and administrator tooling are unsafe after the KV migration\") correctly cites `package.json:12`, README lines 85\u201394, the `PB` binding being undeclared, and states \"authoritative records are in D1.\" The fix correctly calls for \"D1-aware list/delete tooling that also cleans associated KV objects.\" What's incomplete: the candidate never explicitly states the oracle's key nuance \u2014 that even correcting `PB`\u2192`KV` still leaves D1 rows intact, making the small-paste delete path still broken. The secondary concern SC-D1-H1 (concurrent named-paste creation race) is not identified. Since the rubric for 4 is \"all primaries but one has an incomplete causal explanation\" and the single primary is found with partial explanation, 4 is appropriate.\n\n**Precision (3):** The oracle explicitly names two precision traps that the candidate violates. First, \"Large-file KV payload retention after D1 expiry/deletion is an expressly documented write-saving choice. Do not promote it to a significant undisclosed leak or exact billing claim.\" Yet finding #2 is rated \"high severity\" and asserts \"Orphans are deterministic and accumulate storage\" and \"permanent orphaned data\" \u2014 a materially false finding per the oracle. Second, the oracle states \"Public paste reads are expressly intended, including deployments with BASIC_AUTH. POST/static pages require BASIC_AUTH.\" The candidate's finding #1 (\"Anonymous uploads have no aggregate abuse boundary,\" high severity) treats an intentional opt-in architecture as a defect, failing to respect this safe control. The expiry-renders-HTTP-200 bug and the Math.random credential finding are independently supportable from source and partially compensate, but two materially unsupported high-severity claims anchor this at 3.\n\n**Actionability (3):** The genuinely valid findings (admin tooling, expiry bug, Math.random) each carry specific source citations and meaningful verification steps. However, finding #2's remediation (\"record storage kind plus a versioned KV key in D1; treat null KV reads as retriable failures\") is built on a false premise (documented intentional behavior treated as a defect), so implementing it would add unnecessary complexity without fixing a real problem. Finding #1's fix (\"make anonymous mode explicitly opt-in\") would break an intentional public-deployment design. Generic table from the audit preamble adds length without actionable content. The mix of valid actionable fixes and fixes grounded in incorrect diagnoses warrants 3.\n\n**Evidence (4):** The candidate consistently cites specific file and line references, uses the supplied documentation snapshots appropriately (correctly citing KV consistency and limits docs), and distinguishes confirmed source behavior from runtime hypotheses with explicit \"Confidence\" annotations. The main gap is the KV retention issue: the candidate presents documented intentional behavior as a confirmed source defect (\"Orphans are deterministic\") without disclosing the README's explicit acknowledgment of the trade-off. This is a meaningful evidence-calibration error but doesn't pervade the rest of the report, which otherwise maintains appropriate epistemic boundaries."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 1,
+      "dimension_scores": {
+        "recall": 4.0,
+        "precision": 4.0,
+        "actionability": 4.0,
+        "evidence": 5.0
+      },
+      "rationale": "**Recall (4):** Both primary mechanisms are found. SC-D1-01 (admin tooling pointing to nonexistent `PB` binding while authoritative data lives in D1) is captured under \"D1 migration and administrator workflow\" with the correct D1-vs-KV implication: the candidate explicitly notes \"README listing sees only KV and misses D1-resident pastes\" and correctly references `package.json:12` and `src/db.js`. The oracle emphasizes \"not just the spelling mismatch\" \u2014 the candidate does explain the deeper consequence. However, SC-D1-01 is labeled \"medium\" severity when the oracle treats it as the primary P2 significant defect, and the causal chain (even fixing `PB\u2192KV` still leaves D1 rows undeleted) is not fully articulated. SC-D1-H1 (concurrent creation TOCTOU/INSERT OR REPLACE race) is well-captured under \"Concurrent creation can overwrite another owner\" with accurate source references (`handleWrite.js:149-155`, `db.js:83-87`). No primary mechanism is missed, but SC-D1-01's causal explanation is incompletely developed, losing one point.\n\n**Precision (4):** Findings are consistently source-grounded with specific file:line citations. No SQL injection claims, no unwarranted auth-bypass assertions, no invented account state. The expiry-template finding (\"Expired pastes briefly become writable\") is a legitimate additional finding: `expiredItemTemplate.metadata.passwd = \"\"` is returned from `DB_GetWithMetadata` after deletion, allowing a PUT with empty-string URL password to reclaim an expired name \u2014 this is confirmed source behavior not in the oracle's non-exhaustive list, not a false claim. The KV lifecycle finding includes \"residual data\" as a defect when the oracle explicitly labels large-file KV retention a documented design choice (\"do not promote it to a significant undisclosed leak\"). The candidate frames it as a reliability concern rather than a hidden design secret, which is a minor but material overreach in severity. No finding is wholly fabricated or misattributes safe controls as bypassed.\n\n**Actionability (4):** Each finding includes trigger, source citations, consequence, fix description, cost/tradeoff, and verification steps. Fixes are source-specific and behavior-preserving (e.g., \"return null; remove the sentinel template,\" \"atomic plain INSERT with conflict handling,\" \"await both comparisons\"). The expiry fix and race-condition fix are very concrete. The admin tooling fix (\"D1-aware admin command that also cleans referenced KV objects\") is actionable but could more precisely specify the KV cleanup path for large pastes. Verification steps are meaningful and exercisable (inject controlled failures, instrument binding calls, barrier concurrent requests). One verification step is slightly generic (migration rehearsal). No proposed changes introduce correctness regressions.\n\n**Evidence (5):** The candidate accurately cites specific source locations for every claim, clearly distinguishes confirmed source behavior (\"Confidence: high \u2014 confirmed source behavior\") from runtime-dependent hypotheses (\"Confidence: medium for observed multi-region staleness\"), correctly treats the four supplied Cloudflare documentation snapshots as equivalent to live documentation and cites their canonical URLs, and explicitly discloses scope limits (\"No target code executed,\" \"deployed bindings/data not inspected\"). Scanner output is correctly used as leads validated against source rather than standalone confirmation. The un-awaited Promise finding in `basicAuth.spec.js` is correctly identified as source-verifiable. No invented executions, account state, or measurements."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 3,
+      "dimension_scores": {
+        "recall": 4.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 4.0
+      },
+      "rationale": "**Recall (4):** Both oracle primaries are present. SC-D1-01 appears under \"deployment and admin tooling did not migrate with storage\" with correct identification that `package.json` uses binding `PB`, which is undeclared in `wrangler.toml`, and that \"paste identity now resides in D1.\" However, the oracle emphasizes the deeper D1-vs-KV migration consequence \u2014 that even correcting the binding to `KV` still leaves the D1 row intact for small pastes, corrupting reads. The candidate gestures at this (\"paste identity now resides in D1\") but does not make the specific causal chain explicit, and buries it as the fifth finding at \"medium\" severity rather than as the primary defect. SC-D1-H1 is well-covered and accurately qualified under \"concurrent creation can overwrite an existing paste,\" matching the oracle's race-condition framing with appropriate source evidence. The deduction is for the incomplete causal explanation of SC-D1-01.\n\n**Precision (3):** The candidate elevates two things the oracle marks as false-positive traps or intentional design to material high-severity defects. First, \"D1/KV lifecycle is incomplete\" broadly encompasses KV payload retention after expiry/deletion and frames it as a \"high severity\" leak and cost footprint \u2014 the oracle explicitly states: \"Large-file KV payload retention after D1 expiry/deletion is an expressly documented write-saving choice. Do not promote it to a significant undisclosed leak or exact billing claim.\" Portions of that finding (expired template returning 200 with \"Expired paste\" string) are legitimate but bundled with the oracle-flagged intentional behavior. Second, the \"default uploads are unbounded\" finding frames the absence of `BASIC_AUTH` as a high-severity security defect when the README explicitly presents it as an optional private-deployment feature; the oracle notes \"Public paste reads are expressly intended\" and the auth as intended for certain deployments. The HTML injection (`lang` attribute) is an independently justified defect not in scope of oracle false-positive traps and is credit-worthy. No SQL injection or secret/credential misattribution errors were made.\n\n**Actionability (4):** The candidate provides specific file:line references and targeted fixes for the primary concerns. The concurrent creation fix (\"use cryptographic randomness; create with plain INSERT and convert uniqueness error to retry/409; conditional UPDATE checking meta.changes\") is specific, correct, and verifiable. The admin tooling fix (\"D1-aware listing and coordinated D1/KV deletion\") is appropriately targeted. Verification steps are meaningful. One deduction: the auth/admission fix (\"make production upload fail closed before reading the body\") treats an explicit design choice as a defect and could introduce friction for intentional public deployments without sufficient trade-off acknowledgment.\n\n**Evidence (4):** The candidate accurately cites source locations (db.js:67-87, handleWrite.js:149-155, auth.js:25-32, etc.), correctly attributes the supplied Cloudflare documentation snapshots with their canonical URLs, and appropriately qualifies hypothetical runtime behaviors (\"multi-region runtime evidence,\" \"deployed WAF/rate controls remain unknown\"). Confidence levels are stated per finding. The deduction is that the KV lifecycle finding conflates confirmed source behavior (expired-template returning 200) with the oracle-flagged intentional design (KV payload retention), which muddies the evidence boundaries for that finding."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 2,
+      "dimension_scores": {
+        "recall": 4.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 3.0
+      },
+      "rationale": "**Recall (4):** Both primary findings from the oracle are present. SC-D1-01 (admin tooling with nonexistent PB binding) appears in the \"medium \u2014 migration and administrator tooling\" section with a correct causal chain: package.json:12 targets PB, wrangler.toml has no PB binding, the command fails, and even changing it to KV would leave D1 metadata causing empty successful reads. SC-D1-H1 (name-creation race condition) appears in the \"authorization/name checks are separated from writes\" section and correctly identifies the check-then-INSERT OR REPLACE window and REPLACE semantics. The main gap is that SC-D1-H1 is presented without the conditional/hypothesis framing the oracle explicitly requires (\"actual request scheduling/frequency and deployed exploitation were not observed\"), reducing confidence in the causal account.\n\n**Precision (3):** One material false finding: the first \"high\" finding (\"KV bytes are not lifecycle-consistent with D1\") directly contradicts the oracle's explicit instruction \u2014 \"Large-file KV payload retention after D1 expiry/deletion is an expressly documented write-saving choice. Do not promote it to a significant undisclosed leak or exact billing claim.\" The README explicitly states \"To save KV writes, we do not actively delete expired big files in KV, we just overwrite them in need.\" The candidate elevates this to high severity. The second high finding (expiry/caching) is at least partially grounded but includes unconfirmed shared-cache claims (\"HTTP cache mechanics were not covered by the supplied snapshots\" is acknowledged) and treats the expired-template returning non-null as a confirmed defect rather than a testable hypothesis. No false SQL injection or auth-bypass claims were made, which is correct.\n\n**Actionability (4):** The admin tooling fix (numbered migrations, coordinated D1/KV admin command) is source-specific and directly applicable. The concurrency fix (atomic INSERT ON CONFLICT, inspect meta.changes, cryptographic RNG) is technically sound and includes meaningful racing-request verification steps. The KV lifecycle fix is for a false-positive finding, reducing practical value. The expiry fix (return null immediately, no-store headers) is reasonable but partially for a hypothesized problem. Most fixes include boundary verification, costing one point for the false-positive remediation and one partially generic recommendation.\n\n**Evidence (3):** The candidate cites source file locations accurately (e.g., db.js:67-87, handleWrite.js:149-154), uses the supplied documentation snapshots with their canonical URLs and capture dates, and explicitly states target code was not executed. However, the first finding treats documented write-saving behavior as an undisclosed high-severity defect with \"Confidence: high for leaks,\" misclassifying oracle-identified expected behavior as a failure mode. The expiry finding acknowledges one doc gap but still draws confident conclusions. SC-D1-H1 is presented without the \"runtime evidence required\" qualifier the oracle mandates, conflating source-grounded structure with confirmed runtime behavior."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 1,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 4.0
+      },
+      "rationale": "**RECALL (5):** Both oracle primaries are found with accurate causal explanations. S1 (fetch abort silences entire monitoring run): candidate correctly identifies `cronTrigger.js:55` awaiting without per-monitor try/catch, with persistence only at line 156 after the loop \u2014 trigger, mechanism, and consequence all stated. S2 (cleanup CLI crash before save): candidate correctly identifies `gcMonitors.js:69` deleting then dereferencing at line 79 \u2192 TypeError, outer catch only logs, save never reached \u2014 again trigger, mechanism, and consequence all stated. Neither primary is merely adjacent-symptom coverage.\n\n**PRECISION (3):** One material unsupported finding clearly contradicted by the oracle's safe-control list. The oracle's C5 explicitly states \"KV eventual consistency is expressly acknowledged in README. Do not turn that into exact guaranteed 60-second lag, universal data loss, or a detached-write diagnosis.\" The candidate's first finding (\"KV is being used as a non-atomic status authority,\" rated high, recommending Durable Object migration) does exactly this \u2014 it treats the acknowledged design tradeoff as a critical architectural defect with a consequential remediation. This is a materially unsupported escalation. The notification finding (\"silently committed as delivered,\" high severity) is a borderline case: the oracle's C2 says a notifier rejection doesn't imply KV failure, and the candidate correctly doesn't conflate the two, so this is a valid secondary concern rather than a false positive. The cadence/Free-plan finding appropriately conditions on account plan, matching oracle S3. Net: one material false/overblown claim, one borderline escalation, scoring 3.\n\n**ACTIONABILITY (4):** For the two primaries, fixes are source-specific and correct: per-monitor catch with `continue`, record failure state, persist regardless (S1); `continue` after deletion, nonzero exit on failure (S2). Verification steps are meaningful (simulate throw and never-resolving fetch; fixture with removed monitors, 401, malformed JSON). One weakness: the KV non-atomic finding's fix (full Durable Object migration) is a large architectural recommendation for what the oracle deems a non-defect, adding noise and potential misdirection without introducing a correctness risk in isolation. Notification retry \"durable per-channel pending-delivery record keyed by transition ID\" is actionable but complex for an unconfirmed secondary finding.\n\n**EVIDENCE (4):** Line-level source citations are accurate throughout. Official documentation snapshots are cited by canonical URL and treated as equivalent to live docs. Confidence qualifications are present and appropriate (\"unsafe design is confirmed, while actual lost updates require runtime evidence\"; \"deployed plan is unknown\"). One meaningful evidence gap: the candidate's KV non-atomic finding omits the oracle-cited acknowledgment that the README explicitly documents KV consistency as a known limitation, which is relevant to whether this constitutes an undisclosed defect. This omission doesn't affect the primary finding conclusions but misrepresents the evidential basis for finding #1."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 2,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 4.0
+      },
+      "rationale": "**Recall (5):** Both primary defects are found with correct trigger/consequence explanations. S1 (probe failure aborts entire monitoring run) is captured as \"one failed or hanging probe aborts the entire monitor run\" with accurate mechanism: unguarded sequential `await fetch()` at cronTrigger.js:55, single KV persistence at line 156, and the consequence that all monitors and state writes are skipped. S2 (cleanup crashes on removed monitor) is captured as \"cleanup fails precisely when a monitor is removed\" with correct identification of the undefined-dereference at gcMonitors.js:67\u201381. The conditional S3 (cron exceeds Free KV write allowance) is also correctly included as conditional on plan. Full credit.\n\n**Precision (3):** One materially false/unwarranted finding degrades precision. Finding #4 (\"KV is authoritative read-modify-write state without serialization\") claims \"high\" severity and asserts data loss (\"roll back counters/status, lose cleanup, duplicate or miss transitions\") with \"Confidence: high.\" The oracle explicitly designates this as a safe/known characteristic (C5): \"KV eventual consistency is expressly acknowledged in README. Do not turn that into exact guaranteed 60-second lag, universal data loss, or a detached-write diagnosis.\" The candidate's data-loss framing and \"high\" severity label are both unwarranted per the oracle. The other additional finding (notifications not checking response.ok) is independently supported by the source code and not flagged as a safe control by the oracle, so it is acceptable. No false conflation of notification rejection with KV write failure (correctly distinguishes from S1 per C2). Score = 3 per rubric: one materially unwarranted severity/causal framing.\n\n**Actionability (4):** Fixes for both primaries are specific with meaningful verification steps: for S2, \"continue immediately after deletion; require res.ok; rethrow or set nonzero exit code\" with a unit-test verification step; for S1, per-monitor try/catch with timeout and body cancellation plus simulation-based verification. The notification fix is reasonable but the \"per-channel notification watermark\" concept introduces nontrivial complexity without clear implementation guidance. The KV finding's prescribed Durable Objects migration is heavyweight for a risk that the oracle treats as a known characteristic rather than a confirmed defect. No harmful fixes. Score = 4: mostly actionable with one complex/unnecessary fix and one missing verification caveat.\n\n**Evidence (4):** Primary findings cite accurate line numbers (cronTrigger.js:55, gcMonitors.js:67\u201381) and correctly distinguish confirmed source behavior from conditional risks (cron finding is explicitly noted as \"conditional on plan\"). Official documentation snapshots are cited by canonical URL. However, the KV serialization finding labels itself \"Confidence: high\" while in the same sentence acknowledging \"occurrence frequency needs runtime logs,\" which is an internal inconsistency. The notification finding's claim of \"permanent suppression\" slightly overstates what the source confirms (non-2xx treated as success), since retry logic from the caller could address it. These are small but meaningful gaps in one secondary finding. Score = 4."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 1,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 4.0,
+        "actionability": 4.0,
+        "evidence": 4.0
+      },
+      "rationale": "**Recall (5):** Both oracle primaries are identified with complete trigger/consequence chains. SC-D1-01 is covered in Finding 3: the candidate correctly names `package.json:12` using the undeclared `PB` binding AND correctly articulates the D1 migration implication \u2014 \"even corrected to KV, it would delete only the blob and leave the D1 pointer.\" This is exactly the dual-layer analysis the oracle marks as strong. SC-D1-H1 (TOCTOU race) is covered in Finding 2: the candidate correctly identifies the separate `DB_Get` check preceding `INSERT OR REPLACE`, and correctly states that concurrent custom-name POSTs can both pass the availability check and the second write overwrites the first paste's password. Both mechanisms with correct triggers and consequences \u2192 score 5.\n\n**Precision (4):** No materially fabricated or misattributed findings. The candidate correctly respects the SQL-injection safe control (\"its SELECT * lead is not a scan because short is the primary key\"), correctly ignores the `node:buffer` / `nodejs_compat` pair as a false-positive trap, and correctly does not call the schema DROP undisclosed. Two minor overstatements prevent a 5: (a) SC-D1-H1 is labeled \"Severity: high \u2014 Confirmed\" when the oracle explicitly qualifies it as conditional on actual request scheduling/frequency with no observed exploitation \u2014 this is a mild unwarranted severity; (b) Finding 1 frames large-file KV payload retention after expiry/deletion as a defect to fix, while the oracle marks this as \"an expressly documented write-saving choice\" that should not be promoted to a significant defect. Neither rises to a materially false claim, so precision stays at 4.\n\n**Actionability (4):** Fixes are mostly source-specific. Finding 2 (atomic `INSERT ... ON CONFLICT DO NOTHING` with `run().meta.changes`) is precise and references real D1 API surface. Finding 3 (D1-authoritative list/delete, monotonic migrations without DROP) is specific with good verification steps. Finding 1's remediation (\"immutable versioned KV keys, change D1 pointer atomically\") is directionally correct but high-level \u2014 the versioning scheme isn't fully specified and introduces complexity. Verification scenarios are meaningful (concurrent POSTs, inline vs. large paste admin delete, D1-failure-after-KV-write). No harmful suggestions.\n\n**Evidence (5\u21924):** The candidate cites correct file and line numbers for all claims, explicitly discloses that supplied CF docs are treated as fixed evidence and cites their canonical URLs, and carefully distinguishes source-proven behavior from runtime-conditional risks (Math.random qualification, Basic Auth env placement, KV staleness). One small artifact: file citations carry absolute local machine paths (`/private/var/folders/\u2026/db.js:67`) rather than relative paths, which is cosmetically odd but does not affect the accuracy of the citations. The confidence calibration \u2014 clearly separating \"Confirmed findings\" from \"Risks requiring runtime evidence\" \u2014 is well-executed."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 3,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 4.0
+      },
+      "rationale": "**Recall (5):** Both oracle primaries are identified with correct causal chains. S1 (fetch abort terminates the whole run) is captured as \"one endpoint failure aborts the entire monitoring run,\" correctly citing sequential execution without per-monitor isolation and persistence only after the loop, with the right remedy (wrap, continue, then persist). S2 (cleanup crash on deleted monitor) is captured as \"cleanup crashes after deleting a removed monitor,\" correctly citing gcMonitors.js:67 dereferencing `.checks` after deletion before saving. The conditional S3 (1-min cron vs Free write quota) is also found and properly scoped to plan uncertainty. No primary is missed or reduced to only adjacent symptoms.\n\n**Precision (3):** The KV consistency finding (\"KV is the correctness authority,\" labeled high severity / wrong primitive) materially overclassifies oracle C5 \u2014 an acknowledged design trade-off expressly documented in the README \u2014 into a full architectural change requirement (Durable Objects migration). The oracle explicitly says not to elevate KV eventual consistency into \"universal data loss\" or a \"detached-write diagnosis.\" The candidate does qualify it with \"medium-high confidence / runtime traces needed,\" but still assigns high severity and a Durable Objects fix, which is an unwarranted severity classification for a known, documented limitation. That constitutes one materially unwarranted severity/diagnosis claim under the rubric. The notification-reliability finding (HTTP errors silently lost) is an additional observation not in the oracle but not contradicted by the safe controls \u2014 it does not falsely claim notification rejection implies KV write failure (which C2 warns against); it addresses delivery confirmation separately, so it is acceptable. No fabricated subrequest exhaustion, no false public-endpoint allegation, no misread secret literal. One material false severity classification nets a 3.\n\n**Actionability (4):** Fixes for the two confirmed primaries are source-specific and correct: per-monitor try/catch with continuation for S1, and continue-after-delete or separate-pass iteration for S2. S3 remediation (cadence change or plan upgrade) is precise and verifiable. Verification scenarios are meaningful (inject rejected monitor, test fixture with removed monitor + expired dates, UTC boundary KV write count). The Durable Object recommendation for the overblown KV finding is technically actionable but sized disproportionately to its actual risk. One missing verification caveat: cleanup exit-code check is noted but no assertion on idempotency across concurrent deploy + gc runs.\n\n**Evidence (4):** The candidate correctly cites official snapshot URLs, marks scanner leads separately, distinguishes confirmed source behavior from \"confidence: medium\" hypotheses requiring runtime data, and explicitly scopes plan evidence as missing. The 60-second stale-lag claim for the KV finding slightly over-infers from the docs (docs say \"up to 60 seconds or more,\" but the oracle notes cross-location lag can exceed the cadence \u2014 the candidate's conclusion that this causes definite repeated notifications goes beyond what documentation proves). Line-number precision is imperfect for S1 (:16 vs oracle's :55) but the file and mechanism are correct. Overall evidence discipline is strong with one meaningful inference gap on KV severity framing."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 1,
+      "dimension_scores": {
+        "recall": 4.0,
+        "precision": 4.0,
+        "actionability": 4.0,
+        "evidence": 4.0
+      },
+      "rationale": "**Recall (4):** Both primary defects are found. S1 (rejected fetch aborts the monitoring run) is captured in finding 1: \"Any thrown location/monitor fetch prevents all state from being committed,\" with correct line citations (cronTrigger.js:18-22,32-56,155-156) and correct identification that no per-monitor try/catch exists and the KV write is after the whole loop. The core mechanism is accurate. However, the finding mixes in a subrequest-exhaustion concern (25-monitor/Slack case reaching 53 subrequests) that is a separate issue, slightly diluting S1's focused causal chain. S2 (cleanup crash on deleted monitor) is well-captured in finding 3: \"Removing a configured monitor deterministically aborts cleanup\" with correct reference to gcMonitors.js:67-83 and the TypeError path. S3 (Free-plan KV write allowance) is also found and appropriately conditioned. Neither primary is missed, but S1's causal explanation is incomplete in that the distinction between rejected fetches (the oracle's core point) versus HTTP errors is not explicitly drawn \u2014 the word \"thrown\" implies exceptions but the report doesn't address why HTTP 500 is a different path. Score: 4.\n\n**Precision (4):** No confirmed safe-control violations. The candidate does not allege a detached persistence task (C1), does not claim notification rejection prevents the KV put (C2 is correctly handled \u2014 finding 2 distinguishes that notification failure \"does not prevent other waitUntil work\"), does not flag the commented-out triggerCron endpoint as an execution path (C3), and does not fabricate D1/Queue/DO failures (C7). The notification silent-failure finding (non-2xx responses unchecked) is not listed in the oracle's safe controls and is a legitimately additional observation. However, labeling it \"high severity\" is a mild overstatement relative to the oracle's framing of C2. The 25-monitor subrequest calculation is appropriately conditional and correctly computed rather than relying on the README's historical 50-limit alone. No materially false causal claim is present. Score: 4.\n\n**Actionability (4):** Finding 1 recommends per-probe timeouts, bounded concurrency, and per-monitor error handling \u2014 source-specific and correct. Finding 3 (S2) recommends immediately continuing after deletion, failing nonzero on errors, and serializing cleanup into the scheduled path \u2014 specific and verifiable. Finding 4 (S3) recommends a two-minute cadence \u2014 simple and effective. Verification steps are included for all findings. The notification finding's remediation (throw on non-2xx, persist pending records, retry with bound, Queue) is actionable but somewhat generic \u2014 it doesn't pinpoint the minimal code change (add response.ok check to each notifier) before recommending a broader architectural pattern. No proposed fix introduces an obvious correctness regression. Score: 4.\n\n**Evidence (5 \u2192 4):** Source line references are accurate (cronTrigger.js:18-22,32-56,155-156; gcMonitors.js:67-83; helpers.js:59-63,80-84,104-108; wrangler.toml:8-9). Supplied official docs are cited by canonical URL and treated as authoritative in-scope. Runtime-conditional claims are properly hedged (\"actual production failures and plan are uninspected,\" \"medium for production overlap,\" \"deployed impact conditional\"). The candidate correctly distinguishes static source proofs from hypothetical deployment scenarios, and explicitly notes scope limits (compiled artifact absent, deployed plan unknown). One small gap: the evidence linking the notification finding to source is correct (helpers.js response handling) but the confidence distinction between \"this code path exists\" and \"this causes material alert loss in production\" could be sharper given that webhook endpoints are uninspected. Score: 4."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 3,
+      "dimension_scores": {
+        "recall": 5.0,
+        "precision": 3.0,
+        "actionability": 4.0,
+        "evidence": 4.0
+      },
+      "rationale": "**Recall (5):** Both primary defects are found with correct trigger/consequence chains. S1 is captured as \"one target failure aborts the entire monitoring run\" with accurate references to serial await without per-monitor error handling and the single end-of-loop KV write \u2014 the mechanism matches the oracle precisely. S2 is captured as \"cleanup crashes on the exact stale-monitor case it handles\" with the correct path: deletion at line 70 then dereference of the deleted entry's .checks at line 79, with the outer catch only logging and no state saved. No primaries missed.\n\n**Precision (3):** One materially unwarranted severity: the notification reliability finding is elevated to confirmed \"Severity: high\" defect despite the oracle marking this as safe control C2. The oracle explicitly says \"A notifier rejection does not itself imply the main KV put is never reached; distinguish from S1.\" The candidate does not make that exact spurious causal link, but it still frames the notification mechanism as a confirmed high-severity defect rather than a qualified design risk. The observation that helpers.js does not check response.ok is source-supported, but the severity and \"confirmed\" framing go beyond what the evidence establishes. The KV read-modify-write race finding is appropriately labeled \"runtime-dependent\" with an explicit evidence caveat, so it avoids being materially false. No C3/C4/C6/C7 violations: the triggerCron endpoint is correctly identified as inactive, subrequest headroom is not over-claimed, and no D1/Queue/R2 failures are invented. Net: one finding with materially unwarranted severity (notification), all others either correct or properly qualified, yielding a 3.\n\n**Actionability (4):** Primary fixes are source-specific and correct: per-monitor try/catch with AbortSignal timeout and an \"unknown\" fallback for location lookup (S1); immediate continue after deletion plus non-zero exit on API failure (S2). Verification steps for both primaries are meaningful and boundary-conscious (test with rejection, stall, removed-monitor fixture, assert single state write). The notification fix proposes a significant architectural change (Queue-based outbox) for a finding whose severity is overstated, introducing a remediation mismatch, but it does not introduce correctness risk. One missing caveat: the S1 fix adds a timeout recommendation that, while useful, is not the minimal safe fix called for by the oracle (per-monitor catch + continue suffices). Score reduced to 4 for this minor remediation scope overshoot on an extra finding.\n\n**Evidence (4):** Source line citations are accurate (cronTrigger.js, gcMonitors.js, wrangler.toml). The candidate correctly discloses use of \"supplied fixed Cloudflare documentation snapshots\" and cites canonical URLs from those snapshots (context, pricing, KV how-it-works, write-key-value-pairs). Confirmed vs. runtime-dependent findings are explicitly distinguished in a \"Confidence\" field. One calibration gap: the notification finding assigns \"Confidence: high\" while simultaneously noting \"delivery failures in production require runtime evidence,\" which conflates the confirmed absence of response.ok checks with the unconfirmed reliability consequence. This is a small but meaningful evidence-confidence mismatch that does not change the structural conclusions."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 2,
+      "dimension_scores": {
+        "recall": 3.0,
+        "precision": 2.0,
+        "actionability": 3.0,
+        "evidence": 3.0
+      },
+      "rationale": "**Recall (3/5):** S1 (rejected fetch aborts the entire monitoring run) is found with correct mechanism \u2014 the candidate correctly identifies the absence of per-monitor error isolation in `cronTrigger.js:32-56` and that persistence only occurs after the full loop. S2 (cleanup CLI TypeError) is only partially found with a wrong causal explanation. The candidate describes the outer catch logging without failing (`gcMonitors.js:91`) and notes that GET/PUT responses are not checked, but misses the actual triggering mechanism: `Object.keys()` iterating the original key snapshot, deleting a monitor from `stateMonitors.monitors`, then immediately accessing the now-deleted entry's `.checks` property (`stateMonitors.monitors[monitor].checks`), producing a TypeError that the outer catch swallows before any save occurs. The candidate frames this as an HTTP-response checking failure rather than a deletion-then-dereference TypeError. Rating: one of two primaries found correctly, the other found with adjacent symptoms but wrong causal explanation.\n\n**Precision (2/5):** Two materially unsupported findings are present. First, the candidate elevates KV eventual consistency to a \"Severity: high \u2014 wrong primitive\" finding, suggesting the entire state management must move to Durable Objects. The oracle explicitly lists this as C5 (safe control): KV's eventual consistency is acknowledged in the README, and the finding must not be turned into a universal data-loss defect. This is a material false claim. Second, the notification reliability finding is elevated to \"Severity: high\" \u2014 the oracle lists this as C2 (safe/near-miss control), noting that notification rejection does not imply the main KV write is unreachable and must be distinguished from S1. While the candidate's framing (HTTP 4xx/5xx resolves without detection) is narrower than \"rejection blocks KV write,\" the oracle still treats notification reliability as a near-miss, not a primary defect. Elevating it to high severity is a material overstatement. That is two distinct materially unsupported findings, warranting score 2.\n\n**Actionability (3/5):** The fix for S1 is actionable and appropriate \u2014 per-monitor try/catch with bounded concurrency and a persistent run-completeness marker. The fix for S2 (the cleanup analog) is incomplete because it addresses HTTP response checking and exit codes but does not remediate the actual mechanism (continuing iteration after deletion, or not accessing the monitor after deleting it from the state object). The fix for the KV concurrent-write finding is well-specified but targets a false defect. The KV write quota fix is correct and matches the oracle's guidance. Overall: useful but incomplete remediation for the primary defects.\n\n**Evidence (3/5):** The candidate cites specific line numbers, distinguishes runtime-conditional from confirmed findings (e.g., plan dependency for the write-quota issue), and references supplied documentation snapshots with canonical URLs. However, the KV concurrent-write finding is presented as a confirmed high-severity defect without noting that the README expressly acknowledges eventual consistency \u2014 a meaningful evidence gap that changes the finding's status. The cleanup finding's cited evidence (lines 11-15 and 91) correctly identifies the outer catch but does not support the claimed mechanism (HTTP errors vs. TypeError from accessing deleted property). These evidence gaps affect the conclusions without fabricating data, placing this at a 3."
+    },
+    {
+      "backend": "claude",
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 3,
+      "dimension_scores": {
+        "recall": 4.0,
+        "precision": 4.0,
+        "actionability": 4.0,
+        "evidence": 4.0
+      },
+      "rationale": "**Recall (4):** Both oracle primaries are present. SC-D1-01 appears in finding 6 \u2014 the candidate correctly identifies `package.json:12` / `README.md:85-94` using binding `PB`, that `PB` is undeclared in `wrangler.toml`, and concludes \"deleting/listing KV cannot administer D1 rows,\" capturing the D1-vs-KV migration implication beyond a mere spelling mismatch. SC-D1-H1 (race condition on named-paste creation) is fully and accurately captured as finding 2 with appropriate interleaving qualification. However, SC-D1-01 is downgraded to medium severity and embedded within a compound finding alongside test quality issues rather than standing as the primary significant defect. The causal chain is incomplete: the candidate does not state that the current `PB` binding is entirely undeclared (the command would error before even reaching KV), nor that even correcting it to `KV` leaves D1-row metadata intact. The oracle specifically calls this the most critical issue; the candidate's framing understates it. Score = 4 (all primaries found, one has an incomplete causal/severity explanation).**\n\n**Precision (4):** No SQL injection claim, no auth-bypass assertion for intentional admin URLs, no misidentification of `nodejs_compat` / `node:buffer`, no fabricated execution evidence. The expiration math (`1M = 7\u00d730 = 210 days`) and inert test assertions are source-confirmed. The main overstatement is finding 1 (KV staleness): the oracle explicitly warns \"do not promote [KV retention] to a significant undisclosed leak or exact billing claim,\" yet the candidate frames it as a confirmed high-severity defect with \"permanently orphan KV objects.\" The candidate does qualify runtime incidence, but the high-severity framing and \"confirmed\" label for runtime behavior (versus documented design choice) is a mild overstep. No other materially false claims. Score = 4 (one material overstatement in KV finding severity/scope).**\n\n**Actionability (4):** Each finding includes specific source-line triggers, concrete remediation steps, and meaningful verification criteria. Race condition fix (insert-only SQL + constraint-to-409 mapping) is specific and behavior-preserving. Schema fix (versioned migrations + CI gate) is well-specified. KV finding fix (versioned immutable keys, 503 on missing KV) is actionable. Admin tooling fix (\"D1-aware admin tooling and clean both stores\") is somewhat generic and lacks specificity on the D1 SQL command to use, and doesn't address the need to handle the two-store state atomically. Some verification steps are broad. Score = 4 (mostly actionable, one fix caveat missing for the admin tooling path).**\n\n**Evidence (5\u21924):** The candidate consistently cites source file and line numbers, distinguishes source-proven facts (\"confirmed source behavior\") from runtime hypotheses (\"incidence requires multi-location/runtime evidence\"), cites the supplied Cloudflare snapshot URLs rather than inventing browsing, and explicitly states no code was executed. The `basicAuth.spec.js` inert-await and `basic.spec.js` missing `.toBeTruthy()` claims are source-verified. The KV finding's confidence overstatement (\"high\") for runtime behavior slightly erodes this quality. Score = 4 (small confidence/scope gap in finding 1 without changing the overall conclusions).**"
+    }
+  ],
+  "preserved_initial_judgment_sha256": {
+    "codex/candidate-55424614f4218fe8eb.json": "69c20699d4e1f9a8474fcc80123d066bf541ab50c644e6dd3bb2b7c720d24a41",
+    "codex/candidate-d21c6567a78ee7b6af.json": "94d1258aa80da8d30f8ab984e964737b5bc84be2996263f051dabe6538a32493",
+    "codex/candidate-a8223c387844d86c08.json": "21f89c17502cc5c57fbe673fee70963918738ceb18cf77d5c77d197cb1578712",
+    "codex/candidate-a4aa0ec71a1e99fbf1.json": "694599f8c7dc2e2538bd885704e297e98cd9a71725876fcaa7008750f913444e",
+    "codex/candidate-d2500c429da51da3b3.json": "2d8f3cede4764c3f49a4b99aaca23a336f4b56ccd91a31603b1d1a8af660c579",
+    "codex/candidate-6f7e6b3e6e1729cc96.json": "c68ad576d62002df2fa2857cab9e281d040a69c29855e105654140a6633449cb",
+    "codex/candidate-963f33943c466ea430.json": "96cc6b1fa268b84d216e2e2b133311b9463c5d0411db555d10e22f5164cde001",
+    "codex/candidate-f29be074a789f83d3b.json": "dc37d0cdd8bce5968bc479cde6e0b4384181ff5ccbd0beed7a2371d6d405c11b",
+    "codex/candidate-16db34e6a4d22f7578.json": "3b15c9afe0a8d3471e2c7ee9b6499392c8ab1c50776122840abe7b8139eaa697",
+    "codex/candidate-c3fca72ec286a697d0.json": "6dead0cb2e961b9a8656a4d7279ca3f1a8a6c3d74d86b9710a12b1733533837e",
+    "codex/candidate-4c7635ce2fd1b94e1b.json": "0007c777a0066c9fca8e90a276b310d7d47b582601027df29ab086076aa063de",
+    "codex/candidate-c3662a413187978fc3.json": "3e0c789318f3692b79ab919f2c5e6b5f4bba704aaf9f6f764aac81c58d43835f",
+    "codex/candidate-3cd751d9a73e5ef016.json": "54e929b27cfea90473dbcd1e35fd3b4987710dbea38393e2d285dac93d053bfc",
+    "codex/candidate-913abb05b36ff1c33e.json": "51b361c5ee7565d571097f4b873d589adbef8502d0cdaa298eb25de09d44fb66",
+    "codex/candidate-a512c614c98a60cc94.json": "7c9b7549e0060f95d419b28c0dfe453ad1c1b8da4e6d3dae8c7c4a6da4623b3a",
+    "codex/candidate-54d7196bf414fc749c.json": "d3f260c9d2afed187c2822ceb50603611f3d6fe092d35a870a362a4652b2e394",
+    "codex/candidate-eb5eb639be04503a57.json": "a397bd2adf133ead8f16d092f21e7626aff4fc387efd0d68dba3745ba0547a48",
+    "codex/candidate-341f562ecec280f961.json": "1e8b479d3e7739db59d76edd17566d67ef2724bd6aa62b278af594c3a3947a87",
+    "codex/candidate-b3a622a27da8128b27.json": "442ed25cc7f4607bf4a5ebf310778e72f4dab421fa7e38df6a16aabc31e71ce0",
+    "codex/candidate-e87d7cec83cc206953.json": "75619457daa6db74ae498f05c7fce5df4c0bbc813c9103b19afcf0b1f14cb88f",
+    "codex/candidate-79edfa19dea70b36be.json": "efbfc6a016ccbc0ea8f622d1743a01b65c29959ce565effa3690706c846719e6",
+    "codex/candidate-3ed78709c97ec73cbe.json": "a3ed2376ae29d3382aaa8e11c659e9785e435de1a61dbcec6391edfeef9cfed3",
+    "codex/candidate-6d1529aa1fc3342893.json": "cfed9fa67e2c7a12dde5201fdccf5f4db6eaa5b3d7c4fd43c2fb005e30ae165c",
+    "codex/candidate-280773d7791407ea60.json": "f682bfb86d5d83aa42d7e550cc6a10af27b5fe9ee7c6d06c23ba24761a6a9411",
+    "codex/candidate-6273ab3d6bb7864298.json": "95331b0d09529463ea056818d060a9551cffa707322451a83dfcb91790c74627",
+    "codex/candidate-7fcf2f120cf8e9f976.json": "b3061cc5b459ad97d6e612cc56c17fbfd0e4c880ec3f9a6ea368413b61f15583",
+    "codex/candidate-bb109d46dc6251b4ce.json": "43afa5e6a439aad853ed9e94a84ef7bb4330f657df3f9b7abc4ecb80b4c0a96d",
+    "codex/candidate-a83afec0c451c5890c.json": "6e56ed038b47b587534319101df716e0b680319bb66ec5420ba94bc18861a47e",
+    "codex/candidate-b80454fb4e856231b1.json": "ce985fd9bc742c2646cfcb1ca9adf589d338c5a4dc6465e11c008faeb966bbbd",
+    "codex/candidate-b9f40dfc874715cfae.json": "4b2e4a680bc901bce9a323dfc006a658f8313984f7424c3b4a0941de75578cd7",
+    "codex/candidate-af40834517181fddcd.json": "6476c2b4b03a5ccba75d386fb0b005b2984bfbc4c88d4b7d9113c683ab4920ab",
+    "codex/candidate-b4771af2eb94aae75c.json": "a15e20e360b410eb720ea4828f4d3557f1066008446a568a4f4d9d85442c93ef",
+    "codex/candidate-e1b304418473bf038f.json": "80cec5476da47b5700c81bf9aad7256ea5463e377ceec46948230be0bdcf97fc",
+    "codex/candidate-dfcc3d034fb79908d7.json": "9ccea4a7864d25ab52cc24c0a8c15670f7338756dea0f4dd34b79f7d4fb8594b",
+    "codex/candidate-3c2a43f469b4b38c16.json": "0cef5890d1c96b5347ad07bd1c392ee6865ee71d0c87dbea2b036dd131ae92fc",
+    "codex/candidate-12153a2981038a39ff.json": "ebbabb4c81972e56181c0ed82257ff1fc7d0e92204bda42173a96a25b6ae65a0",
+    "codex/candidate-3b51c73a8ab35a20d1.json": "86307c159513fbe20fa195cc1441783adc50165d8dba66788187ea8a3eda89cf",
+    "codex/candidate-e96bf9ec9909f489b2.json": "baf0d4a45c4eb2bda373ddfe2301b41f8562b5788aefd9693625112ff517ea9f",
+    "codex/candidate-154cf35941e3c82cfc.json": "52704bbf958d0ce7be2e420f3fe4fa16b3eb6b8024cc9cd64ab5acd9c87f9898",
+    "codex/candidate-c06068201d8ffd8b09.json": "b8e00a3727948ff280c940d32535db297ec168c29d4cebd54f8e00af51a36259",
+    "codex/candidate-899dd44c008cda13b5.json": "e7773c7b6e35bb9a75ad17163acdd12708ba380411c92eb04643322e40289e89",
+    "codex/candidate-47676df18c0e73fb2b.json": "12618acbc8002f0826d53adac8fd996612d7a53725b9a0f5e9e7a2369e8b35d9",
+    "codex/candidate-5423a53bc42d42b9d5.json": "2444fb5513e2deb4218f14b9a2083823c4ec43c9964d9a85eb7515c311e2746e",
+    "codex/candidate-600d49b27bc674eaf6.json": "c55488e450dfeb0517c146e6e3283965863d9d756143d0538da8f10d5c60e021",
+    "codex/candidate-43d2777d9deb59935b.json": "f0fd7753cdacc858329ed2e70e9b1f5b2c02615eb3238b0f24b277b3346ed95e",
+    "codex/candidate-a327040d33ecc02ae1.json": "f474c44d44874fcc9c5f76bba41493df5456387d90588ac0b51c4a8ad5bb921c",
+    "codex/candidate-f7aad6c89107d7157c.json": "c610800a17e6c395908ffd76d3dac78d76b8eec85cb4ae1371430bb79b5b8539",
+    "codex/candidate-d7f885cb6e5328a2cd.json": "d3ae0fba7648f6a50ac1a586817212e112f3d334d2b1606b2aef441f549f998c",
+    "claude/candidate-55424614f4218fe8eb.json": "44418ee419f4dfa8c7a98415818e5b24a18ccdee0421ef34a0ae019d9ab73868",
+    "claude/candidate-d21c6567a78ee7b6af.json": "64730f3e02f941bded96a077c77c9d055bfa9f63a9815c5f05d139721399e879",
+    "claude/candidate-a8223c387844d86c08.json": "cd5dca79635f008ffedad7a0528ed4ae9ac4817bff4433962bba19020e1a8cf8",
+    "claude/candidate-a4aa0ec71a1e99fbf1.json": "17141dbe6fe60a8f9e10d3dfa41c62e7b977d62b3117eaa8c13aee271424297e",
+    "claude/candidate-d2500c429da51da3b3.json": "89cac48808774fbce12239e4d09ced034e33fceaa35da64154968ff82ad210de",
+    "claude/candidate-6f7e6b3e6e1729cc96.json": "e5e2e7029a4e107f2a32c7a37f6ab1568663336d95f684cc4f68a002faac75dd",
+    "claude/candidate-963f33943c466ea430.json": "3ca46c97df6a1d945d1913856b4afb91d6a8413192f9145fc824a1eaaaae1432",
+    "claude/candidate-f29be074a789f83d3b.json": "bda378d395a0bf526facd90926de853988cceda83c4aee8346a69072654604b5",
+    "claude/candidate-16db34e6a4d22f7578.json": "8a5f1d3d4785515126cd8c4e7a9ccb94f004f3d8fba3f20ffe7ae7d85ce686f4",
+    "claude/candidate-c3fca72ec286a697d0.json": "604c8aca1d9eecd364259440391c3d7a1483cea43743205e01d402fb4e1755fa",
+    "claude/candidate-4c7635ce2fd1b94e1b.json": "b0125d25795a2eac1311867adcfbfc35a187f30d4eaa0245bd5185306adfd8aa",
+    "claude/candidate-c3662a413187978fc3.json": "252a22a644f9900ed6f319cd745119701835895ba5fbc9ff66dcc3ada73e28da",
+    "claude/candidate-3cd751d9a73e5ef016.json": "a88277231d136a747c93f8a3b5461949ad712282500e39f71b704bb9226f6952",
+    "claude/candidate-913abb05b36ff1c33e.json": "f72f5972f16f1238ebeebc7b57ca5b0dccb83f88e0ccd5a2b311a536f20b93a0",
+    "claude/candidate-a512c614c98a60cc94.json": "e20e08af0e658d864394069d4eaa2c02f912a3e277167635b860f302aa90f367",
+    "claude/candidate-54d7196bf414fc749c.json": "fefa66c819ce08c6b9c54367401d7afcb48dce9f1ebfc18d620d45a2b32cd898",
+    "claude/candidate-eb5eb639be04503a57.json": "16211e45c9ba7cb3fea164096b31a6dfd9f45d8cf3ff262d96038b4fa847b66c",
+    "claude/candidate-341f562ecec280f961.json": "fea16509455248102713c0ebc4d7542c784cb50cf596eb10d2b66b3a8de7edd3",
+    "claude/candidate-b3a622a27da8128b27.json": "96f62d6dbba4e471e6457bd605a9c23f1d0039f9fcce74b42912867ec404312b",
+    "claude/candidate-e87d7cec83cc206953.json": "bf5f6d9d373af405b9ff32843e9ce3fd13c024df50fc137fedd3492084e7bfdd",
+    "claude/candidate-79edfa19dea70b36be.json": "34d187c0ca8d4cfb878c2fdcb55e9840c88e6123b421d50475faed1d1d3d3629",
+    "claude/candidate-3ed78709c97ec73cbe.json": "4d44540ee40930cc5db0fe3e7276f7f21e5d5a20575e53554c2a38951dc02c85",
+    "claude/candidate-6d1529aa1fc3342893.json": "8b180b8ad583548b6d4ee5da3cd21c9cfff4835a330c10d6183d006e7400b0f2",
+    "claude/candidate-280773d7791407ea60.json": "39af34ef2090fabc61704e8faa24f797ca3272717e16f4e88add367fb5cf3056",
+    "claude/candidate-6273ab3d6bb7864298.json": "2c1aa3522c0ccb6df9486bb9c9826b7fe411af89c4f7151497eed3f85874ed77",
+    "claude/candidate-7fcf2f120cf8e9f976.json": "40cfaa7265116360f9a54697e3a93dd7fc5516f3e85d697d9613de7597319468",
+    "claude/candidate-bb109d46dc6251b4ce.json": "8645d0f316f3e83e3d4dac1a5aeac7f4948f832570ddc3d974035896d512fad9",
+    "claude/candidate-a83afec0c451c5890c.json": "d8254000cb8e35e4db0ffef7ec35dc3d464c28410347edb74a2b8891aed7ca48",
+    "claude/candidate-b80454fb4e856231b1.json": "343d4e57492e539aefbf4780ee165a849a44347890cdb4d039842bae91bcbaef",
+    "claude/candidate-b9f40dfc874715cfae.json": "91c51ec9f1e8a4be5d2ed7d089bc4f536582c65baddf009074809d91fb0d1bae",
+    "claude/candidate-af40834517181fddcd.json": "4de5212a23cad6f368e82064725b99d22cfcc7a710aaffe2e987f2fa25faad85",
+    "claude/candidate-b4771af2eb94aae75c.json": "2ace49903964726ee34ba71dc066469447d79e0ca56ed4374d9df1ff484403af",
+    "claude/candidate-e1b304418473bf038f.json": "bcae4419edd81d11f5722599bc089136dc14d7b5f097e9248dd3afb24b26c676",
+    "claude/candidate-dfcc3d034fb79908d7.json": "33349d9da257e538ab160b42ce765f5cb3695dfb4d395105884cfeaef2619971",
+    "claude/candidate-3c2a43f469b4b38c16.json": "6fe7f5ec8e7921f6ea4b89ac969e1c8986b04f8e7f895de2f14cb16b3b098ccd",
+    "claude/candidate-12153a2981038a39ff.json": "b71aa94b10f714b8ace9ca0536254771d558bcd9a3633d5380caa25722117a50",
+    "claude/candidate-3b51c73a8ab35a20d1.json": "f59cd84a1710ff2c388caa48f729f66d4b1923282fbe99dae684160e913caa3a",
+    "claude/candidate-e96bf9ec9909f489b2.json": "5bf0a24783ef1e3cc52ffd63468eaffc58303b1502987d859b5a922f3c630f00",
+    "claude/candidate-154cf35941e3c82cfc.json": "f3e48a12044d29aaf67a5426e9650f443de213210a5488bc11f82fea4e769f1c",
+    "claude/candidate-c06068201d8ffd8b09.json": "fcd13b6b645903b2447a57fb2feb618e8144112653b050c19b7ca89867f3e64e",
+    "claude/candidate-899dd44c008cda13b5.json": "2fe8b78496f2bf9c82969b981ab3a07dad4ffdcf10a9400b998d7fcc96dc4cd2",
+    "claude/candidate-47676df18c0e73fb2b.json": "ff5091d8de00dc069f00d3217995694637939df73bfe223634cb6b08a6b53b06",
+    "claude/candidate-5423a53bc42d42b9d5.json": "d6482c70bfc70e410e9b92be0274ebf5808cd581c54ad24bb82edfc09fb68a03",
+    "claude/candidate-600d49b27bc674eaf6.json": "c8c247140f4c188144798cc45f1bab0e14b4ef0a1ebd418037836ce5e6bc8739",
+    "claude/candidate-43d2777d9deb59935b.json": "8a87bd2d559745e414a6cd3822ca9b707c60cff132195a357960b1d1dbf556f1",
+    "claude/candidate-a327040d33ecc02ae1.json": "dd6acf80c55770b8eeaea2ec27a52886530c802574f08659140d769009f79992",
+    "claude/candidate-f7aad6c89107d7157c.json": "8c98f931d5fdec6d4c5076ce0a1ae33f448d80879581feeaf4ec1e8fce262a69",
+    "claude/candidate-d7f885cb6e5328a2cd.json": "0ca9ed271acd11603e12c31c5ff53db21c35d732a9fa729ab5928acc0db3b525"
+  },
+  "selection_policy": "Every report in both affected cases is rejudged by both backends; no score-based report selection. Raw answer/source/skill/rubrics unchanged.",
+  "final_slices": {
+    "codex": {
+      "all8": {
+        "by_arm": {
+          "old_skill": {
+            "n": 24,
+            "quality_mean": 0.82421875,
+            "quality_threshold_passes": 13,
+            "dimension_means": {
+              "recall": 4.3125,
+              "precision": 4.0,
+              "actionability": 4.541666666666667,
+              "evidence": 4.333333333333333
+            }
+          },
+          "with_skill": {
+            "n": 24,
+            "quality_mean": 0.8177083333333334,
+            "quality_threshold_passes": 12,
+            "dimension_means": {
+              "recall": 4.583333333333333,
+              "precision": 3.7916666666666665,
+              "actionability": 4.583333333333333,
+              "evidence": 4.125
+            }
+          }
+        },
+        "paired_runs": 24,
+        "pair_wins": 9,
+        "pair_losses": 11,
+        "pair_ties": 4,
+        "uncertainty": {
+          "case_clusters": 8,
+          "quality_delta": -0.006510416666666666,
+          "bootstrap_95_ci": [
+            -0.059895833333333336,
+            0.04296875
+          ],
+          "exact_two_sided_sign_flip_p": 0.8515625,
+          "case_deltas": {
+            "fresh-url-shortener": -0.14583333333333334,
+            "fresh-bytego": 0.10416666666666667,
+            "fresh-status-page": 0.0625,
+            "fresh-web-tools": -0.020833333333333332,
+            "fresh-hookrelay": 0.052083333333333336,
+            "fresh-workers-chat-demo": -0.020833333333333332,
+            "fresh-pastebin-d1": -0.041666666666666664,
+            "fresh-reia-lfs-r2": -0.041666666666666664
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-url-shortener",
+            "run": 1,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -2.0,
+              "actionability": 0.0,
+              "evidence": -2.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 3.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 3,
+            "quality_delta": 0.25,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 1.0,
+              "actionability": 2.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 2,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 1,
+            "quality_delta": 0.15625,
+            "dimension_deltas": {
+              "recall": 1.5,
+              "precision": 1.0,
+              "actionability": -1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 3,
+            "quality_delta": -0.1875,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          }
+        ]
+      },
+      "previous4": {
+        "by_arm": {
+          "old_skill": {
+            "n": 12,
+            "quality_mean": 0.9010416666666666,
+            "quality_threshold_passes": 9,
+            "dimension_means": {
+              "recall": 4.5,
+              "precision": 4.666666666666667,
+              "actionability": 4.416666666666667,
+              "evidence": 4.833333333333333
+            }
+          },
+          "with_skill": {
+            "n": 12,
+            "quality_mean": 0.9010416666666666,
+            "quality_threshold_passes": 10,
+            "dimension_means": {
+              "recall": 5.0,
+              "precision": 4.333333333333333,
+              "actionability": 4.666666666666667,
+              "evidence": 4.416666666666667
+            }
+          }
+        },
+        "paired_runs": 12,
+        "pair_wins": 5,
+        "pair_losses": 5,
+        "pair_ties": 2,
+        "uncertainty": {
+          "case_clusters": 4,
+          "quality_delta": -8.673617379884035e-19,
+          "bootstrap_95_ci": [
+            -0.09375,
+            0.08333333333333334
+          ],
+          "exact_two_sided_sign_flip_p": 1.0,
+          "case_deltas": {
+            "fresh-url-shortener": -0.14583333333333334,
+            "fresh-bytego": 0.10416666666666667,
+            "fresh-status-page": 0.0625,
+            "fresh-web-tools": -0.020833333333333332
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-url-shortener",
+            "run": 1,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -2.0,
+              "actionability": 0.0,
+              "evidence": -2.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 3.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 3,
+            "quality_delta": 0.25,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 1.0,
+              "actionability": 2.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 2,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          }
+        ]
+      },
+      "new4": {
+        "by_arm": {
+          "old_skill": {
+            "n": 12,
+            "quality_mean": 0.7473958333333334,
+            "quality_threshold_passes": 4,
+            "dimension_means": {
+              "recall": 4.125,
+              "precision": 3.3333333333333335,
+              "actionability": 4.666666666666667,
+              "evidence": 3.8333333333333335
+            }
+          },
+          "with_skill": {
+            "n": 12,
+            "quality_mean": 0.734375,
+            "quality_threshold_passes": 2,
+            "dimension_means": {
+              "recall": 4.166666666666667,
+              "precision": 3.25,
+              "actionability": 4.5,
+              "evidence": 3.8333333333333335
+            }
+          }
+        },
+        "paired_runs": 12,
+        "pair_wins": 4,
+        "pair_losses": 6,
+        "pair_ties": 2,
+        "uncertainty": {
+          "case_clusters": 4,
+          "quality_delta": -0.013020833333333332,
+          "bootstrap_95_ci": [
+            -0.041666666666666664,
+            0.028645833333333336
+          ],
+          "exact_two_sided_sign_flip_p": 0.625,
+          "case_deltas": {
+            "fresh-hookrelay": 0.052083333333333336,
+            "fresh-workers-chat-demo": -0.020833333333333332,
+            "fresh-pastebin-d1": -0.041666666666666664,
+            "fresh-reia-lfs-r2": -0.041666666666666664
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-hookrelay",
+            "run": 1,
+            "quality_delta": 0.15625,
+            "dimension_deltas": {
+              "recall": 1.5,
+              "precision": 1.0,
+              "actionability": -1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 2,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 1,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 3,
+            "quality_delta": -0.1875,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 2,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": -1.0
+            }
+          }
+        ]
+      }
+    },
+    "claude": {
+      "all8": {
+        "by_arm": {
+          "old_skill": {
+            "n": 24,
+            "quality_mean": 0.7109375,
+            "quality_threshold_passes": 6,
+            "dimension_means": {
+              "recall": 3.9166666666666665,
+              "precision": 3.625,
+              "actionability": 3.875,
+              "evidence": 3.9583333333333335
+            }
+          },
+          "with_skill": {
+            "n": 24,
+            "quality_mean": 0.765625,
+            "quality_threshold_passes": 8,
+            "dimension_means": {
+              "recall": 4.166666666666667,
+              "precision": 3.875,
+              "actionability": 3.9583333333333335,
+              "evidence": 4.25
+            }
+          }
+        },
+        "paired_runs": 24,
+        "pair_wins": 13,
+        "pair_losses": 5,
+        "pair_ties": 6,
+        "uncertainty": {
+          "case_clusters": 8,
+          "quality_delta": 0.0546875,
+          "bootstrap_95_ci": [
+            2.6020852139652106e-18,
+            0.10677083333333333
+          ],
+          "exact_two_sided_sign_flip_p": 0.125,
+          "case_deltas": {
+            "fresh-url-shortener": 0.0,
+            "fresh-bytego": 0.16666666666666666,
+            "fresh-status-page": 0.08333333333333333,
+            "fresh-web-tools": 0.041666666666666664,
+            "fresh-hookrelay": -0.08333333333333333,
+            "fresh-workers-chat-demo": 0.020833333333333332,
+            "fresh-pastebin-d1": 0.0625,
+            "fresh-reia-lfs-r2": 0.14583333333333334
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-url-shortener",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 1,
+            "quality_delta": 0.5,
+            "dimension_deltas": {
+              "recall": 3.0,
+              "precision": 2.0,
+              "actionability": 1.0,
+              "evidence": 2.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 1.0,
+              "actionability": -1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 2,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 3,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 1,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 2,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": -1.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 3,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 3,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 1,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 1,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 2,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          }
+        ]
+      },
+      "previous4": {
+        "by_arm": {
+          "old_skill": {
+            "n": 12,
+            "quality_mean": 0.7604166666666666,
+            "quality_threshold_passes": 5,
+            "dimension_means": {
+              "recall": 4.333333333333333,
+              "precision": 3.6666666666666665,
+              "actionability": 4.0,
+              "evidence": 4.166666666666667
+            }
+          },
+          "with_skill": {
+            "n": 12,
+            "quality_mean": 0.8333333333333334,
+            "quality_threshold_passes": 6,
+            "dimension_means": {
+              "recall": 4.666666666666667,
+              "precision": 4.0,
+              "actionability": 4.166666666666667,
+              "evidence": 4.5
+            }
+          }
+        },
+        "paired_runs": 12,
+        "pair_wins": 6,
+        "pair_losses": 2,
+        "pair_ties": 4,
+        "uncertainty": {
+          "case_clusters": 4,
+          "quality_delta": 0.07291666666666666,
+          "bootstrap_95_ci": [
+            0.020833333333333332,
+            0.13541666666666666
+          ],
+          "exact_two_sided_sign_flip_p": 0.25,
+          "case_deltas": {
+            "fresh-url-shortener": 0.0,
+            "fresh-bytego": 0.16666666666666666,
+            "fresh-status-page": 0.08333333333333333,
+            "fresh-web-tools": 0.041666666666666664
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-url-shortener",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-url-shortener",
+            "run": 3,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": -1.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 1,
+            "quality_delta": 0.5,
+            "dimension_deltas": {
+              "recall": 3.0,
+              "precision": 2.0,
+              "actionability": 1.0,
+              "evidence": 2.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-bytego",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 1,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 1.0,
+              "actionability": -1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 2,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-status-page",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-web-tools",
+            "run": 3,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          }
+        ]
+      },
+      "new4": {
+        "by_arm": {
+          "old_skill": {
+            "n": 12,
+            "quality_mean": 0.6614583333333334,
+            "quality_threshold_passes": 1,
+            "dimension_means": {
+              "recall": 3.5,
+              "precision": 3.5833333333333335,
+              "actionability": 3.75,
+              "evidence": 3.75
+            }
+          },
+          "with_skill": {
+            "n": 12,
+            "quality_mean": 0.6979166666666666,
+            "quality_threshold_passes": 2,
+            "dimension_means": {
+              "recall": 3.6666666666666665,
+              "precision": 3.75,
+              "actionability": 3.75,
+              "evidence": 4.0
+            }
+          }
+        },
+        "paired_runs": 12,
+        "pair_wins": 7,
+        "pair_losses": 3,
+        "pair_ties": 2,
+        "uncertainty": {
+          "case_clusters": 4,
+          "quality_delta": 0.036458333333333336,
+          "bootstrap_95_ci": [
+            -0.046875,
+            0.11458333333333334
+          ],
+          "exact_two_sided_sign_flip_p": 0.625,
+          "case_deltas": {
+            "fresh-hookrelay": -0.08333333333333333,
+            "fresh-workers-chat-demo": 0.020833333333333332,
+            "fresh-pastebin-d1": 0.0625,
+            "fresh-reia-lfs-r2": 0.14583333333333334
+          }
+        },
+        "pairs": [
+          {
+            "case": "fresh-hookrelay",
+            "run": 1,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 2.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 2,
+            "quality_delta": -0.25,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": -1.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-hookrelay",
+            "run": 3,
+            "quality_delta": -0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": -1.0,
+              "evidence": -1.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 1,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 2,
+            "quality_delta": 0.0,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-workers-chat-demo",
+            "run": 3,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 1,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 2,
+            "quality_delta": 0.0625,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-pastebin-d1",
+            "run": 3,
+            "quality_delta": -0.0625,
+            "dimension_deltas": {
+              "recall": -1.0,
+              "precision": 0.0,
+              "actionability": 0.0,
+              "evidence": 0.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 1,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 2,
+            "quality_delta": 0.1875,
+            "dimension_deltas": {
+              "recall": 1.0,
+              "precision": 0.0,
+              "actionability": 1.0,
+              "evidence": 1.0
+            }
+          },
+          {
+            "case": "fresh-reia-lfs-r2",
+            "run": 3,
+            "quality_delta": 0.125,
+            "dimension_deltas": {
+              "recall": 0.0,
+              "precision": 1.0,
+              "actionability": 0.0,
+              "evidence": 1.0
+            }
+          }
+        ]
+      }
+    }
+  }
+}

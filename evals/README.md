@@ -107,3 +107,5 @@ Add cases when the trigger policy changes or a false trigger is observed:
 ```
 
 Use `expected: "no_trigger"` for unrelated Cloudflare mentions, false friends like `R2-D2`, generic dynamic-worker/analytics-engine phrases, generic browser/vector/stream tasks, or tasks better handled by another skill.
+
+The [final expanded matched evaluation](results/final-expanded/README.md) reruns the final skill on eight projects (48 fresh reports), with both judges, independent source review and token accounting. The scanner improves, but audit quality is not consistently better; the report recommends holding PR #36. Earlier four-project results remain historical evidence.

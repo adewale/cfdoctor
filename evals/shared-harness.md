@@ -62,3 +62,5 @@ Script assertions are deterministic repo-owned oracles and require `--allow-scri
 For a three-way release comparison, materialize the GitHub baseline outside the working tree, populate `old_skill_paths` in a temporary manifest copy, and prepare with `--include-old-skill`. Never point `old_skill` at the mutable local skill tree.
 
 The [fresh-project evaluation receipt](results/fresh-projects/README.md) shows a matched old/new run through these native hooks, including raw-source workspace mounting, frozen documentation hashes, blinded judgments, project-cluster uncertainty, and a disclosed input correction. Its source preparer fails on document drift instead of silently changing the comparison inputs.
+
+The [final eight-project comparison](results/final-expanded/README.md) uses the same pinned native prepare/run/judge/benchmark hooks. It includes all 24 old/final pairs, two full judge panels, source clarifications, corrected raw-scale threshold metadata and reproduction scripts. Default with/without-skill lift is not an old/final result.

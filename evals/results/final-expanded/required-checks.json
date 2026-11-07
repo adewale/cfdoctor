@@ -1,0 +1,777 @@
+{
+  "candidate_commit": "769182a23e5acb67369dc240a88c54e75d2f9477",
+  "unit_tests": 139,
+  "trigger_cases": 43,
+  "self_scan": "clean",
+  "coverage": "73 scanner IDs, 79 matrix rows consistent",
+  "claim_ledger": "32 records, 24 scenarios, 53 fixtures",
+  "links_policy": "14 critical sources current policy passes",
+  "install_boundary": "clean",
+  "pinned_harness_manifest_validation": "passes, no blockers",
+  "pinned_ruff": "passes on final evidence scripts",
+  "detection": {
+    "old": {
+      "passed": 40,
+      "total": 53,
+      "legacy_passed": 30,
+      "workload_passed": 10,
+      "artifact_sha256": "fb6f1b683be13d853d6d550f06d87e60b27b62bd8b3d5368ad39e400e78a01c7",
+      "cases": [
+        {
+          "case": "broad-route-cron-storm",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "clean-baseline",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "d1-nplus1-dashboard",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "3",
+          "notes": "-"
+        },
+        {
+          "case": "dead-rpc-surface",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "do-gotchas",
+          "passed": true,
+          "required_found": "3/3",
+          "findings": "6",
+          "notes": "-"
+        },
+        {
+          "case": "do-sql-unbounded-scan",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "do-stub-call-cycle",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "4",
+          "notes": "-"
+        },
+        {
+          "case": "do-stub-chain-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "do-stub-cycle-guarded-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "full-observability-sampling",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-alarm-guard-variable",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-alarm-log-noise",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "gap-dashboard-queue-consumer",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "gap-do-sharding-deep",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-do-sharding-indirect",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "3",
+          "notes": "-"
+        },
+        {
+          "case": "gap-queue-per-consumer",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-self-fetch-new-url",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-self-fetch-variable",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "gap-stream-preload-split",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-stream-unrelated-preload",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "image-variant-explosion",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "jsonc-trailing-commas",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "kv-list-do-write-amplify",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "4",
+          "notes": "-"
+        },
+        {
+          "case": "malformed-jsonc-diagnostic",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "queue-dlq-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "runaway-self-fetch-queue",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "3",
+          "notes": "-"
+        },
+        {
+          "case": "secret-in-wrangler-vars",
+          "passed": true,
+          "required_found": "3/3",
+          "findings": "4",
+          "notes": "-"
+        },
+        {
+          "case": "secret-reference-not-literal",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "webhook-fanout-retry",
+          "passed": true,
+          "required_found": "3/3",
+          "findings": "3",
+          "notes": "-"
+        },
+        {
+          "case": "workers-cache-auth-bypass",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-cross-store",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-REL-CROSS-STORE-IDEMPOTENCY"
+        },
+        {
+          "case": "workload-cross-store-receipt",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-deletion",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-REL-DELETION-CONTINUATION"
+        },
+        {
+          "case": "workload-deletion-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-expansion",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-REL-EXPANSION-BOUND"
+        },
+        {
+          "case": "workload-expansion-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-generator",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-CONFIG-R2-JURISDICTION; missing products Pipelines"
+        },
+        {
+          "case": "workload-generator-safe",
+          "passed": false,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "missing products Pipelines"
+        },
+        {
+          "case": "workload-ingress",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-SEC-INGRESS-POLICY-PARITY"
+        },
+        {
+          "case": "workload-ingress-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-meter-coverage",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-COST-METER-COVERAGE"
+        },
+        {
+          "case": "workload-meter-coverage-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-parameters",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-REL-D1-PARAMETERS"
+        },
+        {
+          "case": "workload-parameters-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-precision",
+          "passed": false,
+          "required_found": "0/0",
+          "findings": "5",
+          "notes": "forbidden CFDOC-SEC-SECRET-ASSIGNMENT, AGENT-AUTONOMOUS-LOOP-COST, CFDOC-COST-RETRY-AMPLIFY, CFDOC-CONFIG-PROCESS-ENV"
+        },
+        {
+          "case": "workload-query-budget",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-REL-D1-QUERY-BUDGET"
+        },
+        {
+          "case": "workload-query-budget-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-route-zone",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-CONFIG-ROUTE-ZONE-GUESS"
+        },
+        {
+          "case": "workload-route-zone-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-runtime-token",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-SEC-RUNTIME-PROVISIONING-TOKEN"
+        },
+        {
+          "case": "workload-runtime-token-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-test-binding",
+          "passed": false,
+          "required_found": "0/1",
+          "findings": "0",
+          "notes": "missing CFDOC-REL-TEST-BINDING-CONTRACT"
+        },
+        {
+          "case": "workload-test-binding-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        }
+      ]
+    },
+    "final": {
+      "passed": 53,
+      "total": 53,
+      "legacy_passed": 30,
+      "workload_passed": 23,
+      "artifact_sha256": "48a33a6eca9ddd61cd838fdf8067e8c7c78841bb56e1642e7b56becc12db6f14",
+      "cases": [
+        {
+          "case": "broad-route-cron-storm",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "clean-baseline",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "d1-nplus1-dashboard",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "dead-rpc-surface",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "do-gotchas",
+          "passed": true,
+          "required_found": "3/3",
+          "findings": "5",
+          "notes": "-"
+        },
+        {
+          "case": "do-sql-unbounded-scan",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "do-stub-call-cycle",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "4",
+          "notes": "-"
+        },
+        {
+          "case": "do-stub-chain-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "do-stub-cycle-guarded-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "full-observability-sampling",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-alarm-guard-variable",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-alarm-log-noise",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "gap-dashboard-queue-consumer",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-do-sharding-deep",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-do-sharding-indirect",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "3",
+          "notes": "-"
+        },
+        {
+          "case": "gap-queue-per-consumer",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-self-fetch-new-url",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-self-fetch-variable",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-stream-preload-split",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "gap-stream-unrelated-preload",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "image-variant-explosion",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "jsonc-trailing-commas",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "kv-list-do-write-amplify",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "3",
+          "notes": "-"
+        },
+        {
+          "case": "malformed-jsonc-diagnostic",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "queue-dlq-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "runaway-self-fetch-queue",
+          "passed": true,
+          "required_found": "2/2",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "secret-in-wrangler-vars",
+          "passed": true,
+          "required_found": "3/3",
+          "findings": "4",
+          "notes": "-"
+        },
+        {
+          "case": "secret-reference-not-literal",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0 (max 0)",
+          "notes": "-"
+        },
+        {
+          "case": "webhook-fanout-retry",
+          "passed": true,
+          "required_found": "3/3",
+          "findings": "3",
+          "notes": "-"
+        },
+        {
+          "case": "workers-cache-auth-bypass",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-cross-store",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-cross-store-receipt",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-deletion",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "workload-deletion-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-expansion",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-expansion-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-generator",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-generator-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-ingress",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-ingress-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-meter-coverage",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-meter-coverage-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-parameters",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-parameters-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-precision",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-query-budget",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "workload-query-budget-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-route-zone",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-route-zone-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-runtime-token",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "1",
+          "notes": "-"
+        },
+        {
+          "case": "workload-runtime-token-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        },
+        {
+          "case": "workload-test-binding",
+          "passed": true,
+          "required_found": "1/1",
+          "findings": "2",
+          "notes": "-"
+        },
+        {
+          "case": "workload-test-binding-safe",
+          "passed": true,
+          "required_found": "0/0",
+          "findings": "0",
+          "notes": "-"
+        }
+      ]
+    }
+  },
+  "final_packaging_npm_test": "passes,139 unit tests and43 trigger/53 detection cases",
+  "portable_reconstruction": "all8 bundles/16 docs hash-verified;48 isolated workspaces; unchanged answer prompts after source addenda/threshold metadata correction",
+  "published_summary_reproduction": "identical quality/usage statistics from public hooks and frozen native artifacts"
+}
