@@ -70,7 +70,7 @@ Use this skill only when the request includes concrete Cloudflare project, confi
 4. Fetch only the current official Cloudflare pages needed to confirm or reject the hypotheses, using product `llms.txt` indexes and applicable Markdown pages. Treat local references as navigation aids, not current authority. For each dependency in a reported cost path, use the current official product/runtime documentation for call semantics and the applicable official pricing or limits documentation for its billable/quota unit, exclusions, aggregation key, and window; do not label an operation "paid" merely because it is a Cloudflare binding. Every current product/configuration recommendation needs official `Source basis` that directly supports it. War stories can support historical mechanisms, not current semantics, applicability, or probability. Exception: a static Wrangler snapshot plan or reconciliation from supplied artifacts should use [`wrangler-snapshots.md`](references/wrangler-snapshots.md) without browsing unless the user asks or a command's current availability/semantics is materially disputed.
 5. If account/dashboard state could change a hypothesis, ask for the smallest discriminating evidence package. Do not request broad account dumps or infer state from its absence in the repo.
 6. If TypeScript code exposes `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, or Agent classes, use the optional dead cross-boundary RPC path only when reachability is actually in scope. Gate third-party tools on approval/pinning and treat output as leads, not proof.
-7. Produce only evidence-backed findings. Prioritize correctness, security, reliability, and cost over exhaustive trivia.
+7. Before publishing, trace each finding through its caller, guards, conditional work, catches and response path. Do not transfer counts or error responses between branches. Match each quota to its product, counter, plan and scope before claiming overflow. Identify the required behavior being violated; public access or manual setup alone is not a defect. Check that the proposed fix is valid in its actual function/callback/loop and that its verification exercises the failing branch. Drop unsupported subclaims even when the main defect is real. Prioritize material correctness, security, reliability and cost.
 
 ## Output modes
 
@@ -127,7 +127,7 @@ End with:
 
 ## Severity guide
 
-- **Critical**: likely secret exposure, public data exposure, production outage risk, runaway billing, or a deployed security bypass.
+- **Critical**: an established reachable failure with severe impact, such as usable credential exposure, unauthorized access to protected data, a broad outage or an unbounded billable chain. Identify the affected boundary and trigger; hypothetical deployment or traffic conditions alone do not establish critical impact.
 - **High**: wrong primitive causing correctness/reliability/cost risk at normal scale; severe misconfig; missing auth/rate limit on sensitive endpoints.
 - **Medium**: meaningful performance/cost/reliability improvement or configuration drift that can become serious with growth.
 - **Low**: hygiene, maintainability, minor optimization, or low-confidence smell.

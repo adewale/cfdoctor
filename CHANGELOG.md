@@ -4,6 +4,8 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
+- Scanner 0.5.1 recognizes a terminal DLQ consumer from the source consumer's same-scope configuration, while retaining missing-DLQ leads for unrelated consumers. Generic test variables named `secret` remain low-confidence leads unless credential-shaped; later service credentials in the file still take priority.
+- Audit verification now checks branch order/error responses, quota counter identity, intended contracts and callback-valid remedies before publication. Inventory includes hidden config, source-only application defects have a provenance path, and WebSocket recovery covers initializing sessions as well as ready sockets. These corrections are evaluated against the preserved matched-source sample and independent regression/fresh-project cases.
 - Fresh-project evaluation found two remaining credential false alarms: GitHub/shell secret references in configuration and explicit `replace-with-...-key` example values. Both are excluded while literal credentials in YAML and documentation retain positive regression controls.
 - Matched audit review found overstatements about separately credentialed test/admin routes. Admission guidance now distinguishes an intended capability from an authentication bypass and requires evidence before asserting deployed activation.
 - Scanner 0.5.0 addresses the Dataflare audit in #35. It separates runtime/deployment evidence, inventories bounded JSON configuration generators and HTTP lake dependencies without executing them, and records excluded large bundles. It suppresses type/CI-label, User-Agent, ordinary-loop, Node CLI and static-only observability false alarms while retaining positive controls.

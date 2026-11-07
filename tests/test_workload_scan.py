@@ -19,6 +19,65 @@ def ids(result: dict) -> set[str]:
 
 
 class WorkloadScanTests(unittest.TestCase):
+    def test_terminal_dlq_consumer_is_not_a_missing_primary_dlq(self):
+        result = scan({"wrangler.jsonc": '''{
+          "queues": {"consumers": [
+            {"queue": "jobs", "dead_letter_queue": "failed"},
+            {"queue": "failed"}
+          ]}
+        }'''})
+        self.assertNotIn("CFDOC-REL-QUEUE-NO-DLQ", ids(result))
+
+    def test_dlq_name_alone_does_not_establish_terminal_role(self):
+        result = scan({"wrangler.jsonc": '''{
+          "queues": {"consumers": [{"queue": "jobs-dlq"}]}
+        }'''})
+        self.assertIn("CFDOC-REL-QUEUE-NO-DLQ", ids(result))
+
+    def test_terminal_dlq_does_not_hide_another_unprotected_consumer(self):
+        result = scan({"wrangler.jsonc": '''{
+          "queues": {"consumers": [
+            {"queue": "jobs", "dead_letter_queue_name": "failed"},
+            {"queue": "failed"}, {"queue": "unprotected"}
+          ]}
+        }'''})
+        lead = next(f for f in result["findings"] if f["check_id"] == "CFDOC-REL-QUEUE-NO-DLQ")
+        self.assertIn("unprotected", lead["excerpt"])
+        self.assertNotIn("failed", lead["excerpt"])
+
+    def test_terminal_dlq_role_does_not_cross_environments(self):
+        result = scan({"wrangler.jsonc": '''{
+          "queues": {"consumers": [{"queue": "jobs", "dead_letter_queue": "failed"}]},
+          "env": {"preview": {"queues": {"consumers": [{"queue": "failed"}]}}}
+        }'''})
+        self.assertIn("CFDOC-REL-QUEUE-NO-DLQ", ids(result))
+
+    def test_generic_test_secret_is_a_low_confidence_lead(self):
+        result = scan({"test/formdata.spec.js": 'const secret = "multipart-fixture-value";'})
+        lead = next(f for f in result["findings"] if f["check_id"] == "CFDOC-SEC-SECRET-ASSIGNMENT")
+        self.assertEqual("low", lead["severity"])
+        self.assertEqual("low", lead["confidence"])
+        self.assertEqual("test", lead["runtime_scope"])
+
+    def test_generic_worker_secret_retains_high_severity(self):
+        result = report('const secret = "live-9f8a7b6c5d4e3f21";')
+        lead = next(f for f in result["findings"] if f["check_id"] == "CFDOC-SEC-SECRET-ASSIGNMENT")
+        self.assertEqual("high", lead["severity"])
+
+    def test_generic_test_data_does_not_hide_a_later_service_credential(self):
+        result = scan({"test/leak.js": '''const secret = "multipart-fixture-value";
+const apiKey = "live-9f8a7b6c5d4e3f21";'''})
+        leads = [f for f in result["findings"] if f["check_id"] == "CFDOC-SEC-SECRET-ASSIGNMENT"]
+        self.assertEqual(1, len(leads))
+        self.assertEqual("high", leads[0]["severity"])
+        self.assertEqual(2, leads[0]["line"])
+
+    def test_credential_shaped_test_secret_retains_high_severity(self):
+        result = scan({"test/leak.js": 'const secret = "cfpat_test_fixture_12345678";'})
+        lead = next(f for f in result["findings"] if f["check_id"] == "CFDOC-SEC-SECRET-ASSIGNMENT")
+        self.assertEqual("high", lead["severity"])
+        self.assertIn("CFDOC-SEC-SECRET-VALUE", ids(result))
+
     def test_ci_secret_expressions_are_references_in_yaml(self):
         result = scan({".github/workflows/deploy.yml": """env:
   SECRET_WEBHOOK_URL: ${{secrets.SECRET_WEBHOOK_URL}}

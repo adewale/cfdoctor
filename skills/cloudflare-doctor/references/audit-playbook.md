@@ -14,7 +14,7 @@ Inspect local files next:
 find . -maxdepth 3 -type f \
   \( -name 'wrangler.jsonc' -o -name 'wrangler.json' -o -name 'wrangler.toml' -o -name 'package.json' -o -name 'vite.config.*' -o -name 'next.config.*' -o -name 'astro.config.*' -o -name 'terraform.tf' -o -name '*.tf' \) \
   -not -path './node_modules/*' -not -path './.git/*'
-rg -n "(kv_namespaces|d1_databases|r2_buckets|durable_objects|queues|hyperdrive|vectorize|ai|analytics_engine|services|routes|triggers|compatibility_date|compatibility_flags|observability)" .
+rg -n --hidden --glob '!.git/**' --glob '!node_modules/**' "(kv_namespaces|d1_databases|r2_buckets|durable_objects|queues|hyperdrive|vectorize|ai|analytics_engine|services|routes|triggers|compatibility_date|compatibility_flags|observability)" .
 ```
 
 If live docs cannot be fetched, record that gap in `Docs refreshed` and mark doc-dependent claims as needing current-doc verification.

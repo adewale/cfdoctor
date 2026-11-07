@@ -125,7 +125,7 @@ CODE_REFERENCE_VALUE_RE = re.compile(
     r"^(?:\$\{|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)+[;,)\]]*$)"
 )
 
-SCANNER_VERSION = "0.5.0"
+SCANNER_VERSION = "0.5.1"
 
 # check_id -> (pillar, default severity, confidence, title, description). Pillars: COST, SEC, REL, PERF, CONFIG, FIT.
 _CHECK_ROWS: list[tuple[str, str, str, str, str, str]] = [
@@ -694,11 +694,22 @@ def add_config_findings(root: Path, configs: list[tuple[Path, str, dict[str, Any
                 "low",
             ))
 
+        consumers = queue_consumers(data)
+        # A configured terminal consumer need not start another DLQ chain.
+        # Establish that role from this scope's actual source queue, not its name.
+        terminal_queues = {
+            consumer[key].strip()
+            for consumer in consumers
+            for key in ("dead_letter_queue", "dead_letter_queue_name")
+            if isinstance(consumer.get(key), str) and consumer[key].strip()
+            and consumer[key].strip() != (consumer.get("queue") or consumer.get("name"))
+        }
         consumers_missing_dlq = []
-        for consumer in queue_consumers(data):
+        for consumer in consumers:
             has_dlq = any(isinstance(consumer.get(key), str) and consumer.get(key).strip() for key in ("dead_letter_queue", "dead_letter_queue_name"))
-            if not has_dlq:
-                consumers_missing_dlq.append(str(consumer.get("queue") or consumer.get("name") or "consumer"))
+            name = str(consumer.get("queue") or consumer.get("name") or "consumer")
+            if not has_dlq and name not in terminal_queues:
+                consumers_missing_dlq.append(name)
         if consumers_missing_dlq:
             findings.append(Finding(
                 "CFDOC-REL-QUEUE-NO-DLQ",
@@ -1365,21 +1376,28 @@ def add_code_findings(
                 "medium",
             ))
         is_source_like = path.suffix in CODE_EXTS or path.name in SPECIAL_SOURCE_NAMES
+        assignment_finding = None
         for line_no, line in enumerate(text.splitlines(), 1):
             match = SECRET_ASSIGN_RE.search(line)
             fixture_placeholder = role == "test" and match and match.group(2) in {"dev-salt", "dev-admin-key", "dev-read-key"}
             if match and not fixture_placeholder and is_sensitive_assignment(match, in_code_file=is_source_like):
-                findings.append(Finding(
+                generic_test_value = role == "test" and match.group(1).lower() == "secret" and not SECRET_VALUE_RE.search(line)
+                candidate = Finding(
                     "CFDOC-SEC-SECRET-ASSIGNMENT",
-                    "high",
-                    "Credential-like assignment appears in repository text",
+                    "low" if generic_test_value else "high",
+                    "Generic test secret needs credential-use verification" if generic_test_value else "Credential-like assignment appears in repository text",
                     "security",
                     f"{rpath}:{line_no}: {redacted_secret_line(line)}",
-                    "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments.",
-                    "Rotate if real, move to Cloudflare secrets or CI secret storage, and keep only non-secret config in source.",
-                    "medium",
-                ))
-                break
+                    "A generic test variable can contain fixture data; neither its name nor a literal alone establishes usable credentials." if generic_test_value else "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments.",
+                    "Trace whether the value authenticates a real service before treating it as a leaked credential; rotate and move it to secrets storage if it does." if generic_test_value else "Rotate if real, move to Cloudflare secrets or CI secret storage, and keep only non-secret config in source.",
+                    "low" if generic_test_value else "medium",
+                )
+                if assignment_finding is None or not generic_test_value:
+                    assignment_finding = candidate
+                if not generic_test_value:
+                    break
+        if assignment_finding:
+            findings.append(assignment_finding)
 
         if not is_source_like or role in {"test", "node", "browser"}:
             continue
