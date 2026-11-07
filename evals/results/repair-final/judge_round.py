@@ -7,12 +7,85 @@ import sys
 from pathlib import Path
 
 r = Path(__file__).resolve().parent
-sys.path.insert(0, str(r / "harness"))
-import skill_benchmark as sb
 from grading_contract import JUDGE_PREFACE
 
 
+def observed_activity(run_base):
+    """Supply tool evidence without copying model reasoning into the judge input."""
+    trace = Path(run_base) / "trace.jsonl"
+    if not trace.is_file():
+        return {"available": False}
+    metadata = json.loads((Path(run_base) / "metadata.json").read_text())
+    commands = []
+    for line in trace.read_text().splitlines():
+        event = json.loads(line)
+        item = event.get("item", {})
+        if (
+            event.get("type") != "item.completed"
+            or item.get("type") != "command_execution"
+        ):
+            continue
+        command = {"command": item["command"], "exit_code": item.get("exit_code")}
+        try:
+            output = json.loads(item.get("aggregated_output", ""))
+        except (ValueError, TypeError):
+            output = None
+        if (
+            isinstance(output, dict)
+            and "scanner_version" in output
+            and isinstance(output.get("findings"), list)
+        ):
+            command["scanner_output"] = output
+        commands.append(command)
+    return {
+        "available": True,
+        "trace_observation_complete": metadata.get("trace_observation_complete"),
+        "commands": commands,
+    }
+
+
+def grading_prompt(case, run_base):
+    bundle = json.loads(Path(case["files"][0]).read_text())
+    raw = "\n\n".join(
+        "SOURCE FILE: " + p + "\n" + s for p, s in bundle["files"].items()
+    )
+    docs = "\n\n".join(Path(f).read_text() for f in case["files"][1:])
+    return (
+        JUDGE_PREFACE
+        + "\n\nOriginal audit request (auditor permissions):\n"
+        + case["prompt"]
+        + "\n\nRaw source:\n"
+        + raw
+        + "\n\nOfficial documentation snapshots:\n"
+        + docs
+        + "\n\nObserved auditor activity (evaluator trace, not project source):\n"
+        + json.dumps(observed_activity(run_base), sort_keys=True)
+    )
+
+
+def grading_fingerprint(task, model, backend):
+    payload = {k: task[k] for k in ["prompt", "expected_behavior", "assertion"]}
+    payload.update(
+        output=Path(task["output_path"]).read_text(), model=model, backend=backend
+    )
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+
+
+def cached_judgment(path, fingerprint):
+    if not path.exists():
+        return None
+    row = json.loads(path.read_text())
+    if row.get("grading_input_sha256") != fingerprint:
+        raise ValueError(
+            "Cached judgment has different grading inputs; use a fresh run directory"
+        )
+    return row
+
+
 def main():
+    sys.path.insert(0, str(r / "harness"))
+    import skill_benchmark as sb
+
     root = Path(sys.argv[1]).resolve()
     backend = sys.argv[2] if len(sys.argv) > 2 else "codex"
     model = "gpt-5.6-sol" if backend == "codex" else "claude-sonnet-4-6"
@@ -53,26 +126,15 @@ def main():
         )
         mapping[opaque] = original
         result = dest / (opaque + ".json")
-        if result.exists():
-            return json.loads(result.read_text())
         blind = dict(
             task, judge_task_id=opaque, variant="candidate", run_number=1, run_base=None
         )
         case = cases[task["case_id"]]
-        bundle = json.loads(Path(case["files"][0]).read_text())
-        raw = "\n\n".join(
-            "SOURCE FILE: " + p + "\n" + s for p, s in bundle["files"].items()
-        )
-        # Supply raw source so the judge can verify findings beyond the authored key.
-        docs = "\n\n".join(Path(f).read_text() for f in case["files"][1:])
-        blind["prompt"] = (
-            JUDGE_PREFACE
-            + case["prompt"]
-            + "\n\nRaw source:\n"
-            + raw
-            + "\n\nOfficial documentation snapshots:\n"
-            + docs
-        )
+        blind["prompt"] = grading_prompt(case, task["run_base"])
+        fingerprint = grading_fingerprint(blind, model, backend)
+        cached = cached_judgment(result, fingerprint)
+        if cached is not None:
+            return cached
         row = sb.run_one_judge_task(
             blind,
             transcripts_dir=dest / "transcripts",
@@ -87,6 +149,7 @@ def main():
             variant=task["variant"],
             run_number=task["run_number"],
             blinded_candidate_id=opaque,
+            grading_input_sha256=fingerprint,
         )
         result.write_text(json.dumps(row, indent=2) + "\n")
         print(

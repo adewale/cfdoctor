@@ -14,7 +14,12 @@ PRECISION = (
     "or explicitly state none. Score the report as written, not a stronger or weaker paraphrase."
 )
 JUDGE_PREFACE = (
-    "Use only the supplied source and frozen references; do not browse, run code, or inspect files. "
+    "You are grading an audit. Use the supplied evidence; do not browse, run code, or inspect files. "
+    "Those restrictions apply to you, not retrospectively to the auditor. Judge the auditor's actions "
+    "against the original audit request below. Observed auditor activity comes from the evaluator's "
+    "trace, separately from project files. Use it to check execution claims: generated scanner output "
+    "need not be present in checked-in source. If activity evidence is unavailable, mark an execution "
+    "claim unverified rather than calling it fabricated solely because project files omit it. "
     "The candidate label is arbitrary. Source truth is non-exhaustive: accept other independently "
     "supported defects. A safe-control note proves only its specified invariant. "
     "Trace branch-specific guards, optional work, catches, returned statuses and actual lexical "

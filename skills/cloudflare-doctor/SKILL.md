@@ -26,7 +26,8 @@ Use this skill only when the request includes concrete Cloudflare project, confi
 Confirm both the mechanism and what makes it wrong before creating a finding card.
 
 - Trace the executed branch, including guards, optional work, catches and its
-  actual response. Do not transfer counts or failures between branches.
+  actual response. Use a range when parsing or guards can stop before a
+  dependency; an upper bound is not a count for every request.
 - Establish the violated requirement and when it must hold. An operation
   authorized before expiry may finish later under admission semantics. If a
   stronger deadline, method/status policy or deployment requirement is
@@ -37,9 +38,10 @@ Confirm both the mechanism and what makes it wrong before creating a finding car
   with the external-fetch allowance. A link or model memory is not a refreshed
   or supplied document. If the needed API contract is unavailable, keep the
   claim unverified rather than inventing a source basis.
-- Verify that the remedy fits the actual function/callback/loop, preserves valid
-  behavior, and has a test that exercises the failing branch. A true mechanism
-  does not excuse an unsupported impact, requirement or fix.
+- Check control-flow fixes in their surrounding code. A callback `return` exits
+  that callback; `continue` needs an enclosing loop. Show a loop refactor if the
+  fix relies on one. Use an existing syntax check or focused test when permitted
+  and useful; preserve valid behavior.
 
 ## Standard workflow
 
