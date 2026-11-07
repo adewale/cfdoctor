@@ -4,6 +4,10 @@ All notable changes to Cloudflare Doctor are tracked here.
 
 ## Unreleased
 
+- General cost-audit principles:
+  - Account for evidenced private/background work and execution frequency using each applicable product's billing units, plan, and window.
+  - Prioritize charge contributions, distinguish raw usage from billed quantities, avoid repeated allowance deductions, and confirm causes from application/usage evidence.
+  - Treat spending predictability and stop/degrade behavior as customer requirements; distinguish notifications from verified enforcement and preserve unknown scope.
 - Verification hygiene (2026-09 verification audit):
   - CI now runs `npm test` and `npm run eval:validate` instead of a hand-copied command list, so `package.json` is the single source of truth for the gate (the copies had drifted: CI did not compile `scripts/focus_public_route_eval.py`). The duplicate `install-boundary.yml` workflow is removed; `npm test` already runs `check_install_boundary.py`.
   - `scripts/check_claim_ledger.py` now fails on overdue non-accepted evidence (unverified, superseded, retracted) once it is more than `NON_ACCEPTED_REVIEW_GRACE_DAYS` (30) days past `review_due`; before that it warns with the date it will start failing. Accepted evidence still fails as soon as review is due.
