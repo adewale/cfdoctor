@@ -1,5 +1,15 @@
 # Final skill: expanded matched evaluation
 
+This is a historical run. The [later ten-project comparison](../repair-final/README.md) contains the current broader evidence. Large generated payloads from this run remain available at their immutable publication commit:
+
+- [independent-source-review.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/independent-source-review.json)
+- [results.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/results.json)
+- [oracle-correction-sensitivity.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/oracle-correction-sensitivity.json)
+- [final-population-review.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/final-population-review.json)
+- [process-audit.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/process-audit.json)
+- [historical-overhead-review.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/historical-overhead-review.json)
+
+
 This round tests the installable skill at `769182a23e5acb67369dc240a88c54e75d2f9477` against baseline `7eefbc7411b634d9a665f9f9240a761f0b2f4314`. All reports are freshly generated; none is reused from the earlier mixed-version or focused rounds. Later evidence-only commits preserve this tested skill tree byte-for-byte.
 
 ## Result
@@ -66,7 +76,7 @@ Recall rises 4.31→4.58 for Codex and 3.92→4.17 for Claude. Codex precision f
 
 Statistics pair reports by project/repetition. Project means are the uncertainty unit; repetitions do not count as 24 independent projects. The report includes 50,000 fixed-seed case-cluster bootstrap samples and an exact two-sided sign-flip test. Eight selected projects are too few to establish broad general accuracy. Previously evaluated and new projects are reported separately; the new cases are independently authored evidence, not an unseen independent grader or a permanent holdout.
 
-Independent authors reviewed all 48 opaque reports against pinned source before receiving arm identities. Report hashes match the executed outputs. Their full notes, controls, quoted errors, additional valid findings and explicit author erratum are in `independent-source-review.json`. These are agent source reviews, not maintainer approval or runtime proof.
+Independent authors reviewed all 48 opaque reports against pinned source before receiving arm identities. Report hashes match the executed outputs. Their full notes, controls, quoted errors, additional valid findings and explicit author erratum are in [independent-source-review.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/independent-source-review.json). These are agent source reviews, not maintainer approval or runtime proof.
 
 - Every chat report misses the pending unnamed socket losing initial history/roster on hibernation. Other valid memory/timer/admission findings do not substitute for that mechanism. This is a shared blind spot: 0/3 old and 0/3 final.
 - Hookrelay ingress deduplication, failed enqueue recovery and half-open probe defects are found in all six reports. The stale-KV-miss/final-ack loss is found in 2/3 per arm. The final version retains those source mechanisms overall.
@@ -76,7 +86,7 @@ Independent authors reviewed all 48 opaque reports against pinned source before 
 
 The judges also make factual mistakes. For example, Codex gives all three old URL-shortener reports perfect scores even though independent source review identifies status/budget errors; Claude rationales sometimes repeat those errors. The point scores are therefore secondary evidence alongside source adjudication. No manual score replacements were made.
 
-Two source-only clarifications were applied uniformly to both arms: the Pastebin API/README deletion-contract conflict and the status-page callback remedy. All 12 affected reports were rejudged by both backends, preserving 24 initial judgments. Before these corrections, Codex lift was −1.69 points and Claude lift +4.69; after correction they are −0.65 and +5.47. The disagreement is present in both analyses. See `oracle-corrections.json` and `oracle-correction-sensitivity.json`. Additional valid expiry-authentication findings remain in source review; they do not turn an unmeasured deployment consequence into proof.
+Two source-only clarifications were applied uniformly to both arms: the Pastebin API/README deletion-contract conflict and the status-page callback remedy. All 12 affected reports were rejudged by both backends, preserving 24 initial judgments. Before these corrections, Codex lift was −1.69 points and Claude lift +4.69; after correction they are −0.65 and +5.47. The disagreement is present in both analyses. See `oracle-corrections.json` and [oracle-correction-sensitivity.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/oracle-correction-sensitivity.json). Additional valid expiry-authentication findings remain in source review; they do not turn an unmeasured deployment consequence into proof.
 
 A manifest authoring error also used 0.85 where anchored dimensions expect a raw 1–5 threshold. Native merging clipped it to 0. The intended normalized 0.85 gate is raw 4.4. This metadata was corrected and native aggregation rerun; the reported dimension scores, quality means and deltas never depended on those original pass labels and do not change. The corrected native gate exactly matches the independently computed threshold counts above. `harness-threshold-correction.json` preserves the error and correction; judge dimension ratings were not regenerated for this metadata fix.
 
@@ -94,7 +104,7 @@ A manifest authoring error also used 0.85 where anchored dimensions expect a raw
 
 The earlier 25.6% total-token overhead did not reproduce. The final matched estimate is −8.06% total tokens, with a descriptive 95% case-cluster interval of [−23.29%,+8.12%]. Uncached input rises 2.55% (interval [−1.54%,+6.83%]); elapsed falls 3.09% (interval [−6.66%,+0.81%]). The data do not establish a stable reduction or increase in cost. Provider caching is not independently controlled.
 
-All 48 reports exceed the original soft 350,000-token budget; all 48 meet the 480-second budget. Execution success is not an overall eval pass. Resource totals cover answer generation only; judge calls are separate. Input is cumulative across model/tool turns, not one context window. `overhead-uncertainty.json` and `final-population-review.json` contain case/slice details and independent accounting.
+All 48 reports exceed the original soft 350,000-token budget; all 48 meet the 480-second budget. Execution success is not an overall eval pass. Resource totals cover answer generation only; judge calls are separate. Input is cumulative across model/tool turns, not one context window. `overhead-uncertainty.json` and [final-population-review.json](https://github.com/adewale/cfdoctor/blob/69426f6d4d16b227cfa9272f17441138d0ab3e0e/evals/results/final-expanded/final-population-review.json) contain case/slice details and independent accounting.
 
 Native `turn.completed` usage is checked against run metadata. Every accepted report must have exactly one terminal usage record, a nonempty final answer and successful status; the population must match all 48 prepared identities. Cached input is a subset of input. Reasoning output is a subset of output. Neither is added a second time. Codex supplies no dollar-cost telemetry here.
 
