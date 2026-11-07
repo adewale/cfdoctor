@@ -4,8 +4,7 @@ Cost findings should name the billing meter or amplification mechanism. Avoid ex
 
 Before comparing an operation count with a limit, identify the counter and its
 scope: external fetches, internal service calls, product operations, per-key
-writes, invocation queries and billed rows are different units. In particular,
-KV binding reads are not external fetches. Use the matching row of the current
+writes, invocation queries and billed rows are different units. Use the matching row of the current
 [Workers limits](https://developers.cloudflare.com/workers/platform/limits/)
 and product limits, preserving plan and configured overrides. Include redirects
 or retries only on paths that execute them; an optional metadata fetch, cache

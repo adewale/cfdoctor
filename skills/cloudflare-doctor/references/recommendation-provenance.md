@@ -27,6 +27,12 @@ disprove it:
   and copies already cached. A disclosed policy does not excuse a separate
   expiry or ownership bypass. Keep deployed activation and consequences unknown
   unless inspected.
+- Establish the time boundary of an authorization or expiry requirement:
+  admission, start of a side effect, or commit. A request authorized before
+  expiry can finish later under admission semantics. An intervening await alone
+  does not establish a bypass or a requirement to reauthorize; clarify an
+  unspecified stronger policy. Missing expiry validation on an already-expired
+  incoming request is a different, source-provable failure.
 - Validate the proposed change at its enclosing control-flow boundary. A return
   in an array callback skips that callback; a continue needs an enclosing loop.
   A fix or test must preserve valid behavior and exercise the actual trigger.
