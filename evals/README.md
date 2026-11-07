@@ -2,6 +2,8 @@
 
 These evals follow the skill-creator loop: define trigger prompts, run a quantitative pass, inspect failures, improve `SKILL.md`, and repeat.
 
+The [7 November matched repair evaluation](results/repair-final/README.md) covers ten real projects and eight focused controls, with 92 fresh audits, both native judges and complete independent source review. It records higher mean audit scores, measured token overhead and an unresolved repeated branch-count error. PR #36 remains on hold.
+
 ## Trigger eval
 
 Run:

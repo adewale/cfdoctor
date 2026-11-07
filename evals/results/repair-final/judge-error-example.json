@@ -1,0 +1,13 @@
+{
+  "case": "repair-c1",
+  "variant": "with_skill",
+  "run": 1,
+  "codex_precision": 2,
+  "codex_evidence": 1,
+  "source_review_errors": 0,
+  "original_task_permission": "You may run the supplied scanner read-only using python3 -B.",
+  "trace_command": "python3 -B <selected-skill>/scripts/cfdoctor_static_scan.py . --json",
+  "exit_code": 0,
+  "CFDOC_REL_QUEUE_NO_DLQ_lead_present": true,
+  "interpretation": "The grader confuses its own no-tools instruction with auditor permission and treats absent scanner evidence in the grader input as fabrication. Original numeric verdict retained; source adjudication and trace correct the factual record."
+}

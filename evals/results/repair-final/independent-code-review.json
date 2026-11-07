@@ -1,0 +1,117 @@
+{
+  "review_type": "Independent code review; receipt of already captured evidence, no rerun",
+  "repository": "@WORKSPACE@/cfdoctor",
+  "comparison": {
+    "base": "4bdd6c5",
+    "head": "a1e9c3a",
+    "additional_uncommitted_files": [
+      "evals/ablations/no-cost-tradeoff.patch",
+      "evals/ablations/no-public-route-cost-gate.patch",
+      "evals/ablations/no-source-basis.patch"
+    ]
+  },
+  "scope": [
+    "Scanner terminal-DLQ scope and preservation of missing primary DLQ leads",
+    "Generic test-secret downgrade and later credential priority",
+    "Instruction generality and preservation of current-document requirements",
+    "Three ablation header fixes"
+  ],
+  "review_commands": [
+    "git status --short",
+    "git log -5 --oneline",
+    "git diff --stat 4bdd6c5",
+    "git diff 4bdd6c5 -- skills/cloudflare-doctor tests/test_workload_scan.py evals/ablations CHANGELOG.md research/incident-claim-ledger.json",
+    "git diff 4bdd6c5 -- skills/cloudflare-doctor/references/audit-playbook.md skills/cloudflare-doctor/references/cost-footguns.md skills/cloudflare-doctor/references/performance-and-reliability.md skills/cloudflare-doctor/references/recommendation-provenance.md"
+  ],
+  "working_directory_for_commands": "@WORKSPACE@/cfdoctor",
+  "existing_tests": [
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_workload_scan.py' -v",
+      "count": 36,
+      "result": "PASS",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_static_scan.py' -v",
+      "count": 35,
+      "result": "PASS",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_detector_near_misses.py' -v",
+      "count": 1,
+      "result": "PASS",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_fixture_oracle.py' -v",
+      "count": 23,
+      "result": "PASS",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_eval_detection.py' -v",
+      "count": 9,
+      "result": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "existing_test_total": 104,
+  "additional_probe_command": "PYTHONPATH=tests python3 evals/fixtures/validation/repair-final-scanner-probes.py",
+  "additional_probes": [
+    {
+      "id": "cross-workers",
+      "description": "A DLQ reference in Worker a must not suppress a missing-DLQ lead for the same queue name in Worker b.",
+      "result": "PASS",
+      "observed": "CFDOC-REL-QUEUE-NO-DLQ, medium, b/wrangler.jsonc: failed"
+    },
+    {
+      "id": "child-to-parent",
+      "description": "A preview environment DLQ reference must not establish terminal status for a top-level consumer.",
+      "result": "PASS",
+      "observed": "CFDOC-REL-QUEUE-NO-DLQ, medium, wrangler.jsonc: failed"
+    },
+    {
+      "id": "sibling-envs",
+      "description": "A DLQ reference in environment a must not suppress the missing-DLQ lead in environment b.",
+      "result": "PASS",
+      "observed": "CFDOC-REL-QUEUE-NO-DLQ, medium, wrangler.jsonc [env.b]: failed"
+    },
+    {
+      "id": "self-dlq-plus-primary",
+      "description": "A self-referencing DLQ configuration must not hide an unrelated unprotected primary consumer. This does not validate whether self-DLQ configuration itself is accepted.",
+      "result": "PASS",
+      "observed": "CFDOC-REL-QUEUE-NO-DLQ, medium, wrangler.jsonc: unprotected"
+    },
+    {
+      "id": "late-opaque-credential",
+      "description": "A generic test fixture secret followed by an opaque password must retain the later high-severity assignment lead.",
+      "result": "PASS",
+      "observed": "CFDOC-SEC-SECRET-ASSIGNMENT, high, test/leak.js:2; evidence redacted"
+    },
+    {
+      "id": "late-shaped-credential",
+      "description": "A generic test fixture secret followed by a credential-shaped secret must retain both credential detectors.",
+      "result": "PASS",
+      "observed": "CFDOC-SEC-SECRET-VALUE critical and CFDOC-SEC-SECRET-ASSIGNMENT high, test/leak.js:2; evidence redacted"
+    }
+  ],
+  "additional_probe_total": 6,
+  "ablation_check": {
+    "command": "python3 - <<'CHECK'\nfrom pathlib import Path\nimport re\nsource=Path('skills/cloudflare-doctor/SKILL.md').read_text().splitlines()\nfor name in ['no-cost-tradeoff','no-public-route-cost-gate','no-source-basis']:\n    patch=Path('evals/ablations/'+name+'.patch').read_text().splitlines()\n    pos=0\n    while pos<len(patch):\n        m=re.fullmatch(r'@@ -(\\d+),(\\d+) \\+(\\d+),(\\d+) @@',patch[pos]); assert m, patch[pos]\n        start,count=int(m[1]),int(m[2]); pos+=1; old=[]\n        while pos<len(patch) and not patch[pos].startswith('@@'):\n            assert patch[pos].startswith('-'); old.append(patch[pos][1:]); pos+=1\n        assert len(old)==count,(name,len(old),count)\n        assert source[start-1:start-1+count]==old,(name,start)\n    print(name, 'all hunk positions/content match current skill')\nCHECK",
+    "result": "PASS: all three patches match current skill line positions and deleted contents"
+  },
+  "findings": [],
+  "conclusion": "No actionable correctness findings or test gaps identified in the reviewed change set.",
+  "limits": [
+    "Review of the specified changes, not a full re-audit of the repository or deployed behavior",
+    "Synthetic credential strings are detector controls, not real credentials",
+    "Current-document requirements were reviewed as instructions; no new Cloudflare semantic audit was performed",
+    "No source or installed-skill edits; no model outputs or judges read directly",
+    "Existing oracle test suites were executed as tests; no model-output evaluation artifacts were inspected"
+  ],
+  "original_probe_command_sha256": "dd7e98b716ae13ce2b1d9b14e9cea829405caa09a7a4292de8619f966e5657a9",
+  "probe_source_sha256_before_formatting": "a0d2cf70bb08ead2eab03f35ff712fb5385b76f9100e4ff50b8aebd82a2cee9d",
+  "publication_note": "Credential-shaped strings are synthetic positive controls. The exact executable probe is published under excluded evals/fixtures/validation instead of embedded in this data receipt. Original private review receipt remains hash-preserved.",
+  "published_probe_source_sha256": "09a5314dd9136c22d500fa8f5f54756bc8a3ff78167edb27ad2000943aa7523a"
+}

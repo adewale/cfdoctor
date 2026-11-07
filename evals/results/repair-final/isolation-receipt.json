@@ -1,0 +1,834 @@
+{
+  "timing": "Builder invariant validation; refer to protocol for input freeze and launch time.",
+  "pairs": 46,
+  "checks": [
+    {
+      "case": "repair-q1",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "eac079e44a98aac825f90b22f2972fd67d26f7531a8c9c244d7f1cb5fcbc25a3",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-q1",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "eac079e44a98aac825f90b22f2972fd67d26f7531a8c9c244d7f1cb5fcbc25a3",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-q1",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "eac079e44a98aac825f90b22f2972fd67d26f7531a8c9c244d7f1cb5fcbc25a3",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-q1",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "eac079e44a98aac825f90b22f2972fd67d26f7531a8c9c244d7f1cb5fcbc25a3",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-q2",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "eac079e44a98aac825f90b22f2972fd67d26f7531a8c9c244d7f1cb5fcbc25a3",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-q2",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "eac079e44a98aac825f90b22f2972fd67d26f7531a8c9c244d7f1cb5fcbc25a3",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-q2",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "eac079e44a98aac825f90b22f2972fd67d26f7531a8c9c244d7f1cb5fcbc25a3",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-q2",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "eac079e44a98aac825f90b22f2972fd67d26f7531a8c9c244d7f1cb5fcbc25a3",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-m1",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "24c4a0a6dc3ad883ae37b872209651ca0728f31f20c8659411a1bbd3e67b9c94",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-m1",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "24c4a0a6dc3ad883ae37b872209651ca0728f31f20c8659411a1bbd3e67b9c94",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-m1",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "24c4a0a6dc3ad883ae37b872209651ca0728f31f20c8659411a1bbd3e67b9c94",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-m1",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "24c4a0a6dc3ad883ae37b872209651ca0728f31f20c8659411a1bbd3e67b9c94",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-m2",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "24c4a0a6dc3ad883ae37b872209651ca0728f31f20c8659411a1bbd3e67b9c94",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-m2",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "24c4a0a6dc3ad883ae37b872209651ca0728f31f20c8659411a1bbd3e67b9c94",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-m2",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "24c4a0a6dc3ad883ae37b872209651ca0728f31f20c8659411a1bbd3e67b9c94",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-m2",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "24c4a0a6dc3ad883ae37b872209651ca0728f31f20c8659411a1bbd3e67b9c94",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-c1",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "f18ab27c5dd6192c15a1efa83c620f6b8fb4ce2d14eb15e4f7294e400ffcd0c9",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-c1",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "f18ab27c5dd6192c15a1efa83c620f6b8fb4ce2d14eb15e4f7294e400ffcd0c9",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-c1",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "f18ab27c5dd6192c15a1efa83c620f6b8fb4ce2d14eb15e4f7294e400ffcd0c9",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-c1",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "f18ab27c5dd6192c15a1efa83c620f6b8fb4ce2d14eb15e4f7294e400ffcd0c9",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-c2",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "f18ab27c5dd6192c15a1efa83c620f6b8fb4ce2d14eb15e4f7294e400ffcd0c9",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-c2",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "f18ab27c5dd6192c15a1efa83c620f6b8fb4ce2d14eb15e4f7294e400ffcd0c9",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-c2",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "f18ab27c5dd6192c15a1efa83c620f6b8fb4ce2d14eb15e4f7294e400ffcd0c9",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-c2",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "f18ab27c5dd6192c15a1efa83c620f6b8fb4ce2d14eb15e4f7294e400ffcd0c9",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-p1",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "6e486338bec22064eac15e2f357f0573de7b7649ad9aa2b4c77ea0488032f8ab",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-p1",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "6e486338bec22064eac15e2f357f0573de7b7649ad9aa2b4c77ea0488032f8ab",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-p1",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "6e486338bec22064eac15e2f357f0573de7b7649ad9aa2b4c77ea0488032f8ab",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-p1",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "6e486338bec22064eac15e2f357f0573de7b7649ad9aa2b4c77ea0488032f8ab",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-p2",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "6e486338bec22064eac15e2f357f0573de7b7649ad9aa2b4c77ea0488032f8ab",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-p2",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "6e486338bec22064eac15e2f357f0573de7b7649ad9aa2b4c77ea0488032f8ab",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-p2",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "6e486338bec22064eac15e2f357f0573de7b7649ad9aa2b4c77ea0488032f8ab",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "repair-p2",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "6e486338bec22064eac15e2f357f0573de7b7649ad9aa2b4c77ea0488032f8ab",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "3c8611a2cc1a241f83475b52c3659f8e2a98529c71f28e97c272a839cf144e3d",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "3c8611a2cc1a241f83475b52c3659f8e2a98529c71f28e97c272a839cf144e3d",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "3c8611a2cc1a241f83475b52c3659f8e2a98529c71f28e97c272a839cf144e3d",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "3c8611a2cc1a241f83475b52c3659f8e2a98529c71f28e97c272a839cf144e3d",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "3c8611a2cc1a241f83475b52c3659f8e2a98529c71f28e97c272a839cf144e3d",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-url-shortener",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "3c8611a2cc1a241f83475b52c3659f8e2a98529c71f28e97c272a839cf144e3d",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "d86bbb88c041fc27244715c9ed3e90c1a302770ed952d7027e41a79cfa39f680",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "d86bbb88c041fc27244715c9ed3e90c1a302770ed952d7027e41a79cfa39f680",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "d86bbb88c041fc27244715c9ed3e90c1a302770ed952d7027e41a79cfa39f680",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "d86bbb88c041fc27244715c9ed3e90c1a302770ed952d7027e41a79cfa39f680",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "d86bbb88c041fc27244715c9ed3e90c1a302770ed952d7027e41a79cfa39f680",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bytego",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "d86bbb88c041fc27244715c9ed3e90c1a302770ed952d7027e41a79cfa39f680",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "d793d0f41862ba1c9ff4f54ce8591ccdbd00bd0fa5ef3222c88372635e4b90a8",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "d793d0f41862ba1c9ff4f54ce8591ccdbd00bd0fa5ef3222c88372635e4b90a8",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "d793d0f41862ba1c9ff4f54ce8591ccdbd00bd0fa5ef3222c88372635e4b90a8",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "d793d0f41862ba1c9ff4f54ce8591ccdbd00bd0fa5ef3222c88372635e4b90a8",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "d793d0f41862ba1c9ff4f54ce8591ccdbd00bd0fa5ef3222c88372635e4b90a8",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-status-page",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "d793d0f41862ba1c9ff4f54ce8591ccdbd00bd0fa5ef3222c88372635e4b90a8",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "09715d75b496e042075d8fe98290baf5b4832f8dd908932921e4f2fc781c2645",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "09715d75b496e042075d8fe98290baf5b4832f8dd908932921e4f2fc781c2645",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "09715d75b496e042075d8fe98290baf5b4832f8dd908932921e4f2fc781c2645",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "09715d75b496e042075d8fe98290baf5b4832f8dd908932921e4f2fc781c2645",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "09715d75b496e042075d8fe98290baf5b4832f8dd908932921e4f2fc781c2645",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-web-tools",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "09715d75b496e042075d8fe98290baf5b4832f8dd908932921e4f2fc781c2645",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-hookrelay",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "4201b481d1c99d0d27f34ada0143b9fbbd9385051354ccdad27bad58a7e1910c",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-hookrelay",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "4201b481d1c99d0d27f34ada0143b9fbbd9385051354ccdad27bad58a7e1910c",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-hookrelay",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "4201b481d1c99d0d27f34ada0143b9fbbd9385051354ccdad27bad58a7e1910c",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-hookrelay",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "4201b481d1c99d0d27f34ada0143b9fbbd9385051354ccdad27bad58a7e1910c",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-hookrelay",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "4201b481d1c99d0d27f34ada0143b9fbbd9385051354ccdad27bad58a7e1910c",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-hookrelay",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "4201b481d1c99d0d27f34ada0143b9fbbd9385051354ccdad27bad58a7e1910c",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-workers-chat-demo",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "e14fcefb860ea759040d3bdb81f6f5c6af36cfde8cd074b91ff5a8610805be14",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-workers-chat-demo",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "e14fcefb860ea759040d3bdb81f6f5c6af36cfde8cd074b91ff5a8610805be14",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-workers-chat-demo",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "e14fcefb860ea759040d3bdb81f6f5c6af36cfde8cd074b91ff5a8610805be14",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-workers-chat-demo",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "e14fcefb860ea759040d3bdb81f6f5c6af36cfde8cd074b91ff5a8610805be14",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-workers-chat-demo",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "e14fcefb860ea759040d3bdb81f6f5c6af36cfde8cd074b91ff5a8610805be14",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-workers-chat-demo",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "e14fcefb860ea759040d3bdb81f6f5c6af36cfde8cd074b91ff5a8610805be14",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "193cd5496e91a8b2e683a34f98889d064056fe8b45c7c8057af87afb5e4df0ff",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "193cd5496e91a8b2e683a34f98889d064056fe8b45c7c8057af87afb5e4df0ff",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-pastebin-d1",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "193cd5496e91a8b2e683a34f98889d064056fe8b45c7c8057af87afb5e4df0ff",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "193cd5496e91a8b2e683a34f98889d064056fe8b45c7c8057af87afb5e4df0ff",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "193cd5496e91a8b2e683a34f98889d064056fe8b45c7c8057af87afb5e4df0ff",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-pastebin-d1",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "193cd5496e91a8b2e683a34f98889d064056fe8b45c7c8057af87afb5e4df0ff",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-reia-lfs-r2",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "7520146790d288676305f13c7f8af8015b897d9afa198dd1216fd235cc9d256e",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-reia-lfs-r2",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "7520146790d288676305f13c7f8af8015b897d9afa198dd1216fd235cc9d256e",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-reia-lfs-r2",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "7520146790d288676305f13c7f8af8015b897d9afa198dd1216fd235cc9d256e",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-reia-lfs-r2",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "7520146790d288676305f13c7f8af8015b897d9afa198dd1216fd235cc9d256e",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-reia-lfs-r2",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "7520146790d288676305f13c7f8af8015b897d9afa198dd1216fd235cc9d256e",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-reia-lfs-r2",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "7520146790d288676305f13c7f8af8015b897d9afa198dd1216fd235cc9d256e",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-anynote",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "a56c44716cac4be88469b303c98aeccbc4b2666171965435fed13de6b86f3b29",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-anynote",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "a56c44716cac4be88469b303c98aeccbc4b2666171965435fed13de6b86f3b29",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-anynote",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "a56c44716cac4be88469b303c98aeccbc4b2666171965435fed13de6b86f3b29",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-anynote",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "a56c44716cac4be88469b303c98aeccbc4b2666171965435fed13de6b86f3b29",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-anynote",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "a56c44716cac4be88469b303c98aeccbc4b2666171965435fed13de6b86f3b29",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-anynote",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "a56c44716cac4be88469b303c98aeccbc4b2666171965435fed13de6b86f3b29",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bashupload-r2",
+      "variant": "with_skill",
+      "run": 1,
+      "prompt_sha256": "99e3ad2b8d020861920caf72433e6ecb9a124232f06476b4516a9d50818b8f0a",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bashupload-r2",
+      "variant": "with_skill",
+      "run": 2,
+      "prompt_sha256": "99e3ad2b8d020861920caf72433e6ecb9a124232f06476b4516a9d50818b8f0a",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bashupload-r2",
+      "variant": "with_skill",
+      "run": 3,
+      "prompt_sha256": "99e3ad2b8d020861920caf72433e6ecb9a124232f06476b4516a9d50818b8f0a",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bashupload-r2",
+      "variant": "old_skill",
+      "run": 1,
+      "prompt_sha256": "99e3ad2b8d020861920caf72433e6ecb9a124232f06476b4516a9d50818b8f0a",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bashupload-r2",
+      "variant": "old_skill",
+      "run": 2,
+      "prompt_sha256": "99e3ad2b8d020861920caf72433e6ecb9a124232f06476b4516a9d50818b8f0a",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    },
+    {
+      "case": "fresh-bashupload-r2",
+      "variant": "old_skill",
+      "run": 3,
+      "prompt_sha256": "99e3ad2b8d020861920caf72433e6ecb9a124232f06476b4516a9d50818b8f0a",
+      "raw_source_verified": true,
+      "serialized_source_unmounted": true,
+      "oracle_unmounted": true
+    }
+  ]
+}
