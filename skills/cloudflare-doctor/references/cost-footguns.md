@@ -65,9 +65,15 @@ Footguns:
 - N+1 query patterns in Workers; count queries and rows read per user-visible request, not just HTTP request count.
 - Using D1 as an analytics/event sink or queue.
 - Recomputing public query results on every request instead of caching.
+- Caching an expensive aggregate only in per-isolate memory (a module-scope `Map`/LRU, or a memory-only cachified adapter). Isolates have no guaranteed lifetime, so deploys, evictions, low-traffic locations, and warmup crons re-run the scan regardless of TTL; the effective refresh rate scales with isolates × churn, not 1/TTL. Rows-read cost is per-execution scan size × execution count — indexes/query shape bound the first factor, cache architecture bounds the second (war-story scenario 25).
+- Cache-bypass refreshes (`forceFresh`, purge-then-recompute) reachable from public or per-request actions without a did-state-actually-change guard; and assuming a forced refresh propagates into nested cached values (cachified `forceFresh` is not recursive).
+- On Workers Free, treating the D1 daily allowance as a soft target. Since 2026-09-01, an account over the daily rows-read or rows-written limit gets errors on every D1 query until midnight UTC (stored data is unaffected), so the failure is an account-wide outage, not a bill. A traffic spike on a per-request scan or a churn-amplified aggregate can reach that limit; confirm the plan before calling a rows-read finding "$0". Source: https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/ and https://developers.cloudflare.com/d1/platform/pricing/
 
 Better patterns:
 - Add indexes, limits, batching, prepared statements, constraints, and CDN/cache layers where consistency allows.
+- Take shared aggregates off public request paths first. Materialize them at publish/update time or on a cron, as the public-route cost release gate in `SKILL.md` requires to close a `BLOCK`. Treat a cache as fill-bounding, not closure.
+- When caching an aggregate, size it with the gate's `distinct cache keys × fills per key × units per fill` formula. Each independent cache location multiplies fills per key. Per-isolate memory means isolates × churn. The Cache API means one location per data center, with no request collapsing. A KV-backed adapter or Workers Cache is global or tiered, and Workers Cache collapses concurrent fills. Keep per-isolate memory only as an L1 in front of a shared layer, or for values that are cheap to recompute.
+- Attribute rows read per query with D1 GraphQL analytics (`d1QueriesAdaptiveGroups` ordered by rows read) and compare execution counts against the TTL-implied refresh rate; a large gap means the cache layer is not doing what its TTL suggests.
 - Use Queues/Analytics Engine/R2 for high-volume event capture depending on requirements.
 
 ## R2

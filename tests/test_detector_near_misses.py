@@ -183,6 +183,24 @@ CASES = [
         ),
     ),
     (
+        "CFDOC-COST-D1-ISOLATE-CACHE",
+        "a Map created per call cannot cache across requests",
+        worker(
+            "const totals = new Map();\n"
+            "export default { async fetch(request, env) {\n"
+            '  if (!totals.has("all")) totals.set("all", await env.DB.prepare("SELECT COUNT(*) AS n FROM post_reads").first());\n'
+            '  return Response.json(totals.get("all"));\n} };\n',
+            d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
+        ),
+        worker(
+            "export default { async fetch(request, env) {\n"
+            "  const totals = new Map();\n"
+            '  if (!totals.has("all")) totals.set("all", await env.DB.prepare("SELECT COUNT(*) AS n FROM post_reads").first());\n'
+            '  return Response.json(totals.get("all"));\n} };\n',
+            d1_databases=[{"binding": "DB", "database_name": "app", "database_id": "x"}],
+        ),
+    ),
+    (
         "CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD",
         "a Durable Object exposing only runtime hooks",
         durable_object(

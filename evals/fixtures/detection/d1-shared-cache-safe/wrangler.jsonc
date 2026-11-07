@@ -1,0 +1,13 @@
+{
+  // Blog read-stats API backed by D1 with a shared KV cache layer.
+  "name": "blog-read-stats-safe",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-01",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "blog", "database_id": "0000fixture0000" }
+  ],
+  "kv_namespaces": [
+    { "binding": "CACHE_KV", "id": "0000fixture0000" }
+  ]
+}

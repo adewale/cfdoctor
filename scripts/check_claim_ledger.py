@@ -17,7 +17,7 @@ ID_RE = re.compile(r"^CFDOC-EVD-[A-Z0-9-]+$")
 ALLOWED_CLASSES = {"incident", "official-guidance", "operator-note", "product-announcement"}
 ALLOWED_STATUS = {"accepted", "unverified", "superseded", "retracted"}
 CONFIDENCE_KEYS = {"authenticity", "mechanism", "independence", "applicability", "temporal"}
-SCENARIO_MAX = 24
+SCENARIO_MAX = 25
 # Accepted evidence fails validation as soon as its review is due. Non-accepted
 # evidence (unverified, superseded, retracted) warns for this many days after
 # review_due and then fails, so an overdue review cannot stay a warning forever.
