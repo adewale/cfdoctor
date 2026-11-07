@@ -1,0 +1,170 @@
+{
+  "method": "50000 paired case-cluster bootstrap resamples; ratio of means; seed20261107; descriptive for eight selected projects.",
+  "metrics": {
+    "total_tokens": {
+      "percent_change": -8.055299839765183,
+      "case_cluster_percentile_95_ci": [
+        -23.292982381466988,
+        8.117397160089634
+      ]
+    },
+    "cached_input_tokens": {
+      "percent_change": -9.395718086229476,
+      "case_cluster_percentile_95_ci": [
+        -25.925340082252458,
+        8.572933419862117
+      ]
+    },
+    "uncached_input_tokens": {
+      "percent_change": 2.550318079376912,
+      "case_cluster_percentile_95_ci": [
+        -1.5437246326148846,
+        6.833217439043793
+      ]
+    },
+    "output_tokens": {
+      "percent_change": -2.541882785134053,
+      "case_cluster_percentile_95_ci": [
+        -6.052728207387825,
+        1.2534081148299014
+      ]
+    },
+    "elapsed_seconds": {
+      "percent_change": -3.0882931092072963,
+      "case_cluster_percentile_95_ci": [
+        -6.65877427294197,
+        0.8147538013101308
+      ]
+    }
+  },
+  "per_case": {
+    "fresh-bytego": {
+      "old_skill": {
+        "total_tokens": 792542.6666666666,
+        "cached_input_tokens": 699904,
+        "uncached_input_tokens": 78589,
+        "output_tokens": 14049.666666666666,
+        "elapsed_seconds": 273.634
+      },
+      "with_skill": {
+        "total_tokens": 863483,
+        "cached_input_tokens": 764458.6666666666,
+        "uncached_input_tokens": 85165,
+        "output_tokens": 13859.333333333334,
+        "elapsed_seconds": 265.1196666666667
+      }
+    },
+    "fresh-hookrelay": {
+      "old_skill": {
+        "total_tokens": 766266.6666666666,
+        "cached_input_tokens": 683733.3333333334,
+        "uncached_input_tokens": 68247.66666666667,
+        "output_tokens": 14285.666666666666,
+        "elapsed_seconds": 274.6553333333333
+      },
+      "with_skill": {
+        "total_tokens": 547681,
+        "cached_input_tokens": 468693.3333333333,
+        "uncached_input_tokens": 65452.333333333336,
+        "output_tokens": 13535.333333333334,
+        "elapsed_seconds": 257.28866666666664
+      }
+    },
+    "fresh-pastebin-d1": {
+      "old_skill": {
+        "total_tokens": 1134015.6666666667,
+        "cached_input_tokens": 1032277.3333333334,
+        "uncached_input_tokens": 85538,
+        "output_tokens": 16200.333333333334,
+        "elapsed_seconds": 312.259
+      },
+      "with_skill": {
+        "total_tokens": 688937,
+        "cached_input_tokens": 591786.6666666666,
+        "uncached_input_tokens": 81344,
+        "output_tokens": 15806.333333333334,
+        "elapsed_seconds": 303.9556666666667
+      }
+    },
+    "fresh-reia-lfs-r2": {
+      "old_skill": {
+        "total_tokens": 474485.3333333333,
+        "cached_input_tokens": 408618.6666666667,
+        "uncached_input_tokens": 55181,
+        "output_tokens": 10685.666666666666,
+        "elapsed_seconds": 207.023
+      },
+      "with_skill": {
+        "total_tokens": 513199.6666666667,
+        "cached_input_tokens": 439637.3333333333,
+        "uncached_input_tokens": 62011.666666666664,
+        "output_tokens": 11550.666666666666,
+        "elapsed_seconds": 222.01366666666667
+      }
+    },
+    "fresh-status-page": {
+      "old_skill": {
+        "total_tokens": 595265.6666666666,
+        "cached_input_tokens": 513792,
+        "uncached_input_tokens": 68976.33333333333,
+        "output_tokens": 12497.333333333334,
+        "elapsed_seconds": 244.917
+      },
+      "with_skill": {
+        "total_tokens": 498214.6666666667,
+        "cached_input_tokens": 420480,
+        "uncached_input_tokens": 66422,
+        "output_tokens": 11312.666666666666,
+        "elapsed_seconds": 218.913
+      }
+    },
+    "fresh-url-shortener": {
+      "old_skill": {
+        "total_tokens": 714665.3333333334,
+        "cached_input_tokens": 626346.6666666666,
+        "uncached_input_tokens": 73064.66666666667,
+        "output_tokens": 15254,
+        "elapsed_seconds": 292.45966666666664
+      },
+      "with_skill": {
+        "total_tokens": 839521.3333333334,
+        "cached_input_tokens": 746197.3333333334,
+        "uncached_input_tokens": 79500.66666666667,
+        "output_tokens": 13823.333333333334,
+        "elapsed_seconds": 265.11333333333334
+      }
+    },
+    "fresh-web-tools": {
+      "old_skill": {
+        "total_tokens": 640634.3333333334,
+        "cached_input_tokens": 555050.6666666666,
+        "uncached_input_tokens": 72147,
+        "output_tokens": 13436.666666666666,
+        "elapsed_seconds": 256.5713333333333
+      },
+      "with_skill": {
+        "total_tokens": 625601,
+        "cached_input_tokens": 539349.3333333334,
+        "uncached_input_tokens": 73118,
+        "output_tokens": 13133.666666666666,
+        "elapsed_seconds": 251.49466666666666
+      }
+    },
+    "fresh-workers-chat-demo": {
+      "old_skill": {
+        "total_tokens": 625986.6666666666,
+        "cached_input_tokens": 532224,
+        "uncached_input_tokens": 78929,
+        "output_tokens": 14833.666666666666,
+        "elapsed_seconds": 281.045
+      },
+      "with_skill": {
+        "total_tokens": 704539.3333333334,
+        "cached_input_tokens": 606677.3333333334,
+        "uncached_input_tokens": 82468,
+        "output_tokens": 15394,
+        "elapsed_seconds": 292.497
+      }
+    }
+  }
+}

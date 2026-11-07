@@ -1,0 +1,49 @@
+{
+  "policy": "These are non-exhaustive factual clarifications for judging against the frozen raw projects. They are not a required finding list. Quote actual report claims before marking errors; conditional hypotheses and other valid findings remain acceptable. Do not transfer a control's invariant to unrelated behavior.",
+  "cases": {
+    "fresh-url-shortener": [
+      "src/index.ts middleware runs API authentication/rate limiting before creation's namespace list/get fanout. Missing Authorization can be rejected before API_KEYS.get; invalid nonempty credentials can reach that lookup. Metadata fetch is conditional on missing supplied metadata and an OG-cache miss, not every creation.",
+      "The redirect analytics put at272-276 is inside try/catch266-280; its catch returns c.notFound(), hence404. API limiter errors can instead reach the global500 handler. Preserve the branch distinction.",
+      "KV binding operations consume the internal-service counter, not the external-fetch counter. The supplied Workers reference distinguishes Free1000 internal-service calls from50 external subrequests. list+1000 gets already exceeds1000 before other work; tens of KV reads alone do not prove a50-limit violation.",
+      "Hono cache implementation/installed runtime is absent. Qualify claims depending on cache hits, eligibility, mutation invalidation or poisoning. User-Agent redirects can avoid analytics writes. Authentication exists; commented D1/R2 bindings are not deployments."
+    ],
+    "fresh-bytego": [
+      "Multipart parseBody occurs before the File.size cap; later File.stream into R2 does not undo that materialization. Runtime OOM incidence/concurrency is unmeasured.",
+      "Upload/delete checkAuth guards and hard-mode deletion gate exist. Optional AUTH_KEY type declarations are not secrets. README says Wrangler/dev-vars are ignored, while .gitignore is outside this snapshot: don't assert it was supplied or absent upstream.",
+      "Operator-selected content types and bearer administration are intentional. Custom-path replacement, stale deletion metadata and prefix-change behavior can be valid additional findings when source tracing establishes them; no blanket traversal or unauthenticated-write claim."
+    ],
+    "fresh-status-page": [
+      "Monitor fetch rejection aborts before the final saved state. Cleanup deletes a removed monitor then dereferences its checks. This is inside a .map callback: callback return is valid; literal continue needs a loop refactor; returning from the outer .then skips scan/save.",
+      "Main cron persistence is awaited/registered, and notifications use waitUntil. That does not establish successful notification HTTP acknowledgment or durable retries. Concurrent cron/cleanup KV writers remain a qualified lost-update risk.",
+      "The default successful minute cron stores one shared KV state per run, not one per monitor:1440/day only exceeds the Free1000/day allowance conditionally. External fetches/notifications and internal KV calls use different counters. Checked-in monitor count is3; larger-volume examples are hypothetical, not observed failures."
+    ],
+    "fresh-web-tools": [
+      "Session lookup filters token, not expires_at; expiry on an already-expired presented session is unenforced. Cookie Max-Age is not server validation. Logout deletes its presented token. Stored UTC strings need a canonical comparable representation in any fix.",
+      "To-Do routes authenticate and check ownership; parameters are bound and dynamic field names are hard-coded. Internal seed requires POST plus a nonempty matching separate secret before DDL/inserts. No unauthenticated seed bypass is shown; production activation is unknown. Conditional seed-first schema/migration drift is real.",
+      "Anonymous /api/auth/me intentionally returns200 with loggedIn:false; protected To-Do requests return401. A universal401 test for all auth endpoints is wrong. LIMIT500 listing hides rows but does not delete them; independent read/invert/write toggle calls can lose an update."
+    ],
+    "fresh-hookrelay": [
+      "Separate KV status/envelope puts then queue.send lack an atomic uniqueness/outbox transition. Definite pre-accept send failure can strand visible queued state. Queue carries an id; a temporary KV envelope miss is explicitly acked, which prevents redelivery. Do not turn possible runtime frequency into a measured incident.",
+      "Circuit half-open does not reserve a single in-flight probe even under sequential state transitions; token bucket still limits traffic. Do not invent a Durable Object get/put race without considering storage gates.",
+      "Primary queue has max_retries and a DLQ; its terminal queue also has a consumer. Another infinite DLQ chain is not mandatory. Sustained terminal-recording failures can exhaust retries, but the current consumer already persists before ack; missing primary DLQ, every single failure discarding all envelope data, or merely recommending the existing ordering are different claims.",
+      "README limits this reference's product scope; absence of account/multi-tenant dashboard authentication is not automatically a promised-policy violation. Mixed-event attempt history and monotonic status concerns can be valid separate findings."
+    ],
+    "fresh-workers-chat-demo": [
+      "A socket accepted before user-info has buffered initial history/roster only in memory. Constructor recovery resets blockedMessages to []; the original backlog is not rebuilt. Later user-info flushes only that reconstructed buffer, which may contain new broadcasts queued after recovery. Named identities and limiter attachments do restore. This pending-session defect must not be generalized to every named socket.",
+      "First user-info frame sets identity and returns; it is not a stored chat message. Cost/write tests must distinguish admission, initialization and actual chat data. Loading100 history records is a bounded response, not a stated100-record storage retention contract.",
+      "Private room ids are intentional anyone-with-link capabilities; display names are explicitly unauthenticated; text is rendered safely. Demo stack responses are optional hardening unless actual sensitive output is shown. Timers, unbounded pending buffers, reconnect loops and some late route validation can be valid source concerns, with unmeasured runtime impact qualified."
+    ],
+    "fresh-pastebin-d1": [
+      "PB-bound KV admin commands cannot operate authoritative D1 rows; renaming PB to KV alone is not a complete admin fix. Create's availability read then INSERT OR REPLACE can race; all SQL data values are bound.",
+      "doc/api.md:127 promises permanent deletion while README:31 discloses retained expired large KV payloads. Credit a contract conflict; retained original bytes are not automatically still available through a deleted D1 URL, nor an observed leak/legal/billing incident. D1 expiration cleanup is lazy; first expired default read can return a200 placeholder.",
+      "PUT of an expired-but-still-stored row can be the first lookup: the expired template has passwd='', so empty-password comparison can pass and new content is created. With BASIC_AUTH configured this can bypass admission for new content because PUT skips global POST auth. GET/DELETE can remove that row and consume the opportunity; they do not create a persistent writable window. Severity/activation and active-owner takeover need separate evidence.",
+      "Public reads, optional BASIC_AUTH, capability URLs and manual schema bootstrap are intentional. Initial capability delivery in an authorized creation response is not a generic leak. schema.sql's reset is disclosed; no automated migrations alone proves neither a hidden upgrade nor an executed failure.",
+      "Both .github/workflows/deploy.yml and pr.yml are supplied. No target tests were run by this audit. Some equality tests fail to await the async areBlobsEqual comparison; do not misdescribe that as reading Promise.status."
+    ],
+    "fresh-reia-lfs-r2": [
+      "Authenticated uploads require both valid signature and KV allowlist. /generate alone does not activate uploads. Public downloads/manual environment bindings are intentional. OID validates64 hex characters, preventing the alleged slash/path traversal.",
+      "PUT does not check body SHA-256 against OID and can overwrite an existing object. R2 sha256 integrity options and conditional create can repair that narrow boundary; existing corrupted objects need verification, not blind success on precondition failure. Git LFS existing Batch uploads should omit actions, not return409.",
+      "README documents GET /generate and a /revoke?key=<TOKEN> usage example, while its endpoint table labels /revoke as POST. worker.js explicitly accepts both GET and POST revocation, so do not assert an implementation-wide POST-only contract. Allowed tokens authorize uploads broadly, generated JWTs omit exp, and verification does not check expiration; no automatic-expiration or per-object-ownership promise is documented. These facts alone do not establish an auth/ownership bypass, and qualified hardening observations remain admissible. KV revocation propagation needs qualification; exact delay, cache deployment and billing incidents were not observed."
+    ]
+  }
+}

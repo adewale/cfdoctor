@@ -19,17 +19,41 @@ Use this skill to audit a user's Cloudflare project like a doctor: diagnose from
 
 ## Activation boundary
 
-Use this skill only when the request includes concrete Cloudflare project, configuration, architecture, IaC, account, or usage evidence to audit. Decide from the user request and explicitly supplied inputs before inspecting the workspace. **Hard stop:** when the task names only AWS or another non-Cloudflare platform, reply in one brief sentence that Cloudflare Doctor is not applicable; do not inspect the repo, emit scope markers, or perform that audit. If a prompt merely says a README/repo/config exists but attaches no such files, reply only that no auditable project evidence was supplied; do not search the workspace or emit `Scope inspected:`. For example, a claim that a README links to Cloudflare docs without an attached README is not an audit input. For generic DNS explanations, public status checks, product news, brand copy, or conceptual Cloudflare questions with no project evidence, do not search the workspace, read this skill's references, or emit its audit format; answer normally or route to the appropriate skill.
+Use this skill only when the request includes concrete Cloudflare project, configuration, architecture, IaC, account, or usage evidence to audit. An explicit repository URL or local project path authorizes reading that target to collect the evidence; it does not authorize probing its deployed application or account. Decide from the user request and explicitly supplied inputs before inspecting the workspace. **Hard stop:** when the task names only AWS or another non-Cloudflare platform, reply in one brief sentence that Cloudflare Doctor is not applicable; do not inspect the repo, emit scope markers, or perform that audit. If a prompt merely claims a README/repo/config exists without supplying files or an identifiable target, reply only that no auditable project evidence was supplied; do not search the workspace or emit `Scope inspected:`. For generic DNS explanations, public status checks, product news, brand copy, or conceptual Cloudflare questions with no project evidence, do not search the workspace, read this skill's references, or emit its audit format; answer normally or route to the appropriate skill.
+
+## Confirm findings
+
+Confirm both the mechanism and what makes it wrong before creating a finding card.
+
+- Trace the executed branch, including guards, optional work, catches and its
+  actual response. Use a range when parsing or guards can stop before a
+  dependency; an upper bound is not a count for every request.
+- Establish the violated requirement and when it must hold. An operation
+  authorized before expiry may finish later under admission semantics. If a
+  stronger deadline, method/status policy or deployment requirement is
+  unspecified, put it under **Questions / evidence needed**, not confirmed
+  findings. Public access and manual setup alone do not establish defects.
+- Check external-API and quota claims against sources actually inspected. KV
+  binding reads use the internal-service allowance; do not take the minimum
+  with the external-fetch allowance. A link or model memory is not a refreshed
+  or supplied document. If the needed API contract is unavailable, keep the
+  claim unverified rather than inventing a source basis.
+- Check control-flow fixes in their surrounding code. A callback `return` exits
+  that callback; `continue` needs an enclosing loop. Show a loop refactor if the
+  fix relies on one. Use an existing syntax check or focused test when permitted
+  and useful; preserve valid behavior.
 
 ## Standard workflow
 
-1. Inventory the supplied evidence first: relevant repo files, Wrangler config, bindings, IaC, routes, runtime paths, migrations, tests, and account exports. If there is no concrete Cloudflare evidence, stop at the activation boundary.
+1. Inventory the supplied evidence first: relevant repo files, Wrangler config, bindings, IaC, routes, runtime paths, migrations, tests, and account exports. Separate Worker, Node tooling, browser, test and static-only scopes. Follow deploy scripts and config generators to their installed artifacts; label generated values, alternate hosts, skipped bundles and live state unknown where they were not inspected. Binding names from one Worker do not establish another Worker's products. If there is no concrete Cloudflare evidence, stop at the activation boundary.
 2. If allowed, run the static scanner from the project root before reading broad guidance. Use the absolute path to this skill's script (the `scripts/` directory next to this `SKILL.md`):
    ```bash
    python3 <skill-dir>/scripts/cfdoctor_static_scan.py .
    ```
    Treat scanner output as leads, not proof. Add `--json` for machine-readable leads with stable check IDs. When a scanner lead supports a reported finding, preserve its stable check ID in `Evidence:` so the reader can track it precisely across reruns and fixes. When scanning this skill's own repository, add `--exclude evals/fixtures` (the fixtures are intentionally bad). A zero-finding scan is affirmative precision evidence: do not manufacture hygiene findings merely because the prompt asks what is wrong. Explicit intent, tests, or compensating controls in supplied README/config evidence suppress generic route/default/hygiene suggestions unless contrary runtime evidence exists.
 3. Map detected products, primitives, hot paths, and concrete hypotheses.
+
+   For generated deployments, anonymous POST ingestion, repeated private/background D1 work, object decompression/accumulation, deletion, cross-store retries, or a project-provided cost estimate, read [`workload-boundaries.md`](references/workload-boundaries.md) for the evidenced mechanism. Trace callers and nested work before accepting a cap, receipt, cache, query LIMIT or test double as proof. Apply the cost model to authenticated API/MCP/dashboard/CLI work and scheduled jobs as well as public requests; authentication does not bound executions. Distinguish measured, assumed, excluded and unknown units. The anonymous GET gate below remains a separate release check, not the inventory boundary for all workloads.
 
    **Public-route cost release gate.** Run this gate whenever supplied evidence shows an anonymous public `GET` or `HEAD` entrypoint whose response path can reach a metered or quota-bearing dependency. The user does not need to mention crawlers, bots, or billing. Do not probe a live host unless the user authorized it, and do not enumerate or crawl an unbounded live corpus.
 
@@ -50,6 +74,7 @@ Use this skill only when the request includes concrete Cloudflare project, confi
    | Reference routing | Read when |
    |---|---|
    | [`audit-playbook.md`](references/audit-playbook.md) | Broad repo/account audit, multiple product families, or the user requests the full audit. |
+   | [`workload-boundaries.md`](references/workload-boundaries.md) | Generated config, public POST admission, D1 parameter/query budgets, private/background cost paths, expansion/accumulation, complete deletion, cross-store retries, test-binding fidelity, or cost-model coverage. |
    | [`recommendation-provenance.md`](references/recommendation-provenance.md) | Before publishing confirmed findings that need sourced recommendations. |
    | [`wrangler-snapshots.md`](references/wrangler-snapshots.md) | The user supplies a Wrangler snapshot or asks to collect deployed Worker/Pages state. |
    | [`sharing-cloudflare-state.md`](references/sharing-cloudflare-state.md) | A different specific hypothesis depends on dashboard/account state. |
@@ -67,13 +92,17 @@ Use this skill only when the request includes concrete Cloudflare project, confi
 4. Fetch only the current official Cloudflare pages needed to confirm or reject the hypotheses, using product `llms.txt` indexes and applicable Markdown pages. Treat local references as navigation aids, not current authority. For each dependency in a reported cost path, use the current official product/runtime documentation for call semantics and the applicable official pricing or limits documentation for its billable/quota unit, exclusions, aggregation key, and window; do not label an operation "paid" merely because it is a Cloudflare binding. Every current product/configuration recommendation needs official `Source basis` that directly supports it. War stories can support historical mechanisms, not current semantics, applicability, or probability. Exception: a static Wrangler snapshot plan or reconciliation from supplied artifacts should use [`wrangler-snapshots.md`](references/wrangler-snapshots.md) without browsing unless the user asks or a command's current availability/semantics is materially disputed.
 5. If account/dashboard state could change a hypothesis, ask for the smallest discriminating evidence package. Do not request broad account dumps or infer state from its absence in the repo.
 6. If TypeScript code exposes `DurableObject`, `WorkerEntrypoint`, `WorkflowEntrypoint`, `RpcTarget`, or Agent classes, use the optional dead cross-boundary RPC path only when reachability is actually in scope. Gate third-party tools on approval/pinning and treat output as leads, not proof.
-7. Produce only evidence-backed findings. Prioritize correctness, security, reliability, and cost over exhaustive trivia.
+7. Apply the finding criteria above; prioritize material correctness, security, reliability and cost over exhaustive trivia. Keep qualified hypotheses and optional hardening separate from confirmed defects.
 
 ## Output modes
 
 Use **focused triage** by default for one narrow mechanism, prompt-only architecture evidence, small fixture reviews, and zero-finding results. Keep it concise. For three or fewer supplied files, read them directly: do not inventory/search the entire workspace, read the broad playbook/provenance/war-story references, or fetch a product index. Use at most one scanner run and the minimum direct official page needed for a mutable claim. Include `Scope inspected:`, `Scope not inspected:`, and `Docs refreshed:` (or why no mutable semantic required a fetch). If no finding is supported, say `No confirmed findings.` and stop after any question that would materially change that conclusion. Do not add low-severity filler, generic cost maps, or a full run summary.
 
 When the public-route cost release gate activates, put this compact evidence block before the findings, in order: the literal `Release verdict:` line; the route-family matrix; `Discovery gaps:` naming evidenced public families absent from the sitemap or other initial seed and where they were found; `Exposure scenario:` stating per-hit units and the evidence-selected uncached or cached equation (including the first-fill and location/refill/concurrency envelope only for cached paths); and `Closure conditions:` naming what must be true before the verdict can become `PASS`. Before returning, check that all four literal labels, the matrix, and official source basis for the product meter and every recommended cache or static-delivery boundary are present. If the answer recommends Workers Caching or `cache.enabled`, it must cite both Workers Caching configuration and Workers pricing, and state that a cache hit bypasses Worker execution/CPU but retains the documented request charge.
+
+Explicitly identify this verdict as the anonymous GET/HEAD **cost gate**. A cost
+`PASS` does not approve writes or authorization; state any other blocking
+findings separately so the reader cannot mistake it for whole-project approval.
 
 When focused triage has a confirmed finding, use every finding-card field below with the literal labels (`Severity`, `Category`, `Evidence`, `Why it matters`, `Fix`, `Cost / trade-off`, `Verify`, `Source basis`, and `Confidence`); do not fold `Source basis` into inline citations. The full audit scaffold is not required. Explicit bounded retries plus a configured DLQ and process-before-ack flow are a valid Queue near-miss: do not invent findings for optional custom backoff, a separate DLQ consumer, or permanent-error classification unless workload/account evidence makes them necessary.
 
@@ -124,7 +153,7 @@ End with:
 
 ## Severity guide
 
-- **Critical**: likely secret exposure, public data exposure, production outage risk, runaway billing, or a deployed security bypass.
+- **Critical**: an established reachable failure with severe impact, such as usable credential exposure, unauthorized access to protected data, a broad outage or an unbounded billable chain. Identify the affected boundary and trigger; hypothetical deployment or traffic conditions alone do not establish critical impact.
 - **High**: wrong primitive causing correctness/reliability/cost risk at normal scale; severe misconfig; missing auth/rate limit on sensitive endpoints.
 - **Medium**: meaningful performance/cost/reliability improvement or configuration drift that can become serious with growth.
 - **Low**: hygiene, maintainability, minor optimization, or low-confidence smell.

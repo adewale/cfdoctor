@@ -1,0 +1,19 @@
+{
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "x"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "REPLAYS",
+      "bucket_name": "replays"
+    }
+  ]
+}

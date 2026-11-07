@@ -1,0 +1,48 @@
+{
+  "codex": {
+    "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+    "native_benchmark_sha256": "52489087acd2cced2cd242b8a83eaf81e0f71fc73d111eded614b040e6cb09a8",
+    "runs": 48,
+    "execution_valid": 48,
+    "quality_threshold_normalized": 0.85,
+    "quality_passes": {
+      "old_skill": 13,
+      "with_skill": 12
+    },
+    "elapsed_budget_passes": 48,
+    "token_budget_passes": 0,
+    "all_assertions_soft": true,
+    "all_soft_gate_mean_combined_pass_rate": null,
+    "native_default_pairing_requires_without_skill": {
+      "eligible_pairs": 0,
+      "blocked_pairs": 24,
+      "blocked_reason_counts": {
+        "missing_without_skill": 24
+      }
+    },
+    "command": "skill_benchmark.py benchmark manifest-judging-final.json --runs runs --split tune --variant old_skill --variant with_skill --judge-results codex-judge-results.jsonl"
+  },
+  "claude": {
+    "harness_commit": "abd8d7d57aae788658bc293abac1dab80dfb24ac",
+    "native_benchmark_sha256": "e343342080217fdff2749ef9dcc84f2b8930a5dc9822ba53530f4b7c0d2b24ad",
+    "runs": 48,
+    "execution_valid": 48,
+    "quality_threshold_normalized": 0.85,
+    "quality_passes": {
+      "old_skill": 6,
+      "with_skill": 8
+    },
+    "elapsed_budget_passes": 48,
+    "token_budget_passes": 0,
+    "all_assertions_soft": true,
+    "all_soft_gate_mean_combined_pass_rate": null,
+    "native_default_pairing_requires_without_skill": {
+      "eligible_pairs": 0,
+      "blocked_pairs": 24,
+      "blocked_reason_counts": {
+        "missing_without_skill": 24
+      }
+    },
+    "command": "skill_benchmark.py benchmark manifest-judging-final.json --runs runs --split tune --variant old_skill --variant with_skill --judge-results claude-judge-results.jsonl"
+  }
+}

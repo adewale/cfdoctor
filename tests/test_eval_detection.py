@@ -72,6 +72,12 @@ class EvaluateFixtureTests(unittest.TestCase):
         self.assertFalse(result.passed)
         self.assertEqual(["*/5"], result.missing_evidence_terms)
 
+    def test_product_scope_assertions_can_fail_in_both_directions(self) -> None:
+        result = self.evaluate({"required_check_ids": [], "required_products": ["Basin SQL"], "forbidden_products": ["Workers"]})
+        self.assertFalse(result.passed)
+        self.assertEqual(["Basin SQL"], result.missing_products)
+        self.assertEqual(["Workers"], result.forbidden_products_hit)
+
 
     def test_evidence_terms_must_come_from_required_findings(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

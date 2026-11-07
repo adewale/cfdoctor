@@ -2,6 +2,8 @@
 
 These evals follow the skill-creator loop: define trigger prompts, run a quantitative pass, inspect failures, improve `SKILL.md`, and repeat.
 
+The [7 November matched repair evaluation](results/repair-final/README.md) covers ten real projects and eight focused controls, with 92 fresh audits, both native judges and complete independent source review. It records higher mean audit scores, measured token overhead and an unresolved repeated branch-count error. The [focused follow-up](results/focused-followup/README.md) adds command evidence to judging, clarifies callback fixes and records remaining limits without requiring another full sweep.
+
 ## Trigger eval
 
 Run:
@@ -59,9 +61,26 @@ proves that experience-report provenance is not merely free-text decoration.
 Reports land in `evals/results/detection/`. Repo self-scans must exclude these
 intentionally bad fixtures: `./skills/cloudflare-doctor/scripts/cfdoctor_static_scan.py . --exclude evals/fixtures`.
 
+The `workload-*` fixtures are synthetic minimal pairs derived from the pinned
+Dataflare source audit in #35. They cover generated configuration/product scope,
+D1 parameter and invocation-query budgets, expanded data, deletion continuation,
+cross-store counters, admission policy, runtime credentials, cost-model coverage
+and local binding contracts. A safe fixture suppresses only its named lead; it
+does not certify the whole application or a cross-store recovery protocol.
+
+For a paired scanner comparison, run the same current fixtures with
+`python3 scripts/eval_detection.py --scanner /path/to/pinned-baseline-scanner.py --out-dir /tmp/before`
+and then omit `--scanner` for the candidate. `latest.json` records missing and
+forbidden checks/products, fixture results and elapsed milliseconds. Keep the
+legacy and new slices separate. These deterministic checks establish scanner
+behavior, not model-audit quality; the receipt in `results/dataflare/` states
+which behavioral evaluation was actually completed.
+
 ## Paired model value eval
 
-The current matched GPT-5.5 three-way round (`with_skill` current PR, `old_skill` from immutable GitHub `origin/main`, and `without_skill`) is summarized in [`results/gpt-5.5-current-threeway/latest.md`](results/gpt-5.5-current-threeway/latest.md). It uses three fresh isolated runs per visible answer case and variant, paired uncertainty analysis, and a cross-model Claude judge sample. Earlier pinned results remain under [`results/gpt-5.5-value/`](results/gpt-5.5-value/) as historical evidence. The one-shot private release guard is recorded only as a [sanitized aggregate](results/private-release-2026-07-11.md): 2/2 passes, 0.925 blind-judge mean. The evaluation grades diagnostic lift, precision, token/latency overhead, clean/DLQ/no-trigger controls, pricing conflicts, and four Wrangler snapshot behaviors: multi-version Worker reconciliation, Pages/Worker evidence separation, approval-gated collection plans, and Static Assets metadata-only mode. Raw model transcripts stay outside the repository; the checked-in report records the protocol, legacy/new-feature slices, metrics, limitations, and artifact paths.
+The [November 2026 fresh-project comparison](results/fresh-projects/README.md) uses the existing pinned harness to compare old/new skill trees on four real projects. Its primary judge favors the initial update, but the project-cluster interval spans zero, a cross-model judge finds no mean lift, and tokens increase. The receipt preserves the guarded-route regression and separate focused verification rather than attributing the original full-round scores to a later skill revision.
+
+The earlier matched GPT-5.5 three-way round (`with_skill` current PR, `old_skill` from immutable GitHub `origin/main`, and `without_skill`) is summarized in [`results/gpt-5.5-current-threeway/latest.md`](results/gpt-5.5-current-threeway/latest.md). It uses three fresh isolated runs per visible answer case and variant, paired uncertainty analysis, and a cross-model Claude judge sample. Earlier pinned results remain under [`results/gpt-5.5-value/`](results/gpt-5.5-value/) as historical evidence. The one-shot private release guard is recorded only as a [sanitized aggregate](results/private-release-2026-07-11.md): 2/2 passes, 0.925 blind-judge mean. The evaluation grades diagnostic lift, precision, token/latency overhead, clean/DLQ/no-trigger controls, pricing conflicts, and four Wrangler snapshot behaviors: multi-version Worker reconciliation, Pages/Worker evidence separation, approval-gated collection plans, and Static Assets metadata-only mode. Raw model transcripts stay outside the repository; the checked-in report records the protocol, legacy/new-feature slices, metrics, limitations, and artifact paths.
 
 Qualitative assertions now use an explicit `0.85` threshold instead of the fake-red implicit `1.0`. Every tune answer case also has token and elapsed-time assertions. Keep the multi-dimensional objective/qualitative/efficiency view rather than collapsing value to one pass number.
 
@@ -90,3 +109,5 @@ Add cases when the trigger policy changes or a false trigger is observed:
 ```
 
 Use `expected: "no_trigger"` for unrelated Cloudflare mentions, false friends like `R2-D2`, generic dynamic-worker/analytics-engine phrases, generic browser/vector/stream tasks, or tasks better handled by another skill.
+
+The [final expanded matched evaluation](results/final-expanded/README.md) reruns the final skill on eight projects (48 fresh reports), with both judges, independent source review and token accounting. The scanner improves, but audit quality is not consistently better; the report recommends holding PR #36. Earlier four-project results remain historical evidence.

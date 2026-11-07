@@ -1,0 +1,306 @@
+{
+  "projects": [
+    {
+      "bundle": "url-shortener.project.json",
+      "repository": "https://github.com/llegomark/url-shortener",
+      "commit": "ab83188893cca6feac2d9e26b57ed9ba00268c35",
+      "bundle_sha256": "dc5452dcb614aec97f5ff2de071fa7aab69d0a7a441f165a0063387db4b4cec1",
+      "files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/llegomark/url-shortener/ab83188893cca6feac2d9e26b57ed9ba00268c35/LICENSE",
+          "sha256": "debda21289161149872f39c7a413f5fe2b6d95953a8f827ded8999bfeb3b5371"
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/llegomark/url-shortener/ab83188893cca6feac2d9e26b57ed9ba00268c35/README.md",
+          "sha256": "cd4b3c59a0dfe980e123aab25ffd92263555c30ea4d7a0d2125830630b9ea03b"
+        },
+        {
+          "path": "package.json",
+          "url": "https://raw.githubusercontent.com/llegomark/url-shortener/ab83188893cca6feac2d9e26b57ed9ba00268c35/package.json",
+          "sha256": "dd0fa6a2d660cfcdefd7bba76c39b3f267891932998b489274fb7b8ec2742e0b"
+        },
+        {
+          "path": "src/index.ts",
+          "url": "https://raw.githubusercontent.com/llegomark/url-shortener/ab83188893cca6feac2d9e26b57ed9ba00268c35/src/index.ts",
+          "sha256": "67979f0a172dc8d8c35184e43cfa45f0f0f39633586907575af3c716f90062c7"
+        },
+        {
+          "path": "tsconfig.json",
+          "url": "https://raw.githubusercontent.com/llegomark/url-shortener/ab83188893cca6feac2d9e26b57ed9ba00268c35/tsconfig.json",
+          "sha256": "fcc13ccb47f03b7bb28e457432a8f1de321128133f5276e1ee01239f64bd7109"
+        },
+        {
+          "path": "wrangler.toml",
+          "url": "https://raw.githubusercontent.com/llegomark/url-shortener/ab83188893cca6feac2d9e26b57ed9ba00268c35/wrangler.toml",
+          "sha256": "e0a85390bcc1101a6006775658ca0220534b6699ab58231d9e000e25bbb53c97"
+        }
+      ]
+    },
+    {
+      "bundle": "bytego.project.json",
+      "repository": "https://github.com/zopiya/bytego",
+      "commit": "ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a",
+      "bundle_sha256": "d9a7aceea5570c7289c284ff79855a31e0033c39f11d4288cfca1f75726b4aa2",
+      "files": [
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/README.md",
+          "sha256": "d52ca590b468771dc51692afa562b1f865d658a95b2fe64b701911b74f05e087"
+        },
+        {
+          "path": "package.json",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/package.json",
+          "sha256": "2ca2c28f547b3a82c4f844414d00ce011da868a7023e2368b5275c0ba0a79a71"
+        },
+        {
+          "path": "src/global.d.ts",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/src/global.d.ts",
+          "sha256": "3d6690107e61f940323e0e50bd42fa9b786acb4aef6e48c246c09935c1fbff89"
+        },
+        {
+          "path": "src/index.html",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/src/index.html",
+          "sha256": "0145b635efc1470d98548655830c846e70ae2c96a3669c41254fc3684f0f4201"
+        },
+        {
+          "path": "src/index.ts",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/src/index.ts",
+          "sha256": "1f3f5b8580f9bacec0183a7c68e3f58b71090db550ec4a588b3960e1ea28fbf4"
+        },
+        {
+          "path": "src/utils.ts",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/src/utils.ts",
+          "sha256": "b627c8a24fb0eb6da72dc5c239dabd6d985216a8d456afaf66f2e1e2323279cf"
+        },
+        {
+          "path": "tests/utils.test.ts",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/tests/utils.test.ts",
+          "sha256": "db24e6956f5b4560189b42af64ff8b5f3141a070d805af7f60f8495c8bfc932f"
+        },
+        {
+          "path": "tsconfig.json",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/tsconfig.json",
+          "sha256": "022cd5faca5b1f4300e8666a6fa700abe81ab420e274bbed72071f0faa58b7da"
+        },
+        {
+          "path": "wrangler.toml.example",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/wrangler.toml.example",
+          "sha256": "da3e65b2f2a12c74b7a8b15c2ccd67c75058189aaba24808470bd83afc4d1b8c"
+        },
+        {
+          "path": "cors.json",
+          "url": "https://raw.githubusercontent.com/zopiya/bytego/ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a/cors.json",
+          "sha256": "986cdc174292d9b9bd5dd4274db5417a89b077b1fdbf87d6127cb1ab57b39dc4"
+        }
+      ]
+    },
+    {
+      "bundle": "status-page.project.json",
+      "repository": "https://github.com/eidam/cf-workers-status-page",
+      "commit": "f5b49dcae71e12c613b8f00094ed16b735925f64",
+      "bundle_sha256": "b6defdd83c19277525a54bce61755504eba0b4765ae2361b7aa468388c57e9cd",
+      "files": [
+        {
+          "path": ".github/workflows/deploy.yml",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/.github/workflows/deploy.yml",
+          "sha256": "a06c76178bc7361c7351f5a10775797d60c6ce53ef385ac9f4e0aa0b37a3aaa2"
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/README.md",
+          "sha256": "8ce49da746e15a85651f1af7b7732ca25e1ec8af32c790fe27077f40e73a223f"
+        },
+        {
+          "path": "config.yaml",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/config.yaml",
+          "sha256": "d4c6e054bc9acf0cbfd5f7cfa244a7cf104c520abb929d013132271fb5e17ac7"
+        },
+        {
+          "path": "index.js",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/index.js",
+          "sha256": "99f7f78631068cb0edc4e6841fc56843f2cd29112a5a50d173ba6aa0b22d1945"
+        },
+        {
+          "path": "package.json",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/package.json",
+          "sha256": "2ab2fa7f72603da4fdcab97d0954afea370b3a03608e2dc917805d264ee60ba4"
+        },
+        {
+          "path": "pages/api/triggerCron.js",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/pages/api/triggerCron.js",
+          "sha256": "9fe405ce5ae9bf35a4f954fcb2c968e1fdd51b176f709b1a2a7a9da31be562e9"
+        },
+        {
+          "path": "pages/index.js",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/pages/index.js",
+          "sha256": "941a9837dd3ac696d2490b406380787e68aaf2ce80e0e039e68ba80d7a3aa29b"
+        },
+        {
+          "path": "src/cli/gcMonitors.js",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/src/cli/gcMonitors.js",
+          "sha256": "903276ad3ac06be3316002a2ad9e388e26b70606ff8ba2ecea08e3d4b0ca3cd9"
+        },
+        {
+          "path": "src/functions/cronTrigger.js",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/src/functions/cronTrigger.js",
+          "sha256": "d7ede0be66abab6d92fec926ea3455f58fd3ee5402d067ba2f5a36cea6844eee"
+        },
+        {
+          "path": "src/functions/helpers.js",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/src/functions/helpers.js",
+          "sha256": "ce816e392be7dd3650a97df9ef576b5461c3b34c6aa58a465ac62e4280b01574"
+        },
+        {
+          "path": "wrangler.toml",
+          "url": "https://raw.githubusercontent.com/eidam/cf-workers-status-page/f5b49dcae71e12c613b8f00094ed16b735925f64/wrangler.toml",
+          "sha256": "53763377904a0a98088fee297cc2a7a49c98fc68dc753c835493a1473eb98d4e"
+        }
+      ]
+    },
+    {
+      "bundle": "web-tools.project.json",
+      "repository": "https://github.com/brucehart/web-tools",
+      "commit": "f1a09a2e80c9d3bc62786fe06409cad0b118a045",
+      "bundle_sha256": "5d5ffdd0fcd4ad211f9952ac2aca41483ba41c86633cd96959dbb865d2bf7eda",
+      "files": [
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/README.md",
+          "sha256": "5088b4324f878a1f7558dda7a62a34f6fc4f35eac7ec370466495581a0291563"
+        },
+        {
+          "path": "migrations/0001_pastebin.sql",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/migrations/0001_pastebin.sql",
+          "sha256": "27cfe32603c83aba25b05bf63449835e58ebda2543a3ab5645d0075c797149fe"
+        },
+        {
+          "path": "migrations/0003_todo.sql",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/migrations/0003_todo.sql",
+          "sha256": "16bdd6229e0acbaf21921de9ef1acbcd62c9f89d268dd98aaa5b560e802c34d2"
+        },
+        {
+          "path": "migrations/0004_todo_categories.sql",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/migrations/0004_todo_categories.sql",
+          "sha256": "95199bf0b9a556ae01e1f9bfbbc8852006924bfd64f0d0997fbcd16c5b2eb24a"
+        },
+        {
+          "path": "package.json",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/package.json",
+          "sha256": "ddd922a1141e387fa24e36a3795221744b492e19786c2c478e3d92dde131790a"
+        },
+        {
+          "path": "src/auth.ts",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/src/auth.ts",
+          "sha256": "9119bc60d17bd431b0b2e91d19576238a30f2c77b59020bc8d5b3a8359813c1a"
+        },
+        {
+          "path": "src/index.ts",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/src/index.ts",
+          "sha256": "7992cf552ddfb16aec2d19da37a9adc947db3d73f529c6d846a56e2f362b6190"
+        },
+        {
+          "path": "src/internal-test.ts",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/src/internal-test.ts",
+          "sha256": "7b9cd38c2df700452762f95a492c53bb4dd3dad8780ea4146dd59a026ad90e14"
+        },
+        {
+          "path": "src/todo.ts",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/src/todo.ts",
+          "sha256": "ea02be4ee8745ab8f24ff00c7ac3a9c30a592a813620ad72ef6d7d9414af4e9f"
+        },
+        {
+          "path": "src/types.ts",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/src/types.ts",
+          "sha256": "1a0d15761d17a523bdfdca591d05dbbd49f774f4325c655f65cb139ea39784ba"
+        },
+        {
+          "path": "src/utils/cookies.ts",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/src/utils/cookies.ts",
+          "sha256": "0c3ea6dc030e5ba3a15449d1671a3704d095458fcb35cb3ba04dce4f16ec3157"
+        },
+        {
+          "path": "src/utils/http.ts",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/src/utils/http.ts",
+          "sha256": "9409b8c778fb84bdd9936d9ff3013f9599fb22d9585ca752176d8ee3fb9d4790"
+        },
+        {
+          "path": "src/utils/random.ts",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/src/utils/random.ts",
+          "sha256": "4b8cd0124c5252d35c742617cc98fbd10057f1296a2887df8119db863f6e00e0"
+        },
+        {
+          "path": "wrangler.jsonc",
+          "url": "https://raw.githubusercontent.com/brucehart/web-tools/f1a09a2e80c9d3bc62786fe06409cad0b118a045/wrangler.jsonc",
+          "sha256": "2036647935a8ace989324f7bce7818058adbd5102837336868ca318966ec7c18"
+        }
+      ]
+    }
+  ],
+  "docs": [
+    {
+      "file": "workers--platform--limits.md",
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "content_sha256": "02aaa61287264c616335f00b525da36a52c947b1cef88838155405ff3aedfa1d",
+      "prefix": "Source URL: https://developers.cloudflare.com/workers/platform/limits/\nCaptured UTC: 2026-11-06T23:06:57.247721+00:00\n\n",
+      "file_sha256": "ad96531cc2cf0fcba0a267b18b281c9b0d23d7236655814247f3c869348d7036"
+    },
+    {
+      "file": "workers--platform--pricing.md",
+      "url": "https://developers.cloudflare.com/workers/platform/pricing/",
+      "content_sha256": "3f0193ecea654e51fba551217237ce72cb2b9a2750719f0497a350fd3860a71e",
+      "prefix": "Source URL: https://developers.cloudflare.com/workers/platform/pricing/\nCaptured UTC: 2026-11-06T23:06:57.332468+00:00\n\n",
+      "file_sha256": "e5e13a5c7d947bbdb9517825a5908be164583c039bf1e13e982cfd962551f9fe"
+    },
+    {
+      "file": "workers--runtime-apis--context.md",
+      "url": "https://developers.cloudflare.com/workers/runtime-apis/context/",
+      "content_sha256": "7058137b1682e3e4b05ff496059427b8738ef5872f8b0d9899ed0c2af2312403",
+      "prefix": "Source URL: https://developers.cloudflare.com/workers/runtime-apis/context/\nCaptured UTC: 2026-11-06T23:06:57.436382+00:00\n\n",
+      "file_sha256": "467e29818b46215125ef6e4ae01ab8f1f5b3ea31a375a80661afec6afe08cce2"
+    },
+    {
+      "file": "workers--runtime-apis--cache.md",
+      "url": "https://developers.cloudflare.com/workers/runtime-apis/cache/",
+      "content_sha256": "3b88238f3a7ec292c7808db4630b61eeba070a630b4a589d9fc81218e0dfde9b",
+      "prefix": "Source URL: https://developers.cloudflare.com/workers/runtime-apis/cache/\nCaptured UTC: 2026-11-06T23:06:57.511094+00:00\n\n",
+      "file_sha256": "1317438b3cfa69ffd076f343419659e41ab36457c7ad9759d88d6dc94a0f73ad"
+    },
+    {
+      "file": "kv--concepts--how-kv-works.md",
+      "url": "https://developers.cloudflare.com/kv/concepts/how-kv-works/",
+      "content_sha256": "c364f0a06726cf732e7569f4b2886701a508867b026d6cb55c0343e4c203b518",
+      "prefix": "Source URL: https://developers.cloudflare.com/kv/concepts/how-kv-works/\nCaptured UTC: 2026-11-06T23:06:57.590684+00:00\n\n",
+      "file_sha256": "c1f218cfa5785b2f91bf82a75771d5e37afd078bb16a0338a097cc71bf1759c3"
+    },
+    {
+      "file": "kv--api--write-key-value-pairs.md",
+      "url": "https://developers.cloudflare.com/kv/api/write-key-value-pairs/",
+      "content_sha256": "7adad96d8b30a3daa10dde25ad604f8b77b8a559dc7de352f885385538ad524a",
+      "prefix": "Source URL: https://developers.cloudflare.com/kv/api/write-key-value-pairs/\nCaptured UTC: 2026-11-06T23:06:57.665796+00:00\n\n",
+      "file_sha256": "40a75891d06520581182ada310e1b2934bc59c07a5339b11eb1cb34b1cf14e2d"
+    },
+    {
+      "file": "kv--api--list-keys.md",
+      "url": "https://developers.cloudflare.com/kv/api/list-keys/",
+      "content_sha256": "2dd98ffa0b7a849ab5776d36275863b150dad2bb09f8c7d1a4c3ed8d066d6569",
+      "prefix": "Source URL: https://developers.cloudflare.com/kv/api/list-keys/\nCaptured UTC: 2026-11-06T23:06:57.745564+00:00\n\n",
+      "file_sha256": "b941a7d0887bf8ec0d87ee4e183afda86d3afa15106df732d28f0842e830a65c"
+    },
+    {
+      "file": "d1--platform--limits.md",
+      "url": "https://developers.cloudflare.com/d1/platform/limits/",
+      "content_sha256": "3832d234fb9703fad062d0cc371fc0fbe8eded5d99a06e98fda63dc487285a71",
+      "prefix": "Source URL: https://developers.cloudflare.com/d1/platform/limits/\nCaptured UTC: 2026-11-06T23:06:57.815054+00:00\n\n",
+      "file_sha256": "657c3e8bc3b98faf1b57964d205c9f16547bb5e7086027c1af6b3f7fbcbf1e16"
+    },
+    {
+      "file": "r2--api--workers--workers-api-reference.md",
+      "url": "https://developers.cloudflare.com/r2/api/workers/workers-api-reference/",
+      "content_sha256": "124d0e2d9090909830631bee697e373aac58bf3cb7522ed9d1215ef26257d363",
+      "prefix": "Source URL: https://developers.cloudflare.com/r2/api/workers/workers-api-reference/\nCaptured UTC: 2026-11-06T23:06:57.896234+00:00\n\n",
+      "file_sha256": "8164bf29c8c48bf6822739e821b8a9e0365b2c27c66846f3fb1ff3d4e0eb1acd"
+    }
+  ]
+}

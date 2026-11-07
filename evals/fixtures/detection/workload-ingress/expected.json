@@ -1,0 +1,11 @@
+{
+  "description": "Synthetic regression for workload-ingress. Safe controls prove only the named detector boundary, not whole-application safety.",
+  "source_issue": "https://github.com/adewale/cfdoctor/issues/35",
+  "required_check_ids": [
+    "CFDOC-SEC-INGRESS-POLICY-PARITY"
+  ],
+  "forbidden_check_ids": [],
+  "evidence_ids": [
+    "CFDOC-EVD-DATAFLARE-AUDIT"
+  ]
+}

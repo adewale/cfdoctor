@@ -1,0 +1,15 @@
+{
+  "changed_at": "2026-11-07T01:50:50.021299+00:00",
+  "reason": "Cross-model judging lag; improve throughput without changing scoring or answer generation.",
+  "change": "Claude judge pool2 to4 for subsequent invocations; Codex remains2. Active invocations finish unchanged.",
+  "initial_script_sha256": "8fa244b9f0d59eeb21f8670bd693713310ebc7cd6459c510eb922ef9929eac3a",
+  "final_script_sha256": "ca6f6f8bf9e49e24f533a826a6cf10e761a75e1c5be58d2c299bed6c67a63e11",
+  "only_source_difference": "max_workers=2 -> max_workers=4 if backend == \"claude\" else 2",
+  "answer_model_skill_source_protocol_unchanged": true,
+  "judge_prompts_models_schemas_selection_unchanged": true,
+  "answers_completed_at_change": 30,
+  "judgments_completed_at_change": {
+    "codex": 28,
+    "claude": 20
+  }
+}

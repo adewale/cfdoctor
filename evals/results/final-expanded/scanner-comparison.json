@@ -1,0 +1,813 @@
+{
+  "note": "Unadjudicated heuristic leads; reductions are not a standalone quality score.",
+  "projects": [
+    {
+      "case": "fresh-url-shortener",
+      "repository": "https://github.com/llegomark/url-shortener",
+      "commit": "ab83188893cca6feac2d9e26b57ed9ba00268c35",
+      "arms": {
+        "old_skill": {
+          "scanner_version": "0.4.0",
+          "counts": {
+            "critical": 0,
+            "high": 4,
+            "low": 2,
+            "medium": 2,
+            "total": 8
+          },
+          "check_ids": {
+            "CFDOC-FIT-KV-COORDINATION": 3,
+            "CFDOC-SEC-SECRET-ASSIGNMENT": 1,
+            "CFDOC-COST-KV-LIST-HOTPATH": 2,
+            "CFDOC-CONFIG-COMPAT-DATE-OLD": 1,
+            "CFDOC-CONFIG-NO-OBSERVABILITY": 1
+          },
+          "artifact_sha256": "9efa828dfd3fed1c54225765035f5a1f89378331419892509dc8fa41c22f0a8c",
+          "findings": [
+            {
+              "check_id": "CFDOC-FIT-KV-COORDINATION",
+              "severity": "high",
+              "path": "src/index.ts",
+              "line": 162,
+              "message": "KV is eventually consistent and not a safe primitive for locks, counters, uniqueness, inventory, or rate-limit state that needs immediate correctness."
+            },
+            {
+              "check_id": "CFDOC-FIT-KV-COORDINATION",
+              "severity": "high",
+              "path": "src/index.ts",
+              "line": 49,
+              "message": "KV is eventually consistent and not a safe primitive for locks, counters, uniqueness, inventory, or rate-limit state that needs immediate correctness."
+            },
+            {
+              "check_id": "CFDOC-FIT-KV-COORDINATION",
+              "severity": "high",
+              "path": "src/index.ts",
+              "line": 88,
+              "message": "KV is eventually consistent and not a safe primitive for locks, counters, uniqueness, inventory, or rate-limit state that needs immediate correctness."
+            },
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "src/index.ts",
+              "line": 13,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "CFDOC-COST-KV-LIST-HOTPATH",
+              "severity": "medium",
+              "path": "src/index.ts",
+              "line": 159,
+              "message": "KV list/prefix scans in request paths can add latency and operation costs; KV is not a query engine."
+            },
+            {
+              "check_id": "CFDOC-COST-KV-LIST-HOTPATH",
+              "severity": "medium",
+              "path": "src/index.ts",
+              "line": 294,
+              "message": "KV list/prefix scans in request paths can add latency and operation costs; KV is not a query engine."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-COMPAT-DATE-OLD",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NO-OBSERVABILITY",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose."
+            }
+          ]
+        },
+        "with_skill": {
+          "scanner_version": "0.5.0",
+          "counts": {
+            "critical": 0,
+            "high": 3,
+            "low": 2,
+            "medium": 2,
+            "total": 7
+          },
+          "check_ids": {
+            "CFDOC-FIT-KV-COORDINATION": 3,
+            "CFDOC-COST-KV-LIST-HOTPATH": 2,
+            "CFDOC-CONFIG-COMPAT-DATE-OLD": 1,
+            "CFDOC-CONFIG-NO-OBSERVABILITY": 1
+          },
+          "artifact_sha256": "776a263fb7b7a133fe9a3234a1259506a27e637fdab3eac99fd5528c51693a82",
+          "findings": [
+            {
+              "check_id": "CFDOC-FIT-KV-COORDINATION",
+              "severity": "high",
+              "path": "src/index.ts",
+              "line": 162,
+              "message": "KV is eventually consistent and not a safe primitive for locks, counters, uniqueness, inventory, or rate-limit state that needs immediate correctness."
+            },
+            {
+              "check_id": "CFDOC-FIT-KV-COORDINATION",
+              "severity": "high",
+              "path": "src/index.ts",
+              "line": 49,
+              "message": "KV is eventually consistent and not a safe primitive for locks, counters, uniqueness, inventory, or rate-limit state that needs immediate correctness."
+            },
+            {
+              "check_id": "CFDOC-FIT-KV-COORDINATION",
+              "severity": "high",
+              "path": "src/index.ts",
+              "line": 88,
+              "message": "KV is eventually consistent and not a safe primitive for locks, counters, uniqueness, inventory, or rate-limit state that needs immediate correctness."
+            },
+            {
+              "check_id": "CFDOC-COST-KV-LIST-HOTPATH",
+              "severity": "medium",
+              "path": "src/index.ts",
+              "line": 159,
+              "message": "KV list/prefix scans in request paths can add latency and operation costs; KV is not a query engine."
+            },
+            {
+              "check_id": "CFDOC-COST-KV-LIST-HOTPATH",
+              "severity": "medium",
+              "path": "src/index.ts",
+              "line": 294,
+              "message": "KV list/prefix scans in request paths can add latency and operation costs; KV is not a query engine."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-COMPAT-DATE-OLD",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NO-OBSERVABILITY",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "fresh-bytego",
+      "repository": "https://github.com/zopiya/bytego",
+      "commit": "ff21c5b6de9a2b3e5f648139753a73d08ddf6f2a",
+      "arms": {
+        "old_skill": {
+          "scanner_version": "0.4.0",
+          "counts": {
+            "critical": 0,
+            "high": 2,
+            "low": 0,
+            "medium": 0,
+            "total": 2
+          },
+          "check_ids": {
+            "CFDOC-SEC-SECRET-ASSIGNMENT": 2
+          },
+          "artifact_sha256": "f9188afa7d6a5ac0d6209dd5bc16e07025a9cb740e3dde2187c922f46cbd560e",
+          "findings": [
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "README.md",
+              "line": 278,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "src/index.ts",
+              "line": 175,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            }
+          ]
+        },
+        "with_skill": {
+          "scanner_version": "0.5.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 0,
+            "medium": 0,
+            "total": 0
+          },
+          "check_ids": {},
+          "artifact_sha256": "18f5eeb307da288b082e13cdfd1435000123d417826928eb2e52c0b1ba0df0be",
+          "findings": []
+        }
+      }
+    },
+    {
+      "case": "fresh-status-page",
+      "repository": "https://github.com/eidam/cf-workers-status-page",
+      "commit": "f5b49dcae71e12c613b8f00094ed16b735925f64",
+      "arms": {
+        "old_skill": {
+          "scanner_version": "0.4.0",
+          "counts": {
+            "critical": 0,
+            "high": 1,
+            "low": 3,
+            "medium": 4,
+            "total": 8
+          },
+          "check_ids": {
+            "CFDOC-SEC-SECRET-ASSIGNMENT": 1,
+            "AGENT-AUTONOMOUS-LOOP-COST": 1,
+            "CFDOC-COST-CRON-EVERY-MINUTE": 1,
+            "CFDOC-COST-RETRY-AMPLIFY": 1,
+            "CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY": 1,
+            "CFDOC-CONFIG-COMPAT-DATE-OLD": 1,
+            "CFDOC-CONFIG-NO-OBSERVABILITY": 1,
+            "CFDOC-CONFIG-PROCESS-ENV": 1
+          },
+          "artifact_sha256": "de890b656aa843ee0876f9b6c68784a7b35f7d3a8d6a5d5e59c627c70291fca4",
+          "findings": [
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": ".github/workflows/deploy.yml",
+              "line": 47,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "AGENT-AUTONOMOUS-LOOP-COST",
+              "severity": "medium",
+              "path": "src/functions/cronTrigger.js",
+              "line": 49,
+              "message": "Agents SDK workloads can combine Durable Object state, schedules, retries, tools, sub-agents, browser/sandbox sessions, and model calls. Autonomous loops without max steps and cancellation can repeat paid work."
+            },
+            {
+              "check_id": "CFDOC-COST-CRON-EVERY-MINUTE",
+              "severity": "medium",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Every-minute cron schedules create constant Worker invocations and can amplify downstream storage/API costs, especially across environments."
+            },
+            {
+              "check_id": "CFDOC-COST-RETRY-AMPLIFY",
+              "severity": "medium",
+              "path": "src/functions/cronTrigger.js",
+              "line": 32,
+              "message": "Hot retries into paid Cloudflare primitives or degraded dependencies can amplify spend and outages."
+            },
+            {
+              "check_id": "CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY",
+              "severity": "medium",
+              "path": "index.js",
+              "line": 31,
+              "message": "Webhook providers can retry or duplicate deliveries. Without a stable delivery/event key, downstream writes, fan-out, Queues, or paid API calls can repeat."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-COMPAT-DATE-OLD",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NO-OBSERVABILITY",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-PROCESS-ENV",
+              "severity": "low",
+              "path": "src/cli/gcMonitors.js",
+              "line": 5,
+              "message": "Workers receive environment bindings through the handler `env` object; `process.env` may be a build-time or Node-compat assumption."
+            }
+          ]
+        },
+        "with_skill": {
+          "scanner_version": "0.5.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 2,
+            "medium": 2,
+            "total": 4
+          },
+          "check_ids": {
+            "CFDOC-COST-CRON-EVERY-MINUTE": 1,
+            "CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY": 1,
+            "CFDOC-CONFIG-COMPAT-DATE-OLD": 1,
+            "CFDOC-CONFIG-NO-OBSERVABILITY": 1
+          },
+          "artifact_sha256": "40b6b728292c0b140fff268cc685114ed0a45684f5e14f5e16739062c0afddb5",
+          "findings": [
+            {
+              "check_id": "CFDOC-COST-CRON-EVERY-MINUTE",
+              "severity": "medium",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Every-minute cron schedules create constant Worker invocations and can amplify downstream storage/API costs, especially across environments."
+            },
+            {
+              "check_id": "CFDOC-COST-WEBHOOK-NO-IDEMPOTENCY",
+              "severity": "medium",
+              "path": "index.js",
+              "line": 31,
+              "message": "Webhook providers can retry or duplicate deliveries. Without a stable delivery/event key, downstream writes, fan-out, Queues, or paid API calls can repeat."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-COMPAT-DATE-OLD",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NO-OBSERVABILITY",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "fresh-web-tools",
+      "repository": "https://github.com/brucehart/web-tools",
+      "commit": "f1a09a2e80c9d3bc62786fe06409cad0b118a045",
+      "arms": {
+        "old_skill": {
+          "scanner_version": "0.4.0",
+          "counts": {
+            "critical": 0,
+            "high": 2,
+            "low": 3,
+            "medium": 1,
+            "total": 6
+          },
+          "check_ids": {
+            "CFDOC-SEC-SECRET-ASSIGNMENT": 2,
+            "CFDOC-COST-RETRY-AMPLIFY": 1,
+            "CFDOC-PERF-D1-N-PLUS-ONE": 2,
+            "KV-VS-DO-STORAGE-FIT": 1
+          },
+          "artifact_sha256": "6a9d0c6a7eac06dab29aa631a040110052a69c48865b44ef2b0e7fa8ed84b167",
+          "findings": [
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "src/auth.ts",
+              "line": 12,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "src/internal-test.ts",
+              "line": 135,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "CFDOC-COST-RETRY-AMPLIFY",
+              "severity": "medium",
+              "path": "src/todo.ts",
+              "line": 34,
+              "message": "Hot retries into paid Cloudflare primitives or degraded dependencies can amplify spend and outages."
+            },
+            {
+              "check_id": "CFDOC-PERF-D1-N-PLUS-ONE",
+              "severity": "low",
+              "path": "src/internal-test.ts",
+              "line": null,
+              "message": "Several sequential D1 queries on one request path can multiply latency and billed rows/operations."
+            },
+            {
+              "check_id": "CFDOC-PERF-D1-N-PLUS-ONE",
+              "severity": "low",
+              "path": "src/todo.ts",
+              "line": null,
+              "message": "Several sequential D1 queries on one request path can multiply latency and billed rows/operations."
+            },
+            {
+              "check_id": "KV-VS-DO-STORAGE-FIT",
+              "severity": "low",
+              "path": "src/types.ts",
+              "line": 1,
+              "message": "Read-heavy, write-rare session/preference/config data may not need Durable Object coordination or duration costs if eventual consistency or SQL queries are acceptable."
+            }
+          ]
+        },
+        "with_skill": {
+          "scanner_version": "0.5.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 1,
+            "medium": 0,
+            "total": 1
+          },
+          "check_ids": {
+            "KV-VS-DO-STORAGE-FIT": 1
+          },
+          "artifact_sha256": "55922507cc6908df0c2bd47a227f28520c6d835651a20a30c34ff148effeb51d",
+          "findings": [
+            {
+              "check_id": "KV-VS-DO-STORAGE-FIT",
+              "severity": "low",
+              "path": "src/types.ts",
+              "line": 1,
+              "message": "Read-heavy, write-rare session/preference/config data may not need Durable Object coordination or duration costs if eventual consistency or SQL queries are acceptable."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "fresh-hookrelay",
+      "repository": "https://github.com/grunt-it/hookrelay",
+      "commit": "b92069bf3b618600cd5d40e8ddfb2854cc88e18d",
+      "arms": {
+        "old_skill": {
+          "scanner_version": "0.4.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 1,
+            "medium": 3,
+            "total": 4
+          },
+          "check_ids": {
+            "CFDOC-COST-DO-FRONT-DOOR": 1,
+            "CFDOC-COST-RETRY-AMPLIFY": 1,
+            "CFDOC-REL-QUEUE-NO-DLQ": 1,
+            "CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD": 1
+          },
+          "artifact_sha256": "718b908b61370506d1fd4258921809b5781456aef2ea4f56bf271af90f110772",
+          "findings": [
+            {
+              "check_id": "CFDOC-COST-DO-FRONT-DOOR",
+              "severity": "medium",
+              "path": "src/index.ts",
+              "line": 65,
+              "message": "Invalid, bot, oversized, or unauthenticated traffic should be rejected before it becomes Durable Object requests/duration or hot-spots a shard."
+            },
+            {
+              "check_id": "CFDOC-COST-RETRY-AMPLIFY",
+              "severity": "medium",
+              "path": "src/index.ts",
+              "line": 48,
+              "message": "Hot retries into paid Cloudflare primitives or degraded dependencies can amplify spend and outages."
+            },
+            {
+              "check_id": "CFDOC-REL-QUEUE-NO-DLQ",
+              "severity": "medium",
+              "path": "wrangler.jsonc",
+              "line": null,
+              "message": "Cloudflare Queues use at-least-once delivery and retry a failed message three times by default. After the configured retry limit, a message is permanently deleted unless a DLQ is configured; duplicates and retries can still repeat downstream side effects."
+            },
+            {
+              "check_id": "CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD",
+              "severity": "low",
+              "path": "src/do/destination.ts",
+              "line": 40,
+              "message": "Generic dead-code linters usually treat public methods on DurableObject, WorkerEntrypoint, WorkflowEntrypoint, RpcTarget, and Agent classes as live API surface. Stale RPC methods can accumulate as forgotten callable behavior, auth/schema bypass paths, or maintenance debt."
+            }
+          ]
+        },
+        "with_skill": {
+          "scanner_version": "0.5.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 1,
+            "medium": 2,
+            "total": 3
+          },
+          "check_ids": {
+            "CFDOC-COST-DO-FRONT-DOOR": 1,
+            "CFDOC-REL-QUEUE-NO-DLQ": 1,
+            "CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD": 1
+          },
+          "artifact_sha256": "51d38982deac4e48b300b3718752f97f0077d75e71f1352a5c16a1b551508b9f",
+          "findings": [
+            {
+              "check_id": "CFDOC-COST-DO-FRONT-DOOR",
+              "severity": "medium",
+              "path": "src/index.ts",
+              "line": 65,
+              "message": "Invalid, bot, oversized, or unauthenticated traffic should be rejected before it becomes Durable Object requests/duration or hot-spots a shard."
+            },
+            {
+              "check_id": "CFDOC-REL-QUEUE-NO-DLQ",
+              "severity": "medium",
+              "path": "wrangler.jsonc",
+              "line": null,
+              "message": "Cloudflare Queues use at-least-once delivery and retry a failed message three times by default. After the configured retry limit, a message is permanently deleted unless a DLQ is configured; duplicates and retries can still repeat downstream side effects."
+            },
+            {
+              "check_id": "CFDOC-REL-CROSS-BOUNDARY-RPC-DEAD",
+              "severity": "low",
+              "path": "src/do/destination.ts",
+              "line": 40,
+              "message": "Generic dead-code linters usually treat public methods on DurableObject, WorkerEntrypoint, WorkflowEntrypoint, RpcTarget, and Agent classes as live API surface. Stale RPC methods can accumulate as forgotten callable behavior, auth/schema bypass paths, or maintenance debt."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "fresh-workers-chat-demo",
+      "repository": "https://github.com/cloudflare/workers-chat-demo",
+      "commit": "dd32ce87617a9df6c614004d2fc2fb0628698121",
+      "arms": {
+        "old_skill": {
+          "scanner_version": "0.4.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 2,
+            "medium": 1,
+            "total": 3
+          },
+          "check_ids": {
+            "DO-STORAGE-LIST-HOTPATH": 1,
+            "CFDOC-CONFIG-COMPAT-DATE-OLD": 1,
+            "CFDOC-CONFIG-NO-OBSERVABILITY": 1
+          },
+          "artifact_sha256": "d61c340489cd077c3b220a9dfddf00889d0fd77c251e87025e0b1d23e2ca647a",
+          "findings": [
+            {
+              "check_id": "DO-STORAGE-LIST-HOTPATH",
+              "severity": "medium",
+              "path": "src/chat.mjs",
+              "line": 315,
+              "message": "Durable Object storage list/prefix scans can be much more expensive and slower than fetching known keys when used on request or wake-up hot paths."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-COMPAT-DATE-OLD",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NO-OBSERVABILITY",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose."
+            }
+          ]
+        },
+        "with_skill": {
+          "scanner_version": "0.5.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 2,
+            "medium": 1,
+            "total": 3
+          },
+          "check_ids": {
+            "DO-STORAGE-LIST-HOTPATH": 1,
+            "CFDOC-CONFIG-COMPAT-DATE-OLD": 1,
+            "CFDOC-CONFIG-NO-OBSERVABILITY": 1
+          },
+          "artifact_sha256": "6359e516e6e9c9ba2ee2bafb4a08f586292f534de2a8c9a6651767902e84aa6a",
+          "findings": [
+            {
+              "check_id": "DO-STORAGE-LIST-HOTPATH",
+              "severity": "medium",
+              "path": "src/chat.mjs",
+              "line": 315,
+              "message": "Durable Object storage list/prefix scans can be much more expensive and slower than fetching known keys when used on request or wake-up hot paths."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-COMPAT-DATE-OLD",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NO-OBSERVABILITY",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "fresh-pastebin-d1",
+      "repository": "A-Archives-and-Forks/pastebin-worker-d1",
+      "commit": "a4385c092afda23c590189e18dfd557d3c86e363",
+      "arms": {
+        "old_skill": {
+          "scanner_version": "0.4.0",
+          "counts": {
+            "critical": 0,
+            "high": 3,
+            "low": 4,
+            "medium": 3,
+            "total": 10
+          },
+          "check_ids": {
+            "CFDOC-SEC-SECRET-ASSIGNMENT": 3,
+            "CFDOC-CONFIG-D1-NO-MIGRATIONS": 1,
+            "CFDOC-COST-RETRY-AMPLIFY": 2,
+            "CFDOC-CONFIG-COMPAT-DATE-OLD": 1,
+            "CFDOC-CONFIG-NO-OBSERVABILITY": 1,
+            "CFDOC-CONFIG-NODEJS-COMPAT": 1,
+            "CFDOC-PERF-D1-SELECT-STAR": 1
+          },
+          "artifact_sha256": "c17c34bb4bb7fe756032d213f3892c64ceedcb483557e6d6aef5097b6c8e8f0f",
+          "findings": [
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "src/auth.js",
+              "line": 6,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "src/handlers/handleWrite.js",
+              "line": 44,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "test/formdata.spec.js",
+              "line": 12,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-D1-NO-MIGRATIONS",
+              "severity": "medium",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "D1 schema changes should be managed with checked-in migrations. A binding without nearby migration files can indicate dashboard-only schema drift or missing deploy steps."
+            },
+            {
+              "check_id": "CFDOC-COST-RETRY-AMPLIFY",
+              "severity": "medium",
+              "path": "test/basic.spec.js",
+              "line": 48,
+              "message": "Hot retries into paid Cloudflare primitives or degraded dependencies can amplify spend and outages."
+            },
+            {
+              "check_id": "CFDOC-COST-RETRY-AMPLIFY",
+              "severity": "medium",
+              "path": "test/pages.spec.js",
+              "line": 5,
+              "message": "Hot retries into paid Cloudflare primitives or degraded dependencies can amplify spend and outages."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-COMPAT-DATE-OLD",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NO-OBSERVABILITY",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NODEJS-COMPAT",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Node compatibility can be necessary, but unnecessary polyfills can increase bundle surface and hide runtime assumptions."
+            },
+            {
+              "check_id": "CFDOC-PERF-D1-SELECT-STAR",
+              "severity": "low",
+              "path": "src/db.js",
+              "line": 91,
+              "message": "SELECT * can widen transfer/decoding and couple callers to schema changes, but it does not by itself prove a full scan or increase D1 billed rows read; predicates, indexes, LIMIT, and the query plan determine rows scanned."
+            }
+          ]
+        },
+        "with_skill": {
+          "scanner_version": "0.5.0",
+          "counts": {
+            "critical": 0,
+            "high": 1,
+            "low": 4,
+            "medium": 1,
+            "total": 6
+          },
+          "check_ids": {
+            "CFDOC-SEC-SECRET-ASSIGNMENT": 1,
+            "CFDOC-CONFIG-D1-NO-MIGRATIONS": 1,
+            "CFDOC-CONFIG-COMPAT-DATE-OLD": 1,
+            "CFDOC-CONFIG-NO-OBSERVABILITY": 1,
+            "CFDOC-CONFIG-NODEJS-COMPAT": 1,
+            "CFDOC-PERF-D1-SELECT-STAR": 1
+          },
+          "artifact_sha256": "bb98d9454eb4319564ac65052f1b0f18f4e38b25003d1eb3ecaac4ba437c9589",
+          "findings": [
+            {
+              "check_id": "CFDOC-SEC-SECRET-ASSIGNMENT",
+              "severity": "high",
+              "path": "test/formdata.spec.js",
+              "line": 12,
+              "message": "Credentials in source, dotenv files, CI config, docs, or IaC can expose Cloudflare/API/database access and are often copied into deployments."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-D1-NO-MIGRATIONS",
+              "severity": "medium",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "D1 schema changes should be managed with checked-in migrations. A binding without nearby migration files can indicate dashboard-only schema drift or missing deploy steps."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-COMPAT-DATE-OLD",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Very old compatibility dates can defer runtime fixes/improvements and make future upgrades riskier."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NO-OBSERVABILITY",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Without intentional observability/logging, regressions in CPU, errors, queue retries, or storage operations are harder to diagnose."
+            },
+            {
+              "check_id": "CFDOC-CONFIG-NODEJS-COMPAT",
+              "severity": "low",
+              "path": "wrangler.toml",
+              "line": null,
+              "message": "Node compatibility can be necessary, but unnecessary polyfills can increase bundle surface and hide runtime assumptions."
+            },
+            {
+              "check_id": "CFDOC-PERF-D1-SELECT-STAR",
+              "severity": "low",
+              "path": "src/db.js",
+              "line": 91,
+              "message": "SELECT * can widen transfer/decoding and couple callers to schema changes, but it does not by itself prove a full scan or increase D1 billed rows read; predicates, indexes, LIMIT, and the query plan determine rows scanned."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "fresh-reia-lfs-r2",
+      "repository": "Quaint-Studios/reia-lfs-cloudflare-worker",
+      "commit": "2758c463e3b364f4cfb59010e2c25f0d544540eb",
+      "arms": {
+        "old_skill": {
+          "scanner_version": "0.4.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 0,
+            "medium": 1,
+            "total": 1
+          },
+          "check_ids": {
+            "CFDOC-COST-RETRY-AMPLIFY": 1
+          },
+          "artifact_sha256": "64a92287f4394ff7297af0d091eb1a1ef742ee15f62bbe6b7595dbd7f9531c7b",
+          "findings": [
+            {
+              "check_id": "CFDOC-COST-RETRY-AMPLIFY",
+              "severity": "medium",
+              "path": "worker.js",
+              "line": 451,
+              "message": "Hot retries into paid Cloudflare primitives or degraded dependencies can amplify spend and outages."
+            }
+          ]
+        },
+        "with_skill": {
+          "scanner_version": "0.5.0",
+          "counts": {
+            "critical": 0,
+            "high": 0,
+            "low": 0,
+            "medium": 0,
+            "total": 0
+          },
+          "check_ids": {},
+          "artifact_sha256": "8af1180465361210cf70d8aa8de06d44dc957493a64a9fb0d6faa980afa555f4",
+          "findings": []
+        }
+      }
+    }
+  ]
+}
